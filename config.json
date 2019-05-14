@@ -1,0 +1,11 @@
+{
+    "server_port": "8080",
+    "jwt_pub_rsa": "",
+    "force_auth": true,
+    "force_user": true,
+    "log_level": "CALL",
+    "amqp_url": "amqp://guest:guest@rabbitmq:5672/",
+    "amqp_consumer_name": "fast-iot-repo",
+    "amqp_reconnect_timeout": 10,
+    "device_instance_topic": "deviceinstance"
+}
