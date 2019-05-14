@@ -19,6 +19,8 @@ package controller
 import (
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
+	"github.com/pkg/errors"
+	"net/http"
 )
 
 /////////////////////////
@@ -26,7 +28,22 @@ import (
 /////////////////////////
 
 func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
-	panic("implement me")
+	var exists bool
+	device, exists, err = this.db.ReadDevice(device.Id)
+	if err != nil {
+		return device, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return model.DeviceInstance{}, errors.New("not found"), http.StatusNotFound
+	}
+	allowed, err := this.security.CheckBool(jwt, this.config.DeviceInstanceTopic, id, model.READ)
+	if err != nil {
+		return device, err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return model.DeviceInstance{}, errors.New("access denied"), http.StatusForbidden
+	}
+	return device, nil, http.StatusOK
 }
 
 /////////////////////////
@@ -38,11 +55,11 @@ func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
 	if err != nil {
 		return
 	}
+	err = this.updateEndpointsOfDevice(old, device)
+	if err != nil {
+		return
+	}
 	if exists {
-		err = this.updateEndpointsOfDevice(old, device)
-		if err != nil {
-			return
-		}
 		err = this.updateHubOfDevice(old, device)
 		if err != nil {
 			return
@@ -66,4 +83,24 @@ func (this *Controller) DeleteDevice(id string, owner string) (err error) {
 		return
 	}
 	return this.db.RemoveDevice(id)
+}
+
+func (this *Controller) updateDefaultDeviceImages(deviceTypeId string, oldImage string, newImage string) error {
+	if oldImage == newImage {
+		return nil
+	}
+	devices, err := this.db.ListDevicesByDeviceType(deviceTypeId)
+	if err != nil {
+		return err
+	}
+	for _, device := range devices {
+		if device.ImgUrl == "" || device.ImgUrl == oldImage {
+			device.ImgUrl = newImage
+			err = this.source.PublishDevice(device, "")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package controller
+package mongo
 
-import (
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
-)
+import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
 
-type Publisher interface {
-	PublishDevice(device model.DeviceInstance, owner string) error //user has to check for uri collision
+func (this *Mongo) ReadDeviceType(id string) (deviceType model.DeviceType, exists bool, err error) {
+	panic("implement me") //TODO
 }
 
-type Security interface {
-	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)
+func (this *Mongo) SetDeviceType(deviceType model.DeviceType) error {
+	panic("implement me") //TODO
+}
+
+func (this *Mongo) RemoveDeviceType(id string) error {
+	panic("implement me") //TODO
 }

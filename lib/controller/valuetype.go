@@ -16,15 +16,8 @@
 
 package controller
 
-import (
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
-)
+import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
 
-type Publisher interface {
-	PublishDevice(device model.DeviceInstance, owner string) error //user has to check for uri collision
-}
-
-type Security interface {
-	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)
+func (this *Controller) publishMissingValueTypesOfDeviceType(deviceType model.DeviceType, owner string) error {
+	panic("todo") //TODO
 }

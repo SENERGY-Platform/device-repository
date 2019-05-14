@@ -22,4 +22,8 @@ type Database interface {
 	ReadDevice(id string) (device model.DeviceInstance, exists bool, err error)
 	SetDevice(device model.DeviceInstance) error
 	RemoveDevice(id string) error
+	ReadDeviceType(id string) (deviceType model.DeviceType, exists bool, err error)
+	SetDeviceType(deviceType model.DeviceType) error
+	ListDevicesByDeviceType(deviceTypeId string) ([]model.DeviceInstance, error)
+	RemoveDeviceType(id string) error
 }

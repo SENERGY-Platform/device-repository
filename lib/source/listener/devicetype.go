@@ -22,24 +22,26 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/source/messages"
 	"github.com/SmartEnergyPlatform/amqp-wrapper-lib"
+	"log"
 )
 
 func init() {
-	Factories = append(Factories, DeviceListenerFactory)
+	Factories = append(Factories, DeviceTypeListenerFactory)
 }
 
-func DeviceListenerFactory(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error) {
-	return config.DeviceInstanceTopic, func(msg []byte) error {
-		command := messages.DeviceinstanceCommand{}
+func DeviceTypeListenerFactory(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error) {
+	return config.DeviceInstanceTopic, func(msg []byte) (err error) {
+		log.Println(config.DeviceTypeTopic, string(msg))
+		command := messages.DeviceTypeCommand{}
 		err = json.Unmarshal(msg, &command)
 		if err != nil {
-			return err
+			return
 		}
 		switch command.Command {
 		case "PUT":
-			return control.SetDevice(command.DeviceInstance)
+			return control.SetDeviceType(command.DeviceType, command.Owner)
 		case "DELETE":
-			return control.DeleteDevice(command.Id, command.Owner)
+			return control.DeleteDeviceType(command.Id)
 		}
 		return errors.New("unable to handle permission command: " + string(msg))
 	}, nil

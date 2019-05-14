@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package controller
+package messages
 
-import (
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
-)
+import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
 
-type Publisher interface {
-	PublishDevice(device model.DeviceInstance, owner string) error //user has to check for uri collision
+type DeviceinstanceCommand struct {
+	Command        string               `json:"command"`
+	Id             string               `json:"id"`
+	Owner          string               `json:"owner"`
+	DeviceInstance model.DeviceInstance `json:"device_instance"`
 }
 
-type Security interface {
-	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)
+type DeviceTypeCommand struct {
+	Command    string           `json:"command"`
+	Id         string           `json:"id"`
+	Owner      string           `json:"owner"`
+	DeviceType model.DeviceType `json:"device_type"`
 }

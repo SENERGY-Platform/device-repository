@@ -22,7 +22,3 @@ import (
 )
 
 var Factories = []func(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error){}
-
-type Publisher interface {
-	Publish(resource string, payload []byte) error
-}

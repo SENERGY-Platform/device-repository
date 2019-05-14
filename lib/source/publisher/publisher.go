@@ -16,12 +16,36 @@
 
 package publisher
 
-import "github.com/SmartEnergyPlatform/amqp-wrapper-lib"
+import (
+	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/source/messages"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SmartEnergyPlatform/amqp-wrapper-lib"
+	"log"
+)
 
 type Publisher struct {
-	conn *amqp_wrapper_lib.Connection
+	conn   *amqp_wrapper_lib.Connection
+	config config.Config
 }
 
-func New(conn *amqp_wrapper_lib.Connection) (*Publisher, error) {
-	return &Publisher{conn: conn}, nil
+func New(conn *amqp_wrapper_lib.Connection, config config.Config) (*Publisher, error) {
+	return &Publisher{conn: conn, config: config}, nil
+}
+
+func NewMute(ignored *amqp_wrapper_lib.Connection, config config.Config) (*Publisher, error) {
+	return &Publisher{config: config}, nil
+}
+
+func (this *Publisher) PublishDevice(device model.DeviceInstance, owner string) error {
+	if this.conn == nil {
+		log.Println("WARNING: use mute publisher to publish", device)
+		return nil
+	}
+	msg, err := json.Marshal(messages.DeviceinstanceCommand{DeviceInstance: device, Id: device.Id, Command: "PUT", Owner: owner})
+	if err != nil {
+		return err
+	}
+	return this.conn.Publish(this.config.DeviceInstanceTopic, msg)
 }

@@ -21,4 +21,7 @@ import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
 type Controller interface {
 	SetDevice(device model.DeviceInstance) error
 	DeleteDevice(id string, owner string) error
+
+	SetDeviceType(deviceType model.DeviceType, owner string) error
+	DeleteDeviceType(id string) error
 }
