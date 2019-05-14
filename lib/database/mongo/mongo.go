@@ -16,7 +16,9 @@
 
 package mongo
 
-import "github.com/SENERGY-Platform/device-repository/lib/config"
+import (
+	"github.com/SENERGY-Platform/device-repository/lib/config"
+)
 
 type Mongo struct {
 	config config.Config

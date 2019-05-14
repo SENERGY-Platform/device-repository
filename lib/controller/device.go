@@ -33,10 +33,37 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device m
 //		source
 /////////////////////////
 
-func (this *Controller) SetDevice(device model.DeviceInstance) error {
-	panic("implement me")
+func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
+	old, exists, err := this.db.ReadDevice(device.Id)
+	if err != nil {
+		return
+	}
+	if exists {
+		err = this.updateEndpointsOfDevice(old, device)
+		if err != nil {
+			return
+		}
+		err = this.updateHubOfDevice(old, device)
+		if err != nil {
+			return
+		}
+	}
+	err = this.db.SetDevice(device)
+	return
 }
 
-func (this *Controller) DeleteDevice(id string, owner string) error {
-	panic("implement me")
+func (this *Controller) DeleteDevice(id string, owner string) (err error) {
+	old, exists, err := this.db.ReadDevice(id)
+	if err != nil || !exists {
+		return
+	}
+	err = this.removeEndpointsOfDevice(old)
+	if err != nil {
+		return
+	}
+	err = this.resetHubOfDevice(old)
+	if err != nil {
+		return
+	}
+	return this.db.RemoveDevice(id)
 }

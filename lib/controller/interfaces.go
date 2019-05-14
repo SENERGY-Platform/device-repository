@@ -16,8 +16,14 @@
 
 package controller
 
+import (
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SmartEnergyPlatform/jwt-http-router"
+)
+
 type Publisher interface {
 }
 
 type Security interface {
+	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)
 }
