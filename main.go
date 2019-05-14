@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
+	"github.com/SENERGY-Platform/device-repository/lib/com"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
@@ -44,7 +45,12 @@ func main() {
 		log.Fatal("ERROR: unable to connect to database", err)
 	}
 
-	ctrl, err := controller.New(conf, db, func(ctrl *controller.Controller) (controller.Publisher, error) {
+	perm, err := com.NewSecurity(conf)
+	if err != nil {
+		log.Fatal("ERROR: unable to create permission handler", err)
+	}
+
+	ctrl, err := controller.New(conf, db, perm, func(ctrl *controller.Controller) (controller.Publisher, error) {
 		conn, err := source.Start(conf, ctrl)
 		if err != nil {
 			log.Println("ERROR: unable to start source", err)

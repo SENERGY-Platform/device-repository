@@ -18,3 +18,6 @@ package controller
 
 type Publisher interface {
 }
+
+type Security interface {
+}

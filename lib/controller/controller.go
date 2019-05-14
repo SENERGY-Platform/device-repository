@@ -21,17 +21,19 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 )
 
-func New(config config.Config, db database.Database, sourceFactory func(*Controller) (Publisher, error)) (ctrl *Controller, err error) {
+func New(config config.Config, db database.Database, security Security, sourceFactory func(*Controller) (Publisher, error)) (ctrl *Controller, err error) {
 	ctrl = &Controller{
-		db:     db,
-		config: config,
+		db:       db,
+		security: security,
+		config:   config,
 	}
 	ctrl.source, err = sourceFactory(ctrl)
 	return
 }
 
 type Controller struct {
-	db     database.Database
-	config config.Config
-	source Publisher
+	db       database.Database
+	security Security
+	config   config.Config
+	source   Publisher
 }

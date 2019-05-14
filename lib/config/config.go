@@ -37,6 +37,7 @@ type Config struct {
 	AmqpConsumerName     string `json:"amqp_consumer_name"`
 	AmqpReconnectTimeout int64  `json:"amqp_reconnect_timeout"`
 	DeviceInstanceTopic  string `json:"device_instance_topic"`
+	PermissionsUrl       string `json:"permissions_url"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
