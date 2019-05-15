@@ -18,7 +18,7 @@ package mongo
 
 import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
 
-func (this *Mongo) ReadDeviceType(id string) (deviceType model.DeviceType, exists bool, err error) {
+func (this *Mongo) GetDeviceType(id string) (deviceType model.DeviceType, exists bool, err error) {
 	panic("implement me") //TODO
 }
 

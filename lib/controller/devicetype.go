@@ -30,7 +30,7 @@ func (this *Controller) SetDeviceType(deviceType model.DeviceType, owner string)
 		return err
 	}
 
-	old, exists, err := this.db.ReadDeviceType(deviceType.Id)
+	old, exists, err := this.db.GetDeviceType(deviceType.Id)
 	if err != nil {
 		return
 	}

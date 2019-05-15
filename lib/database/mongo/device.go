@@ -20,7 +20,7 @@ import (
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 )
 
-func (this *Mongo) ReadDevice(id string) (device model.DeviceInstance, exists bool, err error) {
+func (this *Mongo) GetDevice(id string) (device model.DeviceInstance, exists bool, err error) {
 	panic("implement me") //TODO
 }
 
@@ -32,6 +32,6 @@ func (this *Mongo) RemoveDevice(id string) error {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) ListDevicesByDeviceType(deviceTypeId string) ([]model.DeviceInstance, error) {
+func (this *Mongo) ListDevicesOfDeviceType(deviceTypeId string) ([]model.DeviceInstance, error) {
 	panic("implement me") //TODO
 }

@@ -19,11 +19,15 @@ package database
 import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
 
 type Database interface {
-	ReadDevice(id string) (device model.DeviceInstance, exists bool, err error)
+	CreateId() string
+	GetDevice(id string) (device model.DeviceInstance, exists bool, err error)
 	SetDevice(device model.DeviceInstance) error
 	RemoveDevice(id string) error
-	ReadDeviceType(id string) (deviceType model.DeviceType, exists bool, err error)
+	GetDeviceType(id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(deviceType model.DeviceType) error
-	ListDevicesByDeviceType(deviceTypeId string) ([]model.DeviceInstance, error)
+	ListDevicesOfDeviceType(deviceTypeId string) ([]model.DeviceInstance, error)
 	RemoveDeviceType(id string) error
+	ListEndpointsOfDevice(deviceId string) ([]model.Endpoint, error)
+	RemoveEndpoint(id string) error
+	SetEndpoint(endpoint model.Endpoint) error
 }

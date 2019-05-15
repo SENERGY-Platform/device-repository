@@ -29,7 +29,7 @@ import (
 
 func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
 	var exists bool
-	device, exists, err = this.db.ReadDevice(device.Id)
+	device, exists, err = this.db.GetDevice(device.Id)
 	if err != nil {
 		return device, err, http.StatusInternalServerError
 	}
@@ -51,7 +51,7 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device m
 /////////////////////////
 
 func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
-	old, exists, err := this.db.ReadDevice(device.Id)
+	old, exists, err := this.db.GetDevice(device.Id)
 	if err != nil {
 		return
 	}
@@ -70,7 +70,7 @@ func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
 }
 
 func (this *Controller) DeleteDevice(id string, owner string) (err error) {
-	old, exists, err := this.db.ReadDevice(id)
+	old, exists, err := this.db.GetDevice(id)
 	if err != nil || !exists {
 		return
 	}
@@ -89,7 +89,7 @@ func (this *Controller) updateDefaultDeviceImages(deviceTypeId string, oldImage 
 	if oldImage == newImage {
 		return nil
 	}
-	devices, err := this.db.ListDevicesByDeviceType(deviceTypeId)
+	devices, err := this.db.ListDevicesOfDeviceType(deviceTypeId)
 	if err != nil {
 		return err
 	}

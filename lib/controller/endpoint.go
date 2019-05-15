@@ -16,61 +16,83 @@
 
 package controller
 
-import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
+import (
+	"errors"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/cbroglie/mustache"
+)
 
 func (this *Controller) removeEndpointsOfDevice(device model.DeviceInstance) error {
-	panic("todo") //TODO
-}
-
-func (this *Controller) updateEndpointsOfDevice(oldDevice, newDevice model.DeviceInstance) error {
-	panic("todo") //TODO
-	if oldDevice.Url != newDevice.Url {
-		/*
-			    deviceType, err := this.GetDeviceTypeById(device.DeviceType, 3)
-				if err != nil {
-					return err
-				}
-
-				//delete old
-				endpoints, err := this.getEndpointsByDevice(device.Id)
-				if err != nil {
-					return err
-				}
-				for _, endpoint := range endpoints {
-					this.ordf.Delete(endpoint)
-					if err != nil {
-						return err
-					}
-				}
-
-				//create new
-				for _, service := range deviceType.Services {
-					endpoint := model.Endpoint{
-						ProtocolHandler: service.Protocol.ProtocolHandlerUrl,
-						Service:         service.Id,
-						Device:          device.Id,
-						Endpoint:        createEndpointString(service.EndpointFormat, device.Url, service.Url, device.Config),
-					}
-					if endpoint.Endpoint != "" {
-						tempErr := this.ordf.SetIdDeep(&endpoint)
-						if tempErr != nil {
-							err = tempErr
-						} else {
-							_, tempErr = this.ordf.Insert(endpoint)
-							if tempErr != nil {
-								err = tempErr
-							}
-						}
-					}
-				}
-				return err
-		*/
+	endpoints, err := this.db.ListEndpointsOfDevice(device.Id)
+	if err != nil {
+		return err
+	}
+	for _, endpoint := range endpoints {
+		err = this.db.RemoveEndpoint(endpoint.Id)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (this *Controller) updateEndpointsOfDeviceType(oldDeviceType, newDeviceType model.DeviceType) error {
-	panic("todo") //TODO
+func (this *Controller) updateEndpointsOfDevice(oldDevice, newDevice model.DeviceInstance) error {
+	if oldDevice.Url == newDevice.Url {
+		return nil
+	}
+	deviceType, exists, err := this.db.GetDeviceType(oldDevice.DeviceType)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("unable to find device-type of device, to update device endpoints")
+	}
+	return this.updateEndpointsOfDeviceAndDeviceType(newDevice, deviceType)
+}
 
+func (this *Controller) updateEndpointsOfDeviceAndDeviceType(device model.DeviceInstance, deviceType model.DeviceType) error {
+	err := this.removeEndpointsOfDevice(device)
+	if err != nil {
+		return err
+	}
+
+	for _, service := range deviceType.Services {
+		endpoint := model.Endpoint{
+			ProtocolHandler: service.Protocol.ProtocolHandlerUrl,
+			Service:         service.Id,
+			Device:          device.Id,
+			Endpoint:        createEndpointString(service.EndpointFormat, device.Url, service.Url, device.Config),
+		}
+		if endpoint.Endpoint != "" {
+			endpoint.Id = this.db.CreateId()
+			err = this.db.SetEndpoint(endpoint)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func createEndpointString(endpointFormat string, deviceUrl string, serviceUrl string, deviceConfig []model.ConfigField) (result string) {
+	conf := map[string]string{"device_uri": deviceUrl, "service_uri": serviceUrl}
+	for _, field := range deviceConfig {
+		conf[field.Name] = field.Value
+	}
+	result, _ = mustache.Render(endpointFormat, conf)
+	return
+}
+
+func (this *Controller) updateEndpointsOfDeviceType(oldDeviceType, newDeviceType model.DeviceType) error {
+	devices, err := this.db.ListDevicesOfDeviceType(oldDeviceType.Id)
+	if err != nil {
+		return err
+	}
+	for _, device := range devices {
+		err = this.updateEndpointsOfDeviceAndDeviceType(device, newDeviceType)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

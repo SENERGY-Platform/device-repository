@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/satori/go.uuid"
 )
 
 type Mongo struct {
@@ -26,4 +27,8 @@ type Mongo struct {
 
 func New(conf config.Config) (*Mongo, error) {
 	return &Mongo{config: conf}, nil
+}
+
+func (this *Mongo) CreateId() string {
+	return uuid.NewV4().String()
 }
