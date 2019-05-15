@@ -40,3 +40,10 @@ type GatewayCommand struct {
 	Hash    string   `json:"hash"`
 	Devices []string `json:"devices"`
 }
+
+type ValueTypeCommand struct {
+	Command   string          `json:"command"`
+	Id        string          `json:"id"`
+	Owner     string          `json:"owner"`
+	ValueType model.ValueType `json:"value_type"`
+}

@@ -29,3 +29,7 @@ func (this *Mongo) SetDeviceType(deviceType model.DeviceType) error {
 func (this *Mongo) RemoveDeviceType(id string) error {
 	panic("implement me") //TODO
 }
+
+func (this *Mongo) ListDeviceTypesUsingValueType(id string) ([]model.DeviceType, error) {
+	panic("implement me") //TODO
+}

@@ -61,3 +61,19 @@ func (this *Publisher) PublishHub(hub model.Hub, owner string) error {
 	}
 	return this.conn.Publish(this.config.HubTopic, msg)
 }
+
+func (this *Publisher) PublishValueType(valueType model.ValueType, owner string) error {
+	if valueType.Id == "" {
+		log.Println("WARNING: missing id in valuetype --> no publish")
+		return nil
+	}
+	if this.conn == nil {
+		log.Println("WARNING: use mute publisher to publish", valueType)
+		return nil
+	}
+	msg, err := json.Marshal(messages.ValueTypeCommand{ValueType: valueType, Id: valueType.Id, Command: "PUT", Owner: owner})
+	if err != nil {
+		return err
+	}
+	return this.conn.Publish(this.config.ValueTypeTopic, msg)
+}

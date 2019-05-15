@@ -39,6 +39,7 @@ type Config struct {
 	DeviceInstanceTopic  string `json:"device_instance_topic"`
 	DeviceTypeTopic      string `json:"device_type_topic"`
 	HubTopic             string `json:"hub_topic"`
+	ValueTypeTopic       string `json:"value_type_topic"`
 	PermissionsUrl       string `json:"permissions_url"`
 }
 

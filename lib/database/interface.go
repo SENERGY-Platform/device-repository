@@ -34,4 +34,9 @@ type Database interface {
 	SetHub(hub model.Hub) error
 	RemoveHub(id string) error
 	ListDevicesWithHub(id string) ([]model.DeviceInstance, error)
+	GetValueType(id string) (model.ValueType, bool, error)
+	SetValueType(valueType model.ValueType) error
+	RemoveValueType(id string) error
+	ListDeviceTypesUsingValueType(id string) ([]model.DeviceType, error)
+	ListValueTypesUsingValueType(id string) ([]model.ValueType, error)
 }
