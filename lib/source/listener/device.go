@@ -39,8 +39,8 @@ func DeviceListenerFactory(config config.Config, control Controller) (topic stri
 		case "PUT":
 			return control.SetDevice(command.DeviceInstance)
 		case "DELETE":
-			return control.DeleteDevice(command.Id, command.Owner)
+			return control.DeleteDevice(command.Id)
 		}
-		return errors.New("unable to handle permission command: " + string(msg))
+		return errors.New("unable to handle command: " + string(msg))
 	}, nil
 }

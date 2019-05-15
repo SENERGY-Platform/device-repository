@@ -30,4 +30,8 @@ type Database interface {
 	ListEndpointsOfDevice(deviceId string) ([]model.Endpoint, error)
 	RemoveEndpoint(id string) error
 	SetEndpoint(endpoint model.Endpoint) error
+	GetHub(id string) (model.Hub, bool, error)
+	SetHub(hub model.Hub) error
+	RemoveHub(id string) error
+	ListDevicesWithHub(id string) ([]model.DeviceInstance, error)
 }

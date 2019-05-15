@@ -21,27 +21,26 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/source/messages"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/amqp-wrapper-lib"
-	"log"
 )
 
 func init() {
-	Factories = append(Factories, DeviceTypeListenerFactory)
+	Factories = append(Factories, HubListenerFactory)
 }
 
-func DeviceTypeListenerFactory(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error) {
-	return config.DeviceInstanceTopic, func(msg []byte) (err error) {
-		log.Println(config.DeviceTypeTopic, string(msg))
-		command := messages.DeviceTypeCommand{}
+func HubListenerFactory(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error) {
+	return config.HubTopic, func(msg []byte) error {
+		command := messages.GatewayCommand{}
 		err = json.Unmarshal(msg, &command)
 		if err != nil {
-			return
+			return err
 		}
 		switch command.Command {
 		case "PUT":
-			return control.SetDeviceType(command.DeviceType, command.Owner)
+			return control.SetHub(model.Hub{Id: command.Id, Name: command.Name, Devices: command.Devices, Hash: command.Hash}, command.Owner)
 		case "DELETE":
-			return control.DeleteDeviceType(command.Id)
+			return control.DeleteHub(command.Id, command.Owner)
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

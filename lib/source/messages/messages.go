@@ -31,3 +31,12 @@ type DeviceTypeCommand struct {
 	Owner      string           `json:"owner"`
 	DeviceType model.DeviceType `json:"device_type"`
 }
+
+type GatewayCommand struct {
+	Command string   `json:"command"`
+	Id      string   `json:"id"`
+	Owner   string   `json:"owner"`
+	Name    string   `json:"name"`
+	Hash    string   `json:"hash"`
+	Devices []string `json:"devices"`
+}

@@ -35,3 +35,7 @@ func (this *Mongo) RemoveDevice(id string) error {
 func (this *Mongo) ListDevicesOfDeviceType(deviceTypeId string) ([]model.DeviceInstance, error) {
 	panic("implement me") //TODO
 }
+
+func (this *Mongo) ListDevicesWithHub(id string) ([]model.DeviceInstance, error) {
+	panic("implement me") //TODO
+}

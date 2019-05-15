@@ -20,7 +20,9 @@ import (
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 	"github.com/pkg/errors"
+	"log"
 	"net/http"
+	"strings"
 )
 
 /////////////////////////
@@ -55,12 +57,18 @@ func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
 	if err != nil {
 		return
 	}
+	device.Gateway = old.Gateway //device.gateway may only be changed by updating hub
 	err = this.updateEndpointsOfDevice(old, device)
 	if err != nil {
 		return
 	}
-	if exists {
-		err = this.updateHubOfDevice(old, device)
+	if exists && old.Gateway != "" && (old.Url != device.Url || tagRemovedOrChanged(old.Tags, device.Tags)) {
+		err = this.resetHubOfDevice(old)
+		if err == HubNotFoundError {
+			log.Println("WARNING: inconsistency will be removed by over overwriting device", device)
+			device.Gateway = "" //inconsistent state to consistent state
+			err = nil
+		}
 		if err != nil {
 			return
 		}
@@ -69,7 +77,7 @@ func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
 	return
 }
 
-func (this *Controller) DeleteDevice(id string, owner string) (err error) {
+func (this *Controller) DeleteDevice(id string) (err error) {
 	old, exists, err := this.db.GetDevice(id)
 	if err != nil || !exists {
 		return
@@ -79,6 +87,9 @@ func (this *Controller) DeleteDevice(id string, owner string) (err error) {
 		return
 	}
 	err = this.resetHubOfDevice(old)
+	if err == HubNotFoundError {
+		err = nil //ignore inconsistency because it will be deleted
+	}
 	if err != nil {
 		return
 	}
@@ -103,4 +114,29 @@ func (this *Controller) updateDefaultDeviceImages(deviceTypeId string, oldImage 
 		}
 	}
 	return nil
+}
+
+func tagRemovedOrChanged(oldTags []string, newTags []string) bool {
+	oldTagsIndex := indexTags(oldTags)
+	newTagsIndex := indexTags(newTags)
+	for key, oldVal := range oldTagsIndex {
+		newVal, ok := newTagsIndex[key]
+		if !ok || newVal != oldVal {
+			return true
+		}
+	}
+	return false
+}
+
+func indexTags(tags []string) (result map[string]string) {
+	result = map[string]string{}
+	for _, tag := range tags {
+		parts := strings.SplitN(tag, ":", 2)
+		if len(parts) != 2 {
+			log.Println("ERROR: wrong tag syntax; ", tag)
+			continue
+		}
+		result[parts[0]] = parts[1]
+	}
+	return result
 }
