@@ -7,5 +7,13 @@
     "amqp_url": "amqp://guest:guest@rabbitmq:5672/",
     "amqp_consumer_name": "fast-iot-repo",
     "amqp_reconnect_timeout": 10,
-    "device_instance_topic": "deviceinstance"
+    "device_instance_topic": "deviceinstance",
+    "device_type_topic": "devicetype",
+    "hub_topic": "gateway",
+    "value_type_topic": "valuetype",
+    "permissions_url": "http://permissionsearch:8080",
+    "mongo_url": "mongodb://localhost:27017",
+    "mongo_table": "devicerepository",
+    "mongo_device_collection": "devices"
+
 }

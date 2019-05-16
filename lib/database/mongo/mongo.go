@@ -18,11 +18,15 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 	"log"
+	"reflect"
 	"time"
 )
 
@@ -31,13 +35,23 @@ type Mongo struct {
 	client *mongo.Client
 }
 
+var CreateCollections = []func(db *Mongo) error{}
+
 func New(conf config.Config) (*Mongo, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.MongoUrl))
 	if err != nil {
 		return nil, err
 	}
-	return &Mongo{config: conf, client: client}, nil
+	db := &Mongo{config: conf, client: client}
+	for _, creators := range CreateCollections {
+		err = creators(db)
+		if err != nil {
+			client.Disconnect(context.Background())
+			return nil, err
+		}
+	}
+	return db, nil
 }
 
 func (this *Mongo) CreateId() string {
@@ -73,4 +87,30 @@ func (this *Mongo) Transaction(ctx context.Context) (resultCtx context.Context, 
 		}
 		return err
 	}, nil
+}
+
+func (this *Mongo) ensureIndex(collection *mongo.Collection, indexname string, indexKey string, asc bool, unique bool) error {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	var direction int32 = -1
+	if asc {
+		direction = 1
+	}
+	_, err := collection.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bsonx.Doc{{indexKey, bsonx.Int32(direction)}},
+		Options: options.Index().SetName(indexname).SetUnique(unique),
+	})
+	return err
+}
+
+func (this *Mongo) Disconnect() {
+	log.Println(this.client.Disconnect(context.Background()))
+}
+
+func getBsonFieldName(obj interface{}, fieldName string) (bsonName string, err error) {
+	field, found := reflect.TypeOf(obj).FieldByName(fieldName)
+	if !found {
+		return "", errors.New("field '" + fieldName + "' not found")
+	}
+	tags, err := bsoncodec.DefaultStructTagParser.ParseStructTags(field)
+	return tags.Name, err
 }

@@ -22,6 +22,7 @@ import (
 )
 
 type Database interface {
+	Disconnect()
 	Transaction(ctx context.Context) (context.Context, func(success bool) error, error)
 	CreateId() string
 	GetDevice(ctx context.Context, id string) (device model.DeviceInstance, exists bool, err error)
