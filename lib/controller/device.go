@@ -17,12 +17,14 @@
 package controller
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 /////////////////////////
@@ -31,7 +33,8 @@ import (
 
 func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
 	var exists bool
-	device, exists, err = this.db.GetDevice(device.Id)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	device, exists, err = this.db.GetDevice(ctx, device.Id)
 	if err != nil {
 		return device, err, http.StatusInternalServerError
 	}
@@ -53,54 +56,82 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device m
 /////////////////////////
 
 func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
-	old, exists, err := this.db.GetDevice(device.Id)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	transaction, finish, err := this.db.Transaction(ctx)
 	if err != nil {
-		return
+		return err
+	}
+	old, exists, err := this.db.GetDevice(transaction, device.Id)
+	if err != nil {
+		_ = finish(false)
+		return err
 	}
 	device.Gateway = old.Gateway //device.gateway may only be changed by updating hub
-	err = this.updateEndpointsOfDevice(old, device)
+	err = this.updateEndpointsOfDevice(transaction, old, device)
 	if err != nil {
-		return
+		_ = finish(false)
+		return err
 	}
 	if exists && old.Gateway != "" && (old.Url != device.Url || tagRemovedOrChanged(old.Tags, device.Tags)) {
-		err = this.resetHubOfDevice(old)
+		err = this.resetHubOfDevice(transaction, old)
 		if err == HubNotFoundError {
 			log.Println("WARNING: inconsistency will be removed by over overwriting device", device)
 			device.Gateway = "" //inconsistent state to consistent state
 			err = nil
 		}
 		if err != nil {
+			_ = finish(false)
 			return
 		}
 	}
-	err = this.db.SetDevice(device)
-	return
+	err = this.db.SetDevice(transaction, device)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	return finish(true)
 }
 
 func (this *Controller) DeleteDevice(id string) (err error) {
-	old, exists, err := this.db.GetDevice(id)
-	if err != nil || !exists {
-		return
-	}
-	err = this.removeEndpointsOfDevice(old)
+	ctx, finish, err := this.db.Transaction(context.Background())
 	if err != nil {
+		return err
+	}
+	old, exists, err := this.db.GetDevice(ctx, id)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	if !exists {
+		_ = finish(true)
 		return
 	}
-	err = this.resetHubOfDevice(old)
+	err = this.removeEndpointsOfDevice(ctx, old)
+	if err != nil {
+		_ = finish(false)
+		return
+	}
+	err = this.resetHubOfDevice(ctx, old)
 	if err == HubNotFoundError {
 		err = nil //ignore inconsistency because it will be deleted
 	}
 	if err != nil {
+		_ = finish(false)
 		return
 	}
-	return this.db.RemoveDevice(id)
+	err = this.db.RemoveDevice(ctx, id)
+	if err != nil {
+		_ = finish(false)
+		return
+	}
+	return finish(true)
 }
 
-func (this *Controller) updateDefaultDeviceImages(deviceTypeId string, oldImage string, newImage string) error {
+func (this *Controller) updateDefaultDeviceImages(ctx context.Context, deviceTypeId string, oldImage string, newImage string) error {
 	if oldImage == newImage {
 		return nil
 	}
-	devices, err := this.db.ListDevicesOfDeviceType(deviceTypeId)
+	devices, err := this.db.ListDevicesOfDeviceType(ctx, deviceTypeId)
 	if err != nil {
 		return err
 	}

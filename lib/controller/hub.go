@@ -17,40 +17,65 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"time"
 )
 
 var HubNotFoundError = errors.New("hub not found")
 
 func (this *Controller) SetHub(hub model.Hub, owner string) error {
-	err := this.updateDeviceHubs(hub)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	transaction, finish, err := this.db.Transaction(ctx)
 	if err != nil {
 		return err
 	}
-	return this.db.SetHub(hub)
+	err = this.updateDeviceHubs(transaction, hub)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	err = this.db.SetHub(transaction, hub)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	return finish(true)
 }
 
 func (this *Controller) DeleteHub(id string, owner string) error {
-	hub, exists, err := this.db.GetHub(id)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	transaction, finish, err := this.db.Transaction(ctx)
 	if err != nil {
 		return err
 	}
+	hub, exists, err := this.db.GetHub(transaction, id)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
 	if !exists {
-		return nil
+		return finish(true)
 	}
 	for _, device := range hub.Devices {
-		err = this.removeHubFromDevice(device)
+		err = this.removeHubFromDevice(transaction, device)
 		if err != nil {
+			_ = finish(false)
 			return err
 		}
 	}
-	return this.db.RemoveHub(id)
+	err = this.db.RemoveHub(transaction, id)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	return finish(true)
 }
 
 //updates devices using this hub to ether remove or add hub.id to device.gateway
-func (this *Controller) updateDeviceHubs(hub model.Hub) error {
-	devices, err := this.db.ListDevicesWithHub(hub.Id)
+func (this *Controller) updateDeviceHubs(ctx context.Context, hub model.Hub) error {
+	devices, err := this.db.ListDevicesWithHub(ctx, hub.Id)
 	if err != nil {
 		return err
 	}
@@ -68,7 +93,7 @@ func (this *Controller) updateDeviceHubs(hub model.Hub) error {
 	for _, device := range devices {
 		if !inHubList[device.Id] {
 			device.Gateway = ""
-			err = this.db.SetDevice(device) //remove hub ref from device
+			err = this.db.SetDevice(ctx, device) //remove hub ref from device
 			if err != nil {
 				return err
 			}
@@ -77,7 +102,7 @@ func (this *Controller) updateDeviceHubs(hub model.Hub) error {
 
 	for _, device := range hub.Devices {
 		if !inDeviceList[device] {
-			err = this.addHubToDevice(device, hub.Id)
+			err = this.addHubToDevice(ctx, device, hub.Id)
 			if err != nil {
 				return err
 			}
@@ -86,8 +111,8 @@ func (this *Controller) updateDeviceHubs(hub model.Hub) error {
 	return nil
 }
 
-func (this *Controller) removeHubFromDevice(deviceId string) error {
-	device, exists, err := this.db.GetDevice(deviceId)
+func (this *Controller) removeHubFromDevice(ctx context.Context, deviceId string) error {
+	device, exists, err := this.db.GetDevice(ctx, deviceId)
 	if err != nil {
 		return err
 	}
@@ -95,11 +120,11 @@ func (this *Controller) removeHubFromDevice(deviceId string) error {
 		return errors.New("device not found")
 	}
 	device.Gateway = ""
-	return this.db.SetDevice(device)
+	return this.db.SetDevice(ctx, device)
 }
 
-func (this *Controller) addHubToDevice(deviceId string, hubId string) error {
-	device, exists, err := this.db.GetDevice(deviceId)
+func (this *Controller) addHubToDevice(ctx context.Context, deviceId string, hubId string) error {
+	device, exists, err := this.db.GetDevice(ctx, deviceId)
 	if err != nil {
 		return err
 	}
@@ -107,12 +132,12 @@ func (this *Controller) addHubToDevice(deviceId string, hubId string) error {
 		return errors.New("device not found")
 	}
 	device.Gateway = hubId
-	return this.db.SetDevice(device)
+	return this.db.SetDevice(ctx, device)
 }
 
-func (this *Controller) resetHubOfDevice(device model.DeviceInstance) error {
+func (this *Controller) resetHubOfDevice(ctx context.Context, device model.DeviceInstance) error {
 	if device.Gateway != "" {
-		hub, exists, err := this.db.GetHub(device.Gateway)
+		hub, exists, err := this.db.GetHub(ctx, device.Gateway)
 		if err != nil {
 			return err
 		}

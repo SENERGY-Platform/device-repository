@@ -17,18 +17,19 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/cbroglie/mustache"
 )
 
-func (this *Controller) removeEndpointsOfDevice(device model.DeviceInstance) error {
-	endpoints, err := this.db.ListEndpointsOfDevice(device.Id)
+func (this *Controller) removeEndpointsOfDevice(ctx context.Context, device model.DeviceInstance) error {
+	endpoints, err := this.db.ListEndpointsOfDevice(ctx, device.Id)
 	if err != nil {
 		return err
 	}
 	for _, endpoint := range endpoints {
-		err = this.db.RemoveEndpoint(endpoint.Id)
+		err = this.db.RemoveEndpoint(ctx, endpoint.Id)
 		if err != nil {
 			return err
 		}
@@ -36,22 +37,22 @@ func (this *Controller) removeEndpointsOfDevice(device model.DeviceInstance) err
 	return nil
 }
 
-func (this *Controller) updateEndpointsOfDevice(oldDevice, newDevice model.DeviceInstance) error {
+func (this *Controller) updateEndpointsOfDevice(ctx context.Context, oldDevice, newDevice model.DeviceInstance) error {
 	if oldDevice.Url == newDevice.Url {
 		return nil
 	}
-	deviceType, exists, err := this.db.GetDeviceType(oldDevice.DeviceType)
+	deviceType, exists, err := this.db.GetDeviceType(ctx, oldDevice.DeviceType)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return errors.New("unable to find device-type of device, to update device endpoints")
 	}
-	return this.updateEndpointsOfDeviceAndDeviceType(newDevice, deviceType)
+	return this.updateEndpointsOfDeviceAndDeviceType(ctx, newDevice, deviceType)
 }
 
-func (this *Controller) updateEndpointsOfDeviceAndDeviceType(device model.DeviceInstance, deviceType model.DeviceType) error {
-	err := this.removeEndpointsOfDevice(device)
+func (this *Controller) updateEndpointsOfDeviceAndDeviceType(ctx context.Context, device model.DeviceInstance, deviceType model.DeviceType) error {
+	err := this.removeEndpointsOfDevice(ctx, device)
 	if err != nil {
 		return err
 	}
@@ -65,7 +66,7 @@ func (this *Controller) updateEndpointsOfDeviceAndDeviceType(device model.Device
 		}
 		if endpoint.Endpoint != "" {
 			endpoint.Id = this.db.CreateId()
-			err = this.db.SetEndpoint(endpoint)
+			err = this.db.SetEndpoint(ctx, endpoint)
 			if err != nil {
 				return err
 			}
@@ -83,13 +84,13 @@ func createEndpointString(endpointFormat string, deviceUrl string, serviceUrl st
 	return
 }
 
-func (this *Controller) updateEndpointsOfDeviceType(oldDeviceType, newDeviceType model.DeviceType) error {
-	devices, err := this.db.ListDevicesOfDeviceType(oldDeviceType.Id)
+func (this *Controller) updateEndpointsOfDeviceType(ctx context.Context, oldDeviceType, newDeviceType model.DeviceType) error {
+	devices, err := this.db.ListDevicesOfDeviceType(ctx, oldDeviceType.Id)
 	if err != nil {
 		return err
 	}
 	for _, device := range devices {
-		err = this.updateEndpointsOfDeviceAndDeviceType(device, newDeviceType)
+		err = this.updateEndpointsOfDeviceAndDeviceType(ctx, device, newDeviceType)
 		if err != nil {
 			return err
 		}

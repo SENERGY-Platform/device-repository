@@ -17,25 +17,26 @@
 package mongo
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 )
 
-func (this *Mongo) GetDevice(id string) (device model.DeviceInstance, exists bool, err error) {
+func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.DeviceInstance, exists bool, err error) {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) SetDevice(device model.DeviceInstance) error {
+func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceInstance) error {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) RemoveDevice(id string) error {
+func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) ListDevicesOfDeviceType(deviceTypeId string) ([]model.DeviceInstance, error) {
+func (this *Mongo) ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string) ([]model.DeviceInstance, error) {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) ListDevicesWithHub(id string) ([]model.DeviceInstance, error) {
+func (this *Mongo) ListDevicesWithHub(ctx context.Context, id string) ([]model.DeviceInstance, error) {
 	panic("implement me") //TODO
 }

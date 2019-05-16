@@ -16,16 +16,19 @@
 
 package mongo
 
-import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
+import (
+	"context"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+)
 
-func (this *Mongo) GetHub(id string) (result model.Hub, exists bool, err error) {
+func (this *Mongo) GetHub(ctx context.Context, id string) (result model.Hub, exists bool, err error) {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) SetHub(hub model.Hub) error {
+func (this *Mongo) SetHub(ctx context.Context, hub model.Hub) error {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) RemoveHub(id string) error {
+func (this *Mongo) RemoveHub(ctx context.Context, id string) error {
 	panic("implement me") //TODO
 }

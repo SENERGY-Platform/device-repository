@@ -41,6 +41,7 @@ type Config struct {
 	HubTopic             string `json:"hub_topic"`
 	ValueTypeTopic       string `json:"value_type_topic"`
 	PermissionsUrl       string `json:"permissions_url"`
+	MongoUrl             string `json:"mongo_url"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

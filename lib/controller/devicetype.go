@@ -17,7 +17,9 @@
 package controller
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"time"
 )
 
 /////////////////////////
@@ -25,31 +27,46 @@ import (
 /////////////////////////
 
 func (this *Controller) SetDeviceType(deviceType model.DeviceType, owner string) (err error) {
-	err = this.publishMissingValueTypesOfDeviceType(deviceType, owner)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	transaction, finish, err := this.db.Transaction(ctx)
 	if err != nil {
 		return err
 	}
-
-	old, exists, err := this.db.GetDeviceType(deviceType.Id)
+	err = this.publishMissingValueTypesOfDeviceType(transaction, deviceType, owner)
 	if err != nil {
+		_ = finish(false)
+		return err
+	}
+
+	old, exists, err := this.db.GetDeviceType(transaction, deviceType.Id)
+	if err != nil {
+		_ = finish(false)
 		return
 	}
 
-	err = this.updateEndpointsOfDeviceType(old, deviceType)
+	err = this.updateEndpointsOfDeviceType(transaction, old, deviceType)
 	if err != nil {
+		_ = finish(false)
 		return err
 	}
 
 	if exists && old.ImgUrl != deviceType.ImgUrl {
-		err = this.updateDefaultDeviceImages(deviceType.Id, old.ImgUrl, deviceType.ImgUrl)
+		err = this.updateDefaultDeviceImages(transaction, deviceType.Id, old.ImgUrl, deviceType.ImgUrl)
 		if err != nil {
-			return
+			_ = finish(false)
+			return err
 		}
 	}
 
-	return this.db.SetDeviceType(deviceType)
+	err = this.db.SetDeviceType(transaction, deviceType)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	return finish(true)
 }
 
 func (this *Controller) DeleteDeviceType(id string) error {
-	return this.db.RemoveDeviceType(id)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	return this.db.RemoveDeviceType(ctx, id)
 }

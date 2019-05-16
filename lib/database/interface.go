@@ -16,27 +16,31 @@
 
 package database
 
-import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
+import (
+	"context"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+)
 
 type Database interface {
+	Transaction(ctx context.Context) (context.Context, func(success bool) error, error)
 	CreateId() string
-	GetDevice(id string) (device model.DeviceInstance, exists bool, err error)
-	SetDevice(device model.DeviceInstance) error
-	RemoveDevice(id string) error
-	GetDeviceType(id string) (deviceType model.DeviceType, exists bool, err error)
-	SetDeviceType(deviceType model.DeviceType) error
-	ListDevicesOfDeviceType(deviceTypeId string) ([]model.DeviceInstance, error)
-	RemoveDeviceType(id string) error
-	ListEndpointsOfDevice(deviceId string) ([]model.Endpoint, error)
-	RemoveEndpoint(id string) error
-	SetEndpoint(endpoint model.Endpoint) error
-	GetHub(id string) (model.Hub, bool, error)
-	SetHub(hub model.Hub) error
-	RemoveHub(id string) error
-	ListDevicesWithHub(id string) ([]model.DeviceInstance, error)
-	GetValueType(id string) (model.ValueType, bool, error)
-	SetValueType(valueType model.ValueType) error
-	RemoveValueType(id string) error
-	ListDeviceTypesUsingValueType(id string) ([]model.DeviceType, error)
-	ListValueTypesUsingValueType(id string) ([]model.ValueType, error)
+	GetDevice(ctx context.Context, id string) (device model.DeviceInstance, exists bool, err error)
+	SetDevice(ctx context.Context, device model.DeviceInstance) error
+	RemoveDevice(ctx context.Context, id string) error
+	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
+	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
+	ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string) ([]model.DeviceInstance, error)
+	RemoveDeviceType(ctx context.Context, id string) error
+	ListEndpointsOfDevice(ctx context.Context, deviceId string) ([]model.Endpoint, error)
+	RemoveEndpoint(ctx context.Context, id string) error
+	SetEndpoint(ctx context.Context, endpoint model.Endpoint) error
+	GetHub(ctx context.Context, id string) (model.Hub, bool, error)
+	SetHub(ctx context.Context, hub model.Hub) error
+	RemoveHub(ctx context.Context, id string) error
+	ListDevicesWithHub(ctx context.Context, id string) ([]model.DeviceInstance, error)
+	GetValueType(ctx context.Context, id string) (model.ValueType, bool, error)
+	SetValueType(ctx context.Context, valueType model.ValueType) error
+	RemoveValueType(ctx context.Context, id string) error
+	ListDeviceTypesUsingValueType(ctx context.Context, id string) ([]model.DeviceType, error)
+	ListValueTypesUsingValueType(ctx context.Context, id string) ([]model.ValueType, error)
 }

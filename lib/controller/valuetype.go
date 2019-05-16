@@ -16,19 +16,30 @@
 
 package controller
 
-import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
+import (
+	"context"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"time"
+)
 
 func (this *Controller) SetValueType(valueType model.ValueType, owner string) error {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	transaction, finish, err := this.db.Transaction(ctx)
+	if err != nil {
+		return err
+	}
 	for _, field := range valueType.Fields {
 		err := this.source.PublishValueType(field.Type, owner)
 		if err != nil {
+			_ = finish(false)
 			return err
 		}
 	}
 
 	//cascade valuetype changes to devicetypes
-	deviceTypes, err := this.db.ListDeviceTypesUsingValueType(valueType.Id)
+	deviceTypes, err := this.db.ListDeviceTypesUsingValueType(transaction, valueType.Id)
 	if err != nil {
+		_ = finish(false)
 		return err
 	}
 	for _, dt := range deviceTypes {
@@ -44,15 +55,17 @@ func (this *Controller) SetValueType(valueType model.ValueType, owner string) er
 				}
 			}
 		}
-		err = this.db.SetDeviceType(dt)
+		err = this.db.SetDeviceType(transaction, dt)
 		if err != nil {
+			_ = finish(false)
 			return err
 		}
 	}
 
 	//cascade valuetype changes to other valueTypes
-	valuetypes, err := this.db.ListValueTypesUsingValueType(valueType.Id)
+	valuetypes, err := this.db.ListValueTypesUsingValueType(transaction, valueType.Id)
 	if err != nil {
+		_ = finish(false)
 		return err
 	}
 	for _, vt := range valuetypes {
@@ -61,30 +74,37 @@ func (this *Controller) SetValueType(valueType model.ValueType, owner string) er
 				vt.Fields[fieldIndex].Type = valueType
 			}
 		}
-		err = this.db.SetValueType(vt)
+		err = this.db.SetValueType(transaction, vt)
 		if err != nil {
+			_ = finish(false)
 			return err
 		}
 	}
 
-	return this.db.SetValueType(valueType)
+	err = this.db.SetValueType(transaction, valueType)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	return finish(true)
 }
 
 func (this *Controller) DeleteValueType(id string) error {
 	//TODO: cascade valuetype changes to using devicetypes and other using valueTypes (maybe not?)
-	return this.db.RemoveValueType(id)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	return this.db.RemoveValueType(ctx, id)
 }
 
-func (this *Controller) publishMissingValueTypesOfDeviceType(deviceType model.DeviceType, owner string) error {
+func (this *Controller) publishMissingValueTypesOfDeviceType(ctx context.Context, deviceType model.DeviceType, owner string) error {
 	for _, service := range deviceType.Services {
 		for _, assignment := range service.Input {
-			err := this.publishMissingValueType(assignment.Type, owner)
+			err := this.publishMissingValueType(ctx, assignment.Type, owner)
 			if err != nil {
 				return err
 			}
 		}
 		for _, assignment := range service.Output {
-			err := this.publishMissingValueType(assignment.Type, owner)
+			err := this.publishMissingValueType(ctx, assignment.Type, owner)
 			if err != nil {
 				return err
 			}
@@ -93,8 +113,8 @@ func (this *Controller) publishMissingValueTypesOfDeviceType(deviceType model.De
 	return nil
 }
 
-func (this *Controller) publishMissingValueType(valueType model.ValueType, owner string) error {
-	_, exists, err := this.db.GetValueType(valueType.Id)
+func (this *Controller) publishMissingValueType(ctx context.Context, valueType model.ValueType, owner string) error {
+	_, exists, err := this.db.GetValueType(ctx, valueType.Id)
 	if err != nil {
 		return err
 	}

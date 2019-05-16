@@ -16,20 +16,23 @@
 
 package mongo
 
-import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
+import (
+	"context"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+)
 
-func (this *Mongo) GetDeviceType(id string) (deviceType model.DeviceType, exists bool, err error) {
+func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error) {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) SetDeviceType(deviceType model.DeviceType) error {
+func (this *Mongo) SetDeviceType(ctx context.Context, deviceType model.DeviceType) error {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) RemoveDeviceType(id string) error {
+func (this *Mongo) RemoveDeviceType(ctx context.Context, id string) error {
 	panic("implement me") //TODO
 }
 
-func (this *Mongo) ListDeviceTypesUsingValueType(id string) ([]model.DeviceType, error) {
+func (this *Mongo) ListDeviceTypesUsingValueType(ctx context.Context, id string) ([]model.DeviceType, error) {
 	panic("implement me") //TODO
 }
