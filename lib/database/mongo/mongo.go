@@ -59,6 +59,9 @@ func (this *Mongo) CreateId() string {
 }
 
 func (this *Mongo) Transaction(ctx context.Context) (resultCtx context.Context, close func(success bool) error, err error) {
+	if !this.config.MongoReplSet {
+		return ctx, func(bool) error { return nil }, nil
+	}
 	session, err := this.client.StartSession()
 	if err != nil {
 		return nil, nil, err

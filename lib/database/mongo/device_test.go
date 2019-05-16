@@ -257,5 +257,91 @@ func TestMongoDeviceList(t *testing.T) {
 		t.Error("unexpected result", result)
 		return
 	}
+}
 
+func TestMongoDeviceTransaction(t *testing.T) {
+	/*
+		prepare local mongodb with replSet:
+		docker run --name mongo -p 27017:27017 -d mongo:4.1.11 mongod --replSet rs0
+		docker exec -it mongo mongo
+		> rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "localhost:27017"}]})
+	*/
+
+	t.Parallel()
+	conf, err := config.Load("../../../config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	conf.MongoUrl = "mongodb://localhost:27017" //expect prepared mongodb server with replSet on this address
+	m, err := New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	m.Disconnect()
+
+	//test multiple connect to same server
+	m, err = New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	transaction, finish, err := m.Transaction(ctx)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = m.SetDevice(transaction, model.DeviceInstance{Id: "foobar", Name: "foo", Url: "bar", DeviceType: "footype"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = finish(false)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	_, exists, err := m.GetDevice(ctx, "foobar")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if exists {
+		t.Error("device should not exist (rollback)")
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	transaction, finish, err = m.Transaction(ctx)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = m.SetDevice(transaction, model.DeviceInstance{Id: "foobar", Name: "foo", Url: "bar", DeviceType: "footype"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = finish(true)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	_, exists, err = m.GetDevice(ctx, "foobar")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !exists {
+		t.Error("device should exist (commit)")
+		return
+	}
 }
