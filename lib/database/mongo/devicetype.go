@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -120,8 +121,21 @@ func (this *Mongo) RemoveDeviceType(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListDeviceTypesUsingValueType(ctx context.Context, id string) (result []model.DeviceType, err error) {
-	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{"$or": bson.A{bson.M{deviceTypeToInputPath: id}, bson.M{deviceTypeToOutputPath: id}}})
+func (this *Mongo) ListDeviceTypesUsingValueType(ctx context.Context, id string, listoptions ...listoptions.ListOptions) (result []model.DeviceType, err error) {
+	opt := options.Find()
+	if len(listoptions) > 0 {
+		if limit, ok := listoptions[0].GetLimit(); ok {
+			opt.SetLimit(limit)
+		}
+		if offset, ok := listoptions[0].GetOffset(); ok {
+			opt.SetSkip(offset)
+		}
+		err = listoptions[0].EvalStrict()
+		if err != nil {
+			return result, err
+		}
+	}
+	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{"$or": bson.A{bson.M{deviceTypeToInputPath: id}, bson.M{deviceTypeToOutputPath: id}}}, opt)
 	if err != nil {
 		return nil, err
 	}

@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -82,8 +83,21 @@ func (this *Mongo) RemoveValueType(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListValueTypesUsingValueType(ctx context.Context, id string) (result []model.ValueType, err error) {
-	cursor, err := this.valueTypeCollection().Find(ctx, bson.M{valueTypeToValueTypePath: id})
+func (this *Mongo) ListValueTypesUsingValueType(ctx context.Context, id string, listoptions ...listoptions.ListOptions) (result []model.ValueType, err error) {
+	opt := options.Find()
+	if len(listoptions) > 0 {
+		if limit, ok := listoptions[0].GetLimit(); ok {
+			opt.SetLimit(limit)
+		}
+		if offset, ok := listoptions[0].GetOffset(); ok {
+			opt.SetSkip(offset)
+		}
+		err = listoptions[0].EvalStrict()
+		if err != nil {
+			return result, err
+		}
+	}
+	cursor, err := this.valueTypeCollection().Find(ctx, bson.M{valueTypeToValueTypePath: id}, opt)
 	if err != nil {
 		return nil, err
 	}

@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -99,8 +100,21 @@ func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string) (result []model.DeviceInstance, err error) {
-	cursor, err := this.deviceCollection().Find(ctx, bson.M{deviceDeviceTypeKey: deviceTypeId})
+func (this *Mongo) ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string, listoptions ...listoptions.ListOptions) (result []model.DeviceInstance, err error) {
+	opt := options.Find()
+	if len(listoptions) > 0 {
+		if limit, ok := listoptions[0].GetLimit(); ok {
+			opt.SetLimit(limit)
+		}
+		if offset, ok := listoptions[0].GetOffset(); ok {
+			opt.SetSkip(offset)
+		}
+		err = listoptions[0].EvalStrict()
+		if err != nil {
+			return result, err
+		}
+	}
+	cursor, err := this.deviceCollection().Find(ctx, bson.M{deviceDeviceTypeKey: deviceTypeId}, opt)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +130,21 @@ func (this *Mongo) ListDevicesOfDeviceType(ctx context.Context, deviceTypeId str
 	return
 }
 
-func (this *Mongo) ListDevicesWithHub(ctx context.Context, id string) (result []model.DeviceInstance, err error) {
-	cursor, err := this.deviceCollection().Find(ctx, bson.M{deviceHubKey: id})
+func (this *Mongo) ListDevicesWithHub(ctx context.Context, id string, listoptions ...listoptions.ListOptions) (result []model.DeviceInstance, err error) {
+	opt := options.Find()
+	if len(listoptions) > 0 {
+		if limit, ok := listoptions[0].GetLimit(); ok {
+			opt.SetLimit(limit)
+		}
+		if offset, ok := listoptions[0].GetOffset(); ok {
+			opt.SetSkip(offset)
+		}
+		err = listoptions[0].EvalStrict()
+		if err != nil {
+			return result, err
+		}
+	}
+	cursor, err := this.deviceCollection().Find(ctx, bson.M{deviceHubKey: id}, opt)
 	if err != nil {
 		return nil, err
 	}

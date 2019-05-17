@@ -18,6 +18,7 @@ package database
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 )
 
@@ -30,18 +31,18 @@ type Database interface {
 	RemoveDevice(ctx context.Context, id string) error
 	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
-	ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string) ([]model.DeviceInstance, error)
+	ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string, options ...listoptions.ListOptions) ([]model.DeviceInstance, error)
 	RemoveDeviceType(ctx context.Context, id string) error
-	ListEndpointsOfDevice(ctx context.Context, deviceId string) ([]model.Endpoint, error)
+	ListEndpointsOfDevice(ctx context.Context, deviceId string, options ...listoptions.ListOptions) ([]model.Endpoint, error)
 	RemoveEndpoint(ctx context.Context, id string) error
 	SetEndpoint(ctx context.Context, endpoint model.Endpoint) error
 	GetHub(ctx context.Context, id string) (model.Hub, bool, error)
 	SetHub(ctx context.Context, hub model.Hub) error
 	RemoveHub(ctx context.Context, id string) error
-	ListDevicesWithHub(ctx context.Context, id string) ([]model.DeviceInstance, error)
+	ListDevicesWithHub(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.DeviceInstance, error)
 	GetValueType(ctx context.Context, id string) (model.ValueType, bool, error)
 	SetValueType(ctx context.Context, valueType model.ValueType) error
 	RemoveValueType(ctx context.Context, id string) error
-	ListDeviceTypesUsingValueType(ctx context.Context, id string) ([]model.DeviceType, error)
-	ListValueTypesUsingValueType(ctx context.Context, id string) ([]model.ValueType, error)
+	ListDeviceTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.DeviceType, error)
+	ListValueTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.ValueType, error)
 }
