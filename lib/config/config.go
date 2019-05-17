@@ -28,23 +28,25 @@ import (
 )
 
 type Config struct {
-	JwtPubRsa             string `json:"jwt_pub_rsa"`
-	ForceAuth             bool   `json:"force_auth"`
-	ForceUser             bool   `json:"force_user"`
-	LogLevel              string `json:"log_level"` //DEBUG | CALL | NONE
-	ServerPort            string `json:"server_port"`
-	AmqpUrl               string `json:"amqp_url"`
-	AmqpConsumerName      string `json:"amqp_consumer_name"`
-	AmqpReconnectTimeout  int64  `json:"amqp_reconnect_timeout"`
-	DeviceInstanceTopic   string `json:"device_instance_topic"`
-	DeviceTypeTopic       string `json:"device_type_topic"`
-	HubTopic              string `json:"hub_topic"`
-	ValueTypeTopic        string `json:"value_type_topic"`
-	PermissionsUrl        string `json:"permissions_url"`
-	MongoUrl              string `json:"mongo_url"`
-	MongoTable            string `json:"mongo_table"`
-	MongoDeviceCollection string `json:"mongo_device_collection"`
-	MongoReplSet          bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
+	JwtPubRsa                 string `json:"jwt_pub_rsa"`
+	ForceAuth                 bool   `json:"force_auth"`
+	ForceUser                 bool   `json:"force_user"`
+	LogLevel                  string `json:"log_level"` //DEBUG | CALL | NONE
+	ServerPort                string `json:"server_port"`
+	AmqpUrl                   string `json:"amqp_url"`
+	AmqpConsumerName          string `json:"amqp_consumer_name"`
+	AmqpReconnectTimeout      int64  `json:"amqp_reconnect_timeout"`
+	DeviceInstanceTopic       string `json:"device_instance_topic"`
+	DeviceTypeTopic           string `json:"device_type_topic"`
+	HubTopic                  string `json:"hub_topic"`
+	ValueTypeTopic            string `json:"value_type_topic"`
+	PermissionsUrl            string `json:"permissions_url"`
+	MongoUrl                  string `json:"mongo_url"`
+	MongoTable                string `json:"mongo_table"`
+	MongoDeviceCollection     string `json:"mongo_device_collection"`
+	MongoDeviceTypeCollection string `json:"mongo_device_type_collection"`
+	MongoReplSet              bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
+
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

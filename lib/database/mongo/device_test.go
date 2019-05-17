@@ -260,13 +260,12 @@ func TestMongoDeviceList(t *testing.T) {
 }
 
 func TestMongoDeviceTransaction(t *testing.T) {
-	/*
-		prepare local mongodb with replSet:
+	skipMsg := `needs a prepared clean database with replSet configured:
 		docker run --name mongo -p 27017:27017 -d mongo:4.1.11 mongod --replSet rs0
 		docker exec -it mongo mongo
 		> rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "localhost:27017"}]})
-	*/
-
+	`
+	t.Skip(skipMsg)
 	t.Parallel()
 	conf, err := config.Load("../../../config.json")
 	if err != nil {

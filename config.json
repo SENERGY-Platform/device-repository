@@ -15,5 +15,6 @@
     "mongo_url": "mongodb://localhost:27017",
     "mongo_table": "devicerepository",
     "mongo_device_collection": "devices",
+    "mongo_device_type_collection": "devicetype",
     "mongo_repl_set": true
 }
