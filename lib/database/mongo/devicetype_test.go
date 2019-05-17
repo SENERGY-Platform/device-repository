@@ -153,4 +153,22 @@ func TestMongoDeviceType(t *testing.T) {
 		t.Error("unexpected result", result)
 		return
 	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	err = m.RemoveDeviceType(ctx, "foobar1")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	dt, exists, err := m.GetDeviceType(ctx, "foobar1")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if exists {
+		t.Error("dt should not exist", dt)
+		return
+	}
 }
