@@ -46,8 +46,8 @@ type Config struct {
 	MongoDeviceCollection     string `json:"mongo_device_collection"`
 	MongoDeviceTypeCollection string `json:"mongo_device_type_collection"`
 	MongoEndpointCollection   string `json:"mongo_endpoint_collection"`
-	MongoReplSet              bool   `json:"mongo_repl_set"`
-	//set true if mongodb is configured as replication set or mongos and is able to handle transactions
+	MongoHubCollection        string `json:"mongo_hub_collection"`
+	MongoReplSet              bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

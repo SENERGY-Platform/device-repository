@@ -17,5 +17,6 @@
     "mongo_device_collection": "devices",
     "mongo_device_type_collection": "devicetype",
     "mongo_endpoint_collection": "endpoints",
+    "mongo_hub_collection": "hubs",
     "mongo_repl_set": true
 }
