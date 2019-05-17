@@ -42,12 +42,13 @@ type Config struct {
 	ValueTypeTopic            string `json:"value_type_topic"`
 	PermissionsUrl            string `json:"permissions_url"`
 	MongoUrl                  string `json:"mongo_url"`
+	MongoReplSet              bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
 	MongoTable                string `json:"mongo_table"`
 	MongoDeviceCollection     string `json:"mongo_device_collection"`
 	MongoDeviceTypeCollection string `json:"mongo_device_type_collection"`
 	MongoEndpointCollection   string `json:"mongo_endpoint_collection"`
 	MongoHubCollection        string `json:"mongo_hub_collection"`
-	MongoReplSet              bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
+	MongoValueTypeCollection  string `json:"mongo_value_type_collection"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

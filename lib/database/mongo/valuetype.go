@@ -19,20 +19,82 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
+	"strings"
 )
 
-func (this *Mongo) GetValueType(ctx context.Context, id string) (model.ValueType, bool, error) {
-	panic("implement me")
+const valueTypeFieldFieldName = "Fields"
+const fieldTypeTypeFieldName = "Type"
+
+var valueTypeFieldKey string
+var fieldTypeTypeKey string
+
+var valueTypeToValueTypePath string
+
+func init() {
+	var err error
+	valueTypeFieldKey, err = getBsonFieldName(model.ValueType{}, valueTypeFieldFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fieldTypeTypeKey, err = getBsonFieldName(model.FieldType{}, fieldTypeTypeFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	valueTypeToValueTypePath = strings.Join([]string{valueTypeFieldKey, fieldTypeTypeKey, valueTypeIdKey}, ".")
+
+	// valueTypeIdKey and valueTypeIdFieldName are defined in devicetype.go
+	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoValueTypeCollection)
+		err = db.ensureIndex(collection, "valuetypeidindex", valueTypeIdKey, true, true)
+		return err
+	})
+}
+
+func (this *Mongo) valueTypeCollection() *mongo.Collection {
+	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoValueTypeCollection)
+}
+
+func (this *Mongo) GetValueType(ctx context.Context, id string) (vt model.ValueType, exists bool, err error) {
+	result := this.valueTypeCollection().FindOne(ctx, bson.D{{valueTypeIdKey, id}})
+	err = result.Err()
+	if err != nil {
+		return
+	}
+	err = result.Decode(&vt)
+	if err == mongo.ErrNoDocuments {
+		return vt, false, nil
+	}
+	return vt, true, err
 }
 
 func (this *Mongo) SetValueType(ctx context.Context, valueType model.ValueType) error {
-	panic("implement me")
+	_, err := this.valueTypeCollection().ReplaceOne(ctx, bson.M{valueTypeIdKey: valueType.Id}, valueType, options.Replace().SetUpsert(true))
+	return err
 }
 
 func (this *Mongo) RemoveValueType(ctx context.Context, id string) error {
-	panic("implement me")
+	_, err := this.valueTypeCollection().DeleteOne(ctx, bson.M{valueTypeIdKey: id})
+	return err
 }
 
-func (this *Mongo) ListValueTypesUsingValueType(ctx context.Context, id string) ([]model.ValueType, error) {
-	panic("implement me")
+func (this *Mongo) ListValueTypesUsingValueType(ctx context.Context, id string) (result []model.ValueType, err error) {
+	cursor, err := this.valueTypeCollection().Find(ctx, bson.M{valueTypeToValueTypePath: id})
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		vt := model.ValueType{}
+		err = cursor.Decode(&vt)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, vt)
+	}
+	err = cursor.Err()
+	return
 }
