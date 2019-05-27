@@ -90,7 +90,6 @@ func (this *Controller) SetValueType(valueType model.ValueType, owner string) er
 }
 
 func (this *Controller) DeleteValueType(id string) error {
-	//TODO: cascade valuetype changes to using devicetypes and other using valueTypes (maybe not?)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	return this.db.RemoveValueType(ctx, id)
 }

@@ -1,6 +1,10 @@
 package listoptions
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+	"strconv"
+)
 
 type ListOptions interface {
 	Limit(int64) ListOptions
@@ -18,6 +22,31 @@ func New() ListOptions {
 	return &ListOptionsImpl{options: map[string]interface{}{}, used: map[string]bool{}, strict: false}
 }
 
+func FromQueryParameter(request *http.Request, defaultLimit, defaultOffset int64) (result ListOptions, err error) {
+	result = &ListOptionsImpl{options: map[string]interface{}{}, used: map[string]bool{}, strict: false}
+	result.Limit(defaultLimit).Offset(defaultOffset)
+	for key, values := range request.URL.Query() {
+		for _, value := range values {
+			if key == "limit" {
+				limit, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return result, err
+				}
+				result.Limit(limit)
+			} else if key == "offset" {
+				offset, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return result, err
+				}
+				result.Offset(offset)
+			} else {
+				result.Set(key, value)
+			}
+		}
+	}
+	return
+}
+
 type ListOptionsImpl struct {
 	strict  bool
 	options map[string]interface{}
@@ -25,11 +54,11 @@ type ListOptionsImpl struct {
 }
 
 func (this *ListOptionsImpl) Limit(limit int64) ListOptions {
-	return this.Set("__limit", limit)
+	return this.Set("limit", limit)
 }
 
 func (this *ListOptionsImpl) Offset(offset int64) ListOptions {
-	return this.Set("__offset", offset)
+	return this.Set("offset", offset)
 }
 
 func (this *ListOptionsImpl) Set(option string, value interface{}) ListOptions {
