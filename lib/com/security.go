@@ -83,6 +83,12 @@ func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string,
 	return
 }
 
+func (this *Security) CheckList(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
+	right := authActionToString(action)
+	err = jwt.Impersonate.PostJSON(this.config.PermissionsUrl+"/ids/check/"+url.QueryEscape(kind)+"/"+right, ids, &result)
+	return
+}
+
 func (this *Security) ListAll(jwt jwt_http_router.Jwt, kind string, action model.AuthAction) (result []IdWrapper, err error) {
 	//"/jwt/list/:resource_kind/:right"
 	right := authActionToString(action)
@@ -98,18 +104,25 @@ func (this *Security) ListAll(jwt jwt_http_router.Jwt, kind string, action model
 	return
 }
 
-func (this *Security) List(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string) (result []IdWrapper, err error) {
+func (this *Security) List(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string) (ids []string, err error) {
 	//"/jwt/list/:resource_kind/:right"
 	right := authActionToString(action)
 	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/list/" + url.QueryEscape(kind) + "/" + right + "/" + limit + "/" + offset)
 	if err != nil {
-		return result, err
+		return ids, err
 	}
 	if resp.StatusCode != http.StatusOK {
 		err = errors.New("access denied")
-		return result, err
+		return ids, err
 	}
+	var result []IdWrapper
 	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return ids, err
+	}
+	for _, id := range result {
+		ids = append(ids, id.Id)
+	}
 	return
 }
 

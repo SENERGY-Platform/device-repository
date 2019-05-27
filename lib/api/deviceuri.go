@@ -20,33 +20,21 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
+	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceEndpoints)
+	endpoints = append(endpoints, DeviceUrisEndpoints)
 }
 
-func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
-	resource := "/devices"
+//view of device instances where uri is used as id
+func DeviceUrisEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		id := params.ByName("id")
-		result, err, errCode := control.ReadDevice(id, jwt)
-		if err != nil {
-			http.Error(writer, err.Error(), errCode)
-			return
-		}
-		err = json.NewEncoder(writer).Encode(result)
-		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
-		}
-		return
-	})
+	resource := "/device-uris"
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, ps jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		options, err := listoptions.FromQueryParameter(request, 100, 0)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -65,7 +53,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 		return
 	})
 
-	router.PUT(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		//TODO
 		http.Error(writer, "not implemented", http.StatusNotImplemented)
 	})
@@ -74,4 +62,24 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 		//TODO
 		http.Error(writer, "not implemented", http.StatusNotImplemented)
 	})
+
+	/*
+		update device instance by uri
+		id, uri, gateway, user-tags and image in body will be ignored
+	*/
+	router.PUT(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		//TODO
+		http.Error(writer, "not implemented", http.StatusNotImplemented)
+	})
+
+	router.DELETE(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		//TODO
+		http.Error(writer, "not implemented", http.StatusNotImplemented)
+	})
+
+	router.HEAD(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		//TODO
+		http.Error(writer, "not implemented", http.StatusNotImplemented)
+	})
+
 }

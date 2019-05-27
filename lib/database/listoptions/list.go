@@ -23,7 +23,8 @@ func New() ListOptions {
 }
 
 func FromQueryParameter(request *http.Request, defaultLimit, defaultOffset int64) (result ListOptions, err error) {
-	result = &ListOptionsImpl{options: map[string]interface{}{}, used: map[string]bool{}, strict: false}
+	ref := &ListOptionsImpl{options: map[string]interface{}{}, used: map[string]bool{}, strict: false}
+	result = ref
 	result.Limit(defaultLimit).Offset(defaultOffset)
 	for key, values := range request.URL.Query() {
 		for _, value := range values {
@@ -39,6 +40,11 @@ func FromQueryParameter(request *http.Request, defaultLimit, defaultOffset int64
 					return result, err
 				}
 				result.Offset(offset)
+			} else if key == "strict" {
+				ref.strict, err = strconv.ParseBool(value)
+				if err != nil {
+					return result, err
+				}
 			} else {
 				result.Set(key, value)
 			}
@@ -72,7 +78,7 @@ func (this *ListOptionsImpl) Strict() ListOptions {
 }
 
 func (this *ListOptionsImpl) GetLimit() (value int64, ok bool) {
-	val, ok := this.Get("__limit")
+	val, ok := this.Get("limit")
 	if !ok {
 		return 0, ok
 	}
@@ -81,7 +87,7 @@ func (this *ListOptionsImpl) GetLimit() (value int64, ok bool) {
 }
 
 func (this *ListOptionsImpl) GetOffset() (value int64, ok bool) {
-	val, ok := this.Get("__offset")
+	val, ok := this.Get("offset")
 	if !ok {
 		return 0, ok
 	}

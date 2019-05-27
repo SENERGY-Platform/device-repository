@@ -29,10 +29,14 @@ import (
 const endpointIdFieldName = "Id"
 const endpointDeviceFieldName = "Device"
 const endpointServiceFieldName = "Service"
+const endpointEndpointFieldName = "Endpoint"
+const endpointProtocolFieldName = "ProtocolHandler"
 
 var endpointIdKey string
 var endpointDeviceKey string
 var endpointServiceKey string
+var endpointEndpointKey string
+var endpointProtocolKey string
 
 func init() {
 	var err error
@@ -51,6 +55,16 @@ func init() {
 		log.Fatal(err)
 	}
 
+	endpointEndpointKey, err = getBsonFieldName(model.Endpoint{}, endpointEndpointFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	endpointProtocolKey, err = getBsonFieldName(model.Endpoint{}, endpointProtocolFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoEndpointCollection)
 		err = db.ensureIndex(collection, "endpointidindex", endpointIdKey, true, true)
@@ -61,7 +75,13 @@ func init() {
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "endpointserviceindex", endpointServiceKey, true, false)
+
+		err = db.ensureCompoundIndex(collection, "endpointoutindex", true, false, endpointDeviceKey, endpointServiceKey)
+		if err != nil {
+			return err
+		}
+
+		err = db.ensureCompoundIndex(collection, "endpointinindex", true, false, endpointEndpointKey, endpointProtocolKey)
 		return err
 	})
 }
@@ -70,8 +90,9 @@ func (this *Mongo) endpointCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoEndpointCollection)
 }
 
-func (this *Mongo) ListEndpointsOfDevice(ctx context.Context, deviceId string, listoptions ...listoptions.ListOptions) (result []model.Endpoint, err error) {
+func (this *Mongo) ListEndpoints(ctx context.Context, listoptions ...listoptions.ListOptions) (result []model.Endpoint, err error) {
 	opt := options.Find()
+	filter := bson.M{}
 	if len(listoptions) > 0 {
 		if limit, ok := listoptions[0].GetLimit(); ok {
 			opt.SetLimit(limit)
@@ -79,12 +100,25 @@ func (this *Mongo) ListEndpointsOfDevice(ctx context.Context, deviceId string, l
 		if offset, ok := listoptions[0].GetOffset(); ok {
 			opt.SetSkip(offset)
 		}
+		if deviceId, ok := listoptions[0].Get("device"); ok {
+			filter[endpointDeviceKey] = deviceId
+		}
+		if serviceId, ok := listoptions[0].Get("service"); ok {
+			filter[endpointServiceKey] = serviceId
+		}
+		if endpoint, ok := listoptions[0].Get("endpoint"); ok {
+			filter[endpointEndpointKey] = endpoint
+		}
+		if protocol, ok := listoptions[0].Get("protocol"); ok {
+			filter[endpointProtocolKey] = protocol
+		}
 		err = listoptions[0].EvalStrict()
 		if err != nil {
 			return result, err
 		}
 	}
-	cursor, err := this.endpointCollection().Find(ctx, bson.M{endpointDeviceKey: deviceId}, opt)
+
+	cursor, err := this.endpointCollection().Find(ctx, filter, opt)
 	if err != nil {
 		return nil, err
 	}

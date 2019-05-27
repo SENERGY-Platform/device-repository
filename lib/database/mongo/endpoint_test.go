@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/ory/dockertest"
 	"testing"
@@ -54,7 +55,7 @@ func TestMongoEndpoint(t *testing.T) {
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	result, err := m.ListEndpointsOfDevice(ctx, "does_not_exist")
+	result, err := m.ListEndpoints(ctx, listoptions.New().Set("device", "does_not_exist").Strict())
 	if err != nil {
 		t.Error(err)
 		return
@@ -72,7 +73,7 @@ func TestMongoEndpoint(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	result, err = m.ListEndpointsOfDevice(ctx, "d1")
+	result, err = m.ListEndpoints(ctx, listoptions.New().Set("device", "d1").Strict())
 	if err != nil {
 		t.Error(err)
 		return
@@ -90,7 +91,7 @@ func TestMongoEndpoint(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	result, err = m.ListEndpointsOfDevice(ctx, "does_not_exist")
+	result, err = m.ListEndpoints(ctx, listoptions.New().Set("device", "does_not_exist").Strict())
 	if err != nil {
 		t.Error(err)
 		return

@@ -135,6 +135,119 @@ func TestMongoDeviceUpsert(t *testing.T) {
 	}
 }
 
+func TestMongoDeviceUrl(t *testing.T) {
+	t.Parallel()
+	conf, err := config.Load("../../../config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	pool, err := dockertest.NewPool("")
+	if err != nil {
+		t.Error("Could not connect to docker: ", err)
+		return
+	}
+	closer, port, _, err := MongoTestServer(pool)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if true {
+		defer closer()
+	}
+	conf.MongoUrl = "mongodb://localhost:" + port
+	m, err := New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	_, exists, err := m.GetDeviceByUri(ctx, "does_not_exist")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if exists {
+		t.Error("device should not exist")
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	err = m.SetDevice(ctx, model.DeviceInstance{Id: "foobar", Name: "foo", Url: "bar", DeviceType: "footype"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	device, exists, err := m.GetDeviceByUri(ctx, "bar")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !exists {
+		t.Error("device should exist")
+		return
+	}
+	if device.Id != "foobar" || device.Name != "foo" || device.Url != "bar" || device.DeviceType != "footype" {
+		t.Error("unexpected result", device)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	err = m.SetDevice(ctx, model.DeviceInstance{Id: "foobar", Name: "foo2", Url: "bar2", DeviceType: "footype2"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	_, exists, err = m.GetDeviceByUri(ctx, "bar")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if exists {
+		t.Error("device should not exist")
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	device, exists, err = m.GetDeviceByUri(ctx, "bar2")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !exists {
+		t.Error("device should exist")
+		return
+	}
+	if device.Id != "foobar" || device.Name != "foo2" || device.Url != "bar2" || device.DeviceType != "footype2" {
+		t.Error("unexpected result", device)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	err = m.RemoveDevice(ctx, "foobar")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	_, exists, err = m.GetDeviceByUri(ctx, "bar2")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if exists {
+		t.Error("device should not exist")
+		return
+	}
+}
+
 func TestMongoDeviceList(t *testing.T) {
 	t.Parallel()
 	conf, err := config.Load("../../../config.json")

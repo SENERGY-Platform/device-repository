@@ -18,11 +18,13 @@ package controller
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -34,7 +36,7 @@ import (
 func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
 	var exists bool
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	device, exists, err = this.db.GetDevice(ctx, device.Id)
+	device, exists, err = this.db.GetDevice(ctx, id)
 	if err != nil {
 		return device, err, http.StatusInternalServerError
 	}
@@ -42,6 +44,69 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device m
 		return model.DeviceInstance{}, errors.New("not found"), http.StatusNotFound
 	}
 	allowed, err := this.security.CheckBool(jwt, this.config.DeviceInstanceTopic, id, model.READ)
+	if err != nil {
+		return device, err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return model.DeviceInstance{}, errors.New("access denied"), http.StatusForbidden
+	}
+	return device, nil, http.StatusOK
+}
+
+func (this *Controller) ListDevices(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.DeviceInstance, err error, errCode int) {
+	limit, withLimit := options.GetLimit()
+	offset, withOffset := options.GetOffset()
+	if !withLimit {
+		limit = 100
+	}
+	if !withOffset {
+		offset = 0
+	}
+
+	right, withPermission := options.Get("permission")
+
+	action := model.READ
+	if withPermission {
+		switch right {
+		case "w":
+			action = model.WRITE
+		case "x":
+			action = model.EXECUTE
+		case "a":
+			action = model.ADMINISTRATE
+		}
+	}
+
+	ids, err := this.security.List(jwt, this.config.DeviceInstanceTopic, action, strconv.FormatInt(limit, 10), strconv.FormatInt(offset, 10))
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	for _, id := range ids {
+		device, exists, err := this.db.GetDevice(ctx, id)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		if exists {
+			result = append(result, device)
+		} else {
+			log.Println("WARNING: security returned id of a nonexistent device: ", id)
+		}
+	}
+	return
+}
+
+func (this *Controller) ReadDeviceByUri(uri string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
+	var exists bool
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	device, exists, err = this.db.GetDeviceByUri(ctx, uri)
+	if err != nil {
+		return device, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return model.DeviceInstance{}, errors.New("not found"), http.StatusNotFound
+	}
+	allowed, err := this.security.CheckBool(jwt, this.config.DeviceInstanceTopic, device.Id, model.READ)
 	if err != nil {
 		return device, err, http.StatusInternalServerError
 	}

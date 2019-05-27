@@ -17,10 +17,14 @@
 package api
 
 import (
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 )
 
 type Controller interface {
 	ReadDevice(id string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int)
+	ReadDeviceByUri(uri string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int)
+	ListDevices(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.DeviceInstance, err error, errCode int)
+	ListEndpoints(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.Endpoint, err error, errCode int)
 }

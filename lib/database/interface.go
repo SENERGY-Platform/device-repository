@@ -33,7 +33,7 @@ type Database interface {
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
 	ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string, options ...listoptions.ListOptions) ([]model.DeviceInstance, error)
 	RemoveDeviceType(ctx context.Context, id string) error
-	ListEndpointsOfDevice(ctx context.Context, deviceId string, options ...listoptions.ListOptions) ([]model.Endpoint, error)
+	ListEndpoints(ctx context.Context, listoptions ...listoptions.ListOptions) (result []model.Endpoint, err error)
 	RemoveEndpoint(ctx context.Context, id string) error
 	SetEndpoint(ctx context.Context, endpoint model.Endpoint) error
 	GetHub(ctx context.Context, id string) (model.Hub, bool, error)
@@ -45,4 +45,5 @@ type Database interface {
 	RemoveValueType(ctx context.Context, id string) error
 	ListDeviceTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.DeviceType, error)
 	ListValueTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.ValueType, error)
+	GetDeviceByUri(ctx context.Context, uri string) (model.DeviceInstance, bool, error)
 }

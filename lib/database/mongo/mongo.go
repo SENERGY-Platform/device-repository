@@ -105,6 +105,23 @@ func (this *Mongo) ensureIndex(collection *mongo.Collection, indexname string, i
 	return err
 }
 
+func (this *Mongo) ensureCompoundIndex(collection *mongo.Collection, indexname string, asc bool, unique bool, indexKeys ...string) error {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	var direction int32 = -1
+	if asc {
+		direction = 1
+	}
+	keys := []bsonx.Elem{}
+	for _, key := range indexKeys {
+		keys = append(keys, bsonx.Elem{Key: key, Value: bsonx.Int32(direction)})
+	}
+	_, err := collection.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bsonx.Doc(keys),
+		Options: options.Index().SetName(indexname).SetUnique(unique),
+	})
+	return err
+}
+
 func (this *Mongo) Disconnect() {
 	log.Println(this.client.Disconnect(context.Background()))
 }

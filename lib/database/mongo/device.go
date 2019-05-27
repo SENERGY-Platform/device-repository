@@ -159,3 +159,16 @@ func (this *Mongo) ListDevicesWithHub(ctx context.Context, id string, listoption
 	err = cursor.Err()
 	return
 }
+
+func (this *Mongo) GetDeviceByUri(ctx context.Context, uri string) (device model.DeviceInstance, exists bool, err error) {
+	result := this.deviceCollection().FindOne(ctx, bson.D{{deviceUrlKey, uri}})
+	err = result.Err()
+	if err != nil {
+		return
+	}
+	err = result.Decode(&device)
+	if err == mongo.ErrNoDocuments {
+		return device, false, nil
+	}
+	return device, true, err
+}
