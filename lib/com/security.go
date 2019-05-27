@@ -126,6 +126,28 @@ func (this *Security) List(jwt jwt_http_router.Jwt, kind string, action model.Au
 	return
 }
 
+func (this *Security) SortedList(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string, sortby string, sortdirection string) (ids []string, err error) {
+	//"/jwt/list/:resource_kind/:right"
+	right := authActionToString(action)
+	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/list/" + url.QueryEscape(kind) + "/" + right + "/" + limit + "/" + offset + "/" + sortby + "/" + sortdirection)
+	if err != nil {
+		return ids, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		err = errors.New("access denied")
+		return ids, err
+	}
+	var result []IdWrapper
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return ids, err
+	}
+	for _, id := range result {
+		ids = append(ids, id.Id)
+	}
+	return
+}
+
 func (this *Security) Search(jwt jwt_http_router.Jwt, kind string, query string, action model.AuthAction, limit string, offset string) (result []IdWrapper, err error) {
 	//"/jwt/search/:resource_kind/:query/:right/:limit/:offset"
 	right := authActionToString(action)

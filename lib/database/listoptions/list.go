@@ -23,7 +23,7 @@ func New() ListOptions {
 }
 
 func FromQueryParameter(request *http.Request, defaultLimit, defaultOffset int64) (result ListOptions, err error) {
-	ref := &ListOptionsImpl{options: map[string]interface{}{}, used: map[string]bool{}, strict: false}
+	ref := &ListOptionsImpl{options: map[string]interface{}{}, used: map[string]bool{}, strict: true}
 	result = ref
 	result.Limit(defaultLimit).Offset(defaultOffset)
 	for key, values := range request.URL.Query() {

@@ -77,7 +77,29 @@ func (this *Controller) ListDevices(jwt jwt_http_router.Jwt, options listoptions
 		}
 	}
 
-	ids, err := this.security.List(jwt, this.config.DeviceInstanceTopic, action, strconv.FormatInt(limit, 10), strconv.FormatInt(offset, 10))
+	sort, withSort := options.Get("sort")
+	var sortby string
+	var sortdirection string
+	if withSort {
+		sortstr, ok := sort.(string)
+		if !ok {
+			return result, errors.New("unable to interpret sort as string"), http.StatusInternalServerError
+		}
+		parts := strings.Split(sortstr, ".")
+		sortby = parts[0]
+		sortdirection = parts[1]
+	}
+
+	err = options.EvalStrict()
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	var ids []string
+	if withSort {
+		ids, err = this.security.SortedList(jwt, this.config.DeviceInstanceTopic, action, strconv.FormatInt(limit, 10), strconv.FormatInt(offset, 10), sortby, sortdirection)
+	} else {
+		ids, err = this.security.List(jwt, this.config.DeviceInstanceTopic, action, strconv.FormatInt(limit, 10), strconv.FormatInt(offset, 10))
+	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
