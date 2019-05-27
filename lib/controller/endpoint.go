@@ -90,7 +90,7 @@ func (this *Controller) updateEndpointsOfDevice(ctx context.Context, oldDevice, 
 	if oldDevice.Url == newDevice.Url {
 		return nil
 	}
-	deviceType, exists, err := this.db.GetDeviceType(ctx, oldDevice.DeviceType)
+	deviceType, exists, err := this.db.GetDeviceType(ctx, newDevice.DeviceType)
 	if err != nil {
 		return err
 	}

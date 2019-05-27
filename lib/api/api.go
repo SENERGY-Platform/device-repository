@@ -22,17 +22,27 @@ import (
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
+	"reflect"
+	"runtime"
 )
 
 var endpoints = []func(config config.Config, control Controller, router *jwt_http_router.Router){}
 
 func Start(config config.Config, control Controller) (err error) {
+	log.Println("start api")
 	router := jwt_http_router.New(jwt_http_router.JwtConfig{PubRsa: config.JwtPubRsa, ForceAuth: config.ForceAuth, ForceUser: config.ForceUser})
+	log.Println("add heart beat endpoint")
+	router.GET("/", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		writer.WriteHeader(http.StatusOK)
+	})
 	for _, e := range endpoints {
+		log.Println("add endpoints: " + runtime.FuncForPC(reflect.ValueOf(e).Pointer()).Name())
 		e(config, control, router)
 	}
+	log.Println("add logging and cors")
 	corsHandler := util.NewCors(router)
 	logger := util.NewLogger(corsHandler, config.LogLevel)
-	go log.Println(http.ListenAndServe(":"+config.ServerPort, logger))
+	log.Println("listen on port", config.ServerPort)
+	go func() { log.Println(http.ListenAndServe(":"+config.ServerPort, logger)) }()
 	return nil
 }

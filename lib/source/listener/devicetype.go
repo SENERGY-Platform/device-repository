@@ -22,7 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/source/messages"
 	"github.com/SmartEnergyPlatform/amqp-wrapper-lib"
-	"log"
 )
 
 func init() {
@@ -30,8 +29,7 @@ func init() {
 }
 
 func DeviceTypeListenerFactory(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error) {
-	return config.DeviceInstanceTopic, func(msg []byte) (err error) {
-		log.Println(config.DeviceTypeTopic, string(msg))
+	return config.DeviceTypeTopic, func(msg []byte) (err error) {
 		command := messages.DeviceTypeCommand{}
 		err = json.Unmarshal(msg, &command)
 		if err != nil {

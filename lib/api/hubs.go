@@ -17,12 +17,16 @@
 package api
 
 import (
-	"github.com/SENERGY-Platform/iot-device-repository/lib/interfaces"
+	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 	"net/http"
 )
 
-func hubs(router *jwt_http_router.Router, db interfaces.Persistence) {
+func init() {
+	endpoints = append(endpoints, HubEndpoints)
+}
+
+func HubEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
 
 	resource := "/hubs"
 

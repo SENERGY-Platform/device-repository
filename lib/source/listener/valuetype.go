@@ -29,7 +29,7 @@ func init() {
 }
 
 func ValueTypeListenerFactory(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error) {
-	return config.DeviceInstanceTopic, func(msg []byte) error {
+	return config.ValueTypeTopic, func(msg []byte) error {
 		command := messages.ValueTypeCommand{}
 		err = json.Unmarshal(msg, &command)
 		if err != nil {

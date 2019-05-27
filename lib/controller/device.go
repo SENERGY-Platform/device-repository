@@ -126,6 +126,14 @@ func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
 	if err != nil {
 		return err
 	}
+	ok, err := this.validateDevice(transaction, device)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		log.Println("ERROR: invalid device command; ignore", device)
+		return
+	}
 	old, exists, err := this.db.GetDevice(transaction, device.Id)
 	if err != nil {
 		_ = finish(false)
@@ -235,4 +243,9 @@ func indexTags(tags []string) (result map[string]string) {
 		result[parts[0]] = parts[1]
 	}
 	return result
+}
+
+func (this *Controller) validateDevice(ctx context.Context, instance model.DeviceInstance) (ok bool, err error) {
+	_, ok, err = this.db.GetDeviceType(ctx, instance.DeviceType)
+	return
 }

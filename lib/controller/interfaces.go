@@ -25,6 +25,7 @@ type Publisher interface {
 	PublishDevice(device model.DeviceInstance, owner string) error //user has to check for uri collision
 	PublishHub(hub model.Hub, owner string) error
 	PublishValueType(valueType model.ValueType, owner string) error
+	PublishDeviceType(dt model.DeviceType, owner string) error
 }
 
 type Security interface {
