@@ -36,7 +36,6 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 		id := params.ByName("id")
 		result, err, errCode := control.ReadDevice(id, jwt)
 		if err != nil {
-			log.Println("DEBUG: unknown id", id)
 			http.Error(writer, err.Error(), errCode)
 			return
 		}

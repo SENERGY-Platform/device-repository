@@ -20,11 +20,55 @@ import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
+	"net/http"
 	"time"
 )
 
 var HubNotFoundError = errors.New("hub not found")
+
+func (this *Controller) ReadHub(jwt jwt_http_router.Jwt, id string) (result model.Hub, err error, errCode int) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	result, exists, err := this.db.GetHub(ctx, id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return result, HubNotFoundError, http.StatusNotFound
+	}
+	access, err := this.security.CheckBool(jwt, this.config.HubTopic, id, model.READ)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !access {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) ReadHubDevices(jwt jwt_http_router.Jwt, id string, as string) (result []string, err error, errCode int) {
+	var hub model.Hub
+	hub, err, errCode = this.ReadHub(jwt, id)
+	if err != nil {
+		return
+	}
+	if as == "uri" || as == "url" || as == "" {
+		return hub.Devices, nil, http.StatusOK
+	} else if as == "id" {
+		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		valid, flat, err := this.hubToFlatGateway(ctx, hub)
+		if err != nil {
+			return result, err, http.StatusBadRequest
+		}
+		if !valid {
+			return result, errors.New("inconsistent data"), http.StatusInternalServerError
+		}
+		return flat.Devices, err, errCode
+	} else {
+		return result, errors.New("unknown value for 'as' query parameter"), http.StatusBadRequest
+	}
+}
 
 func (this *Controller) SetHub(gw model.GatewayFlat, owner string) error {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -175,6 +219,20 @@ func (this *Controller) flatGatewayToHub(ctx context.Context, flat model.Gateway
 			return exists, result, err
 		}
 		result.Devices = append(result.Devices, device.Url)
+	}
+	return true, result, nil
+}
+
+func (this *Controller) hubToFlatGateway(ctx context.Context, hub model.Hub) (valid bool, result model.GatewayFlat, err error) {
+	result.Id = hub.Id
+	result.Name = hub.Name
+	result.Hash = hub.Hash
+	for _, deviceUri := range hub.Devices {
+		device, exists, err := this.db.GetDeviceByUri(ctx, deviceUri)
+		if err != nil || !exists {
+			return exists, result, err
+		}
+		result.Devices = append(result.Devices, device.Id)
 	}
 	return true, result, nil
 }

@@ -27,4 +27,6 @@ type Controller interface {
 	ReadDeviceByUri(uri string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int)
 	ListDevices(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.DeviceInstance, err error, errCode int)
 	ListEndpoints(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.Endpoint, err error, errCode int)
+	ReadHub(jwt jwt_http_router.Jwt, id string) (result model.Hub, err error, errCode int)
+	ReadHubDevices(jwt jwt_http_router.Jwt, id string, as string) (result []string, err error, errCode int)
 }

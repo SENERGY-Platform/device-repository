@@ -42,7 +42,7 @@ func TestDeviceUriQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -55,7 +55,7 @@ func TestDeviceUriQuery(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 
 	t.Run("testDeviceUriRead", func(t *testing.T) {
 		testDeviceUriRead(t, conf)
@@ -115,7 +115,7 @@ func testDeviceUriList(t *testing.T, configuration config.Config) {
 		t.Error(err)
 	}
 	if len(result) != 21 {
-		t.Error("unexpected result", result)
+		t.Error("unexpected result", len(result), result)
 		return
 	}
 }
@@ -232,7 +232,7 @@ func TestDeviceUriControl(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 
 	t.Run("testDeviceUriCreate", func(t *testing.T) {
 		testDeviceUriCreate(t, conf)

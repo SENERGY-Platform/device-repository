@@ -47,7 +47,7 @@ func TestHubQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -60,15 +60,18 @@ func TestHubQuery(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 
 	err = producer.PublishHub(model.GatewayFlat{Id: hub1id, Name: hub1name, Hash: hub1hash, Devices: []string{device1id}}, userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 
+	t.Run("head", func(t *testing.T) {
+		testHubHead(t, conf)
+	})
 	t.Run("read", func(t *testing.T) {
 		testHubRead(t, conf)
 	})
@@ -90,6 +93,29 @@ func TestHubQuery(t *testing.T) {
 	t.Run("readDevicesAsUrl", func(t *testing.T) {
 		testHubReadDevicesAs(t, conf, "url", device1uri)
 	})
+}
+
+func testHubHead(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(hub1id)
+	resp, err := head(endpoint, string(userjwt))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode)
+		return
+	}
+	endpoint = "http://localhost:" + conf.ServerPort + "/hubs/foobar"
+	resp, err = head(endpoint, string(userjwt))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode)
+		return
+	}
 }
 
 func testHubRead(t *testing.T, conf config.Config) {
@@ -202,7 +228,7 @@ func testHubReadDevicesAs(t *testing.T, conf config.Config, as string, asResult 
 		t.Error(err)
 	}
 	if !reflect.DeepEqual(result, []string{asResult}) {
-		t.Error("unexpected result", result)
+		t.Error("unexpected result", result, asResult)
 		return
 	}
 }

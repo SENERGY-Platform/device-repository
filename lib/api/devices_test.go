@@ -53,7 +53,7 @@ func TestDeviceQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -66,7 +66,7 @@ func TestDeviceQuery(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 
 	t.Run("testHeartbeat", func(t *testing.T) {
 		testHeartbeat(t, conf)
@@ -258,7 +258,7 @@ func TestDeviceControl(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(4 * time.Second)
 
 	t.Run("testDeviceCreate", func(t *testing.T) {
 		testDeviceCreate(t, conf)

@@ -297,3 +297,14 @@ func getFreePort() (int, error) {
 	defer listener.Close()
 	return listener.Addr().(*net.TCPAddr).Port, nil
 }
+
+func head(url string, token string) (resp *http.Response, err error) {
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		log.Println("ERROR: request", err)
+		return
+	}
+	req.Header.Set("Authorization", token)
+	resp, err = http.DefaultClient.Do(req)
+	return
+}
