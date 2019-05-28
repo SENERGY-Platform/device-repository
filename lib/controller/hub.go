@@ -20,18 +20,29 @@ import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"log"
 	"time"
 )
 
 var HubNotFoundError = errors.New("hub not found")
 
-func (this *Controller) SetHub(hub model.Hub, owner string) error {
+func (this *Controller) SetHub(gw model.GatewayFlat, owner string) error {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	transaction, finish, err := this.db.Transaction(ctx)
 	if err != nil {
 		return err
 	}
-	err = this.updateDeviceHubs(transaction, hub)
+	ok, hub, err := this.flatGatewayToHub(transaction, gw)
+	if err != nil {
+		_ = finish(false)
+		return err
+	}
+	if !ok {
+		log.Println("ERROR: invalid gateway command; ignore", gw)
+		_ = finish(true)
+		return nil
+	}
+	err = this.updateDeviceHubs(transaction, gw)
 	if err != nil {
 		_ = finish(false)
 		return err
@@ -74,7 +85,7 @@ func (this *Controller) DeleteHub(id string, owner string) error {
 }
 
 //updates devices using this hub to ether remove or add hub.id to device.gateway
-func (this *Controller) updateDeviceHubs(ctx context.Context, hub model.Hub) error {
+func (this *Controller) updateDeviceHubs(ctx context.Context, hub model.GatewayFlat) error {
 	devices, err := this.db.ListDevicesWithHub(ctx, hub.Id)
 	if err != nil {
 		return err
@@ -145,13 +156,25 @@ func (this *Controller) resetHubOfDevice(ctx context.Context, device model.Devic
 			return HubNotFoundError
 		}
 		if hub.Name != "" {
-			hub.Devices = []string{}
-			hub.Hash = ""
-			err = this.source.PublishHub(hub, "")
+			err = this.source.PublishHub(model.GatewayFlat{Id: hub.Id, Name: hub.Name, Hash: "", Devices: []string{}}, "")
 			if err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+func (this *Controller) flatGatewayToHub(ctx context.Context, flat model.GatewayFlat) (valid bool, result model.Hub, err error) {
+	result.Id = flat.Id
+	result.Name = flat.Name
+	result.Hash = flat.Hash
+	for _, deviceId := range flat.Devices {
+		device, exists, err := this.db.GetDevice(ctx, deviceId)
+		if err != nil || !exists {
+			return exists, result, err
+		}
+		result.Devices = append(result.Devices, device.Url)
+	}
+	return true, result, nil
 }

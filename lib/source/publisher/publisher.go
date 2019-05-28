@@ -62,7 +62,7 @@ func (this *Publisher) PublishDeviceType(dt model.DeviceType, owner string) erro
 	return this.conn.Publish(this.config.DeviceTypeTopic, msg)
 }
 
-func (this *Publisher) PublishHub(hub model.Hub, owner string) error {
+func (this *Publisher) PublishHub(hub model.GatewayFlat, owner string) error {
 	if this.conn == nil {
 		log.Println("WARNING: use mute publisher to publish", hub)
 		return nil

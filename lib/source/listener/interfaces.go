@@ -23,7 +23,7 @@ type Controller interface {
 	DeleteDevice(id string) error
 	SetDeviceType(deviceType model.DeviceType, owner string) error
 	DeleteDeviceType(id string) error
-	SetHub(hub model.Hub, owner string) error
+	SetHub(hub model.GatewayFlat, owner string) error
 	DeleteHub(id string, owner string) error
 	SetValueType(valueType model.ValueType, owner string) error
 	DeleteValueType(id string) error

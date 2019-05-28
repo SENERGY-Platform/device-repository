@@ -38,7 +38,7 @@ func HubListenerFactory(config config.Config, control Controller) (topic string,
 		}
 		switch command.Command {
 		case "PUT":
-			return control.SetHub(model.Hub{Id: command.Id, Name: command.Name, Devices: command.Devices, Hash: command.Hash}, command.Owner)
+			return control.SetHub(model.GatewayFlat{Id: command.Id, Name: command.Name, Devices: command.Devices, Hash: command.Hash}, command.Owner)
 		case "DELETE":
 			return control.DeleteHub(command.Id, command.Owner)
 		}

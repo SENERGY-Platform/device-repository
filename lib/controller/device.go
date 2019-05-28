@@ -150,11 +150,13 @@ func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
 	}
 	ok, err := this.validateDevice(transaction, device)
 	if err != nil {
+		_ = finish(false)
 		return err
 	}
 	if !ok {
 		log.Println("ERROR: invalid device command; ignore", device)
-		return
+		_ = finish(true)
+		return nil
 	}
 	old, exists, err := this.db.GetDevice(transaction, device.Id)
 	if err != nil {
