@@ -33,6 +33,9 @@ var devicetype1name = uuid.NewV4().String()
 var device1id = uuid.NewV4().String()
 var device1name = uuid.NewV4().String()
 var device1uri = uuid.NewV4().String()
+var device2id = uuid.NewV4().String()
+var device2name = uuid.NewV4().String()
+var device2uri = uuid.NewV4().String()
 
 func TestDeviceQuery(t *testing.T) {
 	t.Parallel()

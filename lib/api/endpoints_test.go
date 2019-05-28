@@ -250,8 +250,7 @@ func testEndpointReadOut(t *testing.T, conf config.Config) {
 	}
 }
 
-func TestEndpointsUpdate(t *testing.T) {
-	t.Skip("not implemented")
+func TestEndpointsUpdateByDeviceUpdate(t *testing.T) {
 	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
@@ -294,7 +293,12 @@ func TestEndpointsUpdate(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	for i := 0; i < 20; i++ {
+	err = producer.PublishDevice(model.DeviceInstance{Id: device2id, Name: device2name, Url: device2uri, DeviceType: devicetype1id}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	for i := 0; i < 19; i++ {
 		err = producer.PublishDevice(model.DeviceInstance{Id: uuid.NewV4().String(), Name: uuid.NewV4().String(), Url: uuid.NewV4().String(), DeviceType: devicetype1id}, userid)
 		if err != nil {
 			t.Error(err)
@@ -303,18 +307,160 @@ func TestEndpointsUpdate(t *testing.T) {
 	}
 	time.Sleep(3 * time.Second)
 
-	t.Run("testEndpointUpdateByDeviceUpdate", func(t *testing.T) {
-		testEndpointUpdateByDeviceUpdate(t, conf)
+	err = producer.PublishDevice(model.DeviceInstance{Id: device2id, Name: device2name, Url: "changed" + device2uri, DeviceType: devicetype1id}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	t.Run("unchangedReadDevice", func(t *testing.T) {
+		testEndpointReadDevice(t, conf)
 	})
-	t.Run("testEndpointUpdateByDeviceTypeUpdate", func(t *testing.T) {
-		testEndpointUpdateByDeviceTypeUpdate(t, conf)
+	t.Run("unchangedReadService", func(t *testing.T) {
+		testEndpointReadService(t, conf)
+	})
+	t.Run("unchangedReadEndpoint", func(t *testing.T) {
+		testEndpointReadEndpoint(t, conf)
+	})
+	t.Run("unchangedReadIn", func(t *testing.T) {
+		testEndpointReadIn(t, conf)
+	})
+	t.Run("unchangedReadOut", func(t *testing.T) {
+		testEndpointReadOut(t, conf)
+	})
+
+	t.Run("changedReadDevice", func(t *testing.T) {
+		testEndpointUpdateByDeviceUpdateDeviceReadChanged(t, conf)
+	})
+	t.Run("changedReadEndpoint", func(t *testing.T) {
+		testEndpointUpdateByDeviceUpdateEndpointReadChanged(t, conf)
+	})
+	t.Run("changedReadIn", func(t *testing.T) {
+		testEndpointUpdateByDeviceUpdateInReadChanged(t, conf)
+	})
+	t.Run("changedReadOut", func(t *testing.T) {
+		testEndpointUpdateByDeviceUpdateOutReadChanged(t, conf)
 	})
 }
 
-func testEndpointUpdateByDeviceUpdate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+func testEndpointUpdateByDeviceUpdateDeviceReadChanged(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/endpoints?device=" + url.QueryEscape(device2id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	results := []model.Endpoint{}
+	err = json.NewDecoder(resp.Body).Decode(&results)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(results) != 2 {
+		t.Error("unexpected result", results)
+		return
+	}
+	for _, result := range results {
+		if (result.Endpoint != "changed"+device2uri+"/"+service1uri && result.Endpoint != "changed"+device2uri+"/"+service2uri) || result.Device != device2id || result.ProtocolHandler != protocol1url {
+			t.Error("unexpected result", result)
+			return
+		}
+	}
 }
 
-func testEndpointUpdateByDeviceTypeUpdate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+func testEndpointUpdateByDeviceUpdateEndpointReadChanged(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/endpoints?endpoint=" + url.QueryEscape("changed"+device2uri+"/"+service1uri)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	results := []model.Endpoint{}
+	err = json.NewDecoder(resp.Body).Decode(&results)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(results) != 1 {
+		t.Error("unexpected result", results)
+		return
+	}
+	for _, result := range results {
+		if result.Endpoint != "changed"+device2uri+"/"+service1uri || result.Device != device2id || result.ProtocolHandler != protocol1url || result.Service != service1id {
+			t.Error("unexpected result", result)
+			return
+		}
+	}
+}
+
+func testEndpointUpdateByDeviceUpdateInReadChanged(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/endpoints?protocol=" + url.QueryEscape(protocol1url) + "&endpoint=" + url.QueryEscape("changed"+device2uri+"/"+service1uri)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	results := []model.Endpoint{}
+	err = json.NewDecoder(resp.Body).Decode(&results)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(results) != 1 {
+		t.Error("unexpected result", results)
+		return
+	}
+	for _, result := range results {
+		if result.Endpoint != "changed"+device2uri+"/"+service1uri || result.Device != device2id || result.ProtocolHandler != protocol1url || result.Service != service1id {
+			t.Error("unexpected result", result)
+			return
+		}
+	}
+}
+
+func testEndpointUpdateByDeviceUpdateOutReadChanged(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/endpoints?service=" + url.QueryEscape(service1id) + "&device=" + url.QueryEscape(device2id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	results := []model.Endpoint{}
+	err = json.NewDecoder(resp.Body).Decode(&results)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(results) != 1 {
+		t.Error("unexpected result", results)
+		return
+	}
+	for _, result := range results {
+		if result.Endpoint != "changed"+device2uri+"/"+service1uri || result.Device != device2id || result.ProtocolHandler != protocol1url || result.Service != service1id {
+			t.Error("unexpected result", result)
+			return
+		}
+	}
+}
+
+func TestEndpointsUpdateByDeviceTypeUpdate(t *testing.T) {
+
 }
