@@ -29,7 +29,6 @@ func init() {
 	endpoints = append(endpoints, EndpointsEndpoints)
 }
 
-//view of device instances where uri is used as id
 func EndpointsEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
 
 	resource := "/endpoints"
