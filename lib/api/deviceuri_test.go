@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 InfAI (CC SES)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package api
 
 import (
@@ -12,13 +28,7 @@ import (
 	"time"
 )
 
-var devicetype1id = uuid.NewV4().String()
-var devicetype1name = uuid.NewV4().String()
-var device1id = uuid.NewV4().String()
-var device1name = uuid.NewV4().String()
-var device1uri = uuid.NewV4().String()
-
-func TestDeviceQuery(t *testing.T) {
+func TestDeviceUriQuery(t *testing.T) {
 	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
@@ -47,40 +57,25 @@ func TestDeviceQuery(t *testing.T) {
 	}
 	time.Sleep(3 * time.Second)
 
-	t.Run("testHeartbeat", func(t *testing.T) {
-		testHeartbeat(t, conf)
+	t.Run("testDeviceUriRead", func(t *testing.T) {
+		testDeviceUriRead(t, conf)
 	})
-	t.Run("testDeviceRead", func(t *testing.T) {
-		testDeviceRead(t, conf)
+	t.Run("testDeviceUriList", func(t *testing.T) {
+		testDeviceUriList(t, conf)
 	})
-	t.Run("testDeviceList", func(t *testing.T) {
-		testDeviceList(t, conf)
+	t.Run("testDeviceUriListLimit10", func(t *testing.T) {
+		testDeviceUriListLimit10(t, conf)
 	})
-	t.Run("testDeviceListLimit10", func(t *testing.T) {
-		testDeviceListLimit10(t, conf)
+	t.Run("testDeviceUriListLimit10Offset20", func(t *testing.T) {
+		testDeviceUriListLimit10Offset20(t, conf)
 	})
-	t.Run("testDeviceListLimit10Offset20", func(t *testing.T) {
-		testDeviceListLimit10Offset20(t, conf)
-	})
-	t.Run("testDeviceListSort", func(t *testing.T) {
-		testDeviceListSort(t, conf)
+	t.Run("testDeviceUriListSort", func(t *testing.T) {
+		testDeviceUriListSort(t, conf)
 	})
 }
 
-func testHeartbeat(t *testing.T, configuration config.Config) {
-	resp, err := userjwt.Get("http://localhost:" + configuration.ServerPort)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		t.Error("no heart beat")
-		return
-	}
-}
-
-func testDeviceRead(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices/" + url.PathEscape(device1id)
+func testDeviceUriRead(t *testing.T, configuration config.Config) {
+	endpoint := "http://localhost:" + configuration.ServerPort + "/device-uris/" + url.PathEscape(device1uri)
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -96,14 +91,14 @@ func testDeviceRead(t *testing.T, configuration config.Config) {
 	if err != nil {
 		t.Error(err)
 	}
-	if result.Name != device1name || result.Url != device1uri {
+	if result.Name != device1name || result.Url != device1uri || result.Id != device1id {
 		t.Error("unexpected result", result)
 		return
 	}
 }
 
-func testDeviceList(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices"
+func testDeviceUriList(t *testing.T, configuration config.Config) {
+	endpoint := "http://localhost:" + configuration.ServerPort + "/device-uris"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -125,8 +120,8 @@ func testDeviceList(t *testing.T, configuration config.Config) {
 	}
 }
 
-func testDeviceListLimit10(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices?limit=10"
+func testDeviceUriListLimit10(t *testing.T, configuration config.Config) {
+	endpoint := "http://localhost:" + configuration.ServerPort + "/device-uris?limit=10"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -148,8 +143,8 @@ func testDeviceListLimit10(t *testing.T, configuration config.Config) {
 	}
 }
 
-func testDeviceListLimit10Offset20(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices?limit=10&offset=20"
+func testDeviceUriListLimit10Offset20(t *testing.T, configuration config.Config) {
+	endpoint := "http://localhost:" + configuration.ServerPort + "/device-uris?limit=10&offset=20"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -171,8 +166,8 @@ func testDeviceListLimit10Offset20(t *testing.T, configuration config.Config) {
 	}
 }
 
-func testDeviceListSort(t *testing.T, configuration config.Config) {
-	ascendpoint := "http://localhost:" + configuration.ServerPort + "/devices?sort=name.asc"
+func testDeviceUriListSort(t *testing.T, configuration config.Config) {
+	ascendpoint := "http://localhost:" + configuration.ServerPort + "/device-uris?sort=name.asc"
 	resp, err := userjwt.Get(ascendpoint)
 	if err != nil {
 		t.Error(err)
@@ -193,7 +188,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 		return
 	}
 
-	descendpoint := "http://localhost:" + configuration.ServerPort + "/devices?sort=name.desc"
+	descendpoint := "http://localhost:" + configuration.ServerPort + "/device-uris?sort=name.desc"
 	resp, err = userjwt.Get(descendpoint)
 	if err != nil {
 		t.Error(err)
@@ -222,7 +217,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 	}
 }
 
-func TestDeviceControl(t *testing.T) {
+func TestDeviceUriControl(t *testing.T) {
 	t.Skip("not implemented")
 	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
@@ -239,25 +234,25 @@ func TestDeviceControl(t *testing.T) {
 	}
 	time.Sleep(3 * time.Second)
 
-	t.Run("testDeviceCreate", func(t *testing.T) {
-		testDeviceCreate(t, conf)
+	t.Run("testDeviceUriCreate", func(t *testing.T) {
+		testDeviceUriCreate(t, conf)
 	})
-	t.Run("testDeviceUpdate", func(t *testing.T) {
-		testDeviceUpdate(t, conf)
+	t.Run("testDeviceUriUpdate", func(t *testing.T) {
+		testDeviceUriUpdate(t, conf)
 	})
-	t.Run("testDeviceDelete", func(t *testing.T) {
-		testDeviceDelete(t, conf)
+	t.Run("testDeviceUriDelete", func(t *testing.T) {
+		testDeviceUriDelete(t, conf)
 	})
 }
 
-func testDeviceCreate(t *testing.T, conf config.Config) {
+func testDeviceUriCreate(t *testing.T, conf config.Config) {
 	t.Skip("not implemented")
 }
 
-func testDeviceUpdate(t *testing.T, conf config.Config) {
+func testDeviceUriUpdate(t *testing.T, conf config.Config) {
 	t.Skip("not implemented")
 }
 
-func testDeviceDelete(t *testing.T, conf config.Config) {
+func testDeviceUriDelete(t *testing.T, conf config.Config) {
 	t.Skip("not implemented")
 }

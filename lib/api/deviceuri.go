@@ -54,8 +54,18 @@ func DeviceUrisEndpoints(config config.Config, control Controller, router *jwt_h
 	})
 
 	router.GET(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
+		uri := params.ByName("uri")
+		result, err, errCode := control.ReadDeviceByUri(uri, jwt)
+		if err != nil {
+			log.Println("DEBUG: unknown uri", uri)
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 
 	router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
