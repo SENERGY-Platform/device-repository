@@ -33,52 +33,38 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"reflect"
-	"runtime"
 	"strconv"
 	"sync"
-	"testing"
 	"time"
 )
-
-var configuration config.Config
 
 const userjwt = jwt_http_router.JwtImpersonate("Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzaUtabW9aUHpsMmRtQnBJdS1vSkY4ZVVUZHh4OUFIckVOcG5CcHM5SjYwIn0.eyJqdGkiOiJiOGUyNGZkNy1jNjJlLTRhNWQtOTQ4ZC1mZGI2ZWVkM2JmYzYiLCJleHAiOjE1MzA1MzIwMzIsIm5iZiI6MCwiaWF0IjoxNTMwNTI4NDMyLCJpc3MiOiJodHRwczovL2F1dGguc2VwbC5pbmZhaS5vcmcvYXV0aC9yZWFsbXMvbWFzdGVyIiwiYXVkIjoiZnJvbnRlbmQiLCJzdWIiOiJkZDY5ZWEwZC1mNTUzLTQzMzYtODBmMy03ZjQ1NjdmODVjN2IiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJmcm9udGVuZCIsIm5vbmNlIjoiMjJlMGVjZjgtZjhhMS00NDQ1LWFmMjctNGQ1M2JmNWQxOGI5IiwiYXV0aF90aW1lIjoxNTMwNTI4NDIzLCJzZXNzaW9uX3N0YXRlIjoiMWQ3NWE5ODQtNzM1OS00MWJlLTgxYjktNzMyZDgyNzRjMjNlIiwiYWNyIjoiMCIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJhZG1pbiIsImRldmVsb3BlciIsInVtYV9hdXRob3JpemF0aW9uIiwidXNlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7Im1hc3Rlci1yZWFsbSI6eyJyb2xlcyI6WyJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsInZpZXctcmVhbG0iLCJtYW5hZ2UtaWRlbnRpdHktcHJvdmlkZXJzIiwiaW1wZXJzb25hdGlvbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwicm9sZXMiOlsidW1hX2F1dGhvcml6YXRpb24iLCJhZG1pbiIsImNyZWF0ZS1yZWFsbSIsImRldmVsb3BlciIsInVzZXIiLCJvZmZsaW5lX2FjY2VzcyJdLCJuYW1lIjoiZGYgZGZmZmYiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzZXBsIiwiZ2l2ZW5fbmFtZSI6ImRmIiwiZmFtaWx5X25hbWUiOiJkZmZmZiIsImVtYWlsIjoic2VwbEBzZXBsLmRlIn0.eOwKV7vwRrWr8GlfCPFSq5WwR_p-_rSJURXCV1K7ClBY5jqKQkCsRL2V4YhkP1uS6ECeSxF7NNOLmElVLeFyAkvgSNOUkiuIWQpMTakNKynyRfH0SrdnPSTwK2V1s1i4VjoYdyZWXKNjeT2tUUX9eCyI5qOf_Dzcai5FhGCSUeKpV0ScUj5lKrn56aamlW9IdmbFJ4VwpQg2Y843Vc0TqpjK9n_uKwuRcQd9jkKHkbwWQ-wyJEbFWXHjQ6LnM84H0CQ2fgBqPPfpQDKjGSUNaCS-jtBcbsBAWQSICwol95BuOAqVFMucx56Wm-OyQOuoQ1jaLt2t-Uxtr-C9wKJWHQ")
 const userid = "dd69ea0d-f553-4336-80f3-7f4567f85c7b"
 
-var producer controller.Publisher
-
-var before = []func() error{}
-
-func TestMain(m *testing.M) {
-	conf, err := config.Load("../../config.json")
+func createTestEnv() (closer func(), conf config.Config, producer controller.Publisher, err error) {
+	conf, err = config.Load("../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
-		os.Exit(1)
-		return
+		return func() {}, conf, producer, err
 	}
 	conf.MongoReplSet = false
-	var code int = 0
-	defer os.Exit(code)
-
-	conf, closer, err := NewDockerEnv(conf)
-	if true {
-		defer closer()
+	conf, closer, err = NewDockerEnv(conf)
+	if err != nil {
+		log.Println("ERROR: unable to create docker env", err)
+		return func() {}, conf, producer, err
 	}
-
 	db, err := database.New(conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
-		code = 1
-		return
+		closer()
+		return closer, conf, producer, err
 	}
 
 	perm, err := com.NewSecurity(conf)
 	if err != nil {
 		log.Println("ERROR: unable to create permission handler", err)
-		code = 1
-		return
+		closer()
+		return closer, conf, producer, err
 	}
 
 	ctrl, err := controller.New(conf, db, perm, func(ctrl *controller.Controller) (controller.Publisher, error) {
@@ -93,37 +79,16 @@ func TestMain(m *testing.M) {
 
 	if err != nil {
 		log.Println("ERROR: unable to start control", err)
-		code = 1
-		return
+		closer()
+		return closer, conf, producer, err
 	}
 	err = Start(conf, ctrl)
 	if err != nil {
 		log.Println("ERROR: unable to start api", err)
-		code = 1
-		return
+		closer()
+		return closer, conf, producer, err
 	}
-	log.Println("docker environment created")
-	configuration = conf
-
-	wait := sync.WaitGroup{}
-	for _, f := range before {
-		wait.Add(1)
-		go func(before func() error) {
-			defer wait.Done()
-			err = before()
-			if err != nil {
-				log.Println("ERROR: ", runtime.FuncForPC(reflect.ValueOf(before).Pointer()).Name(), err)
-				code = 1
-				return
-			}
-		}(f)
-	}
-	wait.Wait()
-	if code != 0 {
-		return
-	}
-
-	m.Run()
+	return closer, conf, producer, err
 }
 
 func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown func(), err error) {

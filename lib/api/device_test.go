@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
@@ -17,32 +18,56 @@ var device1id = uuid.NewV4().String()
 var device1name = uuid.NewV4().String()
 var device1uri = uuid.NewV4().String()
 
-func init() {
-	before = append(before, InitDevices)
-}
-
-func InitDevices() error {
-	err := producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+func TestDeviceQuery(t *testing.T) {
+	t.Parallel()
+	closer, conf, producer, err := createTestEnv()
 	if err != nil {
-		return err
+		t.Fatal(err)
 	}
-	time.Sleep(5 * time.Second)
+	if true {
+		defer closer()
+	}
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
-		return err
+		t.Error(err)
+		return
 	}
 	for i := 0; i < 20; i++ {
 		err = producer.PublishDevice(model.DeviceInstance{Id: uuid.NewV4().String(), Name: uuid.NewV4().String(), Url: uuid.NewV4().String(), DeviceType: devicetype1id}, userid)
 		if err != nil {
-			return err
+			t.Error(err)
+			return
 		}
 	}
-	time.Sleep(5 * time.Second)
-	return nil
+	time.Sleep(3 * time.Second)
+
+	t.Run("testHeartbeat", func(t *testing.T) {
+		testHeartbeat(t, conf)
+	})
+	t.Run("testDeviceRead", func(t *testing.T) {
+		testDeviceRead(t, conf)
+	})
+	t.Run("testDeviceList", func(t *testing.T) {
+		testDeviceList(t, conf)
+	})
+	t.Run("testDeviceListLimit10", func(t *testing.T) {
+		testDeviceListLimit10(t, conf)
+	})
+	t.Run("testDeviceListLimit10Offset20", func(t *testing.T) {
+		testDeviceListLimit10Offset20(t, conf)
+	})
+	t.Run("testDeviceListSort", func(t *testing.T) {
+		testDeviceListSort(t, conf)
+	})
 }
 
-func TestHeartbeat(t *testing.T) {
-	t.Parallel()
+func testHeartbeat(t *testing.T, configuration config.Config) {
 	resp, err := userjwt.Get("http://localhost:" + configuration.ServerPort)
 	if err != nil {
 		t.Error(err)
@@ -54,9 +79,7 @@ func TestHeartbeat(t *testing.T) {
 	}
 }
 
-func TestDeviceRead(t *testing.T) {
-	t.Parallel()
-
+func testDeviceRead(t *testing.T, configuration config.Config) {
 	endpoint := "http://localhost:" + configuration.ServerPort + "/devices/" + url.PathEscape(device1id)
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
@@ -79,8 +102,7 @@ func TestDeviceRead(t *testing.T) {
 	}
 }
 
-func TestDeviceList(t *testing.T) {
-	t.Parallel()
+func testDeviceList(t *testing.T, configuration config.Config) {
 	endpoint := "http://localhost:" + configuration.ServerPort + "/devices"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
@@ -103,8 +125,7 @@ func TestDeviceList(t *testing.T) {
 	}
 }
 
-func TestDeviceListLimit10(t *testing.T) {
-	t.Parallel()
+func testDeviceListLimit10(t *testing.T, configuration config.Config) {
 	endpoint := "http://localhost:" + configuration.ServerPort + "/devices?limit=10"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
@@ -127,8 +148,7 @@ func TestDeviceListLimit10(t *testing.T) {
 	}
 }
 
-func TestDeviceListLimit10Offset20(t *testing.T) {
-	t.Parallel()
+func testDeviceListLimit10Offset20(t *testing.T, configuration config.Config) {
 	endpoint := "http://localhost:" + configuration.ServerPort + "/devices?limit=10&offset=20"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
@@ -151,8 +171,7 @@ func TestDeviceListLimit10Offset20(t *testing.T) {
 	}
 }
 
-func TestDeviceListSort(t *testing.T) {
-	t.Parallel()
+func testDeviceListSort(t *testing.T, configuration config.Config) {
 	ascendpoint := "http://localhost:" + configuration.ServerPort + "/devices?sort=name.asc"
 	resp, err := userjwt.Get(ascendpoint)
 	if err != nil {
@@ -201,4 +220,43 @@ func TestDeviceListSort(t *testing.T) {
 			return
 		}
 	}
+}
+
+func TestDeviceControl(t *testing.T) {
+	t.Parallel()
+	closer, conf, producer, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if true {
+		defer closer()
+	}
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(3 * time.Second)
+
+	t.Run("testDeviceCreate", func(t *testing.T) {
+		testDeviceCreate(t, conf)
+	})
+	t.Run("testDeviceUpdate", func(t *testing.T) {
+		testDeviceUpdate(t, conf)
+	})
+	t.Run("testDeviceDelete", func(t *testing.T) {
+		testDeviceDelete(t, conf)
+	})
+}
+
+func testDeviceCreate(t *testing.T, conf config.Config) {
+	t.Skip("not implemented")
+}
+
+func testDeviceUpdate(t *testing.T, conf config.Config) {
+	t.Skip("not implemented")
+}
+
+func testDeviceDelete(t *testing.T, conf config.Config) {
+	t.Skip("not implemented")
 }
