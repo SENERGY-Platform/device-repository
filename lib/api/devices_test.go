@@ -30,6 +30,8 @@ import (
 
 var devicetype1id = uuid.NewV4().String()
 var devicetype1name = uuid.NewV4().String()
+var devicetype2id = uuid.NewV4().String()
+var devicetype2name = uuid.NewV4().String()
 var device1id = uuid.NewV4().String()
 var device1name = uuid.NewV4().String()
 var device1uri = uuid.NewV4().String()
