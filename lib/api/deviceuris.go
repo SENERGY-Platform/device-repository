@@ -34,6 +34,18 @@ func DeviceUrisEndpoints(config config.Config, control Controller, router *jwt_h
 
 	resource := "/device-uris"
 
+	/*
+			query params:
+			- limit: number; default 100
+		    - offset: number; default 0
+			- permission: 'r' || 'w' || 'x' || 'x'; default 'r'
+			- sort: <field>[.<direction>]; optional;
+				- field: declared by https://github.com/SENERGY-Platform/permission-search/config.json -> Resources.deviceinstance.Features[*].Name
+				- direction: 'asc' || 'desc'; optional
+				- examples:
+					?sort=name.asc
+					?sort=name
+	*/
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, ps jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		options, err := listoptions.FromQueryParameter(request, 100, 0)
 		if err != nil {

@@ -89,6 +89,12 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 		return
 	})
 
+	/*
+		query params:
+		- as: 'id' || 'uri' || 'url'
+			- default: 'uri'
+			- 'url' is a alias for 'uri'
+	*/
 	router.GET(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
 		as := request.URL.Query().Get("as")

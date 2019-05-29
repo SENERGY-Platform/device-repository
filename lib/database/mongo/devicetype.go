@@ -30,6 +30,7 @@ import (
 )
 
 const deviceTypeIdFieldName = "Id"
+const deviceTypeNameFieldName = "Name"
 const deviceTypeServicesFieldName = "Services"
 const serviceInputFieldName = "Input"
 const serviceOutputFieldName = "Output"
@@ -37,6 +38,7 @@ const assignmentTypeFieldName = "Type"
 const valueTypeIdFieldName = "Id"
 
 var deviceTypeIdKey string
+var deviceTypeNameKey string
 var deviceTypeServicesKey string
 var serviceInputKey string
 var serviceOutputKey string
@@ -49,6 +51,10 @@ var deviceTypeToOutputPath string
 func init() {
 	var err error
 	deviceTypeIdKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeIdFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	deviceTypeNameKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeNameFieldName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,6 +90,10 @@ func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceTypeCollection)
 		err = db.ensureIndex(collection, "devicetypeidindex", deviceTypeIdKey, true, true)
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "devicetypenameindex", deviceTypeNameKey, true, false)
 		if err != nil {
 			return err
 		}
@@ -127,7 +137,15 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, listoptions listoptions.
 			return result, errors.New("unable to interpret sort as string")
 		}
 		parts := strings.Split(sortstr, ".")
-		sortby := parts[0]
+		sortby := deviceTypeIdKey
+		switch parts[0] {
+		case "id":
+			sortby = deviceTypeIdKey
+		case "name":
+			sortby = deviceTypeNameKey
+		default:
+			sortby = deviceTypeIdKey
+		}
 		direction := int32(1)
 		if len(parts) > 1 && parts[1] == "desc" {
 			direction = int32(-1)

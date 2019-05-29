@@ -30,6 +30,17 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *jwt_h
 		return
 	})
 
+	/*
+			query params:
+			- limit: number; default 100
+		    - offset: number; default 0
+			- sort: <field>[.<direction>]; optional;
+				- field: 'name', 'id'; defined at github.com/SENERGY-Platform/device-repository/lib/database/mongo/devicetype.go ListDeviceTypes()
+				- direction: 'asc' || 'desc'; optional
+				- examples:
+					?sort=name.asc
+					?sort=name
+	*/
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		options, err := listoptions.FromQueryParameter(request, 100, 0)
 		if err != nil {
