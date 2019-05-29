@@ -30,6 +30,7 @@ type Database interface {
 	SetDevice(ctx context.Context, device model.DeviceInstance) error
 	RemoveDevice(ctx context.Context, id string) error
 	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
+	GetDeviceTypeWithService(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
 	ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string, options ...listoptions.ListOptions) ([]model.DeviceInstance, error)
 	RemoveDeviceType(ctx context.Context, id string) error

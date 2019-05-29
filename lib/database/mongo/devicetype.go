@@ -32,6 +32,7 @@ import (
 const deviceTypeIdFieldName = "Id"
 const deviceTypeNameFieldName = "Name"
 const deviceTypeServicesFieldName = "Services"
+const serviceIdFieldName = "Id"
 const serviceInputFieldName = "Input"
 const serviceOutputFieldName = "Output"
 const assignmentTypeFieldName = "Type"
@@ -40,11 +41,13 @@ const valueTypeIdFieldName = "Id"
 var deviceTypeIdKey string
 var deviceTypeNameKey string
 var deviceTypeServicesKey string
+var serviceIdKey string
 var serviceInputKey string
 var serviceOutputKey string
 var assignmentTypeKey string
 var valueTypeIdKey string
 
+var deviceTypeToServicePath string
 var deviceTypeToInputPath string
 var deviceTypeToOutputPath string
 
@@ -60,6 +63,11 @@ func init() {
 	}
 
 	deviceTypeServicesKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeServicesFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,6 +94,7 @@ func init() {
 
 	deviceTypeToInputPath = strings.Join([]string{deviceTypeServicesKey, serviceInputKey, assignmentTypeKey, valueTypeIdKey}, ".")
 	deviceTypeToOutputPath = strings.Join([]string{deviceTypeServicesKey, serviceOutputKey, assignmentTypeKey, valueTypeIdKey}, ".")
+	deviceTypeToServicePath = strings.Join([]string{deviceTypeServicesKey, serviceIdKey}, ".")
 
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceTypeCollection)
@@ -94,6 +103,10 @@ func init() {
 			return err
 		}
 		err = db.ensureIndex(collection, "devicetypenameindex", deviceTypeNameKey, true, false)
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "devicetypeserviceindex", deviceTypeToServicePath, true, false)
 		if err != nil {
 			return err
 		}
@@ -112,6 +125,19 @@ func (this *Mongo) deviceTypeCollection() *mongo.Collection {
 
 func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error) {
 	result := this.deviceTypeCollection().FindOne(ctx, bson.D{{deviceTypeIdKey, id}})
+	err = result.Err()
+	if err != nil {
+		return
+	}
+	err = result.Decode(&deviceType)
+	if err == mongo.ErrNoDocuments {
+		return deviceType, false, nil
+	}
+	return deviceType, true, err
+}
+
+func (this *Mongo) GetDeviceTypeWithService(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error) {
+	result := this.deviceTypeCollection().FindOne(ctx, bson.D{{deviceTypeToServicePath, id}})
 	err = result.Err()
 	if err != nil {
 		return
