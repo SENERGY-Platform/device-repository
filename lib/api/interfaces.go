@@ -32,4 +32,6 @@ type Controller interface {
 	ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int)
 	ListDeviceTypes(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.DeviceType, err error, errCode int)
 	ReadService(id string, jwt jwt_http_router.Jwt) (result model.Service, err error, errCode int)
+	ReadValueType(id string, jwt jwt_http_router.Jwt) (result model.ValueType, err error, errCode int)
+	ListValueTypes(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.ValueType, err error, errCode int)
 }

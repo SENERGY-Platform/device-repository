@@ -18,9 +18,42 @@ package controller
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"net/http"
 	"time"
 )
+
+/////////////////////////
+//		api
+/////////////////////////
+
+func (this *Controller) ReadValueType(id string, jwt jwt_http_router.Jwt) (result model.ValueType, err error, errCode int) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	deviceType, exists, err := this.db.GetValueType(ctx, id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return result, err, http.StatusNotFound
+	}
+	return deviceType, nil, http.StatusOK
+}
+
+func (this *Controller) ListValueTypes(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.ValueType, err error, errCode int) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	result, err = this.db.ListValueTypes(ctx, options)
+	opterr := options.EvalStrict()
+	if opterr != nil {
+		return result, opterr, http.StatusBadRequest
+	}
+	return
+}
+
+/////////////////////////
+//		source
+/////////////////////////
 
 func (this *Controller) SetValueType(valueType model.ValueType, owner string) error {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)

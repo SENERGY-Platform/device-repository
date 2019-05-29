@@ -18,25 +18,33 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 	"log"
 	"strings"
 )
 
 const valueTypeFieldFieldName = "Fields"
 const fieldTypeTypeFieldName = "Type"
+const valueTypeNameFieldName = "Name"
 
 var valueTypeFieldKey string
 var fieldTypeTypeKey string
+var valueTypeNameKey string
 
 var valueTypeToValueTypePath string
 
 func init() {
 	var err error
+	valueTypeNameKey, err = getBsonFieldName(model.ValueType{}, valueTypeNameFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
 	valueTypeFieldKey, err = getBsonFieldName(model.ValueType{}, valueTypeFieldFieldName)
 	if err != nil {
 		log.Fatal(err)
@@ -52,6 +60,10 @@ func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoValueTypeCollection)
 		err = db.ensureIndex(collection, "valuetypeidindex", valueTypeIdKey, true, true)
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "valuetypenameindex", valueTypeNameKey, true, false)
 		return err
 	})
 }
@@ -71,6 +83,51 @@ func (this *Mongo) GetValueType(ctx context.Context, id string) (vt model.ValueT
 		return vt, false, nil
 	}
 	return vt, true, err
+}
+
+func (this *Mongo) ListValueTypes(ctx context.Context, listoptions listoptions.ListOptions) (result []model.ValueType, err error) {
+	opt := options.Find()
+	if limit, ok := listoptions.GetLimit(); ok {
+		opt.SetLimit(limit)
+	}
+	if offset, ok := listoptions.GetOffset(); ok {
+		opt.SetSkip(offset)
+	}
+	if sort, ok := listoptions.Get("sort"); ok {
+		sortstr, ok := sort.(string)
+		if !ok {
+			return result, errors.New("unable to interpret sort as string")
+		}
+		parts := strings.Split(sortstr, ".")
+		sortby := valueTypeIdKey
+		switch parts[0] {
+		case "id":
+			sortby = valueTypeIdKey
+		case "name":
+			sortby = valueTypeNameKey
+		default:
+			sortby = valueTypeIdKey
+		}
+		direction := int32(1)
+		if len(parts) > 1 && parts[1] == "desc" {
+			direction = int32(-1)
+		}
+		opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
+	}
+	cursor, err := this.valueTypeCollection().Find(ctx, bson.M{}, opt)
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		valueType := model.ValueType{}
+		err = cursor.Decode(&valueType)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, valueType)
+	}
+	err = cursor.Err()
+	return
 }
 
 func (this *Mongo) SetValueType(ctx context.Context, valueType model.ValueType) error {

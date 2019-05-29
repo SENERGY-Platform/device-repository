@@ -26,15 +26,15 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceTypeEndpoints)
+	endpoints = append(endpoints, ValueTypeEndpoints)
 }
 
-func DeviceTypeEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
-	resource := "/device-types"
+func ValueTypeEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
+	resource := "/value-types"
 
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
-		result, err, errCode := control.ReadDeviceType(id, jwt)
+		result, err, errCode := control.ReadValueType(id, jwt)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -51,7 +51,7 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *jwt_h
 			- limit: number; default 100
 		    - offset: number; default 0
 			- sort: <field>[.<direction>]; optional;
-				- field: 'name', 'id'; defined at github.com/SENERGY-Platform/device-repository/lib/database/mongo/devicetype.go ListDeviceTypes()
+				- field: 'name', 'id'; defined at github.com/SENERGY-Platform/device-repository/lib/database/mongo/valuetype.go ListValueTypes()
 				- direction: 'asc' || 'desc'; optional
 				- examples:
 					?sort=name.asc
@@ -64,7 +64,7 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *jwt_h
 			return
 		}
 		options.Strict()
-		result, err, errCode := control.ListDeviceTypes(jwt, options)
+		result, err, errCode := control.ListValueTypes(jwt, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
