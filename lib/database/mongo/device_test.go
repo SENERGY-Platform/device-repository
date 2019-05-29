@@ -26,7 +26,7 @@ import (
 )
 
 func TestMongoDeviceUpsert(t *testing.T) {
-	t.Parallel()
+
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
@@ -136,7 +136,7 @@ func TestMongoDeviceUpsert(t *testing.T) {
 }
 
 func TestMongoDeviceUrl(t *testing.T) {
-	t.Parallel()
+
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
@@ -249,7 +249,7 @@ func TestMongoDeviceUrl(t *testing.T) {
 }
 
 func TestMongoDeviceList(t *testing.T) {
-	t.Parallel()
+
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
@@ -379,7 +379,7 @@ func TestMongoDeviceTransaction(t *testing.T) {
 		> rs.initiate({"_id" : "rs0","members" : [{"_id" : 0,"host" : "localhost:27017"}]})
 	`
 	t.Skip(skipMsg)
-	t.Parallel()
+
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)

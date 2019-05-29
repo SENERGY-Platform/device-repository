@@ -34,7 +34,6 @@ var hub1name = uuid.NewV4().String()
 var hub1hash = uuid.NewV4().String()
 
 func TestHubQuery(t *testing.T) {
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +46,7 @@ func TestHubQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -60,14 +59,14 @@ func TestHubQuery(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	err = producer.PublishHub(model.GatewayFlat{Id: hub1id, Name: hub1name, Hash: hub1hash, Devices: []string{device1id}}, userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("head", func(t *testing.T) {
 		testHubHead(t, conf)
@@ -93,6 +92,32 @@ func TestHubQuery(t *testing.T) {
 	t.Run("readDevicesAsUrl", func(t *testing.T) {
 		testHubReadDevicesAs(t, conf, "url", device1uri)
 	})
+	t.Run("deviceWithHubRef", func(t *testing.T) {
+		testDeviceWithHubRef(t, conf, device1id, hub1id)
+	})
+}
+
+func testDeviceWithHubRef(t *testing.T, conf config.Config, deviceId string, hubId string) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/devices/" + url.PathEscape(deviceId)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	result := model.DeviceInstance{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Error(err)
+	}
+	if result.Gateway != hubId {
+		t.Error("unexpected result", result.Gateway, hubId)
+		return
+	}
 }
 
 func testHubHead(t *testing.T, conf config.Config) {
@@ -234,7 +259,76 @@ func testHubReadDevicesAs(t *testing.T, conf config.Config, as string, asResult 
 }
 
 func TestHubDeviceSideEffects(t *testing.T) {
-	t.Skip("not implemented")
+	closer, conf, producer, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if true {
+		defer closer()
+	}
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(3 * time.Second)
+	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = producer.PublishDevice(model.DeviceInstance{Id: device2id, Name: device2name, Url: device2uri, DeviceType: devicetype1id}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(3 * time.Second)
+
+	err = producer.PublishHub(model.GatewayFlat{Id: hub1id, Name: hub1name, Hash: hub1hash, Devices: []string{device1id, device2id}}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(3 * time.Second)
+
+	err = producer.PublishDeviceDelete(device2id)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	t.Run("hubEmpty", func(t *testing.T) {
+		testHubEmpty(t, conf)
+	})
+	t.Run("deviceWithoutHub", func(t *testing.T) {
+		testDeviceWithHubRef(t, conf, device1id, "")
+	})
+}
+
+func testHubEmpty(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(hub1id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	result := model.Hub{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Error(err)
+	}
+	if result.Name != hub1name || result.Hash != "" || result.Id != hub1id || (result.Devices != nil && !reflect.DeepEqual(result.Devices, []string{})) {
+		b, _ := json.Marshal(result)
+		t.Error("unexpected result", string(b), "'"+hub1name+"'", "'"+hub1id+"'")
+		return
+	}
 }
 
 func TestHubCommand(t *testing.T) {

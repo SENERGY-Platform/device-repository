@@ -53,6 +53,7 @@ func createTestEnv() (closer func(), conf config.Config, producer controller.Pub
 		log.Println("ERROR: unable to create docker env", err)
 		return func() {}, conf, producer, err
 	}
+	time.Sleep(1 * time.Second)
 	db, err := database.New(conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
@@ -76,11 +77,15 @@ func createTestEnv() (closer func(), conf config.Config, producer controller.Pub
 		producer, err = publisher.New(conn, conf)
 		return producer, err
 	})
-
 	if err != nil {
 		log.Println("ERROR: unable to start control", err)
 		closer()
 		return closer, conf, producer, err
+	}
+	dockerCloser := closer
+	closer = func() {
+		ctrl.Stop()
+		dockerCloser()
 	}
 	err = Start(conf, ctrl)
 	if err != nil {
@@ -88,6 +93,7 @@ func createTestEnv() (closer func(), conf config.Config, producer controller.Pub
 		closer()
 		return closer, conf, producer, err
 	}
+	time.Sleep(10 * time.Second)
 	return closer, conf, producer, err
 }
 

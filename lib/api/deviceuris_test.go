@@ -29,7 +29,6 @@ import (
 )
 
 func TestDeviceUriQuery(t *testing.T) {
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +41,7 @@ func TestDeviceUriQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -55,7 +54,7 @@ func TestDeviceUriQuery(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("testDeviceUriRead", func(t *testing.T) {
 		testDeviceUriRead(t, conf)
@@ -219,7 +218,7 @@ func testDeviceUriListSort(t *testing.T, configuration config.Config) {
 
 func TestDeviceUriControl(t *testing.T) {
 	t.Skip("not implemented")
-	t.Parallel()
+
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -232,7 +231,7 @@ func TestDeviceUriControl(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("testDeviceUriCreate", func(t *testing.T) {
 		testDeviceUriCreate(t, conf)

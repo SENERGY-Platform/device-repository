@@ -37,3 +37,8 @@ type Controller struct {
 	config   config.Config
 	source   Publisher
 }
+
+func (this *Controller) Stop() {
+	this.db.Disconnect()
+	this.source.Disconnect()
+}

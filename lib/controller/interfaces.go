@@ -26,6 +26,9 @@ type Publisher interface {
 	PublishHub(hub model.GatewayFlat, owner string) error
 	PublishValueType(valueType model.ValueType, owner string) error
 	PublishDeviceType(dt model.DeviceType, owner string) error
+	PublishDeviceDelete(id string) error
+	PublishHubDelete(id string) error
+	Disconnect()
 }
 
 type Security interface {

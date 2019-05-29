@@ -40,7 +40,6 @@ var device2name = uuid.NewV4().String()
 var device2uri = uuid.NewV4().String()
 
 func TestDeviceQuery(t *testing.T) {
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -53,7 +52,7 @@ func TestDeviceQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -66,7 +65,7 @@ func TestDeviceQuery(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("testHeartbeat", func(t *testing.T) {
 		testHeartbeat(t, conf)
@@ -245,7 +244,6 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 
 func TestDeviceControl(t *testing.T) {
 	t.Skip("not implemented")
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -258,7 +256,7 @@ func TestDeviceControl(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("testDeviceCreate", func(t *testing.T) {
 		testDeviceCreate(t, conf)

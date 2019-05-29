@@ -27,7 +27,7 @@ import (
 )
 
 func TestMongoEndpoint(t *testing.T) {
-	t.Parallel()
+
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)

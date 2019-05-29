@@ -38,12 +38,30 @@ func NewMute(ignored *amqp_wrapper_lib.Connection, config config.Config) (*Publi
 	return &Publisher{config: config}, nil
 }
 
+func (this *Publisher) Disconnect() {
+	if this.conn != nil {
+		this.conn.Close()
+	}
+}
+
 func (this *Publisher) PublishDevice(device model.DeviceInstance, owner string) error {
 	if this.conn == nil {
 		log.Println("WARNING: use mute publisher to publish", device)
 		return nil
 	}
 	msg, err := json.Marshal(messages.DeviceinstanceCommand{DeviceInstance: device, Id: device.Id, Command: "PUT", Owner: owner})
+	if err != nil {
+		return err
+	}
+	return this.conn.Publish(this.config.DeviceInstanceTopic, msg)
+}
+
+func (this *Publisher) PublishDeviceDelete(id string) error {
+	if this.conn == nil {
+		log.Println("WARNING: use mute publisher to publish device delete", id)
+		return nil
+	}
+	msg, err := json.Marshal(messages.DeviceinstanceCommand{Id: id, Command: "DELETE"})
 	if err != nil {
 		return err
 	}
@@ -68,6 +86,18 @@ func (this *Publisher) PublishHub(hub model.GatewayFlat, owner string) error {
 		return nil
 	}
 	msg, err := json.Marshal(messages.GatewayCommand{Command: "PUT", Id: hub.Id, Name: hub.Name, Hash: hub.Hash, Owner: owner, Devices: hub.Devices})
+	if err != nil {
+		return err
+	}
+	return this.conn.Publish(this.config.HubTopic, msg)
+}
+
+func (this *Publisher) PublishHubDelete(id string) error {
+	if this.conn == nil {
+		log.Println("WARNING: use mute publisher to publish device delete", id)
+		return nil
+	}
+	msg, err := json.Marshal(messages.GatewayCommand{Id: id, Command: "DELETE"})
 	if err != nil {
 		return err
 	}

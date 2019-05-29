@@ -39,7 +39,6 @@ var protocol1id = uuid.NewV4().String()
 var protocol1url = uuid.NewV4().String()
 
 func TestEndpointsQuery(t *testing.T) {
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -75,7 +74,7 @@ func TestEndpointsQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -88,7 +87,7 @@ func TestEndpointsQuery(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("testEndpointReadDevice", func(t *testing.T) {
 		testEndpointReadDevice(t, conf)
@@ -253,7 +252,6 @@ func testEndpointReadOut(t *testing.T, conf config.Config) {
 }
 
 func TestEndpointsUpdateByDeviceUpdate(t *testing.T) {
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -289,7 +287,7 @@ func TestEndpointsUpdateByDeviceUpdate(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -307,7 +305,7 @@ func TestEndpointsUpdateByDeviceUpdate(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	err = producer.PublishDevice(model.DeviceInstance{Id: device2id, Name: device2name, Url: "changed" + device2uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
@@ -315,7 +313,7 @@ func TestEndpointsUpdateByDeviceUpdate(t *testing.T) {
 		return
 	}
 
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	t.Run("unchangedReadDevice", func(t *testing.T) {
 		testEndpointReadDevice(t, conf)
@@ -464,7 +462,6 @@ func testEndpointUpdateByDeviceUpdateOutReadChanged(t *testing.T, conf config.Co
 }
 
 func TestEndpointsUpdateByEndpointFormatUpdate(t *testing.T) {
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -519,7 +516,7 @@ func TestEndpointsUpdateByEndpointFormatUpdate(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -544,7 +541,7 @@ func TestEndpointsUpdateByEndpointFormatUpdate(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	err = producer.PublishDeviceType(model.DeviceType{
 		Id:   devicetype2id,
@@ -565,7 +562,7 @@ func TestEndpointsUpdateByEndpointFormatUpdate(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	t.Run("unchangedReadDevice", func(t *testing.T) {
 		testEndpointReadDevice(t, conf)
 	})
@@ -596,7 +593,6 @@ func TestEndpointsUpdateByEndpointFormatUpdate(t *testing.T) {
 }
 
 func TestEndpointsUpdateByServiceUriUpdate(t *testing.T) {
-	t.Parallel()
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -651,7 +647,7 @@ func TestEndpointsUpdateByServiceUriUpdate(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
 	if err != nil {
 		t.Error(err)
@@ -676,7 +672,7 @@ func TestEndpointsUpdateByServiceUriUpdate(t *testing.T) {
 			return
 		}
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	err = producer.PublishDeviceType(model.DeviceType{
 		Id:   devicetype2id,
@@ -697,7 +693,7 @@ func TestEndpointsUpdateByServiceUriUpdate(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(4 * time.Second)
+	time.Sleep(3 * time.Second)
 	t.Run("unchangedReadDevice", func(t *testing.T) {
 		testEndpointReadDevice(t, conf)
 	})
