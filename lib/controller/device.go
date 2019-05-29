@@ -87,7 +87,10 @@ func (this *Controller) ListDevices(jwt jwt_http_router.Jwt, options listoptions
 		}
 		parts := strings.Split(sortstr, ".")
 		sortby = parts[0]
-		sortdirection = parts[1]
+		sortdirection = "asc"
+		if len(parts) > 1 {
+			sortdirection = parts[1]
+		}
 	}
 
 	err = options.EvalStrict()

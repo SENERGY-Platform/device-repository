@@ -46,4 +46,5 @@ type Database interface {
 	ListDeviceTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.DeviceType, error)
 	ListValueTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.ValueType, error)
 	GetDeviceByUri(ctx context.Context, uri string) (model.DeviceInstance, bool, error)
+	ListDeviceTypes(ctx context.Context, options listoptions.ListOptions) (result []model.DeviceType, err error)
 }

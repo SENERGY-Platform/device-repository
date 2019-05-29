@@ -18,11 +18,13 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 	"log"
 	"strings"
 )
@@ -109,6 +111,43 @@ func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType mod
 		return deviceType, false, nil
 	}
 	return deviceType, true, err
+}
+
+func (this *Mongo) ListDeviceTypes(ctx context.Context, listoptions listoptions.ListOptions) (result []model.DeviceType, err error) {
+	opt := options.Find()
+	if limit, ok := listoptions.GetLimit(); ok {
+		opt.SetLimit(limit)
+	}
+	if offset, ok := listoptions.GetOffset(); ok {
+		opt.SetSkip(offset)
+	}
+	if sort, ok := listoptions.Get("sort"); ok {
+		sortstr, ok := sort.(string)
+		if !ok {
+			return result, errors.New("unable to interpret sort as string")
+		}
+		parts := strings.Split(sortstr, ".")
+		sortby := parts[0]
+		direction := int32(1)
+		if len(parts) > 1 && parts[1] == "desc" {
+			direction = int32(-1)
+		}
+		opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
+	}
+	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{}, opt)
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		deviceType := model.DeviceType{}
+		err = cursor.Decode(&deviceType)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, deviceType)
+	}
+	err = cursor.Err()
+	return
 }
 
 func (this *Mongo) SetDeviceType(ctx context.Context, deviceType model.DeviceType) error {

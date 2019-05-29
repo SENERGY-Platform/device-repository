@@ -29,14 +29,12 @@ import (
 	"time"
 )
 
-var device1id = uuid.NewV4().String()
-var device1name = uuid.NewV4().String()
-var device1uri = uuid.NewV4().String()
-var device2id = uuid.NewV4().String()
-var device2name = uuid.NewV4().String()
-var device2uri = uuid.NewV4().String()
+var devicetype1id = uuid.NewV4().String()
+var devicetype1name = uuid.NewV4().String()
+var devicetype2id = uuid.NewV4().String()
+var devicetype2name = uuid.NewV4().String()
 
-func TestDeviceQuery(t *testing.T) {
+func TestDeviceTypeQuery(t *testing.T) {
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -49,14 +47,8 @@ func TestDeviceQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(3 * time.Second)
-	err = producer.PublishDevice(model.DeviceInstance{Id: device1id, Name: device1name, Url: device1uri, DeviceType: devicetype1id}, userid)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishDevice(model.DeviceInstance{Id: uuid.NewV4().String(), Name: uuid.NewV4().String(), Url: uuid.NewV4().String(), DeviceType: devicetype1id}, userid)
+		err = producer.PublishDeviceType(model.DeviceType{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, userid)
 		if err != nil {
 			t.Error(err)
 			return
@@ -64,40 +56,25 @@ func TestDeviceQuery(t *testing.T) {
 	}
 	time.Sleep(3 * time.Second)
 
-	t.Run("testHeartbeat", func(t *testing.T) {
-		testHeartbeat(t, conf)
+	t.Run("testDeviceTypeRead", func(t *testing.T) {
+		testDeviceTypeRead(t, conf)
 	})
-	t.Run("testDeviceRead", func(t *testing.T) {
-		testDeviceRead(t, conf)
+	t.Run("testDeviceTypeList", func(t *testing.T) {
+		testDeviceTypeList(t, conf)
 	})
-	t.Run("testDeviceList", func(t *testing.T) {
-		testDeviceList(t, conf)
+	t.Run("testDeviceTypeListLimit10", func(t *testing.T) {
+		testDeviceTypeListLimit10(t, conf)
 	})
-	t.Run("testDeviceListLimit10", func(t *testing.T) {
-		testDeviceListLimit10(t, conf)
+	t.Run("testDeviceTypeListLimit10Offset20", func(t *testing.T) {
+		testDeviceTypeListLimit10Offset20(t, conf)
 	})
-	t.Run("testDeviceListLimit10Offset20", func(t *testing.T) {
-		testDeviceListLimit10Offset20(t, conf)
-	})
-	t.Run("testDeviceListSort", func(t *testing.T) {
-		testDeviceListSort(t, conf)
+	t.Run("testDeviceTypeListSort", func(t *testing.T) {
+		testDeviceTypeListSort(t, conf)
 	})
 }
 
-func testHeartbeat(t *testing.T, configuration config.Config) {
-	resp, err := userjwt.Get("http://localhost:" + configuration.ServerPort)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		t.Error("no heart beat")
-		return
-	}
-}
-
-func testDeviceRead(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices/" + url.PathEscape(device1id)
+func testDeviceTypeRead(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(devicetype1id)
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -108,19 +85,19 @@ func testDeviceRead(t *testing.T, configuration config.Config) {
 		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := model.DeviceInstance{}
+	result := model.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
 	}
-	if result.Name != device1name || result.Url != device1uri {
+	if result.Name != devicetype1name {
 		t.Error("unexpected result", result)
 		return
 	}
 }
 
-func testDeviceList(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices"
+func testDeviceTypeList(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -131,7 +108,7 @@ func testDeviceList(t *testing.T, configuration config.Config) {
 		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceInstance{}
+	result := []model.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -142,8 +119,8 @@ func testDeviceList(t *testing.T, configuration config.Config) {
 	}
 }
 
-func testDeviceListLimit10(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices?limit=10"
+func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -154,7 +131,7 @@ func testDeviceListLimit10(t *testing.T, configuration config.Config) {
 		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceInstance{}
+	result := []model.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -165,8 +142,8 @@ func testDeviceListLimit10(t *testing.T, configuration config.Config) {
 	}
 }
 
-func testDeviceListLimit10Offset20(t *testing.T, configuration config.Config) {
-	endpoint := "http://localhost:" + configuration.ServerPort + "/devices?limit=10&offset=20"
+func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10&offset=20"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -177,7 +154,7 @@ func testDeviceListLimit10Offset20(t *testing.T, configuration config.Config) {
 		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceInstance{}
+	result := []model.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -188,8 +165,8 @@ func testDeviceListLimit10Offset20(t *testing.T, configuration config.Config) {
 	}
 }
 
-func testDeviceListSort(t *testing.T, configuration config.Config) {
-	defaultendpoint := "http://localhost:" + configuration.ServerPort + "/devices?sort=name"
+func testDeviceTypeListSort(t *testing.T, config config.Config) {
+	defaultendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name"
 	resp, err := userjwt.Get(defaultendpoint)
 	if err != nil {
 		t.Error(err)
@@ -200,7 +177,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 		t.Error("unexpectet response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	defaultresult := []model.DeviceInstance{}
+	defaultresult := []model.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&defaultresult)
 	if err != nil {
 		t.Error(err)
@@ -209,7 +186,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 		t.Error("unexpected result", len(defaultresult))
 		return
 	}
-	ascendpoint := "http://localhost:" + configuration.ServerPort + "/devices?sort=name.asc"
+	ascendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name.asc"
 	resp, err = userjwt.Get(ascendpoint)
 	if err != nil {
 		t.Error(err)
@@ -220,7 +197,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 		t.Error("unexpectet response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	ascresult := []model.DeviceInstance{}
+	ascresult := []model.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&ascresult)
 	if err != nil {
 		t.Error(err)
@@ -234,7 +211,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 		return
 	}
 
-	descendpoint := "http://localhost:" + configuration.ServerPort + "/devices?sort=name.desc"
+	descendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name.desc"
 	resp, err = userjwt.Get(descendpoint)
 	if err != nil {
 		t.Error(err)
@@ -245,7 +222,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 		t.Error("unexpectet response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	descresult := []model.DeviceInstance{}
+	descresult := []model.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&descresult)
 	if err != nil {
 		t.Error(err)
@@ -263,7 +240,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 	}
 }
 
-func TestDeviceControl(t *testing.T) {
+func TestDeviceTypeControl(t *testing.T) {
 	t.Skip("not implemented")
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
@@ -279,25 +256,25 @@ func TestDeviceControl(t *testing.T) {
 	}
 	time.Sleep(3 * time.Second)
 
-	t.Run("testDeviceCreate", func(t *testing.T) {
-		testDeviceCreate(t, conf)
+	t.Run("testDeviceTypeCreate", func(t *testing.T) {
+		testDeviceTypeCreate(t, conf)
 	})
-	t.Run("testDeviceUpdate", func(t *testing.T) {
-		testDeviceUpdate(t, conf)
+	t.Run("testDeviceTypeUpdate", func(t *testing.T) {
+		testDeviceTypeUpdate(t, conf)
 	})
-	t.Run("testDeviceDelete", func(t *testing.T) {
-		testDeviceDelete(t, conf)
+	t.Run("testDeviceTypeDelete", func(t *testing.T) {
+		testDeviceTypeDelete(t, conf)
 	})
 }
 
-func testDeviceCreate(t *testing.T, conf config.Config) {
+func testDeviceTypeCreate(t *testing.T, conf config.Config) {
 	t.Skip("not implemented")
 }
 
-func testDeviceUpdate(t *testing.T, conf config.Config) {
+func testDeviceTypeUpdate(t *testing.T, conf config.Config) {
 	t.Skip("not implemented")
 }
 
-func testDeviceDelete(t *testing.T, conf config.Config) {
+func testDeviceTypeDelete(t *testing.T, conf config.Config) {
 	t.Skip("not implemented")
 }

@@ -18,9 +18,38 @@ package controller
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"net/http"
 	"time"
 )
+
+/////////////////////////
+//		api
+/////////////////////////
+
+func (this *Controller) ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	deviceType, exists, err := this.db.GetDeviceType(ctx, id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return result, err, http.StatusNotFound
+	}
+	return deviceType, nil, http.StatusOK
+}
+
+func (this *Controller) ListDeviceTypes(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.DeviceType, err error, errCode int) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	result, err = this.db.ListDeviceTypes(ctx, options)
+	opterr := options.EvalStrict()
+	if opterr != nil {
+		return result, opterr, http.StatusBadRequest
+	}
+	return
+}
 
 /////////////////////////
 //		source
