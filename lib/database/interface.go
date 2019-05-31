@@ -49,4 +49,5 @@ type Database interface {
 	GetDeviceByUri(ctx context.Context, uri string) (model.DeviceInstance, bool, error)
 	ListDeviceTypes(ctx context.Context, options listoptions.ListOptions) (result []model.DeviceType, err error)
 	ListValueTypes(ctx context.Context, options listoptions.ListOptions) ([]model.ValueType, error)
+	ListHubs(ctx context.Context, options listoptions.ListOptions) ([]model.Hub, error)
 }

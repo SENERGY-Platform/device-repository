@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -67,4 +68,28 @@ func (this *Mongo) SetHub(ctx context.Context, hub model.Hub) error {
 func (this *Mongo) RemoveHub(ctx context.Context, id string) error {
 	_, err := this.hubCollection().DeleteOne(ctx, bson.M{hubIdKey: id})
 	return err
+}
+
+func (this *Mongo) ListHubs(ctx context.Context, listoptions listoptions.ListOptions) (result []model.Hub, err error) {
+	opt := options.Find()
+	if limit, ok := listoptions.GetLimit(); ok {
+		opt.SetLimit(limit)
+	}
+	if offset, ok := listoptions.GetOffset(); ok {
+		opt.SetSkip(offset)
+	}
+	cursor, err := this.hubCollection().Find(ctx, bson.M{}, opt)
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		hub := model.Hub{}
+		err = cursor.Decode(&hub)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, hub)
+	}
+	err = cursor.Err()
+	return
 }
