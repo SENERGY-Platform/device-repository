@@ -18,9 +18,9 @@ package database
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
+	"github.com/SENERGY-Platform/device-repository/lib/database/archivingmongo"
 )
 
 func New(conf config.Config) (db Database, err error) {
-	return mongo.New(conf)
+	return archivingmongo.New(conf)
 }
