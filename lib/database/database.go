@@ -19,8 +19,13 @@ package database
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database/archivingmongo"
+	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 )
 
 func New(conf config.Config) (db Database, err error) {
-	return archivingmongo.New(conf)
+	if conf.MongoDeleteByFlag {
+		return archivingmongo.New(conf)
+	} else {
+		return mongo.New(conf)
+	}
 }

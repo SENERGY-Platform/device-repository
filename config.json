@@ -19,5 +19,6 @@
     "mongo_endpoint_collection": "endpoints",
     "mongo_hub_collection": "hubs",
     "mongo_value_type_collection": "valuetypes",
-    "mongo_repl_set": true
+    "mongo_repl_set": true,
+    "mongo_delete_by_flag": false
 }
