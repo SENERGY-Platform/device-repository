@@ -65,9 +65,14 @@ func DeviceUrisEndpoints(config config.Config, control Controller, router *jwt_h
 		return
 	})
 
+	/*
+		query params:
+		- permission: 'r' || 'w' || 'x' || 'x'; default 'r'
+	*/
 	router.GET(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		uri := params.ByName("uri")
-		result, err, errCode := control.ReadDeviceByUri(uri, jwt)
+		p := request.URL.Query().Get("permission")
+		result, err, errCode := control.ReadDeviceByUri(uri, p, jwt)
 		if err != nil {
 			log.Println("DEBUG: unknown uri", uri)
 			http.Error(writer, err.Error(), errCode)
@@ -99,6 +104,10 @@ func DeviceUrisEndpoints(config config.Config, control Controller, router *jwt_h
 		http.Error(writer, "not implemented", http.StatusNotImplemented)
 	})
 
+	/*
+		query params:
+		- permission: 'r' || 'w' || 'x' || 'x'; default 'r'
+	*/
 	router.HEAD(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		//TODO
 		http.Error(writer, "not implemented", http.StatusNotImplemented)

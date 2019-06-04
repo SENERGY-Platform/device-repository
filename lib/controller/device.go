@@ -121,7 +121,18 @@ func (this *Controller) ListDevices(jwt jwt_http_router.Jwt, options listoptions
 	return
 }
 
-func (this *Controller) ReadDeviceByUri(uri string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
+func (this *Controller) ReadDeviceByUri(uri string, permission string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
+	action := model.READ
+	switch permission {
+	case "w":
+		action = model.WRITE
+	case "x":
+		action = model.EXECUTE
+	case "a":
+		action = model.ADMINISTRATE
+	default:
+		action = model.READ
+	}
 	var exists bool
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	device, exists, err = this.db.GetDeviceByUri(ctx, uri)
@@ -131,7 +142,7 @@ func (this *Controller) ReadDeviceByUri(uri string, jwt jwt_http_router.Jwt) (de
 	if !exists {
 		return model.DeviceInstance{}, errors.New("not found"), http.StatusNotFound
 	}
-	allowed, err := this.security.CheckBool(jwt, this.config.DeviceInstanceTopic, device.Id, model.READ)
+	allowed, err := this.security.CheckBool(jwt, this.config.DeviceInstanceTopic, device.Id, action)
 	if err != nil {
 		return device, err, http.StatusInternalServerError
 	}
