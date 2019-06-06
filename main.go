@@ -77,8 +77,11 @@ func main() {
 			log.Println("ERROR: unable to start source", err)
 			return nil, err
 		}
-		//return publisher.New(conn, conf)	//TODO: use when old iot-repo is updated
-		return publisher.NewMute(conn, conf)
+		if conf.Commands {
+			return publisher.New(conn, conf)
+		} else {
+			return publisher.NewMute(conn, conf)
+		}
 	})
 
 	if err != nil {

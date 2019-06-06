@@ -50,6 +50,8 @@ type Config struct {
 	MongoEndpointCollection   string `json:"mongo_endpoint_collection"`
 	MongoHubCollection        string `json:"mongo_hub_collection"`
 	MongoValueTypeCollection  string `json:"mongo_value_type_collection"`
+
+	Commands bool `json:"commands"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

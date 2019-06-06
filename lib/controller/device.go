@@ -33,6 +33,54 @@ import (
 //		api
 /////////////////////////
 
+func (this *Controller) PublishDeviceUpdate(jwt jwt_http_router.Jwt, id string, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int) {
+	if err, errCode = this.validateDeviceUpdate(device, id); err != nil {
+		return result, err, errCode
+	}
+	device.Id = id
+	allowed, err := this.security.CheckBool(jwt, this.config.DeviceInstanceTopic, device.Id, model.WRITE)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	err = this.source.PublishDevice(device, jwt.UserId)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	result = device
+	return
+}
+
+func (this *Controller) PublishDeviceCreate(jwt jwt_http_router.Jwt, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int) {
+	if err, errCode = this.validateDeviceCreate(device); err != nil {
+		return result, err, errCode
+	}
+	device.Id = generateId()
+	err = this.source.PublishDevice(device, jwt.UserId)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	result = device
+	return
+}
+
+func (this *Controller) PublishDeviceDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int) {
+	allowed, err := this.security.CheckBool(jwt, this.config.DeviceInstanceTopic, id, model.ADMINISTRATE)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return errors.New("access denied"), http.StatusForbidden
+	}
+	err = this.source.PublishDeviceDelete(id)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	return
+}
+
 func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (device model.DeviceInstance, err error, errCode int) {
 	var exists bool
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -162,13 +210,13 @@ func (this *Controller) SetDevice(device model.DeviceInstance) (err error) {
 	if err != nil {
 		return err
 	}
-	ok, err := this.validateDevice(transaction, device)
+	invalid, err := this.validateDevice(transaction, device)
 	if err != nil {
 		_ = finish(false)
 		return err
 	}
-	if !ok {
-		log.Println("ERROR: invalid device command; ignore", device)
+	if invalid != nil {
+		log.Println("ERROR: invalid device command; ignore", invalid.Error())
 		_ = finish(true)
 		return nil
 	}
@@ -283,7 +331,67 @@ func indexTags(tags []string) (result map[string]string) {
 	return result
 }
 
-func (this *Controller) validateDevice(ctx context.Context, instance model.DeviceInstance) (ok bool, err error) {
+func (this *Controller) validateDevice(ctx context.Context, instance model.DeviceInstance) (invalid error, err error) {
+	var ok bool
 	_, ok, err = this.db.GetDeviceType(ctx, instance.DeviceType)
-	return
+	if err != nil {
+		return invalid, err
+	}
+	if !ok {
+		invalid = errors.New("unknown device-type")
+		return invalid, err
+	}
+	if instance.Url != "" {
+		device, ok, err := this.db.GetDeviceByUri(ctx, instance.Url)
+		if err != nil {
+			return invalid, err
+		}
+		if ok && device.Id != instance.Id {
+			invalid = errors.New("device.url already assigned to different device")
+			return invalid, err
+		}
+	}
+	return nil, nil
+}
+
+func (this *Controller) validateDeviceCreate(device model.DeviceInstance) (error, int) {
+	if device.Id != "" {
+		return errors.New("expected empty device.id"), http.StatusBadRequest
+	}
+	if device.Name == "" {
+		return errors.New("missing expected device.name"), http.StatusBadRequest
+	}
+	if device.DeviceType == "" {
+		return errors.New("missing expected device.DeviceType"), http.StatusBadRequest
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	invalid, err := this.validateDevice(ctx, device)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if invalid != nil {
+		return invalid, http.StatusBadRequest
+	}
+	return nil, 200
+}
+
+func (this *Controller) validateDeviceUpdate(device model.DeviceInstance, id string) (error, int) {
+	if device.Id != id {
+		return errors.New("device.id different from update id"), http.StatusBadRequest
+	}
+	if device.Name == "" {
+		return errors.New("missing expected device.name"), http.StatusBadRequest
+	}
+	if device.DeviceType == "" {
+		return errors.New("missing expected device.DeviceType"), http.StatusBadRequest
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	invalid, err := this.validateDevice(ctx, device)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if invalid != nil {
+		return invalid, http.StatusBadRequest
+	}
+	return nil, 200
 }

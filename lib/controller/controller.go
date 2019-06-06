@@ -19,6 +19,7 @@ package controller
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	uuid "github.com/satori/go.uuid"
 )
 
 func New(config config.Config, db database.Database, security Security, sourceFactory func(*Controller) (Publisher, error)) (ctrl *Controller, err error) {
@@ -41,4 +42,8 @@ type Controller struct {
 func (this *Controller) Stop() {
 	this.db.Disconnect()
 	this.source.Disconnect()
+}
+
+func generateId() string {
+	return uuid.NewV4().String()
 }
