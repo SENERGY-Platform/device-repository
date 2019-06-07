@@ -29,6 +29,7 @@ type Publisher interface {
 	PublishDeviceDelete(id string) error
 	PublishHubDelete(id string) error
 	Disconnect()
+	PublishDeviceTypeDelete(id string) error
 }
 
 type Security interface {

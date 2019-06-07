@@ -80,6 +80,18 @@ func (this *Publisher) PublishDeviceType(dt model.DeviceType, owner string) erro
 	return this.conn.Publish(this.config.DeviceTypeTopic, msg)
 }
 
+func (this *Publisher) PublishDeviceTypeDelete(id string) error {
+	if this.conn == nil {
+		log.Println("WARNING: use mute publisher to publish device delete", id)
+		return nil
+	}
+	msg, err := json.Marshal(messages.DeviceTypeCommand{Id: id, Command: "DELETE"})
+	if err != nil {
+		return err
+	}
+	return this.conn.Publish(this.config.DeviceTypeTopic, msg)
+}
+
 func (this *Publisher) PublishHub(hub model.GatewayFlat, owner string) error {
 	if this.conn == nil {
 		log.Println("WARNING: use mute publisher to publish", hub)

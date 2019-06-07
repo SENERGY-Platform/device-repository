@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
@@ -36,7 +37,7 @@ func (this *Controller) ReadDeviceType(id string, jwt jwt_http_router.Jwt) (resu
 		return result, err, http.StatusInternalServerError
 	}
 	if !exists {
-		return result, err, http.StatusNotFound
+		return result, errors.New("not found"), http.StatusNotFound
 	}
 	return deviceType, nil, http.StatusOK
 }
@@ -47,6 +48,62 @@ func (this *Controller) ListDeviceTypes(jwt jwt_http_router.Jwt, options listopt
 	opterr := options.EvalStrict()
 	if opterr != nil {
 		return result, opterr, http.StatusBadRequest
+	}
+	return
+}
+
+func (this *Controller) PublishDeviceTypeUpdate(jwt jwt_http_router.Jwt, id string, dt model.DeviceType) (result model.DeviceType, err error, errCode int) {
+	if err, errCode = this.validateDeviceTypeUpdate(dt, id); err != nil {
+		return result, err, errCode
+	}
+	dt.Id = id
+	allowed, err := this.security.CheckBool(jwt, this.config.DeviceTypeTopic, dt.Id, model.WRITE)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	err = this.source.PublishDeviceType(dt, jwt.UserId)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	result = dt
+	return
+}
+
+func (this *Controller) PublishDeviceTypeCreate(jwt jwt_http_router.Jwt, dt model.DeviceType) (result model.DeviceType, err error, errCode int) {
+	if err, errCode = this.validateDeviceTypeCreate(dt); err != nil {
+		return result, err, errCode
+	}
+	dt.Id = generateId()
+	err = this.source.PublishDeviceType(dt, jwt.UserId)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	result = dt
+	return
+}
+
+func (this *Controller) PublishDeviceTypeDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int) {
+	allowed, err := this.security.CheckBool(jwt, this.config.DeviceTypeTopic, id, model.ADMINISTRATE)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return errors.New("access denied"), http.StatusForbidden
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	devices, err := this.db.ListDevicesOfDeviceType(ctx, id, listoptions.New().Limit(1))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if len(devices) > 0 {
+		return errors.New("found devices using this device-type"), http.StatusBadRequest
+	}
+	err = this.source.PublishDeviceTypeDelete(id)
+	if err != nil {
+		errCode = http.StatusInternalServerError
 	}
 	return
 }
@@ -98,4 +155,30 @@ func (this *Controller) SetDeviceType(deviceType model.DeviceType, owner string)
 func (this *Controller) DeleteDeviceType(id string) error {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	return this.db.RemoveDeviceType(ctx, id)
+}
+
+func (this *Controller) validateDeviceTypeCreate(dt model.DeviceType) (error, int) {
+	if dt.Id != "" {
+		return errors.New("expected empty dt.id"), http.StatusBadRequest
+	}
+	if dt.Name == "" {
+		return errors.New("missing expected dt.name"), http.StatusBadRequest
+	}
+	if valid, msg := dt.IsValid(); !valid {
+		return errors.New(msg), http.StatusBadRequest
+	}
+	return nil, 200
+}
+
+func (this *Controller) validateDeviceTypeUpdate(dt model.DeviceType, id string) (error, int) {
+	if dt.Id != id {
+		return errors.New("dt.id different from update id"), http.StatusBadRequest
+	}
+	if dt.Name == "" {
+		return errors.New("missing expected dt.name"), http.StatusBadRequest
+	}
+	if valid, msg := dt.IsValid(); !valid {
+		return errors.New(msg), http.StatusBadRequest
+	}
+	return nil, 200
 }

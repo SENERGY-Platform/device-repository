@@ -17,6 +17,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
@@ -56,6 +57,9 @@ func TestDeviceTypeQuery(t *testing.T) {
 	}
 	time.Sleep(3 * time.Second)
 
+	t.Run("unexisting", func(t *testing.T) {
+		testDeviceTypeReadNotFound(t, conf, uuid.NewV4().String())
+	})
 	t.Run("testDeviceTypeRead", func(t *testing.T) {
 		testDeviceTypeRead(t, conf)
 	})
@@ -73,8 +77,12 @@ func TestDeviceTypeQuery(t *testing.T) {
 	})
 }
 
-func testDeviceTypeRead(t *testing.T, conf config.Config) {
-	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(devicetype1id)
+func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.DeviceType) {
+	expected := model.DeviceType{Id: devicetype1id, Name: devicetype1name}
+	if len(expectedDt) > 0 {
+		expected = expectedDt[0]
+	}
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -90,7 +98,7 @@ func testDeviceTypeRead(t *testing.T, conf config.Config) {
 	if err != nil {
 		t.Error(err)
 	}
-	if result.Name != devicetype1name {
+	if result.Name != expected.Name {
 		t.Error("unexpected result", result)
 		return
 	}
@@ -241,20 +249,13 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 }
 
 func TestDeviceTypeControl(t *testing.T) {
-	t.Skip("not implemented")
-	closer, conf, producer, err := createTestEnv()
+	closer, conf, _, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if true {
 		defer closer()
 	}
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	time.Sleep(3 * time.Second)
 
 	t.Run("testDeviceTypeCreate", func(t *testing.T) {
 		testDeviceTypeCreate(t, conf)
@@ -268,13 +269,161 @@ func TestDeviceTypeControl(t *testing.T) {
 }
 
 func testDeviceTypeCreate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.DeviceType{Name: devicetype1name})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/device-types"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	dt := model.DeviceType{}
+	err = json.NewDecoder(resp.Body).Decode(&dt)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("testDeviceTypeRead", func(t *testing.T) {
+		testDeviceTypeRead(t, conf, model.DeviceType{Id: dt.Id, Name: devicetype1name})
+	})
 }
 
 func testDeviceTypeUpdate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.DeviceType{Name: device2name})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/device-types"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	dt := model.DeviceType{}
+	err = json.NewDecoder(resp.Body).Decode(&dt)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b = new(bytes.Buffer)
+	err = json.NewEncoder(b).Encode(model.DeviceType{Id: dt.Id, Name: "foobar"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	url = "http://localhost:" + conf.ServerPort + "/device-types/" + dt.Id
+	resp, err = jwtput(userjwt, url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("testDeviceTypeRead", func(t *testing.T) {
+		testDeviceTypeRead(t, conf, model.DeviceType{Id: dt.Id, Name: "foobar"})
+	})
 }
 
 func testDeviceTypeDelete(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.DeviceType{Name: device3name})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/device-types"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	dt3 := model.DeviceType{}
+	err = json.NewDecoder(resp.Body).Decode(&dt3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b = new(bytes.Buffer)
+	err = json.NewEncoder(b).Encode(model.DeviceType{Name: device4name})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url = "http://localhost:" + conf.ServerPort + "/device-types"
+	resp, err = userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	dt4 := model.DeviceType{}
+	err = json.NewDecoder(resp.Body).Decode(&dt4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(5 * time.Second)
+	resp, err = jwtdelete(userjwt, "http://localhost:"+conf.ServerPort+"/device-types/"+dt3.Id)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	time.Sleep(5 * time.Second)
+	t.Run("noUnexpectedDelete", func(t *testing.T) {
+		testDeviceTypeRead(t, conf, model.DeviceType{Name: device4name, Id: dt4.Id})
+	})
+	t.Run("expectedDelete", func(t *testing.T) {
+		testDeviceTypeReadNotFound(t, conf, dt3.Id)
+	})
+}
+
+func testDeviceTypeReadNotFound(t *testing.T, conf config.Config, id string) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
 }

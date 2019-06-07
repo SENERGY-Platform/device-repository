@@ -32,7 +32,7 @@ func (this *Controller) ReadService(id string, jwt jwt_http_router.Jwt) (result 
 		return result, err, http.StatusInternalServerError
 	}
 	if !exists {
-		return result, err, http.StatusNotFound
+		return result, errors.New("not found"), http.StatusNotFound
 	}
 	for _, service := range deviceType.Services {
 		if service.Id == id {

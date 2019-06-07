@@ -38,4 +38,8 @@ type Controller interface {
 	PublishDeviceUpdate(jwt jwt_http_router.Jwt, id string, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int)
 	PublishDeviceCreate(jwt jwt_http_router.Jwt, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int)
 	PublishDeviceDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
+
+	PublishDeviceTypeUpdate(jwt jwt_http_router.Jwt, id string, device model.DeviceType) (result model.DeviceType, err error, errCode int)
+	PublishDeviceTypeCreate(jwt jwt_http_router.Jwt, device model.DeviceType) (result model.DeviceType, err error, errCode int)
+	PublishDeviceTypeDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
 }

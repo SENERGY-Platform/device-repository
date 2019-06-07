@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
@@ -76,13 +77,59 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *jwt_h
 		return
 	})
 
-	router.PUT(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+	if config.Commands {
 
-	router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+		router.PUT(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			id := params.ByName("id")
+			dt := model.DeviceType{}
+			err := json.NewDecoder(request.Body).Decode(&dt)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			result, err, errCode := control.PublishDeviceTypeUpdate(jwt, id, dt)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(result)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		})
+
+		router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			dt := model.DeviceType{}
+			err := json.NewDecoder(request.Body).Decode(&dt)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			result, err, errCode := control.PublishDeviceTypeCreate(jwt, dt)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(result)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		})
+
+		router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			id := params.ByName("id")
+			err, errCode := control.PublishDeviceTypeDelete(jwt, id)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(true)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		})
+	}
 }

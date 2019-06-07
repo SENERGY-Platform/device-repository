@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
@@ -36,7 +37,7 @@ func (this *Controller) ReadValueType(id string, jwt jwt_http_router.Jwt) (resul
 		return result, err, http.StatusInternalServerError
 	}
 	if !exists {
-		return result, err, http.StatusNotFound
+		return result, errors.New("not found"), http.StatusNotFound
 	}
 	return deviceType, nil, http.StatusOK
 }
