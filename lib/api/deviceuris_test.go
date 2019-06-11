@@ -294,9 +294,117 @@ func testDeviceUriCreate(t *testing.T, conf config.Config) {
 }
 
 func testDeviceUriUpdate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.DeviceInstance{Name: device2name, DeviceType: devicetype1id, Url: device2uri})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/device-uris"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	device := model.DeviceInstance{}
+	err = json.NewDecoder(resp.Body).Decode(&device)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b = new(bytes.Buffer)
+	err = json.NewEncoder(b).Encode(model.DeviceInstance{Name: "foobar", DeviceType: devicetype1id, Url: device2uri})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	url = "http://localhost:" + conf.ServerPort + "/device-uris/" + device2uri
+	resp, err = jwtput(userjwt, url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("testDeviceRead", func(t *testing.T) {
+		testDeviceRead(t, conf, model.DeviceInstance{Id: device.Id, Name: "foobar", DeviceType: devicetype1id, Url: device2uri})
+	})
 }
 
 func testDeviceUriDelete(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.DeviceInstance{Name: device3name, DeviceType: devicetype1id, Url: device3uri})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/devices"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	device3 := model.DeviceInstance{}
+	err = json.NewDecoder(resp.Body).Decode(&device3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b = new(bytes.Buffer)
+	err = json.NewEncoder(b).Encode(model.DeviceInstance{Name: device4name, DeviceType: devicetype1id, Url: device4uri})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url = "http://localhost:" + conf.ServerPort + "/devices"
+	resp, err = userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	device4 := model.DeviceInstance{}
+	err = json.NewDecoder(resp.Body).Decode(&device4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	resp, err = jwtdelete(userjwt, "http://localhost:"+conf.ServerPort+"/device-uris/"+device3.Url)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("noUnexpectedDelete", func(t *testing.T) {
+		testDeviceRead(t, conf, model.DeviceInstance{Name: device4name, Id: device4.Id, DeviceType: devicetype1id, Url: device4uri})
+	})
+	t.Run("expectedDelete", func(t *testing.T) {
+		testDeviceReadNotFound(t, conf, device3.Id)
+	})
 }

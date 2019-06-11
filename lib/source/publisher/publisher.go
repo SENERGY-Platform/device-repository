@@ -49,6 +49,7 @@ func (this *Publisher) PublishDevice(device model.DeviceInstance, owner string) 
 		log.Println("WARNING: use mute publisher to publish", device)
 		return nil
 	}
+	device.Gateway = "" //device.gateway may only be changed by updating hub
 	msg, err := json.Marshal(messages.DeviceinstanceCommand{DeviceInstance: device, Id: device.Id, Command: "PUT", Owner: owner})
 	if err != nil {
 		return err

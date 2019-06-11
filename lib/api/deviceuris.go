@@ -131,13 +131,37 @@ func DeviceUrisEndpoints(config config.Config, control Controller, router *jwt_h
 			id, uri, gateway, user-tags and image in body will be ignored
 		*/
 		router.PUT(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			//TODO
-			http.Error(writer, "not implemented", http.StatusNotImplemented)
+			uri := params.ByName("uri")
+			device := model.DeviceInstance{}
+			err := json.NewDecoder(request.Body).Decode(&device)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			result, err, errCode := control.PublishDeviceUriUpdate(jwt, uri, device)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(result)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
 		})
 
 		router.DELETE(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			//TODO
-			http.Error(writer, "not implemented", http.StatusNotImplemented)
+			uri := params.ByName("uri")
+			err, errCode := control.PublishDeviceUriDelete(jwt, uri)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(true)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
 		})
 	}
 
