@@ -106,7 +106,7 @@ func testDeviceWithHubRef(t *testing.T, conf config.Config, deviceId string, hub
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := model.DeviceInstance{}
@@ -128,7 +128,7 @@ func testHubHead(t *testing.T, conf config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode)
 		return
 	}
 	endpoint = "http://localhost:" + conf.ServerPort + "/hubs/foobar"
@@ -138,7 +138,7 @@ func testHubHead(t *testing.T, conf config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusNotFound {
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode)
 		return
 	}
 }
@@ -152,7 +152,7 @@ func testHubRead(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := model.Hub{}
@@ -175,7 +175,7 @@ func testHubReadName(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := ""
@@ -198,7 +198,7 @@ func testHubReadHash(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := ""
@@ -221,7 +221,7 @@ func testHubReadDevices(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []string{}
@@ -244,7 +244,7 @@ func testHubReadDevicesAs(t *testing.T, conf config.Config, as string, asResult 
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []string{}
@@ -316,7 +316,7 @@ func testHubEmpty(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := model.Hub{}

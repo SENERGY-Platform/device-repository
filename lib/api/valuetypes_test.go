@@ -118,7 +118,7 @@ func testValueTypeRead(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := model.ValueType{}
@@ -138,7 +138,7 @@ func testValueTypeRead(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result = model.ValueType{}
@@ -161,7 +161,7 @@ func testValueTypeList(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.ValueType{}
@@ -184,7 +184,7 @@ func testValueTypeListLimit2(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.ValueType{}
@@ -207,7 +207,7 @@ func testValueTypeListLimit2Offset2(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.ValueType{}
@@ -230,7 +230,7 @@ func testValueTypeListSort(t *testing.T, config config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	defaultresult := []model.ValueType{}
@@ -250,7 +250,7 @@ func testValueTypeListSort(t *testing.T, config config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", ascendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	ascresult := []model.ValueType{}
@@ -275,7 +275,7 @@ func testValueTypeListSort(t *testing.T, config config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", descendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	descresult := []model.ValueType{}

@@ -59,6 +59,12 @@ func TestDeviceUriQuery(t *testing.T) {
 	t.Run("testDeviceUriRead", func(t *testing.T) {
 		testDeviceUriRead(t, conf)
 	})
+	t.Run("testDeviceUriHeadRead200", func(t *testing.T) {
+		testDeviceUriHeadRead(t, conf, device1uri, http.StatusOK)
+	})
+	t.Run("testDeviceUriHeadRead404", func(t *testing.T) {
+		testDeviceUriHeadRead(t, conf, "nope", http.StatusNotFound)
+	})
 	t.Run("testDeviceUriList", func(t *testing.T) {
 		testDeviceUriList(t, conf)
 	})
@@ -82,7 +88,7 @@ func testDeviceUriRead(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := model.DeviceInstance{}
@@ -96,6 +102,20 @@ func testDeviceUriRead(t *testing.T, configuration config.Config) {
 	}
 }
 
+func testDeviceUriHeadRead(t *testing.T, configuration config.Config, uri string, status int) {
+	endpoint := "http://localhost:" + configuration.ServerPort + "/device-uris/" + url.PathEscape(uri)
+	resp, err := head(endpoint, string(userjwt))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != status {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+}
+
 func testDeviceUriList(t *testing.T, configuration config.Config) {
 	endpoint := "http://localhost:" + configuration.ServerPort + "/device-uris"
 	resp, err := userjwt.Get(endpoint)
@@ -105,7 +125,7 @@ func testDeviceUriList(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.DeviceInstance{}
@@ -128,7 +148,7 @@ func testDeviceUriListLimit10(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.DeviceInstance{}
@@ -151,7 +171,7 @@ func testDeviceUriListLimit10Offset20(t *testing.T, configuration config.Config)
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.DeviceInstance{}
@@ -174,7 +194,7 @@ func testDeviceUriListSort(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", ascendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	ascresult := []model.DeviceInstance{}
@@ -195,7 +215,7 @@ func testDeviceUriListSort(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", descendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	descresult := []model.DeviceInstance{}

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
@@ -85,32 +86,59 @@ func DeviceUrisEndpoints(config config.Config, control Controller, router *jwt_h
 		return
 	})
 
-	router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
-
-	/*
-		update device instance by uri
-		id, uri, gateway, user-tags and image in body will be ignored
-	*/
-	router.PUT(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
-
-	router.DELETE(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
-
 	/*
 		query params:
 		- permission: 'r' || 'w' || 'x' || 'x'; default 'r'
 	*/
 	router.HEAD(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
+		uri := params.ByName("uri")
+		p := request.URL.Query().Get("permission")
+		result, err, errCode := control.ReadDeviceByUri(uri, p, jwt)
+		if err != nil {
+			log.Println("DEBUG: unknown uri", uri)
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
+
+	if config.Commands {
+		router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			device := model.DeviceInstance{}
+			err := json.NewDecoder(request.Body).Decode(&device)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			result, err, errCode := control.PublishDeviceCreate(jwt, device)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(result)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		})
+
+		/*
+			update device instance by uri
+			id, uri, gateway, user-tags and image in body will be ignored
+		*/
+		router.PUT(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			//TODO
+			http.Error(writer, "not implemented", http.StatusNotImplemented)
+		})
+
+		router.DELETE(resource+"/:uri", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			//TODO
+			http.Error(writer, "not implemented", http.StatusNotImplemented)
+		})
+	}
 
 }

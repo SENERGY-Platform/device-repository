@@ -116,7 +116,7 @@ func testDeviceRead(t *testing.T, configuration config.Config, expectedDevice ..
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := model.DeviceInstance{}
@@ -139,7 +139,7 @@ func testDeviceList(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.DeviceInstance{}
@@ -162,7 +162,7 @@ func testDeviceListLimit10(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.DeviceInstance{}
@@ -185,7 +185,7 @@ func testDeviceListLimit10Offset20(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	result := []model.DeviceInstance{}
@@ -208,7 +208,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	defaultresult := []model.DeviceInstance{}
@@ -228,7 +228,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", ascendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	ascresult := []model.DeviceInstance{}
@@ -253,7 +253,7 @@ func testDeviceListSort(t *testing.T, configuration config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", descendpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	descresult := []model.DeviceInstance{}
@@ -315,7 +315,7 @@ func testDeviceCreate(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	device := model.DeviceInstance{}
@@ -345,7 +345,7 @@ func testDeviceUpdate(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	device := model.DeviceInstance{}
@@ -370,7 +370,7 @@ func testDeviceUpdate(t *testing.T, conf config.Config) {
 
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	time.Sleep(2 * time.Second)
@@ -394,7 +394,7 @@ func testDeviceDelete(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	device3 := model.DeviceInstance{}
@@ -417,7 +417,7 @@ func testDeviceDelete(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	device4 := model.DeviceInstance{}
@@ -434,7 +434,7 @@ func testDeviceDelete(t *testing.T, conf config.Config) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", url, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 	time.Sleep(2 * time.Second)
@@ -455,7 +455,7 @@ func testDeviceReadNotFound(t *testing.T, conf config.Config, id string) {
 	}
 	if resp.StatusCode != http.StatusNotFound {
 		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpectet response", endpoint, resp.Status, resp.StatusCode, string(b))
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
 }
