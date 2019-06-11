@@ -28,6 +28,68 @@ import (
 
 var HubNotFoundError = errors.New("hub not found")
 
+func (this *Controller) PublishHubCreate(jwt jwt_http_router.Jwt, hub model.Hub) (result model.Hub, err error, errCode int) {
+	hub.Id = generateId()
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	valid, gw, err := this.hubToFlatGateway(ctx, hub)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+		return result, err, errCode
+	}
+	if !valid {
+		return hub, errors.New("invalid"), http.StatusBadRequest
+	}
+	err = this.source.PublishHub(gw, jwt.UserId)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	result = hub
+	return
+}
+
+func (this *Controller) PublishHubUpdate(jwt jwt_http_router.Jwt, id string, hub model.Hub) (result model.Hub, err error, errCode int) {
+	if id != hub.Id {
+		return hub, errors.New("hub.id different from update id"), http.StatusBadRequest
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	valid, gw, err := this.hubToFlatGateway(ctx, hub)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+		return result, err, errCode
+	}
+	if !valid {
+		return hub, errors.New("invalid"), http.StatusBadRequest
+	}
+	allowed, err := this.security.CheckBool(jwt, this.config.HubTopic, hub.Id, model.WRITE)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	err = this.source.PublishHub(gw, jwt.UserId)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	result = hub
+	return
+}
+
+func (this *Controller) PublishHubDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int) {
+	allowed, err := this.security.CheckBool(jwt, this.config.HubTopic, id, model.ADMINISTRATE)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !allowed {
+		return errors.New("access denied"), http.StatusForbidden
+	}
+	err = this.source.PublishHubDelete(id)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	return
+}
+
 func (this *Controller) ReadHub(jwt jwt_http_router.Jwt, id string) (result model.Hub, err error, errCode int) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	result, exists, err := this.db.GetHub(ctx, id)

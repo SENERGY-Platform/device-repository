@@ -17,6 +17,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
@@ -143,8 +144,12 @@ func testHubHead(t *testing.T, conf config.Config) {
 	}
 }
 
-func testHubRead(t *testing.T, conf config.Config) {
-	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(hub1id)
+func testHubRead(t *testing.T, conf config.Config, expectedHub ...model.Hub) {
+	expected := model.Hub{Id: hub1id, Name: hub1name, Hash: hub1hash, Devices: []string{device1uri}}
+	if len(expectedHub) > 0 {
+		expected = expectedHub[0]
+	}
+	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(expected.Id)
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -160,8 +165,8 @@ func testHubRead(t *testing.T, conf config.Config) {
 	if err != nil {
 		t.Error(err)
 	}
-	if result.Name != hub1name || result.Hash != hub1hash || result.Id != hub1id || !reflect.DeepEqual(result.Devices, []string{device1uri}) {
-		t.Error("unexpected result", result)
+	if result.Name != expected.Name || result.Hash != expected.Hash || result.Id != expected.Id || !reflect.DeepEqual(result.Devices, expected.Devices) {
+		t.Error("unexpected result", result, expected)
 		return
 	}
 }
@@ -331,6 +336,182 @@ func testHubEmpty(t *testing.T, conf config.Config) {
 	}
 }
 
-func TestHubCommand(t *testing.T) {
-	t.Skip("not implemented")
+func TestHubControl(t *testing.T) {
+	closer, conf, _, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if true {
+		defer closer()
+	}
+
+	t.Run("testHubCreate", func(t *testing.T) {
+		testHubCreate(t, conf)
+	})
+	t.Run("testHubUpdate", func(t *testing.T) {
+		testHubUpdate(t, conf)
+	})
+	t.Run("testHubDelete", func(t *testing.T) {
+		testHubDelete(t, conf)
+	})
+}
+
+func testHubCreate(t *testing.T, conf config.Config) {
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.Hub{Name: hub1name, Hash: hub1hash})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/hubs"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	hub := model.Hub{}
+	err = json.NewDecoder(resp.Body).Decode(&hub)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(3 * time.Second)
+	t.Run("testHubRead", func(t *testing.T) {
+		testHubRead(t, conf, model.Hub{Id: hub.Id, Name: hub1name, Hash: hub1hash})
+	})
+}
+
+func testHubUpdate(t *testing.T, conf config.Config) {
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.Hub{Name: hub1id, Hash: hub1hash})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/hubs"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	hub := model.Hub{}
+	err = json.NewDecoder(resp.Body).Decode(&hub)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b = new(bytes.Buffer)
+	err = json.NewEncoder(b).Encode(model.Hub{Id: hub.Id, Name: "foobar", Hash: "hash"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	url = "http://localhost:" + conf.ServerPort + "/hubs/" + hub.Id
+	resp, err = jwtput(userjwt, url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("testDeviceRead", func(t *testing.T) {
+		testHubRead(t, conf, model.Hub{Id: hub.Id, Name: "foobar", Hash: "hash"})
+	})
+}
+
+func testHubDelete(t *testing.T, conf config.Config) {
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.Hub{Name: device3name})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/hubs"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	hub3 := model.DeviceInstance{}
+	err = json.NewDecoder(resp.Body).Decode(&hub3)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b = new(bytes.Buffer)
+	err = json.NewEncoder(b).Encode(model.Hub{Name: device4name})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url = "http://localhost:" + conf.ServerPort + "/hubs"
+	resp, err = userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	hub4 := model.Hub{}
+	err = json.NewDecoder(resp.Body).Decode(&hub4)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	resp, err = jwtdelete(userjwt, "http://localhost:"+conf.ServerPort+"/hubs/"+hub3.Id)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("noUnexpectedDelete", func(t *testing.T) {
+		testHubRead(t, conf, hub4)
+	})
+	t.Run("expectedDelete", func(t *testing.T) {
+		testHubReadNotFound(t, conf, hub3.Id)
+	})
+}
+
+func testHubReadNotFound(t *testing.T, conf config.Config, id string) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
 }

@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
@@ -110,33 +111,73 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 		return
 	})
 
-	router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+	if config.Commands {
+		router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			hub := model.Hub{}
+			err := json.NewDecoder(request.Body).Decode(&hub)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			result, err, errCode := control.PublishHubCreate(jwt, hub)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(result)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		})
 
-	router.PUT(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+		router.PUT(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			id := params.ByName("id")
+			hub := model.Hub{}
+			err := json.NewDecoder(request.Body).Decode(&hub)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			result, err, errCode := control.PublishHubUpdate(jwt, id, hub)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(result)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		})
 
-	router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+		router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			id := params.ByName("id")
+			err, errCode := control.PublishHubDelete(jwt, id)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			err = json.NewEncoder(writer).Encode(true)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		})
 
-	router.PUT(resource+"/:id/name", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+		router.PUT(resource+"/:id/name", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			//TODO
+			http.Error(writer, "not implemented", http.StatusNotImplemented)
+		})
 
-	router.PUT(resource+"/:id/hash", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+		router.PUT(resource+"/:id/hash", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			//TODO
+			http.Error(writer, "not implemented", http.StatusNotImplemented)
+		})
 
-	router.PUT(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		//TODO
-		http.Error(writer, "not implemented", http.StatusNotImplemented)
-	})
+		router.PUT(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+			//TODO
+			http.Error(writer, "not implemented", http.StatusNotImplemented)
+		})
+	}
 }

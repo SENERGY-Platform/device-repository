@@ -35,13 +35,18 @@ type Controller interface {
 	ReadValueType(id string, jwt jwt_http_router.Jwt) (result model.ValueType, err error, errCode int)
 	ListValueTypes(jwt jwt_http_router.Jwt, options listoptions.ListOptions) (result []model.ValueType, err error, errCode int)
 
-	PublishDeviceUpdate(jwt jwt_http_router.Jwt, id string, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int)
-	PublishDeviceUriUpdate(jwt jwt_http_router.Jwt, uri string, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int)
 	PublishDeviceCreate(jwt jwt_http_router.Jwt, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int)
+	PublishDeviceUpdate(jwt jwt_http_router.Jwt, id string, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int)
 	PublishDeviceDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
+
+	PublishDeviceUriUpdate(jwt jwt_http_router.Jwt, uri string, device model.DeviceInstance) (result model.DeviceInstance, err error, errCode int)
 	PublishDeviceUriDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
 
-	PublishDeviceTypeUpdate(jwt jwt_http_router.Jwt, id string, device model.DeviceType) (result model.DeviceType, err error, errCode int)
 	PublishDeviceTypeCreate(jwt jwt_http_router.Jwt, device model.DeviceType) (result model.DeviceType, err error, errCode int)
+	PublishDeviceTypeUpdate(jwt jwt_http_router.Jwt, id string, device model.DeviceType) (result model.DeviceType, err error, errCode int)
 	PublishDeviceTypeDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
+
+	PublishHubCreate(jwt jwt_http_router.Jwt, hub model.Hub) (result model.Hub, err error, errCode int)
+	PublishHubUpdate(jwt jwt_http_router.Jwt, id string, hub model.Hub) (result model.Hub, err error, errCode int)
+	PublishHubDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
 }
