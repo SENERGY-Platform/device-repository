@@ -17,6 +17,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
@@ -237,8 +238,6 @@ func testDeviceUriListSort(t *testing.T, configuration config.Config) {
 }
 
 func TestDeviceUriControl(t *testing.T) {
-	t.Skip("not implemented")
-
 	closer, conf, producer, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -265,7 +264,33 @@ func TestDeviceUriControl(t *testing.T) {
 }
 
 func testDeviceUriCreate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.DeviceInstance{Name: device1name, DeviceType: devicetype1id, Url: device1uri})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/device-uris"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	device := model.DeviceInstance{}
+	err = json.NewDecoder(resp.Body).Decode(&device)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("testDeviceRead", func(t *testing.T) {
+		testDeviceRead(t, conf, model.DeviceInstance{Id: device.Id, Name: device1name, DeviceType: devicetype1id, Url: device1uri})
+	})
 }
 
 func testDeviceUriUpdate(t *testing.T, conf config.Config) {
