@@ -49,4 +49,7 @@ type Controller interface {
 	PublishHubCreate(jwt jwt_http_router.Jwt, hub model.Hub) (result model.Hub, err error, errCode int)
 	PublishHubUpdate(jwt jwt_http_router.Jwt, id string, hub model.Hub) (result model.Hub, err error, errCode int)
 	PublishHubDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
+
+	PublishValueTypeCreate(jwt jwt_http_router.Jwt, vt model.ValueType) (result model.ValueType, err error, errCode int)
+	PublishValueTypeDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int)
 }

@@ -17,6 +17,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
@@ -147,6 +148,28 @@ func testValueTypeRead(t *testing.T, conf config.Config) {
 		t.Error(err)
 	}
 	if result.Name != valuetype2name {
+		t.Error("unexpected result", result)
+		return
+	}
+}
+func testValueTypeRead2(t *testing.T, conf config.Config, expected model.ValueType) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/value-types/" + url.PathEscape(expected.Id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	result := model.ValueType{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Error(err)
+	}
+	if result.Name != expected.Name {
 		t.Error("unexpected result", result)
 		return
 	}
@@ -297,26 +320,16 @@ func testValueTypeListSort(t *testing.T, config config.Config) {
 }
 
 func TestValueTypeControl(t *testing.T) {
-	t.Skip("not implemented")
-	closer, conf, producer, err := createTestEnv()
+	closer, conf, _, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if true {
 		defer closer()
 	}
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	time.Sleep(3 * time.Second)
 
 	t.Run("testValueTypeCreate", func(t *testing.T) {
 		testValueTypeCreate(t, conf)
-	})
-	t.Run("testValueTypeUpdate", func(t *testing.T) {
-		testValueTypeUpdate(t, conf)
 	})
 	t.Run("testValueTypeDelete", func(t *testing.T) {
 		testValueTypeDelete(t, conf)
@@ -324,18 +337,116 @@ func TestValueTypeControl(t *testing.T) {
 }
 
 func testValueTypeCreate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
-}
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.ValueType{Name: "1", BaseType: model.StructBaseType, Fields: []model.FieldType{{Name: "f1", Type: model.ValueType{Name: "2"}}, {Name: "f2", Type: model.ValueType{Id: "vt1", Name: "3"}}}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/value-types"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	vt := model.ValueType{}
+	err = json.NewDecoder(resp.Body).Decode(&vt)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("readWithGeneratedId", func(t *testing.T) {
+		testValueTypeRead2(t, conf, model.ValueType{Id: vt.Id, Name: "1"})
+	})
+	t.Run("readWithGivenId", func(t *testing.T) {
+		testValueTypeRead2(t, conf, model.ValueType{Id: "vt1", Name: "3"})
+	})
 
-func testValueTypeUpdate(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
 }
 
 func testValueTypeDelete(t *testing.T, conf config.Config) {
-	t.Skip("not implemented")
+	b := new(bytes.Buffer)
+	err := json.NewEncoder(b).Encode(model.ValueType{Name: "delete1", BaseType: model.XsdInt})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url := "http://localhost:" + conf.ServerPort + "/value-types"
+	resp, err := userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	vt1 := model.ValueType{}
+	err = json.NewDecoder(resp.Body).Decode(&vt1)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	b = new(bytes.Buffer)
+	err = json.NewEncoder(b).Encode(model.ValueType{Name: "delete2", BaseType: model.XsdInt})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	url = "http://localhost:" + conf.ServerPort + "/value-types"
+	resp, err = userjwt.Post(url, "application/json", b)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	vt2 := model.ValueType{}
+	err = json.NewDecoder(resp.Body).Decode(&vt2)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(2 * time.Second)
+	resp, err = jwtdelete(userjwt, "http://localhost:"+conf.ServerPort+"/value-types/"+vt1.Id)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	time.Sleep(2 * time.Second)
+	t.Run("noUnexpectedDelete", func(t *testing.T) {
+		testValueTypeRead2(t, conf, model.ValueType{Name: "delete2", Id: vt2.Id})
+	})
+	t.Run("expectedDelete", func(t *testing.T) {
+		testVtReadNotFound(t, conf, vt1.Id)
+	})
 }
 
-func TestValueTypeUpdateCascade(t *testing.T) {
-	t.Skip("not implemented")
-
+func testVtReadNotFound(t *testing.T, conf config.Config, id string) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/value-types/" + url.PathEscape(id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
 }

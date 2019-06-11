@@ -57,6 +57,9 @@ func (this *Controller) PublishDeviceTypeUpdate(jwt jwt_http_router.Jwt, id stri
 		return result, err, errCode
 	}
 	dt.Id = id
+	for i, service := range dt.Services {
+		dt.Services[i] = this.setServiceIds(service)
+	}
 	allowed, err := this.security.CheckBool(jwt, this.config.DeviceTypeTopic, dt.Id, model.WRITE)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -77,6 +80,9 @@ func (this *Controller) PublishDeviceTypeCreate(jwt jwt_http_router.Jwt, dt mode
 		return result, err, errCode
 	}
 	dt.Id = generateId()
+	for i, service := range dt.Services {
+		dt.Services[i] = this.setServiceIds(service)
+	}
 	err = this.source.PublishDeviceType(dt, jwt.UserId)
 	if err != nil {
 		errCode = http.StatusInternalServerError
@@ -167,6 +173,11 @@ func (this *Controller) validateDeviceTypeCreate(dt model.DeviceType) (error, in
 	if valid, msg := dt.IsValid(); !valid {
 		return errors.New(msg), http.StatusBadRequest
 	}
+	for _, service := range dt.Services {
+		if err := this.validateService(service); err != nil {
+			return err, http.StatusBadRequest
+		}
+	}
 	return nil, 200
 }
 
@@ -179,6 +190,11 @@ func (this *Controller) validateDeviceTypeUpdate(dt model.DeviceType, id string)
 	}
 	if valid, msg := dt.IsValid(); !valid {
 		return errors.New(msg), http.StatusBadRequest
+	}
+	for _, service := range dt.Services {
+		if err := this.validateService(service); err != nil {
+			return err, http.StatusBadRequest
+		}
 	}
 	return nil, 200
 }

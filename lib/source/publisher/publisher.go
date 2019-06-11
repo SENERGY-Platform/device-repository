@@ -132,3 +132,15 @@ func (this *Publisher) PublishValueType(valueType model.ValueType, owner string)
 	}
 	return this.conn.Publish(this.config.ValueTypeTopic, msg)
 }
+
+func (this *Publisher) PublishValueTypeDelete(id string) error {
+	if this.conn == nil {
+		log.Println("WARNING: use mute publisher to publish device delete", id)
+		return nil
+	}
+	msg, err := json.Marshal(messages.ValueTypeCommand{Id: id, Command: "DELETE"})
+	if err != nil {
+		return err
+	}
+	return this.conn.Publish(this.config.ValueTypeTopic, msg)
+}

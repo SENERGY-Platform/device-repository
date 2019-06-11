@@ -52,6 +52,61 @@ func (this *Controller) ListValueTypes(jwt jwt_http_router.Jwt, options listopti
 	return
 }
 
+func (this *Controller) PublishValueTypeCreate(jwt jwt_http_router.Jwt, vt model.ValueType) (result model.ValueType, err error, errCode int) {
+	if vt.Name == "" {
+		return result, errors.New("missing name"), http.StatusBadRequest
+	}
+	if vt.BaseType == "" {
+		return result, errors.New("missing base type"), http.StatusBadRequest
+	}
+	vt = this.setValueTypeIds(vt)
+	err = this.source.PublishValueType(vt, jwt.UserId)
+	if err != nil {
+		errCode = http.StatusInternalServerError
+	}
+	result = vt
+	return
+}
+
+func (this *Controller) PublishValueTypeDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int) {
+	if !contains(jwt.RealmAccess.Roles, "admin") {
+		return errors.New("access denied"), http.StatusForbidden
+	}
+	_, err, errCode = this.ReadValueType(id, jwt)
+	if err != nil {
+		return err, errCode
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	parents, err := this.db.ListValueTypesUsingValueType(ctx, id, listoptions.New().Limit(1))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if len(parents) > 0 {
+		return errors.New("dependent valuetypes"), http.StatusBadRequest
+	}
+	dtparents, err := this.db.ListDeviceTypesUsingValueType(ctx, id, listoptions.New().Limit(1))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if len(dtparents) > 0 {
+		return errors.New("dependent device-types"), http.StatusBadRequest
+	}
+	err = this.source.PublishValueTypeDelete(id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
 /////////////////////////
 //		source
 /////////////////////////
@@ -153,6 +208,46 @@ func (this *Controller) publishMissingValueType(ctx context.Context, valueType m
 	}
 	if !exists {
 		return this.source.PublishValueType(valueType, owner)
+	}
+	return nil
+}
+
+func (this *Controller) setValueTypeIds(in model.ValueType) (out model.ValueType) {
+	out = in
+	if out.Id == "" {
+		out.Id = generateId()
+	}
+	for i, field := range out.Fields {
+		if field.Id == "" {
+			field.Id = generateId()
+		}
+		field.Type = this.setValueTypeIds(field.Type)
+		out.Fields[i] = field
+	}
+	return
+}
+
+func (this *Controller) validateValueType(vt model.ValueType) (err error) {
+	if vt.Id == "" {
+		return errors.New("missing valuetype.id")
+	}
+	if vt.Name == "" {
+		return errors.New("missing valuetype.Name")
+	}
+	for _, field := range vt.Fields {
+		if err := this.validateField(field); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (this *Controller) validateField(field model.FieldType) error {
+	if field.Name == "" {
+		return errors.New("missing field.Name")
+	}
+	if err := this.validateValueType(field.Type); err != nil {
+		return err
 	}
 	return nil
 }

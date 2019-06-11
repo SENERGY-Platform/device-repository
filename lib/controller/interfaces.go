@@ -27,6 +27,7 @@ type Publisher interface {
 	PublishValueType(valueType model.ValueType, owner string) error
 	PublishDeviceType(dt model.DeviceType, owner string) error
 	PublishDeviceDelete(id string) error
+	PublishValueTypeDelete(id string) error
 	PublishHubDelete(id string) error
 	Disconnect()
 	PublishDeviceTypeDelete(id string) error
