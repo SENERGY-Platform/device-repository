@@ -19,36 +19,32 @@ package source
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/source/listener"
-	"github.com/SmartEnergyPlatform/amqp-wrapper-lib"
 	"log"
 )
 
-func Start(config config.Config, control listener.Controller) (conn *amqp_wrapper_lib.Connection, err error) {
-	topics := []string{}
-	handlers := []amqp_wrapper_lib.ConsumerFunc{}
+func Start(config config.Config, control listener.Controller) (stop func(), err error) {
+	closer := []func(){}
+	stop = func() {
+		for _, c := range closer {
+			c()
+		}
+	}
 	for _, factory := range listener.Factories {
 		topic, handler, err := factory(config, control)
 		if err != nil {
 			log.Println("ERROR: listener.factory", topic, err)
-			return conn, err
+			return stop, err
 		}
-		topics = append(topics, topic)
-		handlers = append(handlers, handler)
-	}
-
-	conn, err = amqp_wrapper_lib.Init(config.AmqpUrl, topics, config.AmqpReconnectTimeout)
-	if err != nil {
-		log.Fatal("ERROR: while initializing amqp connection", err)
-		return
-	}
-
-	for i := 0; i < len(topics); i++ {
-		err = conn.Consume(config.AmqpConsumerName+"_"+topics[i], topics[i], handlers[i])
+		consumer, err := NewConsumer(config.ZookeeperUrl, config.GroupId, topic, func(topic string, msg []byte) error {
+			return handler(msg)
+		}, func(err error, consumer *Consumer) {
+			log.Fatal(err)
+		})
 		if err != nil {
-			log.Println("ERROR: source.consume", topics[i], err)
-			conn.Close()
-			return conn, err
+			stop()
+			return stop, err
 		}
+		closer = append(closer, consumer.Stop)
 	}
-	return conn, err
+	return stop, err
 }

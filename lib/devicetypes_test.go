@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package api
+package lib
 
 import (
-	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
@@ -36,13 +35,27 @@ var devicetype2id = uuid.NewV4().String()
 var devicetype2name = uuid.NewV4().String()
 
 func TestDeviceTypeQuery(t *testing.T) {
-	closer, conf, producer, err := createTestEnv()
+	closer, conf, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if true {
 		defer closer()
 	}
+
+	/*
+		err = InitTopic(conf.ZookeeperUrl, conf.DeviceTypeTopic)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	*/
+	producer, err := NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
 	if err != nil {
 		t.Error(err)
@@ -246,172 +259,6 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 			return
 		}
 	}
-}
-
-func TestDeviceTypeControl(t *testing.T) {
-	closer, conf, _, err := createTestEnv()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if true {
-		defer closer()
-	}
-
-	t.Run("testDeviceTypeCreate", func(t *testing.T) {
-		testDeviceTypeCreate(t, conf)
-	})
-	t.Run("testDeviceTypeUpdate", func(t *testing.T) {
-		testDeviceTypeUpdate(t, conf)
-	})
-	t.Run("testDeviceTypeDelete", func(t *testing.T) {
-		testDeviceTypeDelete(t, conf)
-	})
-}
-
-func testDeviceTypeCreate(t *testing.T, conf config.Config) {
-	b := new(bytes.Buffer)
-	err := json.NewEncoder(b).Encode(model.DeviceType{Name: devicetype1name})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	url := "http://localhost:" + conf.ServerPort + "/device-types"
-	resp, err := userjwt.Post(url, "application/json", b)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
-		return
-	}
-	dt := model.DeviceType{}
-	err = json.NewDecoder(resp.Body).Decode(&dt)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	time.Sleep(2 * time.Second)
-	t.Run("testDeviceTypeRead", func(t *testing.T) {
-		testDeviceTypeRead(t, conf, model.DeviceType{Id: dt.Id, Name: devicetype1name})
-	})
-}
-
-func testDeviceTypeUpdate(t *testing.T, conf config.Config) {
-	b := new(bytes.Buffer)
-	err := json.NewEncoder(b).Encode(model.DeviceType{Name: device2name})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	url := "http://localhost:" + conf.ServerPort + "/device-types"
-	resp, err := userjwt.Post(url, "application/json", b)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
-		return
-	}
-	dt := model.DeviceType{}
-	err = json.NewDecoder(resp.Body).Decode(&dt)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	b = new(bytes.Buffer)
-	err = json.NewEncoder(b).Encode(model.DeviceType{Id: dt.Id, Name: "foobar"})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	time.Sleep(2 * time.Second)
-	url = "http://localhost:" + conf.ServerPort + "/device-types/" + dt.Id
-	resp, err = jwtput(userjwt, url, "application/json", b)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
-		return
-	}
-	time.Sleep(2 * time.Second)
-	t.Run("testDeviceTypeRead", func(t *testing.T) {
-		testDeviceTypeRead(t, conf, model.DeviceType{Id: dt.Id, Name: "foobar"})
-	})
-}
-
-func testDeviceTypeDelete(t *testing.T, conf config.Config) {
-	b := new(bytes.Buffer)
-	err := json.NewEncoder(b).Encode(model.DeviceType{Name: device3name})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	url := "http://localhost:" + conf.ServerPort + "/device-types"
-	resp, err := userjwt.Post(url, "application/json", b)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
-		return
-	}
-	dt3 := model.DeviceType{}
-	err = json.NewDecoder(resp.Body).Decode(&dt3)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	b = new(bytes.Buffer)
-	err = json.NewEncoder(b).Encode(model.DeviceType{Name: device4name})
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	url = "http://localhost:" + conf.ServerPort + "/device-types"
-	resp, err = userjwt.Post(url, "application/json", b)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
-		return
-	}
-	dt4 := model.DeviceType{}
-	err = json.NewDecoder(resp.Body).Decode(&dt4)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	time.Sleep(5 * time.Second)
-	resp, err = jwtdelete(userjwt, "http://localhost:"+conf.ServerPort+"/device-types/"+dt3.Id)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
-		t.Error("unexpected response", url, resp.Status, resp.StatusCode, string(b))
-		return
-	}
-	time.Sleep(5 * time.Second)
-	t.Run("noUnexpectedDelete", func(t *testing.T) {
-		testDeviceTypeRead(t, conf, model.DeviceType{Name: device4name, Id: dt4.Id})
-	})
-	t.Run("expectedDelete", func(t *testing.T) {
-		testDeviceTypeReadNotFound(t, conf, dt3.Id)
-	})
 }
 
 func testDeviceTypeReadNotFound(t *testing.T, conf config.Config, id string) {

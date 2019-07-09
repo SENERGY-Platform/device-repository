@@ -18,36 +18,14 @@ package database
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 )
 
 type Database interface {
 	Disconnect()
 	Transaction(ctx context.Context) (context.Context, func(success bool) error, error)
-	CreateId() string
-	GetDevice(ctx context.Context, id string) (device model.DeviceInstance, exists bool, err error)
-	SetDevice(ctx context.Context, device model.DeviceInstance) error
-	RemoveDevice(ctx context.Context, id string) error
 	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
-	GetDeviceTypeWithService(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
-	ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string, options ...listoptions.ListOptions) ([]model.DeviceInstance, error)
 	RemoveDeviceType(ctx context.Context, id string) error
-	ListEndpoints(ctx context.Context, listoptions ...listoptions.ListOptions) (result []model.Endpoint, err error)
-	RemoveEndpoint(ctx context.Context, id string) error
-	SetEndpoint(ctx context.Context, endpoint model.Endpoint) error
-	GetHub(ctx context.Context, id string) (model.Hub, bool, error)
-	SetHub(ctx context.Context, hub model.Hub) error
-	RemoveHub(ctx context.Context, id string) error
-	ListDevicesWithHub(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.DeviceInstance, error)
-	GetValueType(ctx context.Context, id string) (model.ValueType, bool, error)
-	SetValueType(ctx context.Context, valueType model.ValueType) error
-	RemoveValueType(ctx context.Context, id string) error
-	ListDeviceTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.DeviceType, error)
-	ListValueTypesUsingValueType(ctx context.Context, id string, options ...listoptions.ListOptions) ([]model.ValueType, error)
-	GetDeviceByUri(ctx context.Context, uri string) (model.DeviceInstance, bool, error)
-	ListDeviceTypes(ctx context.Context, options listoptions.ListOptions) (result []model.DeviceType, err error)
-	ListValueTypes(ctx context.Context, options listoptions.ListOptions) ([]model.ValueType, error)
-	ListHubs(ctx context.Context, options listoptions.ListOptions) ([]model.Hub, error)
+	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceType, err error)
 }

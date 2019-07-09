@@ -20,17 +20,15 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/source/messages"
-	"github.com/SmartEnergyPlatform/amqp-wrapper-lib"
 )
 
 func init() {
 	Factories = append(Factories, DeviceTypeListenerFactory)
 }
 
-func DeviceTypeListenerFactory(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error) {
+func DeviceTypeListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
 	return config.DeviceTypeTopic, func(msg []byte) (err error) {
-		command := messages.DeviceTypeCommand{}
+		command := DeviceTypeCommand{}
 		err = json.Unmarshal(msg, &command)
 		if err != nil {
 			return

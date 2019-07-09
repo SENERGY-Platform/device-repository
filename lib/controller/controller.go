@@ -19,16 +19,14 @@ package controller
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	uuid "github.com/satori/go.uuid"
 )
 
-func New(config config.Config, db database.Database, security Security, sourceFactory func(*Controller) (Publisher, error)) (ctrl *Controller, err error) {
+func New(config config.Config, db database.Database, security Security) (ctrl *Controller, err error) {
 	ctrl = &Controller{
 		db:       db,
 		security: security,
 		config:   config,
 	}
-	ctrl.source, err = sourceFactory(ctrl)
 	return
 }
 
@@ -36,14 +34,8 @@ type Controller struct {
 	db       database.Database
 	security Security
 	config   config.Config
-	source   Publisher
 }
 
 func (this *Controller) Stop() {
 	this.db.Disconnect()
-	this.source.Disconnect()
-}
-
-func generateId() string {
-	return uuid.NewV4().String()
 }

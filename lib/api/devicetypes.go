@@ -19,11 +19,10 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func init() {
@@ -59,13 +58,34 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *jwt_h
 					?sort=name
 	*/
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		options, err := listoptions.FromQueryParameter(request, 100, 0)
+		var err error
+
+		limitParam := request.URL.Query().Get("limit")
+		var limit int64 = 100
+		if limitParam != "" {
+			limit, err = strconv.ParseInt(limitParam, 10, 64)
+		}
 		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
+			http.Error(writer, "unable to parse limit:"+err.Error(), http.StatusBadRequest)
 			return
 		}
-		options.Strict()
-		result, err, errCode := control.ListDeviceTypes(jwt, options)
+
+		offsetParam := request.URL.Query().Get("offset")
+		var offset int64 = 0
+		if offsetParam != "" {
+			offset, err = strconv.ParseInt(offsetParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse offset:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		sort := request.URL.Query().Get("sort")
+		if sort == "" {
+			sort = "name.asc"
+		}
+
+		result, err, errCode := control.ListDeviceTypes(jwt, limit, offset, sort)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -76,60 +96,4 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *jwt_h
 		}
 		return
 	})
-
-	if config.Commands {
-
-		router.PUT(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			id := params.ByName("id")
-			dt := model.DeviceType{}
-			err := json.NewDecoder(request.Body).Decode(&dt)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				return
-			}
-			result, err, errCode := control.PublishDeviceTypeUpdate(jwt, id, dt)
-			if err != nil {
-				http.Error(writer, err.Error(), errCode)
-				return
-			}
-			err = json.NewEncoder(writer).Encode(result)
-			if err != nil {
-				log.Println("ERROR: unable to encode response", err)
-			}
-			return
-		})
-
-		router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			dt := model.DeviceType{}
-			err := json.NewDecoder(request.Body).Decode(&dt)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				return
-			}
-			result, err, errCode := control.PublishDeviceTypeCreate(jwt, dt)
-			if err != nil {
-				http.Error(writer, err.Error(), errCode)
-				return
-			}
-			err = json.NewEncoder(writer).Encode(result)
-			if err != nil {
-				log.Println("ERROR: unable to encode response", err)
-			}
-			return
-		})
-
-		router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			id := params.ByName("id")
-			err, errCode := control.PublishDeviceTypeDelete(jwt, id)
-			if err != nil {
-				http.Error(writer, err.Error(), errCode)
-				return
-			}
-			err = json.NewEncoder(writer).Encode(true)
-			if err != nil {
-				log.Println("ERROR: unable to encode response", err)
-			}
-			return
-		})
-	}
 }

@@ -14,36 +14,13 @@
  * limitations under the License.
  */
 
-package messages
+package listener
 
-import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
-
-type DeviceinstanceCommand struct {
-	Command        string               `json:"command"`
-	Id             string               `json:"id"`
-	Owner          string               `json:"owner"`
-	DeviceInstance model.DeviceInstance `json:"device_instance"`
-}
+import "github.com/SENERGY-Platform/device-repository/lib/model"
 
 type DeviceTypeCommand struct {
 	Command    string           `json:"command"`
 	Id         string           `json:"id"`
 	Owner      string           `json:"owner"`
 	DeviceType model.DeviceType `json:"device_type"`
-}
-
-type GatewayCommand struct {
-	Command string   `json:"command"`
-	Id      string   `json:"id"`
-	Owner   string   `json:"owner"`
-	Name    string   `json:"name"`
-	Hash    string   `json:"hash"`
-	Devices []string `json:"devices"`
-}
-
-type ValueTypeCommand struct {
-	Command   string          `json:"command"`
-	Id        string          `json:"id"`
-	Owner     string          `json:"owner"`
-	ValueType model.ValueType `json:"value_type"`
 }

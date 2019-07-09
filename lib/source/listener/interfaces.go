@@ -16,15 +16,9 @@
 
 package listener
 
-import "github.com/SENERGY-Platform/iot-device-repository/lib/model"
+import "github.com/SENERGY-Platform/device-repository/lib/model"
 
 type Controller interface {
-	SetDevice(device model.DeviceInstance) error
-	DeleteDevice(id string) error
 	SetDeviceType(deviceType model.DeviceType, owner string) error
 	DeleteDeviceType(id string) error
-	SetHub(hub model.GatewayFlat, owner string) error
-	DeleteHub(id string, owner string) error
-	SetValueType(valueType model.ValueType, owner string) error
-	DeleteValueType(id string) error
 }

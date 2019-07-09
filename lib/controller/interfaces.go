@@ -17,21 +17,9 @@
 package controller
 
 import (
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 )
-
-type Publisher interface {
-	PublishDevice(device model.DeviceInstance, owner string) error //user has to check for uri collision
-	PublishHub(hub model.GatewayFlat, owner string) error
-	PublishValueType(valueType model.ValueType, owner string) error
-	PublishDeviceType(dt model.DeviceType, owner string) error
-	PublishDeviceDelete(id string) error
-	PublishValueTypeDelete(id string) error
-	PublishHubDelete(id string) error
-	Disconnect()
-	PublishDeviceTypeDelete(id string) error
-}
 
 type Security interface {
 	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)

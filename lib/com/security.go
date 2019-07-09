@@ -18,6 +18,7 @@ package com
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
 
 	"net/url"
@@ -30,7 +31,6 @@ import (
 
 	"log"
 
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 )
 

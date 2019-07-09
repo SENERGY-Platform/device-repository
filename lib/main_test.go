@@ -14,27 +14,35 @@
  * limitations under the License.
  */
 
-package api
+/*
+this file contains code needed to create the test environment
+*/
+
+package lib
 
 import (
 	"bytes"
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/com"
+	"encoding/json"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/source"
-	"github.com/SENERGY-Platform/device-repository/lib/source/publisher"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"github.com/ory/dockertest"
-	"github.com/streadway/amqp"
+	"github.com/ory/dockertest/docker"
+	"github.com/segmentio/kafka-go"
+	"github.com/wvanbergen/kazoo-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"runtime/debug"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -63,61 +71,32 @@ func jwtput(jwt jwt_http_router.JwtImpersonate, url string, contenttype string, 
 	return
 }
 
-func createTestEnv() (closer func(), conf config.Config, producer controller.Publisher, err error) {
-	conf, err = config.Load("../../config.json")
+func createTestEnv() (closer func(), conf config.Config, err error) {
+	conf, err = config.Load("../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
-		return func() {}, conf, producer, err
+		return func() {}, conf, err
 	}
-	conf.Commands = true
 	conf.MongoReplSet = false
 	conf, closer, err = NewDockerEnv(conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)
-		return func() {}, conf, producer, err
+		return func() {}, conf, err
 	}
 	time.Sleep(1 * time.Second)
-	db, err := database.New(conf)
+	stop, err := Start(conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
 		closer()
-		return closer, conf, producer, err
-	}
-
-	perm, err := com.NewSecurity(conf)
-	if err != nil {
-		log.Println("ERROR: unable to create permission handler", err)
-		closer()
-		return closer, conf, producer, err
-	}
-
-	ctrl, err := controller.New(conf, db, perm, func(ctrl *controller.Controller) (controller.Publisher, error) {
-		conn, err := source.Start(conf, ctrl)
-		if err != nil {
-			log.Println("ERROR: unable to start source", err)
-			return nil, err
-		}
-		producer, err = publisher.New(conn, conf)
-		return producer, err
-	})
-	if err != nil {
-		log.Println("ERROR: unable to start control", err)
-		closer()
-		return closer, conf, producer, err
+		return closer, conf, err
 	}
 	dockerCloser := closer
 	closer = func() {
-		ctrl.Stop()
+		stop()
 		dockerCloser()
 	}
-	err = Start(conf, ctrl)
-	if err != nil {
-		log.Println("ERROR: unable to start api", err)
-		closer()
-		return closer, conf, producer, err
-	}
 	time.Sleep(10 * time.Second)
-	return closer, conf, producer, err
+	return closer, conf, err
 }
 
 func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown func(), err error) {
@@ -175,23 +154,6 @@ func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown fun
 		var wait2 sync.WaitGroup
 
 		var elasticIp string
-		var amqpIp string
-
-		wait2.Add(1)
-		go func() {
-			defer wait2.Done()
-			//amqp
-			closeAmqp, _, ip, err := Amqp(pool)
-			amqpIp = ip
-			listMux.Lock()
-			closerList = append(closerList, closeAmqp)
-			listMux.Unlock()
-			if err != nil {
-				globalError = err
-				return
-			}
-			config.AmqpUrl = "amqp://guest:guest@" + amqpIp + ":5672"
-		}()
 
 		wait2.Add(1)
 		go func() {
@@ -214,8 +176,28 @@ func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown fun
 			return
 		}
 
+		closeZk, _, zkIp, err := Zookeeper(pool)
+		listMux.Lock()
+		closerList = append(closerList, closeZk)
+		listMux.Unlock()
+		if err != nil {
+			globalError = err
+			return
+		}
+		config.ZookeeperUrl = zkIp + ":2181"
+
+		//kafka
+		closeKafka, err := Kafka(pool, config.ZookeeperUrl)
+		listMux.Lock()
+		closerList = append(closerList, closeKafka)
+		listMux.Unlock()
+		if err != nil {
+			globalError = err
+			return
+		}
+
 		//permsearch
-		closePerm, _, permIp, err := PermSearch(pool, amqpIp, elasticIp)
+		closePerm, _, permIp, err := PermSearch(pool, config.ZookeeperUrl, elasticIp)
 		listMux.Lock()
 		closerList = append(closerList, closePerm)
 		listMux.Unlock()
@@ -236,31 +218,10 @@ func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown fun
 	return config, func() { close(closerList) }, nil
 }
 
-func Amqp(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress string, err error) {
-	log.Println("start rabbitmq")
-	rabbitmq, err := pool.Run("rabbitmq", "3-management", []string{})
-	if err != nil {
-		return func() {}, "", "", err
-	}
-	hostPort = rabbitmq.GetPort("5672/tcp")
-	err = pool.Retry(func() error {
-		log.Println("try amqp connection...")
-		conn, err := amqp.Dial("amqp://guest:guest@" + rabbitmq.Container.NetworkSettings.IPAddress + ":5672/")
-		if err != nil {
-			return err
-		}
-		defer conn.Close()
-		c, err := conn.Channel()
-		defer c.Close()
-		return err
-	})
-	return func() { rabbitmq.Close() }, hostPort, rabbitmq.Container.NetworkSettings.IPAddress, err
-}
-
-func PermSearch(pool *dockertest.Pool, amqpIp string, elasticIp string) (closer func(), hostPort string, ipAddress string, err error) {
+func PermSearch(pool *dockertest.Pool, zk string, elasticIp string) (closer func(), hostPort string, ipAddress string, err error) {
 	log.Println("start permsearch")
-	repo, err := pool.Run("fgseitsrancher.wifa.intern.uni-leipzig.de:5000/permissionsearch", "unstable", []string{
-		"AMQP_URL=" + "amqp://guest:guest@" + amqpIp + ":5672/",
+	repo, err := pool.Run("fgseitsrancher.wifa.intern.uni-leipzig.de:5000/permissionsearch", "test", []string{
+		"ZOOKEEPER_URL=" + zk,
 		"ELASTIC_URL=" + "http://" + elasticIp + ":9200",
 	})
 	if err != nil {
@@ -270,11 +231,11 @@ func PermSearch(pool *dockertest.Pool, amqpIp string, elasticIp string) (closer 
 	err = pool.Retry(func() error {
 		log.Println("try permsearch connection...")
 		_, err := http.Get("http://" + repo.Container.NetworkSettings.IPAddress + ":8080/jwt/check/deviceinstance/foo/r/bool")
+		if err != nil {
+			log.Println(err)
+		}
 		return err
 	})
-	if err != nil {
-		log.Println(err)
-	}
 	return func() { repo.Close() }, hostPort, repo.Container.NetworkSettings.IPAddress, err
 }
 
@@ -313,6 +274,81 @@ func MongoTestServer(pool *dockertest.Pool) (closer func(), hostPort string, ipA
 	return func() { repo.Close() }, hostPort, repo.Container.NetworkSettings.IPAddress, err
 }
 
+func Kafka(pool *dockertest.Pool, zookeeperUrl string) (closer func(), err error) {
+	kafkaport, err := getFreePort()
+	if err != nil {
+		log.Fatalf("Could not find new port: %s", err)
+	}
+	networks, _ := pool.Client.ListNetworks()
+	hostIp := ""
+	for _, network := range networks {
+		if network.Name == "bridge" {
+			hostIp = network.IPAM.Config[0].Gateway
+		}
+	}
+	log.Println("host ip: ", hostIp)
+	env := []string{
+		"ALLOW_PLAINTEXT_LISTENER=yes",
+		"KAFKA_LISTENERS=OUTSIDE://:9092",
+		"KAFKA_ADVERTISED_LISTENERS=OUTSIDE://" + hostIp + ":" + strconv.Itoa(kafkaport),
+		"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=OUTSIDE:PLAINTEXT",
+		"KAFKA_INTER_BROKER_LISTENER_NAME=OUTSIDE",
+		"KAFKA_ZOOKEEPER_CONNECT=" + zookeeperUrl,
+	}
+	log.Println("start kafka with env ", env)
+	kafkaContainer, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "bitnami/kafka", Tag: "latest", Env: env, PortBindings: map[docker.Port][]docker.PortBinding{
+		"9092/tcp": {{HostIP: "", HostPort: strconv.Itoa(kafkaport)}},
+	}})
+	if err != nil {
+		return func() {}, err
+	}
+	err = pool.Retry(func() error {
+		log.Println("try kafka connection...")
+		conn, err := kafka.Dial("tcp", hostIp+":"+strconv.Itoa(kafkaport))
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		defer conn.Close()
+		return nil
+	})
+	return func() { kafkaContainer.Close() }, err
+}
+
+func Zookeeper(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress string, err error) {
+	zkport, err := getFreePort()
+	if err != nil {
+		log.Fatalf("Could not find new port: %s", err)
+	}
+	env := []string{}
+	log.Println("start zookeeper on ", zkport)
+	zkContainer, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "wurstmeister/zookeeper", Tag: "latest", Env: env, PortBindings: map[docker.Port][]docker.PortBinding{
+		"2181/tcp": {{HostIP: "", HostPort: strconv.Itoa(zkport)}},
+	}})
+	if err != nil {
+		return func() {}, "", "", err
+	}
+	hostPort = strconv.Itoa(zkport)
+	err = pool.Retry(func() error {
+		log.Println("try zk connection...")
+		zookeeper := kazoo.NewConfig()
+		zk, chroot := kazoo.ParseConnectionString(zkContainer.Container.NetworkSettings.IPAddress)
+		zookeeper.Chroot = chroot
+		kz, err := kazoo.NewKazoo(zk, zookeeper)
+		if err != nil {
+			log.Println("kazoo", err)
+			return err
+		}
+		_, err = kz.Brokers()
+		if err != nil && strings.TrimSpace(err.Error()) != strings.TrimSpace("zk: node does not exist") {
+			log.Println("brokers", err)
+			return err
+		}
+		return nil
+	})
+	return func() { zkContainer.Close() }, hostPort, zkContainer.Container.NetworkSettings.IPAddress, err
+}
+
 func getFreePort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
@@ -336,4 +372,155 @@ func head(url string, token string) (resp *http.Response, err error) {
 	req.Header.Set("Authorization", token)
 	resp, err = http.DefaultClient.Do(req)
 	return
+}
+
+type Publisher struct {
+	config      config.Config
+	devicetypes *kafka.Writer
+}
+
+func NewPublisher(conf config.Config) (*Publisher, error) {
+	broker, err := GetBroker(conf.ZookeeperUrl)
+	if err != nil {
+		return nil, err
+	}
+	if len(broker) == 0 {
+		return nil, errors.New("missing kafka broker")
+	}
+	devicetypes, err := getProducer(broker, conf.DeviceTypeTopic, conf.LogLevel == "DEBUG")
+	if err != nil {
+		return nil, err
+	}
+	return &Publisher{config: conf, devicetypes: devicetypes}, nil
+}
+
+func getProducer(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {
+	var logger *log.Logger
+	if debug {
+		logger = log.New(os.Stdout, "[KAFKA-PRODUCER] ", 0)
+	} else {
+		logger = log.New(ioutil.Discard, "", 0)
+	}
+	writer = kafka.NewWriter(kafka.WriterConfig{
+		Brokers:     broker,
+		Topic:       topic,
+		MaxAttempts: 10,
+		Logger:      logger,
+	})
+	return writer, err
+}
+
+func GetBroker(zk string) (brokers []string, err error) {
+	return getBroker(zk)
+}
+
+func getBroker(zkUrl string) (brokers []string, err error) {
+	zookeeper := kazoo.NewConfig()
+	zookeeper.Logger = log.New(ioutil.Discard, "", 0)
+	zk, chroot := kazoo.ParseConnectionString(zkUrl)
+	zookeeper.Chroot = chroot
+	if kz, err := kazoo.NewKazoo(zk, zookeeper); err != nil {
+		return brokers, err
+	} else {
+		return kz.BrokerList()
+	}
+}
+
+func GetKafkaController(zkUrl string) (controller string, err error) {
+	zookeeper := kazoo.NewConfig()
+	zookeeper.Logger = log.New(ioutil.Discard, "", 0)
+	zk, chroot := kazoo.ParseConnectionString(zkUrl)
+	zookeeper.Chroot = chroot
+	kz, err := kazoo.NewKazoo(zk, zookeeper)
+	if err != nil {
+		return controller, err
+	}
+	controllerId, err := kz.Controller()
+	if err != nil {
+		return controller, err
+	}
+	brokers, err := kz.Brokers()
+	if err != nil {
+		return controller, err
+	}
+	return brokers[controllerId], err
+}
+
+func InitTopic(zkUrl string, topics ...string) (err error) {
+	return InitTopicWithConfig(zkUrl, 1, 1, topics...)
+}
+
+func InitTopicWithConfig(zkUrl string, numPartitions int, replicationFactor int, topics ...string) (err error) {
+	controller, err := GetKafkaController(zkUrl)
+	if err != nil {
+		log.Println("ERROR: unable to find controller", err)
+		return err
+	}
+	if controller == "" {
+		log.Println("ERROR: unable to find controller")
+		return errors.New("unable to find controller")
+	}
+	initConn, err := kafka.Dial("tcp", controller)
+	if err != nil {
+		log.Println("ERROR: while init topic connection ", err)
+		return err
+	}
+	defer initConn.Close()
+	for _, topic := range topics {
+		err = initConn.CreateTopics(kafka.TopicConfig{
+			Topic:             topic,
+			NumPartitions:     numPartitions,
+			ReplicationFactor: replicationFactor,
+			ConfigEntries: []kafka.ConfigEntry{
+				{ConfigName: "cleanup.policy", ConfigValue: "compact"},
+				{ConfigName: "delete.retention.ms", ConfigValue: "100"},
+				{ConfigName: "segment.ms", ConfigValue: "100"},
+				{ConfigName: "min.cleanable.dirty.ratio", ConfigValue: "0.01"},
+			},
+		})
+		if err != nil {
+			return
+		}
+	}
+	return nil
+}
+
+type DeviceTypeCommand struct {
+	Command    string           `json:"command"`
+	Id         string           `json:"id"`
+	Owner      string           `json:"owner"`
+	DeviceType model.DeviceType `json:"device_type"`
+}
+
+func (this *Publisher) PublishDeviceType(device model.DeviceType, userId string) (err error) {
+	cmd := DeviceTypeCommand{Command: "PUT", Id: device.Id, DeviceType: device, Owner: userId}
+	return this.PublishDeviceTypeCommand(cmd)
+}
+
+func (this *Publisher) PublishDeviceTypeDelete(id string, userId string) error {
+	cmd := DeviceTypeCommand{Command: "DELETE", Id: id, Owner: userId}
+	return this.PublishDeviceTypeCommand(cmd)
+}
+
+func (this *Publisher) PublishDeviceTypeCommand(cmd DeviceTypeCommand) error {
+	if this.config.LogLevel == "DEBUG" {
+		log.Println("DEBUG: produce", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.devicetypes.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
 }

@@ -18,7 +18,8 @@ package listener
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SmartEnergyPlatform/amqp-wrapper-lib"
 )
 
-var Factories = []func(config config.Config, control Controller) (topic string, listener amqp_wrapper_lib.ConsumerFunc, err error){}
+type Listener func(msg []byte) (err error)
+
+var Factories = []func(config config.Config, control Controller) (topic string, listener Listener, err error){}

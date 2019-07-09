@@ -19,7 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/ory/dockertest"
 	"testing"
 	"time"
@@ -70,16 +70,16 @@ func TestMongoDeviceType(t *testing.T) {
 		Name: "foo1",
 		Services: []model.Service{
 			{
-				Input: []model.TypeAssignment{
+				Inputs: []model.Content{
 					{
-						Type: model.ValueType{
+						Variable: model.Variable{
 							Id: "fooval1",
 						},
 					},
 				},
-				Output: []model.TypeAssignment{
+				Outputs: []model.Content{
 					{
-						Type: model.ValueType{
+						Variable: model.Variable{
 							Id: "fooval2",
 						},
 					},
@@ -98,9 +98,9 @@ func TestMongoDeviceType(t *testing.T) {
 		Name: "foo2",
 		Services: []model.Service{
 			{
-				Input: []model.TypeAssignment{
+				Inputs: []model.Content{
 					{
-						Type: model.ValueType{
+						Variable: model.Variable{
 							Id: "fooval1",
 						},
 					},
@@ -129,27 +129,16 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	result, err := m.ListDeviceTypesUsingValueType(ctx, "fooval2")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if len(result) != 1 {
-		t.Error("unexpected result", result)
-		return
-	}
-	if result[0].Id != "foobar1" {
-		t.Error("unexpected result", result)
-		return
-	}
-
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	result, err = m.ListDeviceTypesUsingValueType(ctx, "fooval1")
+	result, err := m.ListDeviceTypes(ctx, 100, 0, "name.asc")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	if len(result) != 2 {
+		t.Error("unexpected result", result)
+		return
+	}
+	if (result[0].Id != "foobar1" && result[1].Id != "foobar1") || (result[0].Id != "foobar2" && result[1].Id != "foobar2") {
 		t.Error("unexpected result", result)
 		return
 	}

@@ -1,1 +1,0 @@
-same as github.com/SENERGY-Platform/device-repository/lib/database/mongo with the exception that it uses removed flags instead of actual deletion
