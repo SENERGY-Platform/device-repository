@@ -20,7 +20,11 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"io"
+	"io/ioutil"
 	"os"
+	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -36,7 +40,7 @@ func TestVariableValidation(t *testing.T) {
 		t.Fatal(error)
 	}
 	tests := map[string]VariableValidationTest{}
-	err := json.NewDecoder(file).Decode(&tests)
+	err := json.NewDecoder(RemoveComment(file)).Decode(&tests)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,4 +63,15 @@ func (this VariableValidationTest) Run(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+func RemoveComment(in io.Reader) (out io.Reader) {
+	buffer, err := ioutil.ReadAll(in)
+	if err != nil {
+		panic(err)
+	}
+	str := string(buffer)
+	str = regexp.MustCompile(`(?im)^\s+\/\/.*$`).ReplaceAllString(str, "")
+	str = regexp.MustCompile(`(?im)\/\/[^"\[\]]+$`).ReplaceAllString(str, "")
+	return strings.NewReader(str)
 }
