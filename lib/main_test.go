@@ -377,6 +377,7 @@ func head(url string, token string) (resp *http.Response, err error) {
 type Publisher struct {
 	config      config.Config
 	devicetypes *kafka.Writer
+	protocols   *kafka.Writer
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
@@ -391,7 +392,11 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{config: conf, devicetypes: devicetypes}, nil
+	protocols, err := getProducer(broker, conf.ProtocolTopic, conf.LogLevel == "DEBUG")
+	if err != nil {
+		return nil, err
+	}
+	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols}, nil
 }
 
 func getProducer(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {
@@ -512,6 +517,46 @@ func (this *Publisher) PublishDeviceTypeCommand(cmd DeviceTypeCommand) error {
 		return err
 	}
 	err = this.devicetypes.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+type ProtocolCommand struct {
+	Command  string         `json:"command"`
+	Id       string         `json:"id"`
+	Owner    string         `json:"owner"`
+	Protocol model.Protocol `json:"protocol"`
+}
+
+func (this *Publisher) PublishProtocol(device model.Protocol, userId string) (err error) {
+	cmd := ProtocolCommand{Command: "PUT", Id: device.Id, Protocol: device, Owner: userId}
+	return this.PublishProtocolCommand(cmd)
+}
+
+func (this *Publisher) PublishProtocolDelete(id string, userId string) error {
+	cmd := ProtocolCommand{Command: "DELETE", Id: id, Owner: userId}
+	return this.PublishProtocolCommand(cmd)
+}
+
+func (this *Publisher) PublishProtocolCommand(cmd ProtocolCommand) error {
+	if this.config.LogLevel == "DEBUG" {
+		log.Println("DEBUG: produce", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.protocols.WriteMessages(
 		context.Background(),
 		kafka.Message{
 			Key:   []byte(cmd.Id),

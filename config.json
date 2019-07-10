@@ -5,10 +5,12 @@
     "force_user": true,
     "log_level": "CALL",
     "device_type_topic": "devicetype",
+    "protocol_topic": "protocol",
     "permissions_url": "http://permissionsearch:8080",
     "mongo_url": "mongodb://localhost:27017",
     "mongo_table": "devicerepository",
     "mongo_device_type_collection": "devicetype",
+    "mongo_protocol_collection": "protocol",
     "mongo_repl_set": true,
     "zookeeper_url": "zk:2181",
     "group_id": "device-repository"

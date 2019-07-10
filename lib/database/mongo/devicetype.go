@@ -29,12 +29,6 @@ import (
 
 const deviceTypeIdFieldName = "Id"
 const deviceTypeNameFieldName = "Name"
-const deviceTypeServicesFieldName = "Services"
-const serviceIdFieldName = "Id"
-const serviceInputFieldName = "Input"
-const serviceOutputFieldName = "Output"
-const assignmentTypeFieldName = "Type"
-const valueTypeIdFieldName = "Id"
 
 var deviceTypeIdKey string
 var deviceTypeNameKey string

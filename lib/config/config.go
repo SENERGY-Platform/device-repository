@@ -36,11 +36,13 @@ type Config struct {
 	ZookeeperUrl              string `json:"zookeeper_url"`
 	GroupId                   string `json:"group_id"`
 	DeviceTypeTopic           string `json:"device_type_topic"`
+	ProtocolTopic             string `json:"protocol_topic"`
 	PermissionsUrl            string `json:"permissions_url"`
 	MongoUrl                  string `json:"mongo_url"`
 	MongoReplSet              bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
 	MongoTable                string `json:"mongo_table"`
 	MongoDeviceTypeCollection string `json:"mongo_device_type_collection"`
+	MongoProtocolCollection   string `json:"mongo_protocol_collection"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

@@ -25,7 +25,7 @@ import (
 	"time"
 )
 
-func TestMongoDeviceType(t *testing.T) {
+func TestMongoProtocol(t *testing.T) {
 
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
@@ -54,36 +54,28 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	_, exists, err := m.GetDeviceType(ctx, "does_not_exist")
+	_, exists, err := m.GetProtocol(ctx, "does_not_exist")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	if exists {
-		t.Error("device type should not exist")
+		t.Error("protocol type should not exist")
 		return
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetProtocol(ctx, model.Protocol{
 		Id:   "foobar1",
 		Name: "foo1",
-		Services: []model.Service{
+		ProtocolSegments: []model.ProtocolSegment{
 			{
-				Inputs: []model.Content{
-					{
-						Variable: model.Variable{
-							Id: "fooval1",
-						},
-					},
-				},
-				Outputs: []model.Content{
-					{
-						Variable: model.Variable{
-							Id: "fooval2",
-						},
-					},
-				},
+				Id:   "segment1",
+				Name: "s1name",
+			},
+			{
+				Id:   "segment2",
+				Name: "s2name",
 			},
 		},
 	})
@@ -93,18 +85,13 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetProtocol(ctx, model.Protocol{
 		Id:   "foobar2",
 		Name: "foo2",
-		Services: []model.Service{
+		ProtocolSegments: []model.ProtocolSegment{
 			{
-				Inputs: []model.Content{
-					{
-						Variable: model.Variable{
-							Id: "fooval1",
-						},
-					},
-				},
+				Id:   "segment3",
+				Name: "s3name",
 			},
 		},
 	})
@@ -114,39 +101,32 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	device, exists, err := m.GetDeviceType(ctx, "foobar1")
+	protocol, exists, err := m.GetProtocol(ctx, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	if !exists {
-		t.Error("device should exist")
+		t.Error("protocol should exist")
 		return
 	}
-	if device.Id != "foobar1" || device.Name != "foo1" {
-		t.Error("unexpected result", device)
+	if protocol.Id != "foobar1" || protocol.Name != "foo1" {
+		t.Error("unexpected result", protocol)
 		return
 	}
 
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	err = m.SetProtocol(ctx, model.Protocol{
 		Id:   "foobar1",
 		Name: "foo1changed",
-		Services: []model.Service{
+		ProtocolSegments: []model.ProtocolSegment{
 			{
-				Inputs: []model.Content{
-					{
-						Variable: model.Variable{
-							Id: "fooval1",
-						},
-					},
-				},
-				Outputs: []model.Content{
-					{
-						Variable: model.Variable{
-							Id: "fooval2",
-						},
-					},
-				},
+				Id:   "segment1",
+				Name: "s1name",
+			},
+			{
+				Id:   "segment2",
+				Name: "s2name",
 			},
 		},
 	})
@@ -156,22 +136,22 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	device, exists, err = m.GetDeviceType(ctx, "foobar1")
+	protocol, exists, err = m.GetProtocol(ctx, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	if !exists {
-		t.Error("device should exist")
+		t.Error("protocol should exist")
 		return
 	}
-	if device.Id != "foobar1" || device.Name != "foo1changed" {
-		t.Error("unexpected result", device)
+	if protocol.Id != "foobar1" || protocol.Name != "foo1changed" {
+		t.Error("unexpected result", protocol)
 		return
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	result, err := m.ListDeviceTypes(ctx, 100, 0, "name.asc")
+	result, err := m.ListProtocols(ctx, 100, 0, "name.asc")
 	if err != nil {
 		t.Error(err)
 		return
@@ -186,14 +166,14 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.RemoveDeviceType(ctx, "foobar1")
+	err = m.RemoveProtocol(ctx, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	dt, exists, err := m.GetDeviceType(ctx, "foobar1")
+	dt, exists, err := m.GetProtocol(ctx, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return

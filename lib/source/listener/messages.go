@@ -24,3 +24,10 @@ type DeviceTypeCommand struct {
 	Owner      string           `json:"owner"`
 	DeviceType model.DeviceType `json:"device_type"`
 }
+
+type ProtocolCommand struct {
+	Command  string         `json:"command"`
+	Id       string         `json:"id"`
+	Owner    string         `json:"owner"`
+	Protocol model.Protocol `json:"protocol"`
+}

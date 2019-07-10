@@ -29,12 +29,12 @@ import (
 	"time"
 )
 
-var devicetype1id = uuid.NewV4().String()
-var devicetype1name = uuid.NewV4().String()
-var devicetype2id = uuid.NewV4().String()
-var devicetype2name = uuid.NewV4().String()
+var protocol1id = uuid.NewV4().String()
+var protocol1name = uuid.NewV4().String()
+var protocol2id = uuid.NewV4().String()
+var protocol2name = uuid.NewV4().String()
 
-func TestDeviceTypeQuery(t *testing.T) {
+func TestProtocolQuery(t *testing.T) {
 	closer, conf, err := createTestEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -44,7 +44,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 	}
 
 	/*
-		err = InitTopic(conf.ZookeeperUrl, conf.DeviceTypeTopic)
+		err = InitTopic(conf.ZookeeperUrl, conf.ProtocolTopic)
 		if err != nil {
 			t.Error(err)
 			return
@@ -56,46 +56,46 @@ func TestDeviceTypeQuery(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	err = producer.PublishProtocol(model.Protocol{Id: protocol1id, Name: protocol1name}, userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishDeviceType(model.DeviceType{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, userid)
+		err = producer.PublishProtocol(model.Protocol{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, userid)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 	}
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	t.Run("unexisting", func(t *testing.T) {
-		testDeviceTypeReadNotFound(t, conf, uuid.NewV4().String())
+		testProtocolReadNotFound(t, conf, uuid.NewV4().String())
 	})
-	t.Run("testDeviceTypeRead", func(t *testing.T) {
-		testDeviceTypeRead(t, conf)
+	t.Run("testProtocolRead", func(t *testing.T) {
+		testProtocolRead(t, conf)
 	})
-	t.Run("testDeviceTypeList", func(t *testing.T) {
-		testDeviceTypeList(t, conf)
+	t.Run("testProtocolList", func(t *testing.T) {
+		testProtocolList(t, conf)
 	})
-	t.Run("testDeviceTypeListLimit10", func(t *testing.T) {
-		testDeviceTypeListLimit10(t, conf)
+	t.Run("testProtocolListLimit10", func(t *testing.T) {
+		testProtocolListLimit10(t, conf)
 	})
-	t.Run("testDeviceTypeListLimit10Offset20", func(t *testing.T) {
-		testDeviceTypeListLimit10Offset20(t, conf)
+	t.Run("testProtocolListLimit10Offset20", func(t *testing.T) {
+		testProtocolListLimit10Offset20(t, conf)
 	})
-	t.Run("testDeviceTypeListSort", func(t *testing.T) {
-		testDeviceTypeListSort(t, conf)
+	t.Run("testProtocolListSort", func(t *testing.T) {
+		testProtocolListSort(t, conf)
 	})
 }
 
-func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.DeviceType) {
-	expected := model.DeviceType{Id: devicetype1id, Name: devicetype1name}
+func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...model.Protocol) {
+	expected := model.Protocol{Id: protocol1id, Name: protocol1name}
 	if len(expectedDt) > 0 {
 		expected = expectedDt[0]
 	}
-	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
+	endpoint := "http://localhost:" + conf.ServerPort + "/protocols/" + url.PathEscape(expected.Id)
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -106,7 +106,7 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := model.DeviceType{}
+	result := model.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -117,8 +117,8 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 	}
 }
 
-func testDeviceTypeList(t *testing.T, conf config.Config) {
-	endpoint := "http://localhost:" + conf.ServerPort + "/device-types"
+func testProtocolList(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/protocols"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -129,19 +129,19 @@ func testDeviceTypeList(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceType{}
+	result := []model.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
 	}
 	if len(result) != 21 {
-		t.Error("unexpected result", result)
+		t.Error("unexpected result", len(result), result)
 		return
 	}
 }
 
-func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
-	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10"
+func testProtocolListLimit10(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/protocols?limit=10"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -152,7 +152,7 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceType{}
+	result := []model.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -163,8 +163,8 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 	}
 }
 
-func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
-	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10&offset=20"
+func testProtocolListLimit10Offset20(t *testing.T, conf config.Config) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/protocols?limit=10&offset=20"
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
@@ -175,7 +175,7 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceType{}
+	result := []model.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -186,8 +186,8 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 	}
 }
 
-func testDeviceTypeListSort(t *testing.T, config config.Config) {
-	defaultendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name"
+func testProtocolListSort(t *testing.T, config config.Config) {
+	defaultendpoint := "http://localhost:" + config.ServerPort + "/protocols?sort=name"
 	resp, err := userjwt.Get(defaultendpoint)
 	if err != nil {
 		t.Error(err)
@@ -198,7 +198,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	defaultresult := []model.DeviceType{}
+	defaultresult := []model.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&defaultresult)
 	if err != nil {
 		t.Error(err)
@@ -207,7 +207,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected result", len(defaultresult))
 		return
 	}
-	ascendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name.asc"
+	ascendpoint := "http://localhost:" + config.ServerPort + "/protocols?sort=name.asc"
 	resp, err = userjwt.Get(ascendpoint)
 	if err != nil {
 		t.Error(err)
@@ -218,7 +218,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	ascresult := []model.DeviceType{}
+	ascresult := []model.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&ascresult)
 	if err != nil {
 		t.Error(err)
@@ -232,7 +232,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		return
 	}
 
-	descendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name.desc"
+	descendpoint := "http://localhost:" + config.ServerPort + "/protocols?sort=name.desc"
 	resp, err = userjwt.Get(descendpoint)
 	if err != nil {
 		t.Error(err)
@@ -243,7 +243,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	descresult := []model.DeviceType{}
+	descresult := []model.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&descresult)
 	if err != nil {
 		t.Error(err)
@@ -261,8 +261,8 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 	}
 }
 
-func testDeviceTypeReadNotFound(t *testing.T, conf config.Config, id string) {
-	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(id)
+func testProtocolReadNotFound(t *testing.T, conf config.Config, id string) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/protocols/" + url.PathEscape(id)
 	resp, err := userjwt.Get(endpoint)
 	if err != nil {
 		t.Error(err)
