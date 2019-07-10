@@ -38,7 +38,7 @@ type ProtocolSegment struct {
 type Content struct {
 	Id                   string                `json:"id"`
 	Variable             Variable              `json:"variable"`
-	SerializationId      string                `json:"serialization_id"`
+	Serialization        Serialization         `json:"serialization"`
 	SerializationOptions []SerializationOption `json:"serialization_options"`
 	ProtocolSegmentId    string                `json:"protocol_segment_id"`
 }
@@ -49,7 +49,20 @@ type SerializationOption struct {
 	VariableId string `json:"variable_id"`
 }
 
-type Serialization struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+type Serialization string
+
+const (
+	XML  Serialization = "xml"
+	JSON Serialization = "json"
+)
+
+func (this Serialization) Valid() bool {
+	switch this {
+	case XML:
+		return true
+	case JSON:
+		return true
+	default:
+		return false
+	}
 }

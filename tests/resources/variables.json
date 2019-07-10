@@ -1,0 +1,9 @@
+{
+  "testname": {
+    "error": true,
+    "expected_msg": "optional",
+    "variable": {
+      "id": "testvariabel"
+    }
+  }
+}

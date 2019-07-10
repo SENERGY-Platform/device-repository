@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package database
+package mongo
 
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 )
 
-type Database interface {
-	Disconnect()
-	Transaction(ctx context.Context) (context.Context, func(success bool) error, error)
-	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
-	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
-	RemoveDeviceType(ctx context.Context, id string) error
-	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceType, err error)
-	GetProtocol(ctx context.Context, id string) (result model.Protocol, exists bool, err error)
+func (this *Mongo) GetProtocol(ctx context.Context, id string) (result model.Protocol, exists bool, err error) {
+	panic("implement me")
 }

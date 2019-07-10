@@ -54,12 +54,13 @@ type Service struct {
 type VariableType string
 
 const (
-	String  VariableType = "http://www.w3.org/2001/XMLSchema#string"
-	Integer VariableType = "http://www.w3.org/2001/XMLSchema#integer"
-	Float   VariableType = "http://www.w3.org/2001/XMLSchema#decimal"
-	Boolean VariableType = "http://www.w3.org/2001/XMLSchema#boolean"
+	String  VariableType = "string"
+	Integer VariableType = "int"
+	Float   VariableType = "float"
+	Boolean VariableType = "bool"
 
-	Collection VariableType = "http://www.w3.org/1999/02/22-rdf-syntax-ns#List"
+	List      VariableType = "list"
+	Structure VariableType = "structure"
 )
 
 type Variable struct {

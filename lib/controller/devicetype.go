@@ -47,6 +47,25 @@ func (this *Controller) ListDeviceTypes(jwt jwt_http_router.Jwt, limit int64, of
 	return
 }
 
+func (this *Controller) ValidateDeviceType(dt model.DeviceType) (err error, code int) {
+	if dt.Id == "" {
+		return errors.New("missing device-type id"), http.StatusBadRequest
+	}
+	if dt.Name == "" {
+		return errors.New("missing device-type name"), http.StatusBadRequest
+	}
+	if len(dt.Services) == 0 {
+		return errors.New("expect at least one service"), http.StatusBadRequest
+	}
+	for _, service := range dt.Services {
+		err, code = this.ValidateService(service)
+		if err != nil {
+			return err, code
+		}
+	}
+	return nil, http.StatusOK
+}
+
 /////////////////////////
 //		source
 /////////////////////////
