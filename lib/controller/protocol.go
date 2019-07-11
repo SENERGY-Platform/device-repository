@@ -47,17 +47,20 @@ func (this *Controller) ListProtocols(jwt jwt_http_router.Jwt, limit int64, offs
 	return
 }
 
-func (this *Controller) ValidateProtocol(dt model.Protocol) (err error, code int) {
-	if dt.Id == "" {
+func (this *Controller) ValidateProtocol(protocol model.Protocol) (err error, code int) {
+	if protocol.Id == "" {
 		return errors.New("missing protocol id"), http.StatusBadRequest
 	}
-	if dt.Name == "" {
+	if protocol.Name == "" {
 		return errors.New("missing protocol name"), http.StatusBadRequest
 	}
-	if len(dt.ProtocolSegments) == 0 {
+	if protocol.Handler == "" {
+		return errors.New("missing protocol handler"), http.StatusBadRequest
+	}
+	if len(protocol.ProtocolSegments) == 0 {
 		return errors.New("expect at least one protocol-segment"), http.StatusBadRequest
 	}
-	for _, segment := range dt.ProtocolSegments {
+	for _, segment := range protocol.ProtocolSegments {
 		if segment.Id == "" {
 			return errors.New("missing protocol-segment id"), http.StatusBadRequest
 		}
