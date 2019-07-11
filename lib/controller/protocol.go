@@ -60,6 +60,7 @@ func (this *Controller) ValidateProtocol(protocol model.Protocol) (err error, co
 	if len(protocol.ProtocolSegments) == 0 {
 		return errors.New("expect at least one protocol-segment"), http.StatusBadRequest
 	}
+	exists := map[string]bool{}
 	for _, segment := range protocol.ProtocolSegments {
 		if segment.Id == "" {
 			return errors.New("missing protocol-segment id"), http.StatusBadRequest
@@ -67,6 +68,10 @@ func (this *Controller) ValidateProtocol(protocol model.Protocol) (err error, co
 		if segment.Name == "" {
 			return errors.New("missing protocol-segment name"), http.StatusBadRequest
 		}
+		if _, found := exists[segment.Name]; found {
+			return errors.New("repeated protocol-segment name"), http.StatusBadRequest
+		}
+		exists[segment.Name] = true
 	}
 	return nil, http.StatusOK
 }
