@@ -29,7 +29,7 @@ import (
 	"time"
 )
 
-var devicetype1id = uuid.NewV4().String()
+var devicetype1id = "urn:infai:ses:device-type:2cc43032-207e-494e-8de4-94784cd4961d"
 var devicetype1name = uuid.NewV4().String()
 var devicetype2id = uuid.NewV4().String()
 var devicetype2name = uuid.NewV4().String()
