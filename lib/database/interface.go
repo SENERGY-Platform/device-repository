@@ -24,6 +24,9 @@ import (
 type Database interface {
 	Disconnect()
 	Transaction(ctx context.Context) (context.Context, func(success bool) error, error)
+	GetDevice(ctx context.Context, id string) (device model.Device, exists bool, err error)
+	SetDevice(ctx context.Context, device model.Device) error
+	RemoveDevice(ctx context.Context, id string) error
 	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
 	RemoveDeviceType(ctx context.Context, id string) error

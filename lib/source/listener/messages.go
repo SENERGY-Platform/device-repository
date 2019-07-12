@@ -18,6 +18,13 @@ package listener
 
 import "github.com/SENERGY-Platform/device-repository/lib/model"
 
+type DeviceCommand struct {
+	Command string       `json:"command"`
+	Id      string       `json:"id"`
+	Owner   string       `json:"owner"`
+	Device  model.Device `json:"device"`
+}
+
 type DeviceTypeCommand struct {
 	Command    string           `json:"command"`
 	Id         string           `json:"id"`

@@ -60,7 +60,23 @@ type IdWrapper struct {
 	Id string `json:"id"`
 }
 
+func IsAdmin(jwt jwt_http_router.Jwt) bool {
+	return contains(jwt.RealmAccess.Roles, "admin")
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
 func (this *Security) Check(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (err error) {
+	if IsAdmin(jwt) {
+		return nil
+	}
 	right := authActionToString(action)
 	result := false
 	err = jwt.Impersonate.GetJSON(this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+right+"/bool", &result)
@@ -75,6 +91,9 @@ func (this *Security) Check(jwt jwt_http_router.Jwt, kind string, id string, act
 }
 
 func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error) {
+	if IsAdmin(jwt) {
+		return true, nil
+	}
 	right := authActionToString(action)
 	err = jwt.Impersonate.GetJSON(this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+right+"/bool", &allowed)
 	if err != nil {

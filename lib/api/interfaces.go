@@ -22,6 +22,9 @@ import (
 )
 
 type Controller interface {
+	ReadDevice(id string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int)
+	ValidateDevice(device model.Device) (err error, code int)
+
 	ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int)
 	ListDeviceTypes(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int)
 	ValidateDeviceType(deviceType model.DeviceType) (err error, code int)
