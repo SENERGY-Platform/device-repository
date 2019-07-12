@@ -21,6 +21,8 @@ import "github.com/SENERGY-Platform/device-repository/lib/model"
 type Controller interface {
 	SetDevice(device model.Device, owner string) error
 	DeleteDevice(id string) error
+	SetHub(hub model.Hub, owner string) error
+	DeleteHub(id string) error
 	SetDeviceType(deviceType model.DeviceType, owner string) error
 	DeleteDeviceType(id string) error
 	SetProtocol(protocol model.Protocol, owner string) error

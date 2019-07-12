@@ -30,13 +30,6 @@ import (
 /////////////////////////
 
 func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int) {
-	ok, err := this.security.CheckBool(jwt, this.config.DeviceTopic, id, model.READ)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
-	}
-	if !ok {
-		return result, errors.New("access denied"), http.StatusForbidden
-	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	device, exists, err := this.db.GetDevice(ctx, id)
 	if err != nil {
@@ -44,6 +37,13 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (result m
 	}
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
+	}
+	ok, err := this.security.CheckBool(jwt, this.config.DeviceTopic, id, model.READ)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
 	}
 	return device, nil, http.StatusOK
 }
@@ -61,6 +61,8 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 	if device.DeviceTypeId == "" {
 		return errors.New("missing device type id"), http.StatusBadRequest
 	}
+
+	//device-type exists
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	_, ok, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 	if err != nil {
@@ -69,6 +71,17 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 	if !ok {
 		return errors.New("unknown device type id"), http.StatusBadRequest
 	}
+
+	//local ids are globally unique
+	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	d, ok, err := this.db.GetDeviceByLocalId(ctx, device.LocalId)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if ok && d.Id != device.Id {
+		return errors.New("local id should be empty or globally unique"), http.StatusBadRequest
+	}
+
 	return nil, http.StatusOK
 }
 
@@ -77,11 +90,33 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 /////////////////////////
 
 func (this *Controller) SetDevice(device model.Device, owner string) (err error) {
+	//prevent collision of local ids
+	//this if branch should be rarely needed if 2 devices are created at the same time with the same local_id (when the second device is validated before the creation of the first is finished)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	return this.db.SetDevice(ctx, device)
+	d, collision, err := this.db.GetDeviceByLocalId(ctx, device.LocalId)
+	if err != nil {
+		return err
+	}
+	if collision && d.Id != device.Id {
+		device.LocalId = ""
+	}
+	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	err = this.db.SetDevice(ctx, device)
+	if err != nil {
+		return err
+	}
+	if collision && d.Id != device.Id {
+		return this.PublishDeviceDelete(device.Id)
+	}
+	return nil
 }
 
 func (this *Controller) DeleteDevice(id string) error {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	return this.db.RemoveDevice(ctx, id)
+}
+
+func (this *Controller) PublishDeviceDelete(id string) error {
+	//TODO
+	panic("not implemented")
 }

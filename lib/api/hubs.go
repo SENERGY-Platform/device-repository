@@ -27,15 +27,15 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceEndpoints)
+	endpoints = append(endpoints, HubEndpoints)
 }
 
-func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
-	resource := "/devices"
+func HubEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
+	resource := "/hubs"
 
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
-		result, err, errCode := control.ReadDevice(id, jwt)
+		result, err, errCode := control.ReadHub(id, jwt)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -57,13 +57,13 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		device := model.Device{}
-		err = json.NewDecoder(request.Body).Decode(&device)
+		hub := model.Hub{}
+		err = json.NewDecoder(request.Body).Decode(&hub)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDevice(device)
+		err, code := control.ValidateHub(hub)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

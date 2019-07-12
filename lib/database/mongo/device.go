@@ -26,10 +26,10 @@ import (
 )
 
 const deviceIdFieldName = "Id"
-const deviceNameFieldName = "Name"
+const deviceLocalIdFieldName = "LocalId"
 
 var deviceIdKey string
-var deviceNameKey string
+var deviceLocalIdKey string
 
 func init() {
 	var err error
@@ -37,7 +37,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	deviceNameKey, err = getBsonFieldName(model.Device{}, deviceNameFieldName)
+	deviceLocalIdKey, err = getBsonFieldName(model.Device{}, deviceLocalIdFieldName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "devicenameindex", deviceNameKey, true, false)
+		err = db.ensureIndex(collection, "devicelocalidindex", deviceLocalIdKey, true, false)
 		if err != nil {
 			return err
 		}
@@ -81,4 +81,17 @@ func (this *Mongo) SetDevice(ctx context.Context, device model.Device) error {
 func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
 	_, err := this.deviceCollection().DeleteOne(ctx, bson.M{deviceIdKey: id})
 	return err
+}
+
+func (this *Mongo) GetDeviceByLocalId(ctx context.Context, localId string) (device model.Device, exists bool, err error) {
+	result := this.deviceCollection().FindOne(ctx, bson.M{deviceLocalIdKey: localId})
+	err = result.Err()
+	if err != nil {
+		return
+	}
+	err = result.Decode(&device)
+	if err == mongo.ErrNoDocuments {
+		return device, false, nil
+	}
+	return device, true, err
 }

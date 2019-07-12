@@ -37,6 +37,7 @@ type Config struct {
 	GroupId                   string `json:"group_id"`
 	DeviceTopic               string `json:"device_topic"`
 	DeviceTypeTopic           string `json:"device_type_topic"`
+	HubTopic                  string `json:"hub_topic"`
 	ProtocolTopic             string `json:"protocol_topic"`
 	PermissionsUrl            string `json:"permissions_url"`
 	MongoUrl                  string `json:"mongo_url"`
@@ -45,6 +46,7 @@ type Config struct {
 	MongoDeviceCollection     string `json:"mongo_device_collection"`
 	MongoDeviceTypeCollection string `json:"mongo_device_type_collection"`
 	MongoProtocolCollection   string `json:"mongo_protocol_collection"`
+	MongoHubCollection        string `json:"mongo_hub_collection"`
 	Debug                     bool   `json:"debug"`
 }
 

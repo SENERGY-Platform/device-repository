@@ -25,6 +25,13 @@ type DeviceCommand struct {
 	Device  model.Device `json:"device"`
 }
 
+type HubCommand struct {
+	Command string    `json:"command"`
+	Id      string    `json:"id"`
+	Owner   string    `json:"owner"`
+	Hub     model.Hub `json:"hub"`
+}
+
 type DeviceTypeCommand struct {
 	Command    string           `json:"command"`
 	Id         string           `json:"id"`
