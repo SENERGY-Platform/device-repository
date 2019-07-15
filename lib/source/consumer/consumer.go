@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package source
+package consumer
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/source/listener"
+	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
 	"log"
 )
 

@@ -17,12 +17,10 @@
 package controller
 
 import (
-	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"net/http"
-	"time"
 )
 
 /////////////////////////
@@ -30,7 +28,7 @@ import (
 /////////////////////////
 
 func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	device, exists, err := this.db.GetDevice(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -63,7 +61,7 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 	}
 
 	//device-type exists
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	_, ok, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -73,7 +71,7 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 	}
 
 	//local ids are globally unique
-	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ = getTimeoutContext()
 	d, ok, err := this.db.GetDeviceByLocalId(ctx, device.LocalId)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -92,31 +90,84 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 func (this *Controller) SetDevice(device model.Device, owner string) (err error) {
 	//prevent collision of local ids
 	//this if branch should be rarely needed if 2 devices are created at the same time with the same local_id (when the second device is validated before the creation of the first is finished)
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	d, collision, err := this.db.GetDeviceByLocalId(ctx, device.LocalId)
 	if err != nil {
 		return err
 	}
 	if collision && d.Id != device.Id {
+
+		//handle invalid device
 		device.LocalId = ""
+		ctx, _ = getTimeoutContext()
+		err = this.db.SetDevice(ctx, device)
+		if err != nil {
+			return err
+		}
+		return this.PublishDeviceDelete(device.Id, owner)
+
+	} else {
+
+		//update hub about changed device.local_id
+		ctx, _ = getTimeoutContext()
+		old, exists, err := this.db.GetDevice(ctx, device.Id)
+		if err != nil {
+			return err
+		}
+		if exists && old.LocalId != device.LocalId {
+			err = this.resetHubsForDeviceUpdate(old)
+		}
+
+		//save device
+		ctx, _ = getTimeoutContext()
+		return this.db.SetDevice(ctx, device)
 	}
-	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	err = this.db.SetDevice(ctx, device)
+
+}
+
+func (this *Controller) DeleteDevice(id string) error {
+	ctx, _ := getTimeoutContext()
+	old, exists, err := this.db.GetDevice(ctx, id)
 	if err != nil {
 		return err
 	}
-	if collision && d.Id != device.Id {
-		return this.PublishDeviceDelete(device.Id)
+	if exists {
+		ctx, _ := getTimeoutContext()
+		err := this.db.RemoveDevice(ctx, id)
+		if err != nil {
+			return err
+		}
+		return this.resetHubsForDeviceUpdate(old)
 	}
 	return nil
 }
 
-func (this *Controller) DeleteDevice(id string) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	return this.db.RemoveDevice(ctx, id)
+func (this *Controller) PublishDeviceDelete(id string, owner string) error {
+	return this.producer.PublishDeviceDelete(id, owner)
 }
 
-func (this *Controller) PublishDeviceDelete(id string) error {
-	//TODO
-	panic("not implemented")
+func (this *Controller) resetHubsForDeviceUpdate(old model.Device) error {
+	ctx, _ := getTimeoutContext()
+	hubs, err := this.db.GetHubsByDeviceLocalId(ctx, old.LocalId)
+	if err != nil {
+		return err
+	}
+	for _, hub := range hubs {
+		hub.DeviceLocalIds = filter(hub.DeviceLocalIds, old.LocalId)
+		hub.Hash = ""
+		err = this.producer.PublishHub(hub)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func filter(in []string, not string) (out []string) {
+	for _, str := range in {
+		if str != not {
+			out = append(out, str)
+		}
+	}
+	return
 }

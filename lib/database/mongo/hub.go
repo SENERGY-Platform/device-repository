@@ -26,8 +26,10 @@ import (
 )
 
 const hubIdFieldName = "Id"
+const hubDeviceLocalIdFieldName = "DeviceLocalIds"
 
 var hubIdKey string
+var hubDeviceLocalIdKey string
 
 func init() {
 	var err error
@@ -35,10 +37,18 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	hubDeviceLocalIdKey, err = getBsonFieldName(model.Hub{}, hubDeviceLocalIdFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoHubCollection)
 		err = db.ensureIndex(collection, "hubidindex", hubIdKey, true, true)
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "hubdevicelocalidindex", hubDeviceLocalIdKey, true, false)
 		if err != nil {
 			return err
 		}
@@ -71,4 +81,21 @@ func (this *Mongo) SetHub(ctx context.Context, hub model.Hub) error {
 func (this *Mongo) RemoveHub(ctx context.Context, id string) error {
 	_, err := this.hubCollection().DeleteOne(ctx, bson.M{hubIdKey: id})
 	return err
+}
+
+func (this *Mongo) GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []model.Hub, err error) {
+	cursor, err := this.hubCollection().Find(ctx, bson.M{hubDeviceLocalIdKey: localId})
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(ctx) {
+		hub := model.Hub{}
+		err = cursor.Decode(&hub)
+		if err != nil {
+			return nil, err
+		}
+		hubs = append(hubs, hub)
+	}
+	err = cursor.Err()
+	return hubs, err
 }

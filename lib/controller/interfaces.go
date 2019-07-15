@@ -27,3 +27,8 @@ type Security interface {
 	SortedList(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string, sortby string, sortdirection string) (ids []string, err error)
 	CheckList(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error)
 }
+
+type Producer interface {
+	PublishDeviceDelete(id string, owner string) error
+	PublishHub(hub model.Hub) (err error)
+}

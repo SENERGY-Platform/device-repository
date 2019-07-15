@@ -17,13 +17,16 @@
 package controller
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"time"
 )
 
-func New(config config.Config, db database.Database, security Security) (ctrl *Controller, err error) {
+func New(config config.Config, db database.Database, security Security, producer Producer) (ctrl *Controller, err error) {
 	ctrl = &Controller{
 		db:       db,
+		producer: producer,
 		security: security,
 		config:   config,
 	}
@@ -33,9 +36,14 @@ func New(config config.Config, db database.Database, security Security) (ctrl *C
 type Controller struct {
 	db       database.Database
 	security Security
+	producer Producer
 	config   config.Config
 }
 
 func (this *Controller) Stop() {
 	this.db.Disconnect()
+}
+
+func getTimeoutContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 10*time.Second)
 }

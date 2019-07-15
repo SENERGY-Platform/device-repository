@@ -17,12 +17,10 @@
 package controller
 
 import (
-	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"net/http"
-	"time"
 )
 
 /////////////////////////
@@ -30,7 +28,7 @@ import (
 /////////////////////////
 
 func (this *Controller) ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	deviceType, exists, err := this.db.GetDeviceType(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -42,7 +40,7 @@ func (this *Controller) ReadDeviceType(id string, jwt jwt_http_router.Jwt) (resu
 }
 
 func (this *Controller) ListDeviceTypes(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort)
 	return
 }
@@ -71,11 +69,11 @@ func (this *Controller) ValidateDeviceType(dt model.DeviceType) (err error, code
 /////////////////////////
 
 func (this *Controller) SetDeviceType(deviceType model.DeviceType, owner string) (err error) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	return this.db.SetDeviceType(ctx, deviceType)
 }
 
 func (this *Controller) DeleteDeviceType(id string) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	return this.db.RemoveDeviceType(ctx, id)
 }

@@ -22,7 +22,8 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/source"
+	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
+	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"log"
 )
 
@@ -39,14 +40,20 @@ func Start(conf config.Config) (stop func(), err error) {
 		return stop, err
 	}
 
-	ctrl, err := controller.New(conf, db, perm)
+	p, err := producer.New(conf)
+	if err != nil {
+		log.Println("ERROR: unable to create producer", err)
+		return stop, err
+	}
+
+	ctrl, err := controller.New(conf, db, perm, p)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
 		return stop, err
 	}
 
-	sourceStop, err := source.Start(conf, ctrl)
+	sourceStop, err := consumer.Start(conf, ctrl)
 	if err != nil {
 		db.Disconnect()
 		ctrl.Stop()

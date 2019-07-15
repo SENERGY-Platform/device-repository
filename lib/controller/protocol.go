@@ -17,12 +17,10 @@
 package controller
 
 import (
-	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"net/http"
-	"time"
 )
 
 /////////////////////////
@@ -30,7 +28,7 @@ import (
 /////////////////////////
 
 func (this *Controller) ReadProtocol(id string, jwt jwt_http_router.Jwt) (result model.Protocol, err error, errCode int) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	protocol, exists, err := this.db.GetProtocol(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -42,7 +40,7 @@ func (this *Controller) ReadProtocol(id string, jwt jwt_http_router.Jwt) (result
 }
 
 func (this *Controller) ListProtocols(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.Protocol, err error, errCode int) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListProtocols(ctx, limit, offset, sort)
 	return
 }
@@ -81,11 +79,11 @@ func (this *Controller) ValidateProtocol(protocol model.Protocol) (err error, co
 /////////////////////////
 
 func (this *Controller) SetProtocol(protocol model.Protocol, owner string) (err error) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	return this.db.SetProtocol(ctx, protocol)
 }
 
 func (this *Controller) DeleteProtocol(id string) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	return this.db.RemoveProtocol(ctx, id)
 }

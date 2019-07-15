@@ -23,7 +23,6 @@ import (
 
 type Database interface {
 	Disconnect()
-	Transaction(ctx context.Context) (context.Context, func(success bool) error, error)
 
 	GetDevice(ctx context.Context, id string) (device model.Device, exists bool, err error)
 	SetDevice(ctx context.Context, device model.Device) error
@@ -33,6 +32,7 @@ type Database interface {
 	GetHub(ctx context.Context, id string) (hub model.Hub, exists bool, err error)
 	SetHub(ctx context.Context, hub model.Hub) error
 	RemoveHub(ctx context.Context, id string) error
+	GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []model.Hub, err error)
 
 	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error

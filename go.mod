@@ -15,15 +15,15 @@ require (
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v0.1.1 // indirect
-	github.com/ory/dockertest v3.3.2+incompatible
-	github.com/pkg/errors v0.8.0
+	github.com/ory/dockertest v3.3.4+incompatible
+	github.com/pkg/errors v0.8.1
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.2.5
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/streadway/amqp v0.0.0-20180315184602-8e4aba63da9f
 	github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a
-	go.mongodb.org/mongo-driver v1.0.1
+	go.mongodb.org/mongo-driver v1.0.3
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
 	golang.org/x/text v0.3.2 // indirect
 )
