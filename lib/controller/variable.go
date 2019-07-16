@@ -23,7 +23,7 @@ import (
 	"strconv"
 )
 
-func ValidateVariable(variable model.Variable) (err error, code int) {
+func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 	if variable.Id == "" {
 		return errors.New("missing variable id"), http.StatusBadRequest
 	}
@@ -33,34 +33,30 @@ func ValidateVariable(variable model.Variable) (err error, code int) {
 	if variable.Type == "" {
 		return errors.New("missing variable type"), http.StatusBadRequest
 	}
-	err, code = ValidateProperty(variable.Property, variable.Type)
-	if err != nil {
-		return err, code
-	}
 	switch variable.Type {
 	case model.String:
-		if len(variable.SubVariables) > 0 {
+		if len(variable.SubContentVariables) > 0 {
 			return errors.New("strings can not have sub variables"), http.StatusBadRequest
 		}
 	case model.Integer:
-		if len(variable.SubVariables) > 0 {
+		if len(variable.SubContentVariables) > 0 {
 			return errors.New("integers can not have sub variables"), http.StatusBadRequest
 		}
 	case model.Float:
-		if len(variable.SubVariables) > 0 {
+		if len(variable.SubContentVariables) > 0 {
 			return errors.New("floats can not have sub variables"), http.StatusBadRequest
 		}
 	case model.Boolean:
-		if len(variable.SubVariables) > 0 {
+		if len(variable.SubContentVariables) > 0 {
 			return errors.New("booleans can not have sub variables"), http.StatusBadRequest
 		}
 	case model.List:
-		err, code = ValidateListSubVariables(variable.SubVariables)
+		err, code = ValidateListSubVariables(variable.SubContentVariables)
 		if err != nil {
 			return err, code
 		}
 	case model.Structure:
-		err, code = ValidateStructureSubVariables(variable.SubVariables)
+		err, code = ValidateStructureSubVariables(variable.SubContentVariables)
 		if err != nil {
 			return err, code
 		}
@@ -70,7 +66,7 @@ func ValidateVariable(variable model.Variable) (err error, code int) {
 	return nil, http.StatusOK
 }
 
-func ValidateListSubVariables(variables []model.Variable) (err error, code int) {
+func ValidateListSubVariables(variables []model.ContentVariable) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("lists expect sub variables"), http.StatusBadRequest
 	}
@@ -99,7 +95,7 @@ func ValidateListSubVariables(variables []model.Variable) (err error, code int) 
 	return nil, http.StatusOK
 }
 
-func ValidateStructureSubVariables(variables []model.Variable) (err error, code int) {
+func ValidateStructureSubVariables(variables []model.ContentVariable) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("structures expect sub variables"), http.StatusBadRequest
 	}
@@ -117,43 +113,6 @@ func ValidateStructureSubVariables(variables []model.Variable) (err error, code 
 		err, code = ValidateVariable(variable)
 		if err != nil {
 			return err, code
-		}
-	}
-	return nil, http.StatusOK
-}
-
-func ValidateProperty(property model.Property, variableType model.VariableType) (error, int) {
-	zero := model.Property{}
-	if property == zero {
-		return nil, http.StatusOK
-	}
-	if property.Id == "" {
-		return errors.New("missing property id"), http.StatusBadRequest
-	}
-	if property.Value != nil {
-		switch variableType {
-		case model.String:
-			if _, ok := property.Value.(string); !ok {
-				return errors.New("expect string as property value if variable has type " + string(model.String)), http.StatusBadRequest
-			}
-		case model.Integer:
-			if _, ok := property.Value.(float64); !ok {
-				return errors.New("expect number as property value if variable has type " + string(model.Integer)), http.StatusBadRequest
-			}
-		case model.Float:
-			if _, ok := property.Value.(float64); !ok {
-				return errors.New("expect number as property value if variable has type " + string(model.Float)), http.StatusBadRequest
-			}
-		case model.Boolean:
-			if _, ok := property.Value.(bool); !ok {
-				return errors.New("expect bool as property value if variable has type " + string(model.Boolean)), http.StatusBadRequest
-			}
-		case model.List:
-			return errors.New("lists dont support literal values in property"), http.StatusBadRequest
-		case model.Structure:
-			return errors.New("structures dont support literal values in property"), http.StatusBadRequest
-		default:
-			return errors.New("unknown variable type: " + string(variableType)), http.StatusBadRequest
 		}
 	}
 	return nil, http.StatusOK

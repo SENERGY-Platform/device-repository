@@ -16,17 +16,11 @@
 
 package model
 
-import "github.com/google/uuid"
-
 type Device struct {
 	Id           string `json:"id"`
 	LocalId      string `json:"local_id"`
 	Name         string `json:"name"`
 	DeviceTypeId string `json:"device_type_id"`
-}
-
-func (device *Device) GenerateId() {
-	device.Id = "urn:infai:ses:device:" + uuid.New().String()
 }
 
 type DeviceType struct {
@@ -37,10 +31,6 @@ type DeviceType struct {
 	Services    []Service `json:"services"`
 }
 
-func (deviceType *DeviceType) GenerateId() {
-	deviceType.Id = "urn:infai:ses:device-type:" + uuid.New().String()
-}
-
 type Service struct {
 	Id          string    `json:"id"`
 	LocalId     string    `json:"local_id"`
@@ -49,32 +39,4 @@ type Service struct {
 	ProtocolId  string    `json:"protocol_id"`
 	Inputs      []Content `json:"inputs"`
 	Outputs     []Content `json:"outputs"`
-}
-
-type VariableType string
-
-const (
-	String  VariableType = "string"
-	Integer VariableType = "int"
-	Float   VariableType = "float"
-	Boolean VariableType = "bool"
-
-	List      VariableType = "list"
-	Structure VariableType = "structure"
-)
-
-type Variable struct {
-	Id           string       `json:"id"`
-	Name         string       `json:"name"`
-	Type         VariableType `json:"type"`
-	SubVariables []Variable   `json:"sub_variables"`
-	Property     Property     `json:"property"`
-}
-
-type Property struct {
-	Id       string      `json:"id"`
-	Unit     string      `json:"unit"`
-	Value    interface{} `json:"value"`
-	MinValue float64     `json:"min_value"`
-	MaxValue float64     `json:"max_value"`
 }

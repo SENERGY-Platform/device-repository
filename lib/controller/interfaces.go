@@ -23,9 +23,6 @@ import (
 
 type Security interface {
 	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)
-	List(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string) (ids []string, err error)
-	SortedList(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string, sortby string, sortdirection string) (ids []string, err error)
-	CheckList(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error)
 }
 
 type Producer interface {

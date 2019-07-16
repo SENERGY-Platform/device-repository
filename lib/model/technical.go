@@ -37,16 +37,16 @@ type ProtocolSegment struct {
 
 type Content struct {
 	Id                   string                `json:"id"`
-	Variable             Variable              `json:"variable"`
+	ContentVariable      ContentVariable       `json:"content_variable"`
 	Serialization        Serialization         `json:"serialization"`
 	SerializationOptions []SerializationOption `json:"serialization_options"`
 	ProtocolSegmentId    string                `json:"protocol_segment_id"`
 }
 
 type SerializationOption struct {
-	Id         string `json:"id"`
-	Option     string `json:"option"`
-	VariableId string `json:"variable_id"`
+	Id                string `json:"id"`
+	Option            string `json:"option"`
+	ContentVariableId string `json:"content_variable_id"`
 }
 
 type Serialization string
@@ -65,4 +65,25 @@ func (this Serialization) Valid() bool {
 	default:
 		return false
 	}
+}
+
+type VariableType string
+
+const (
+	String  VariableType = "string"
+	Integer VariableType = "int"
+	Float   VariableType = "float"
+	Boolean VariableType = "bool"
+
+	List      VariableType = "list"
+	Structure VariableType = "structure"
+)
+
+type ContentVariable struct {
+	Id                  string            `json:"id"`
+	Name                string            `json:"name"`
+	Type                VariableType      `json:"type"`
+	SubContentVariables []ContentVariable `json:"sub_content_variables"`
+	ExactMatch          string            `json:"exact_match"`
+	Value               interface{}       `json:"value"`
 }
