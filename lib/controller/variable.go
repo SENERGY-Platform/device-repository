@@ -25,30 +25,30 @@ import (
 
 func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 	if variable.Id == "" {
-		return errors.New("missing variable id"), http.StatusBadRequest
+		return errors.New("missing content variable id"), http.StatusBadRequest
 	}
 	if variable.Name == "" {
-		return errors.New("missing variable name"), http.StatusBadRequest
+		return errors.New("missing content variable name"), http.StatusBadRequest
 	}
 	if variable.Type == "" {
-		return errors.New("missing variable type"), http.StatusBadRequest
+		return errors.New("missing content variable type"), http.StatusBadRequest
 	}
 	switch variable.Type {
 	case model.String:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("strings can not have sub variables"), http.StatusBadRequest
+			return errors.New("strings can not have sub content variables"), http.StatusBadRequest
 		}
 	case model.Integer:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("integers can not have sub variables"), http.StatusBadRequest
+			return errors.New("integers can not have sub content variables"), http.StatusBadRequest
 		}
 	case model.Float:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("floats can not have sub variables"), http.StatusBadRequest
+			return errors.New("floats can not have sub content variables"), http.StatusBadRequest
 		}
 	case model.Boolean:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("booleans can not have sub variables"), http.StatusBadRequest
+			return errors.New("booleans can not have sub content variables"), http.StatusBadRequest
 		}
 	case model.List:
 		err, code = ValidateListSubVariables(variable.SubContentVariables)
@@ -61,14 +61,14 @@ func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 			return err, code
 		}
 	default:
-		return errors.New("unknown variable type: " + string(variable.Type)), http.StatusBadRequest
+		return errors.New("unknown content variable type: " + string(variable.Type)), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }
 
 func ValidateListSubVariables(variables []model.ContentVariable) (err error, code int) {
 	if len(variables) == 0 {
-		return errors.New("lists expect sub variables"), http.StatusBadRequest
+		return errors.New("lists expect sub content variables"), http.StatusBadRequest
 	}
 	if variables[0].Name == "*" {
 		if len(variables) != 1 {
@@ -89,7 +89,7 @@ func ValidateListSubVariables(variables []model.ContentVariable) (err error, cod
 	}
 	for i := 0; i < len(variables); i++ {
 		if !nameIndex[strconv.Itoa(i)] {
-			return errors.New("missing index name '" + strconv.Itoa(i) + "' in list variable"), http.StatusBadRequest
+			return errors.New("missing index name '" + strconv.Itoa(i) + "' in list content variable"), http.StatusBadRequest
 		}
 	}
 	return nil, http.StatusOK
@@ -97,17 +97,17 @@ func ValidateListSubVariables(variables []model.ContentVariable) (err error, cod
 
 func ValidateStructureSubVariables(variables []model.ContentVariable) (err error, code int) {
 	if len(variables) == 0 {
-		return errors.New("structures expect sub variables"), http.StatusBadRequest
+		return errors.New("structures expect sub content variables"), http.StatusBadRequest
 	}
 	if variables[0].Name == "*" {
 		if len(variables) != 1 {
-			return errors.New("structures with name placeholder '*' work as maps of variable length -> only one sub variable may be defined"), http.StatusBadRequest
+			return errors.New("structures with name placeholder '*' work as maps of variable length -> only one sub content variable may be defined"), http.StatusBadRequest
 		}
 	}
 	nameIndex := map[string]bool{}
 	for _, variable := range variables {
 		if _, exists := nameIndex[variable.Name]; exists {
-			return errors.New("structure sub variable reuses name '" + variable.Name + "'"), http.StatusBadRequest
+			return errors.New("structure sub content variable reuses name '" + variable.Name + "'"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
 		err, code = ValidateVariable(variable)
