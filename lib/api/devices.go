@@ -40,6 +40,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 			http.Error(writer, err.Error(), errCode)
 			return
 		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
 			log.Println("ERROR: unable to encode response", err)
