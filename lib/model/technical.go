@@ -70,10 +70,10 @@ func (this Serialization) Valid() bool {
 type VariableType string
 
 const (
-	String  VariableType = "string"
-	Integer VariableType = "int"
-	Float   VariableType = "float"
-	Boolean VariableType = "bool"
+	String  VariableType = "xsd:string"
+	Integer VariableType = "xsd:integer"
+	Float   VariableType = "xsd:double"
+	Boolean VariableType = "xsd:boolean"
 
 	List      VariableType = "list"
 	Structure VariableType = "structure"
