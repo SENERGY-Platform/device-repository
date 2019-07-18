@@ -67,22 +67,22 @@ func (this Serialization) Valid() bool {
 	}
 }
 
-type VariableType string
+type ValueType string
 
 const (
-	String  VariableType = "xsd:string"
-	Integer VariableType = "xsd:integer"
-	Float   VariableType = "xsd:double"
-	Boolean VariableType = "xsd:boolean"
+	String  ValueType = "https://schema.org/Text"
+	Integer ValueType = "https://schema.org/Integer"
+	Float   ValueType = "https://schema.org/Float"
+	Boolean ValueType = "https://schema.org/Boolean"
 
-	List      VariableType = "list"
-	Structure VariableType = "structure"
+	List      ValueType = "https://schema.org/ItemList"
+	Structure ValueType = "https://schema.org/StructuredValue"
 )
 
 type ContentVariable struct {
 	Id                  string            `json:"id"`
 	Name                string            `json:"name"`
-	Type                VariableType      `json:"type"`
+	Type                ValueType         `json:"type"`
 	SubContentVariables []ContentVariable `json:"sub_content_variables"`
 	ExactMatch          string            `json:"exact_match"`
 	Value               interface{}       `json:"value"`
