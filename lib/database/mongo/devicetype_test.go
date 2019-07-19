@@ -72,14 +72,14 @@ func TestMongoDeviceType(t *testing.T) {
 			{
 				Inputs: []model.Content{
 					{
-						Variable: model.Variable{
+						ContentVariable: model.ContentVariable{
 							Id: "fooval1",
 						},
 					},
 				},
 				Outputs: []model.Content{
 					{
-						Variable: model.Variable{
+						ContentVariable: model.ContentVariable{
 							Id: "fooval2",
 						},
 					},
@@ -100,7 +100,7 @@ func TestMongoDeviceType(t *testing.T) {
 			{
 				Inputs: []model.Content{
 					{
-						Variable: model.Variable{
+						ContentVariable: model.ContentVariable{
 							Id: "fooval1",
 						},
 					},
@@ -135,14 +135,14 @@ func TestMongoDeviceType(t *testing.T) {
 			{
 				Inputs: []model.Content{
 					{
-						Variable: model.Variable{
+						ContentVariable: model.ContentVariable{
 							Id: "fooval1",
 						},
 					},
 				},
 				Outputs: []model.Content{
 					{
-						Variable: model.Variable{
+						ContentVariable: model.ContentVariable{
 							Id: "fooval2",
 						},
 					},

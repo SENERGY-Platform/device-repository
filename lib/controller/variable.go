@@ -30,10 +30,10 @@ func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 	if variable.Name == "" {
 		return errors.New("missing content variable name"), http.StatusBadRequest
 	}
-	if variable.Type == "" {
+	if variable.ValueType == "" {
 		return errors.New("missing content variable type"), http.StatusBadRequest
 	}
-	switch variable.Type {
+	switch variable.ValueType {
 	case model.String:
 		if len(variable.SubContentVariables) > 0 {
 			return errors.New("strings can not have sub content variables"), http.StatusBadRequest
@@ -61,7 +61,7 @@ func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 			return err, code
 		}
 	default:
-		return errors.New("unknown content variable type: " + string(variable.Type)), http.StatusBadRequest
+		return errors.New("unknown content value type: " + string(variable.ValueType)), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }

@@ -82,7 +82,7 @@ const (
 type ContentVariable struct {
 	Id                  string            `json:"id"`
 	Name                string            `json:"name"`
-	Type                ValueType         `json:"type"`
+	ValueType           ValueType         `json:"value_type"`
 	SubContentVariables []ContentVariable `json:"sub_content_variables"`
 	ExactMatch          string            `json:"exact_match"`
 	Value               interface{}       `json:"value"`
