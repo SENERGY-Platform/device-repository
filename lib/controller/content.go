@@ -35,15 +35,9 @@ func ValidateContent(content model.Content, protocol model.Protocol) (err error,
 	if !protocolContainsSegment(protocol, content.ProtocolSegmentId) {
 		return errors.New("protocol_segment_id does not match to protocol"), http.StatusBadRequest
 	}
-	err, code = ValidateVariable(content.ContentVariable)
+	err, code = ValidateVariable(content.ContentVariable, content.Serialization)
 	if err != nil {
 		return err, code
-	}
-	for _, option := range content.SerializationOptions {
-		err, code = ValidateSerializationOption(option, content.Serialization, content.ContentVariable)
-		if err != nil {
-			return err, code
-		}
 	}
 	return nil, http.StatusOK
 }
@@ -55,22 +49,4 @@ func protocolContainsSegment(protocol model.Protocol, segmentId string) bool {
 		}
 	}
 	return false
-}
-
-func ValidateSerializationOption(option model.SerializationOption, serialization model.Serialization, variable model.ContentVariable) (error, int) {
-	if option.Id == "" {
-		return errors.New("missing variable id"), http.StatusBadRequest
-	}
-	variables := []model.ContentVariable{variable}
-	exists := map[string]bool{}
-	for len(variables) > 0 {
-		var v model.ContentVariable
-		v, variables = variables[0], variables[1:]
-		exists[v.Id] = true
-		variables = append(variables, v.SubContentVariables...)
-	}
-	if _, ok := exists[option.ContentVariableId]; !ok {
-		return errors.New("serialization option reference to variable '" + option.ContentVariableId + "' not found"), http.StatusBadRequest
-	}
-	return nil, http.StatusOK
 }

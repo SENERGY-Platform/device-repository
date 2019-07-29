@@ -19,11 +19,13 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"log"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 )
 
-func ValidateVariable(variable model.ContentVariable) (err error, code int) {
+func ValidateVariable(variable model.ContentVariable, serialization model.Serialization) (err error, code int) {
 	if variable.Id == "" {
 		return errors.New("missing content variable id"), http.StatusBadRequest
 	}
@@ -32,6 +34,9 @@ func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 	}
 	if variable.ValueType == "" {
 		return errors.New("missing content variable type"), http.StatusBadRequest
+	}
+	if err := validateSerializationOptions(variable.SerializationOptions, serialization); err != nil {
+		return err, http.StatusBadRequest
 	}
 	switch variable.ValueType {
 	case model.String:
@@ -51,12 +56,12 @@ func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 			return errors.New("booleans can not have sub content variables"), http.StatusBadRequest
 		}
 	case model.List:
-		err, code = ValidateListSubVariables(variable.SubContentVariables)
+		err, code = ValidateListSubVariables(variable.SubContentVariables, serialization)
 		if err != nil {
 			return err, code
 		}
 	case model.Structure:
-		err, code = ValidateStructureSubVariables(variable.SubContentVariables)
+		err, code = ValidateStructureSubVariables(variable.SubContentVariables, serialization)
 		if err != nil {
 			return err, code
 		}
@@ -66,7 +71,13 @@ func ValidateVariable(variable model.ContentVariable) (err error, code int) {
 	return nil, http.StatusOK
 }
 
-func ValidateListSubVariables(variables []model.ContentVariable) (err error, code int) {
+func validateSerializationOptions(options []string, serialization model.Serialization) error {
+	log.Println("TODO:")
+	debug.PrintStack()
+	return nil
+}
+
+func ValidateListSubVariables(variables []model.ContentVariable, serialization model.Serialization) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("lists expect sub content variables"), http.StatusBadRequest
 	}
@@ -82,7 +93,7 @@ func ValidateListSubVariables(variables []model.ContentVariable) (err error, cod
 			return errors.New("name of list variable should be a number (if list is variable in length is may be defined with one element and the placeholder '*' as name)"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
-		err, code = ValidateVariable(variable)
+		err, code = ValidateVariable(variable, serialization)
 		if err != nil {
 			return err, code
 		}
@@ -95,7 +106,7 @@ func ValidateListSubVariables(variables []model.ContentVariable) (err error, cod
 	return nil, http.StatusOK
 }
 
-func ValidateStructureSubVariables(variables []model.ContentVariable) (err error, code int) {
+func ValidateStructureSubVariables(variables []model.ContentVariable, serialization model.Serialization) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("structures expect sub content variables"), http.StatusBadRequest
 	}
@@ -110,7 +121,7 @@ func ValidateStructureSubVariables(variables []model.ContentVariable) (err error
 			return errors.New("structure sub content variable reuses name '" + variable.Name + "'"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
-		err, code = ValidateVariable(variable)
+		err, code = ValidateVariable(variable, serialization)
 		if err != nil {
 			return err, code
 		}

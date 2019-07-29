@@ -36,17 +36,10 @@ type ProtocolSegment struct {
 }
 
 type Content struct {
-	Id                   string                `json:"id"`
-	ContentVariable      ContentVariable       `json:"content_variable"`
-	Serialization        Serialization         `json:"serialization"`
-	SerializationOptions []SerializationOption `json:"serialization_options"`
-	ProtocolSegmentId    string                `json:"protocol_segment_id"`
-}
-
-type SerializationOption struct {
-	Id                string `json:"id"`
-	Option            string `json:"option"`
-	ContentVariableId string `json:"content_variable_id"`
+	Id                string          `json:"id"`
+	ContentVariable   ContentVariable `json:"content_variable"`
+	Serialization     Serialization   `json:"serialization"`
+	ProtocolSegmentId string          `json:"protocol_segment_id"`
 }
 
 type Serialization string
@@ -80,10 +73,11 @@ const (
 )
 
 type ContentVariable struct {
-	Id                  string            `json:"id"`
-	Name                string            `json:"name"`
-	ValueType           ValueType         `json:"value_type"`
-	SubContentVariables []ContentVariable `json:"sub_content_variables"`
-	ExactMatch          string            `json:"exact_match"`
-	Value               interface{}       `json:"value"`
+	Id                   string            `json:"id"`
+	Name                 string            `json:"name"`
+	ValueType            ValueType         `json:"value_type"`
+	SubContentVariables  []ContentVariable `json:"sub_content_variables"`
+	ExactMatch           string            `json:"exact_match"`
+	Value                interface{}       `json:"value"`
+	SerializationOptions []string          `json:"serialization_options"`
 }
