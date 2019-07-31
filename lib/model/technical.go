@@ -77,7 +77,7 @@ type ContentVariable struct {
 	Name                 string            `json:"name"`
 	Type                 Type              `json:"type"`
 	SubContentVariables  []ContentVariable `json:"sub_content_variables"`
-	CharacteristicsId    string            `json:"characteristics_id"`
+	CharacteristicId     string            `json:"characteristic_id"`
 	Value                interface{}       `json:"value"`
 	SerializationOptions []string          `json:"serialization_options"`
 }
