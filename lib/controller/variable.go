@@ -32,13 +32,10 @@ func ValidateVariable(variable model.ContentVariable, serialization model.Serial
 	if variable.Name == "" {
 		return errors.New("missing content variable name"), http.StatusBadRequest
 	}
-	if variable.ValueType == "" {
+	if variable.Type == "" {
 		return errors.New("missing content variable type"), http.StatusBadRequest
 	}
-	if err := validateSerializationOptions(variable.SerializationOptions, serialization); err != nil {
-		return err, http.StatusBadRequest
-	}
-	switch variable.ValueType {
+	switch variable.Type {
 	case model.String:
 		if len(variable.SubContentVariables) > 0 {
 			return errors.New("strings can not have sub content variables"), http.StatusBadRequest
@@ -66,7 +63,7 @@ func ValidateVariable(variable model.ContentVariable, serialization model.Serial
 			return err, code
 		}
 	default:
-		return errors.New("unknown content value type: " + string(variable.ValueType)), http.StatusBadRequest
+		return errors.New("unknown content value type: " + string(variable.Type)), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }

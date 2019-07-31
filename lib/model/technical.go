@@ -60,24 +60,25 @@ func (this Serialization) Valid() bool {
 	}
 }
 
-type ValueType string
+type Type string
 
 const (
-	String  ValueType = "https://schema.org/Text"
-	Integer ValueType = "https://schema.org/Integer"
-	Float   ValueType = "https://schema.org/Float"
-	Boolean ValueType = "https://schema.org/Boolean"
+	String  Type = "https://schema.org/Text"
+	Integer Type = "https://schema.org/Integer"
+	Float   Type = "https://schema.org/Float"
+	Boolean Type = "https://schema.org/Boolean"
 
-	List      ValueType = "https://schema.org/ItemList"
-	Structure ValueType = "https://schema.org/StructuredValue"
+	List      Type = "https://schema.org/ItemList"
+	Structure Type = "https://schema.org/StructuredValue"
 )
 
 type ContentVariable struct {
 	Id                   string            `json:"id"`
 	Name                 string            `json:"name"`
-	ValueType            ValueType         `json:"value_type"`
+	Type                 Type              `json:"type"`
 	SubContentVariables  []ContentVariable `json:"sub_content_variables"`
-	ExactMatch           string            `json:"exact_match"`
+	CharacteristicsId    string            `json:"characteristics_id"`
 	Value                interface{}       `json:"value"`
 	SerializationOptions []string          `json:"serialization_options"`
 }
+
