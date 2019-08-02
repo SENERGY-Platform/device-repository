@@ -234,7 +234,8 @@ func (this *Controller) removeHubFromDevice(ctx context.Context, deviceId string
 		return err
 	}
 	if !exists {
-		return errors.New("device not found")
+		log.Println("WARNING: removeHubFromDevice(): device not found:", deviceId)
+		return nil
 	}
 	device.Gateway = ""
 	return this.db.SetDevice(ctx, device)
@@ -246,7 +247,8 @@ func (this *Controller) addHubToDevice(ctx context.Context, deviceId string, hub
 		return err
 	}
 	if !exists {
-		return errors.New("device not found")
+		log.Println("WARNING: addHubToDevice(): device not found:", deviceId)
+		return nil
 	}
 	device.Gateway = hubId
 	return this.db.SetDevice(ctx, device)
