@@ -46,6 +46,25 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (result m
 	return device, nil, http.StatusOK
 }
 
+func (this *Controller) ReadDeviceByLocalId(localId string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	device, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return result, errors.New("not found"), http.StatusNotFound
+	}
+	ok, err := this.security.CheckBool(jwt, this.config.DeviceTopic, localId, model.READ)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	return device, nil, http.StatusOK
+}
+
 func (this *Controller) ValidateDevice(device model.Device) (err error, code int) {
 	if device.Id == "" {
 		return errors.New("missing device id"), http.StatusBadRequest

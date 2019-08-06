@@ -35,7 +35,15 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
-		result, err, errCode := control.ReadDevice(id, jwt)
+		as := request.URL.Query().Get("as")
+		var result model.Device
+		var err error
+		var errCode int
+		if as == "local_id" {
+			result, err, errCode = control.ReadDeviceByLocalId(id, jwt)
+		} else {
+			result, err, errCode = control.ReadDevice(id, jwt)
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

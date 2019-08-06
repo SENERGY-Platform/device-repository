@@ -378,6 +378,7 @@ type Publisher struct {
 	config      config.Config
 	devicetypes *kafka.Writer
 	protocols   *kafka.Writer
+	devices     *kafka.Writer
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
@@ -392,11 +393,15 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
+	devices, err := getProducer(broker, conf.DeviceTopic, conf.LogLevel == "DEBUG")
+	if err != nil {
+		return nil, err
+	}
 	protocols, err := getProducer(broker, conf.ProtocolTopic, conf.LogLevel == "DEBUG")
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols}, nil
+	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices}, nil
 }
 
 func getProducer(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {
@@ -497,6 +502,13 @@ type DeviceTypeCommand struct {
 	DeviceType model.DeviceType `json:"device_type"`
 }
 
+type DeviceCommand struct {
+	Command string       `json:"command"`
+	Id      string       `json:"id"`
+	Owner   string       `json:"owner"`
+	Device  model.Device `json:"device"`
+}
+
 func (this *Publisher) PublishDeviceType(device model.DeviceType, userId string) (err error) {
 	cmd := DeviceTypeCommand{Command: "PUT", Id: device.Id, DeviceType: device, Owner: userId}
 	return this.PublishDeviceTypeCommand(cmd)
@@ -517,6 +529,34 @@ func (this *Publisher) PublishDeviceTypeCommand(cmd DeviceTypeCommand) error {
 		return err
 	}
 	err = this.devicetypes.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+func (this *Publisher) PublishDevice(device model.Device, userId string) (err error) {
+	cmd := DeviceCommand{Command: "PUT", Id: device.Id, Device: device, Owner: userId}
+	return this.PublishDeviceCommand(cmd)
+}
+
+func (this *Publisher) PublishDeviceCommand(cmd DeviceCommand) error {
+	if this.config.LogLevel == "DEBUG" {
+		log.Println("DEBUG: produce", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.devices.WriteMessages(
 		context.Background(),
 		kafka.Message{
 			Key:   []byte(cmd.Id),
