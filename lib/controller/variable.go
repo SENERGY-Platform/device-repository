@@ -33,24 +33,24 @@ func ValidateVariable(variable model.ContentVariable, serialization model.Serial
 		return errors.New("missing content variable name"), http.StatusBadRequest
 	}
 	if variable.Type == "" {
-		return errors.New("missing content variable type"), http.StatusBadRequest
+		return errors.New("missing content variable type for " + variable.Name), http.StatusBadRequest
 	}
 	switch variable.Type {
 	case model.String:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("strings can not have sub content variables"), http.StatusBadRequest
+			return errors.New("strings can not have sub content variables for " + variable.Name), http.StatusBadRequest
 		}
 	case model.Integer:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("integers can not have sub content variables"), http.StatusBadRequest
+			return errors.New("integers can not have sub content variables for " + variable.Name), http.StatusBadRequest
 		}
 	case model.Float:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("floats can not have sub content variables"), http.StatusBadRequest
+			return errors.New("floats can not have sub content variables for " + variable.Name), http.StatusBadRequest
 		}
 	case model.Boolean:
 		if len(variable.SubContentVariables) > 0 {
-			return errors.New("booleans can not have sub content variables"), http.StatusBadRequest
+			return errors.New("booleans can not have sub content variables for " + variable.Name), http.StatusBadRequest
 		}
 	case model.List:
 		err, code = ValidateListSubVariables(variable.SubContentVariables, serialization)
@@ -63,7 +63,7 @@ func ValidateVariable(variable model.ContentVariable, serialization model.Serial
 			return err, code
 		}
 	default:
-		return errors.New("unknown content value type: " + string(variable.Type)), http.StatusBadRequest
+		return errors.New("unknown content value type: " + string(variable.Type) + " in " + variable.Name), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }
