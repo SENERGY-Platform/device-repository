@@ -48,6 +48,13 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 		return
 	})
 
+	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		id := params.ByName("id")
+		_, _, errCode := control.ReadHub(id, jwt)
+		writer.WriteHeader(errCode)
+		return
+	})
+
 	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
