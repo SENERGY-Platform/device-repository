@@ -33,16 +33,24 @@ func init() {
 func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
 	resource := "/devices"
 
+	//use 'as=local_id' query parameter to search device by local_id
+	//use 'p' query parameter to limit selection to a permission;
+	//		used internally to guarantee that user has needed permission for the resource
+	//		example: 'p=x' guaranties the user has execution rights
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
 		as := request.URL.Query().Get("as")
+		permission := model.AuthAction(request.URL.Query().Get("p"))
+		if permission == "" {
+			permission = model.READ
+		}
 		var result model.Device
 		var err error
 		var errCode int
 		if as == "local_id" {
-			result, err, errCode = control.ReadDeviceByLocalId(id, jwt)
+			result, err, errCode = control.ReadDeviceByLocalId(id, jwt, permission)
 		} else {
-			result, err, errCode = control.ReadDevice(id, jwt)
+			result, err, errCode = control.ReadDevice(id, jwt, permission)
 		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

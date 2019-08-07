@@ -22,11 +22,11 @@ import (
 )
 
 type Controller interface {
-	ReadDevice(id string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int)
-	ReadDeviceByLocalId(localId string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int)
+	ReadDevice(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Device, err error, errCode int)
+	ReadDeviceByLocalId(localId string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Device, err error, errCode int)
 	ValidateDevice(device model.Device) (err error, code int)
 
-	ReadHub(id string, jwt jwt_http_router.Jwt) (result model.Hub, err error, errCode int)
+	ReadHub(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Hub, err error, errCode int)
 	ValidateHub(hub model.Hub) (err error, code int)
 
 	ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int)

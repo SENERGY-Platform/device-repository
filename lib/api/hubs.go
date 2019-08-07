@@ -33,9 +33,16 @@ func init() {
 func HubEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
 	resource := "/hubs"
 
+	//use 'p' query parameter to limit selection to a permission;
+	//		used internally to guarantee that user has needed permission for the resource
+	//		example: 'p=x' guaranties the user has execution rights
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
-		result, err, errCode := control.ReadHub(id, jwt)
+		permission := model.AuthAction(request.URL.Query().Get("p"))
+		if permission == "" {
+			permission = model.READ
+		}
+		result, err, errCode := control.ReadHub(id, jwt, permission)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -48,9 +55,16 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 		return
 	})
 
+	//use 'p' query parameter to limit selection to a permission;
+	//		used internally to guarantee that user has needed permission for the resource
+	//		example: 'p=x' guaranties the user has execution rights
 	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		permission := model.AuthAction(request.URL.Query().Get("p"))
+		if permission == "" {
+			permission = model.READ
+		}
 		id := params.ByName("id")
-		_, _, errCode := control.ReadHub(id, jwt)
+		_, _, errCode := control.ReadHub(id, jwt, permission)
 		writer.WriteHeader(errCode)
 		return
 	})

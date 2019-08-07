@@ -27,7 +27,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int) {
+func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Device, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	device, exists, err := this.db.GetDevice(ctx, id)
 	if err != nil {
@@ -36,7 +36,7 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (result m
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(jwt, this.config.DeviceTopic, id, model.READ)
+	ok, err := this.security.CheckBool(jwt, this.config.DeviceTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -46,7 +46,7 @@ func (this *Controller) ReadDevice(id string, jwt jwt_http_router.Jwt) (result m
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) ReadDeviceByLocalId(localId string, jwt jwt_http_router.Jwt) (result model.Device, err error, errCode int) {
+func (this *Controller) ReadDeviceByLocalId(localId string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Device, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	device, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
 	if err != nil {
@@ -55,7 +55,7 @@ func (this *Controller) ReadDeviceByLocalId(localId string, jwt jwt_http_router.
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(jwt, this.config.DeviceTopic, localId, model.READ)
+	ok, err := this.security.CheckBool(jwt, this.config.DeviceTopic, localId, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

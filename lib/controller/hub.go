@@ -29,7 +29,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt) (result model.Hub, err error, errCode int) {
+func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Hub, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	hub, exists, err := this.db.GetHub(ctx, id)
 	if err != nil {
@@ -38,7 +38,7 @@ func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt) (result mode
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(jwt, this.config.HubTopic, id, model.READ)
+	ok, err := this.security.CheckBool(jwt, this.config.HubTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

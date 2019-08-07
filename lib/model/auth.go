@@ -16,11 +16,15 @@
 
 package model
 
-type AuthAction int
+type AuthAction string
 
 const (
-	READ AuthAction = iota
-	WRITE
-	EXECUTE
-	ADMINISTRATE
+	READ         AuthAction = "r"
+	WRITE        AuthAction = "w"
+	EXECUTE      AuthAction = "x"
+	ADMINISTRATE AuthAction = "a"
 )
+
+func (this AuthAction) String() string {
+	return string(this)
+}

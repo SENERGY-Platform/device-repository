@@ -37,20 +37,6 @@ type Security struct {
 	config config.Config
 }
 
-func authActionToString(action model.AuthAction) (right string) {
-	switch action {
-	case model.READ:
-		right = "r"
-	case model.WRITE:
-		right = "w"
-	case model.EXECUTE:
-		right = "x"
-	case model.ADMINISTRATE:
-		right = "a"
-	}
-	return
-}
-
 type IdWrapper struct {
 	Id string `json:"id"`
 }
@@ -72,8 +58,7 @@ func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string,
 	if IsAdmin(jwt) {
 		return true, nil
 	}
-	right := authActionToString(action)
-	req, err := http.NewRequest("GET", this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+right+"/bool", nil)
+	req, err := http.NewRequest("GET", this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+action.String()+"/bool", nil)
 	if err != nil {
 		debug.PrintStack()
 		return false, err
