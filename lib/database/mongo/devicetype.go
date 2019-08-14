@@ -29,9 +29,15 @@ import (
 
 const deviceTypeIdFieldName = "Id"
 const deviceTypeNameFieldName = "Name"
+const deviceTypeServiceFieldName = "Services"
+const serviceIdFieldName = "Id"
 
 var deviceTypeIdKey string
 var deviceTypeNameKey string
+var serviceIdKey string
+var deviceTypeServicesKey string
+
+var deviceTypeByServicePath string
 
 func init() {
 	var err error
@@ -43,6 +49,16 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	deviceTypeServicesKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeServiceFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	deviceTypeByServicePath = deviceTypeServicesKey + "." + serviceIdKey
 
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceTypeCollection)
@@ -51,6 +67,10 @@ func init() {
 			return err
 		}
 		err = db.ensureIndex(collection, "devicetypenameindex", deviceTypeNameKey, true, false)
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "devicetypeserviceindex", deviceTypeByServicePath, true, false)
 		if err != nil {
 			return err
 		}
@@ -120,4 +140,25 @@ func (this *Mongo) SetDeviceType(ctx context.Context, deviceType model.DeviceTyp
 func (this *Mongo) RemoveDeviceType(ctx context.Context, id string) error {
 	_, err := this.deviceTypeCollection().DeleteOne(ctx, bson.M{deviceTypeIdKey: id})
 	return err
+}
+
+func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId string) (result []model.DeviceType, err error) {
+	opt := options.Find()
+	opt.SetLimit(2)
+	opt.SetSkip(0)
+
+	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{deviceTypeByServicePath: serviceId}, opt)
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		deviceType := model.DeviceType{}
+		err = cursor.Decode(&deviceType)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, deviceType)
+	}
+	err = cursor.Err()
+	return
 }

@@ -17,10 +17,12 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"net/http"
+	"time"
 )
 
 /////////////////////////
@@ -56,6 +58,17 @@ func (this *Controller) ValidateDeviceType(dt model.DeviceType) (err error, code
 		return errors.New("expect at least one service"), http.StatusBadRequest
 	}
 	for _, service := range dt.Services {
+		ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+		deviceTypes, err := this.db.GetDeviceTypesByServiceId(ctx, service.Id)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		if len(deviceTypes) > 1 {
+			return errors.New("reused service id"), http.StatusBadRequest
+		}
+		if len(deviceTypes) == 1 && deviceTypes[0].Id != dt.Id {
+			return errors.New("reused service id"), http.StatusBadRequest
+		}
 		err, code = this.ValidateService(service)
 		if err != nil {
 			return err, code

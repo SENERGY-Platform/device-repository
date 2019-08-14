@@ -38,6 +38,7 @@ type Database interface {
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
 	RemoveDeviceType(ctx context.Context, id string) error
 	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceType, err error)
+	GetDeviceTypesByServiceId(ctx context.Context, serviceId string) ([]model.DeviceType, error)
 
 	GetProtocol(ctx context.Context, id string) (result model.Protocol, exists bool, err error)
 	ListProtocols(ctx context.Context, limit int64, offset int64, sort string) ([]model.Protocol, error)

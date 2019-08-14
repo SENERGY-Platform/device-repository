@@ -70,6 +70,7 @@ func TestMongoDeviceType(t *testing.T) {
 		Name: "foo1",
 		Services: []model.Service{
 			{
+				Id: "s1",
 				Inputs: []model.Content{
 					{
 						ContentVariable: model.ContentVariable{
@@ -98,6 +99,7 @@ func TestMongoDeviceType(t *testing.T) {
 		Name: "foo2",
 		Services: []model.Service{
 			{
+				Id: "s2",
 				Inputs: []model.Content{
 					{
 						ContentVariable: model.ContentVariable{
@@ -133,6 +135,7 @@ func TestMongoDeviceType(t *testing.T) {
 		Name: "foo1changed",
 		Services: []model.Service{
 			{
+				Id: "s1",
 				Inputs: []model.Content{
 					{
 						ContentVariable: model.ContentVariable{
@@ -201,5 +204,159 @@ func TestMongoDeviceType(t *testing.T) {
 	if exists {
 		t.Error("dt should not exist", dt)
 		return
+	}
+}
+
+func TestMongoDeviceTypeByService(t *testing.T) {
+	conf, err := config.Load("../../../config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	pool, err := dockertest.NewPool("")
+	if err != nil {
+		t.Error("Could not connect to docker: ", err)
+		return
+	}
+	closer, port, _, err := MongoTestServer(pool)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if true {
+		defer closer()
+	}
+	conf.MongoUrl = "mongodb://localhost:" + port
+	m, err := New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	_, exists, err := m.GetDeviceType(ctx, "does_not_exist")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if exists {
+		t.Error("device type should not exist")
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	err = m.SetDeviceType(ctx, model.DeviceType{
+		Id:   "foobar1",
+		Name: "foo1",
+		Services: []model.Service{
+			{
+				Id: "s1",
+				Inputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id: "fooval1",
+						},
+					},
+				},
+				Outputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id: "fooval2",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	err = m.SetDeviceType(ctx, model.DeviceType{
+		Id:   "foobar2",
+		Name: "foo2",
+		Services: []model.Service{
+			{
+				Id: "s2",
+				Inputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id: "fooval1",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = m.SetDeviceType(ctx, model.DeviceType{
+		Id:   "foobar1",
+		Name: "foo1changed",
+		Services: []model.Service{
+			{
+				Id: "s1",
+				Inputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id: "fooval1",
+						},
+					},
+				},
+				Outputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id: "fooval2",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	devicetypes, err := m.GetDeviceTypesByServiceId(ctx, "s1")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(devicetypes) != 1 {
+		t.Fatal(devicetypes)
+	}
+	if devicetypes[0].Id != "foobar1" {
+		t.Fatal(devicetypes)
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	devicetypes, err = m.GetDeviceTypesByServiceId(ctx, "s2")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(devicetypes) != 1 {
+		t.Fatal(devicetypes)
+	}
+	if devicetypes[0].Id != "foobar2" {
+		t.Fatal(devicetypes)
+	}
+
+	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	devicetypes, err = m.GetDeviceTypesByServiceId(ctx, "s3")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(devicetypes) != 0 {
+		t.Fatal(devicetypes)
 	}
 }
