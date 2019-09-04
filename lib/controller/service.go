@@ -53,3 +53,22 @@ func (this *Controller) ValidateService(service model.Service) (error, int) {
 	}
 	return nil, http.StatusOK
 }
+
+func (this *Controller) GetService(id string) (result model.Service, err error, code int) {
+	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	dts, err := this.db.GetDeviceTypesByServiceId(ctx, id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if len(dts) == 0 {
+		return result, errors.New("not found"), http.StatusNotFound
+	}
+	for _, dt := range dts {
+		for _, service := range dt.Services {
+			if service.Id == id {
+				return service, nil, 200
+			}
+		}
+	}
+	return result, errors.New("not found"), http.StatusNotFound
+}

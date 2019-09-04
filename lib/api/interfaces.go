@@ -36,4 +36,6 @@ type Controller interface {
 	ReadProtocol(id string, jwt jwt_http_router.Jwt) (result model.Protocol, err error, errCode int)
 	ListProtocols(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.Protocol, err error, errCode int)
 	ValidateProtocol(protocol model.Protocol) (err error, code int)
+
+	GetService(id string) (result model.Service, err error, code int)
 }
