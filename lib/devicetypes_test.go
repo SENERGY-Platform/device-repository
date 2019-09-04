@@ -34,6 +34,34 @@ var devicetype1name = uuid.NewV4().String()
 var devicetype2id = uuid.NewV4().String()
 var devicetype2name = uuid.NewV4().String()
 
+func TestServiceQuery(t *testing.T) {
+	closer, conf, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if true {
+		defer closer()
+	}
+
+	producer, err := NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	t.Run("testServiceRead", func(t *testing.T) {
+		testServiceRead(t, conf, model.Service{Id: "service_42", Name: "foo"})
+	})
+}
+
 func TestDeviceTypeQuery(t *testing.T) {
 	closer, conf, err := createTestEnv()
 	if err != nil {
@@ -43,13 +71,6 @@ func TestDeviceTypeQuery(t *testing.T) {
 		defer closer()
 	}
 
-	/*
-		err = InitTopic(conf.ZookeeperUrl, conf.DeviceTypeTopic)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-	*/
 	producer, err := NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
@@ -88,6 +109,18 @@ func TestDeviceTypeQuery(t *testing.T) {
 	t.Run("testDeviceTypeListSort", func(t *testing.T) {
 		testDeviceTypeListSort(t, conf)
 	})
+
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	t.Run("testServiceRead", func(t *testing.T) {
+		testServiceRead(t, conf, model.Service{Id: "service_42", Name: "foo"})
+	})
 }
 
 func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.DeviceType) {
@@ -107,6 +140,29 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 		return
 	}
 	result := model.DeviceType{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Error(err)
+	}
+	if result.Name != expected.Name {
+		t.Error("unexpected result", result)
+		return
+	}
+}
+
+func testServiceRead(t *testing.T, conf config.Config, expected model.Service) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/services/" + url.PathEscape(expected.Id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	result := model.Service{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
