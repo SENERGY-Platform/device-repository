@@ -17,20 +17,15 @@
 package com
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"net/http"
-
-	"net/url"
-
-	"errors"
-
+	"bytes"
 	"encoding/json"
+	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"net/http"
+	"net/url"
+	"runtime/debug"
 
-	"strconv"
-
-	"log"
-
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
 	"github.com/SmartEnergyPlatform/jwt-http-router"
 )
 
@@ -42,182 +37,48 @@ type Security struct {
 	config config.Config
 }
 
-func authActionToString(action model.AuthAction) (right string) {
-	switch action {
-	case model.READ:
-		right = "r"
-	case model.WRITE:
-		right = "w"
-	case model.EXECUTE:
-		right = "x"
-	case model.ADMINISTRATE:
-		right = "a"
-	}
-	return
-}
-
 type IdWrapper struct {
 	Id string `json:"id"`
 }
 
-func (this *Security) Check(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (err error) {
-	right := authActionToString(action)
-	result := false
-	err = jwt.Impersonate.GetJSON(this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+right+"/bool", &result)
-	if err != nil {
-		log.Println("DEBUG: permissions.Check:", err)
-		return err
+func IsAdmin(jwt jwt_http_router.Jwt) bool {
+	return contains(jwt.RealmAccess.Roles, "admin")
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
 	}
-	if !result {
-		err = errors.New("access denied")
-	}
-	return
+	return false
 }
 
 func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error) {
-	right := authActionToString(action)
-	err = jwt.Impersonate.GetJSON(this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+right+"/bool", &allowed)
+	if IsAdmin(jwt) {
+		return true, nil
+	}
+	req, err := http.NewRequest("GET", this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+action.String()+"/bool", nil)
 	if err != nil {
-		log.Println("DEBUG: permissions.Check:", err)
+		debug.PrintStack()
+		return false, err
 	}
-	return
-}
-
-func (this *Security) CheckList(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
-	right := authActionToString(action)
-	err = jwt.Impersonate.PostJSON(this.config.PermissionsUrl+"/ids/check/"+url.QueryEscape(kind)+"/"+right, ids, &result)
-	return
-}
-
-func (this *Security) ListAll(jwt jwt_http_router.Jwt, kind string, action model.AuthAction) (result []IdWrapper, err error) {
-	//"/jwt/list/:resource_kind/:right"
-	right := authActionToString(action)
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/list/" + url.QueryEscape(kind) + "/" + right)
+	req.Header.Set("Authorization", string(jwt.Impersonate))
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return result, err
+		debug.PrintStack()
+		return false, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("access denied")
-		return result, err
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		return false, errors.New(buf.String())
 	}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	return
-}
-
-func (this *Security) List(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string) (ids []string, err error) {
-	//"/jwt/list/:resource_kind/:right"
-	right := authActionToString(action)
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/list/" + url.QueryEscape(kind) + "/" + right + "/" + limit + "/" + offset)
+	err = json.NewDecoder(resp.Body).Decode(&allowed)
 	if err != nil {
-		return ids, err
+		debug.PrintStack()
+		return false, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("access denied")
-		return ids, err
-	}
-	var result []IdWrapper
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return ids, err
-	}
-	for _, id := range result {
-		ids = append(ids, id.Id)
-	}
-	return
-}
-
-func (this *Security) SortedList(jwt jwt_http_router.Jwt, kind string, action model.AuthAction, limit string, offset string, sortby string, sortdirection string) (ids []string, err error) {
-	//"/jwt/list/:resource_kind/:right"
-	right := authActionToString(action)
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/list/" + url.QueryEscape(kind) + "/" + right + "/" + limit + "/" + offset + "/" + sortby + "/" + sortdirection)
-	if err != nil {
-		return ids, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("access denied")
-		return ids, err
-	}
-	var result []IdWrapper
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return ids, err
-	}
-	for _, id := range result {
-		ids = append(ids, id.Id)
-	}
-	return
-}
-
-func (this *Security) Search(jwt jwt_http_router.Jwt, kind string, query string, action model.AuthAction, limit string, offset string) (result []IdWrapper, err error) {
-	//"/jwt/search/:resource_kind/:query/:right/:limit/:offset"
-	right := authActionToString(action)
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/search/" + url.QueryEscape(kind) + "/" + url.QueryEscape(query) + "/" + right + "/" + limit + "/" + offset)
-	if err != nil {
-		return result, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("access denied")
-		return result, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	return
-}
-
-func (this *Security) SearchAll(jwt jwt_http_router.Jwt, kind string, query string, action model.AuthAction) (result []IdWrapper, err error) {
-	//"/jwt/search/:resource_kind/:query/:right"
-	right := authActionToString(action)
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/search/" + url.QueryEscape(kind) + "/" + url.QueryEscape(query) + "/" + right)
-	if err != nil {
-		return result, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("access denied")
-		return result, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	return
-}
-
-func (this *Security) SelectFieldAll(jwt jwt_http_router.Jwt, kind string, field string, value string, action model.AuthAction) (result []IdWrapper, err error) {
-	//"/jwt/select/:resource_kind/:field/:value/:right"
-	right := authActionToString(action)
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/select/" + url.QueryEscape(kind) + "/" + url.QueryEscape(field) + "/" + url.QueryEscape(value) + "/" + right)
-	if err != nil {
-		return result, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("access denied")
-		return result, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	return
-}
-
-func (this *Security) SelectField(jwt jwt_http_router.Jwt, kind string, field string, value string, action model.AuthAction, limit string, offset string, sortby string, sortdirection string) (result []IdWrapper, err error) {
-	//"/jwt/select/:resource_kind/:field/:value/:right"
-	right := authActionToString(action)
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/jwt/select/" + url.QueryEscape(kind) + "/" + url.QueryEscape(field) + "/" + url.QueryEscape(value) + "/" + right + "/" + limit + "/" + offset + "/" + sortby + "/" + sortdirection)
-	if err != nil {
-		return result, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("access denied")
-		return result, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	return
-}
-
-func (this *Security) Exists(jwt jwt_http_router.Jwt, kind string, id string) (exists bool, err error) {
-	// /administrate/exists/:resource_kind/:resource
-	resp, err := jwt.Impersonate.Get(this.config.PermissionsUrl + "/administrate/exists/" + url.QueryEscape(kind) + "/" + url.QueryEscape(id))
-	if err != nil {
-		return exists, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		err = errors.New("existence check request responds with " + strconv.Itoa(resp.StatusCode))
-		return exists, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&exists)
-	return
+	return true, nil
 }

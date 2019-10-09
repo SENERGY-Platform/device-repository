@@ -14,35 +14,31 @@
  * limitations under the License.
  */
 
-package main
+package listener
 
 import (
-	"flag"
-	"github.com/SENERGY-Platform/device-repository/lib"
+	"encoding/json"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
-func main() {
-	configLocation := flag.String("config", "config.json", "configuration file")
-	flag.Parse()
+func init() {
+	Factories = append(Factories, ProtocolListenerFactory)
+}
 
-	conf, err := config.Load(*configLocation)
-	if err != nil {
-		log.Fatal("ERROR: unable to load config", err)
-	}
-
-	stop, err := lib.Start(conf)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stop()
-
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-	sig := <-shutdown
-	log.Println("received shutdown signal", sig)
+func ProtocolListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
+	return config.ProtocolTopic, func(msg []byte) (err error) {
+		command := ProtocolCommand{}
+		err = json.Unmarshal(msg, &command)
+		if err != nil {
+			return
+		}
+		switch command.Command {
+		case "PUT":
+			return control.SetProtocol(command.Protocol, command.Owner)
+		case "DELETE":
+			return control.DeleteProtocol(command.Id)
+		}
+		return errors.New("unable to handle command: " + string(msg))
+	}, nil
 }

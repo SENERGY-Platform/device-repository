@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package controller
+package model
 
-import (
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
+type AuthAction string
+
+const (
+	READ         AuthAction = "r"
+	WRITE        AuthAction = "w"
+	EXECUTE      AuthAction = "x"
+	ADMINISTRATE AuthAction = "a"
 )
 
-type Security interface {
-	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)
-}
-
-type Producer interface {
-	PublishDeviceDelete(id string, owner string) error
-	PublishHub(hub model.Hub) (err error)
+func (this AuthAction) String() string {
+	return string(this)
 }

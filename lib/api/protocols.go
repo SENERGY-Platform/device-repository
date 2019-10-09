@@ -27,22 +27,15 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, HubEndpoints)
+	endpoints = append(endpoints, ProtocolEndpoints)
 }
 
-func HubEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
-	resource := "/hubs"
+func ProtocolEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
+	resource := "/protocols"
 
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
-		permission := model.AuthAction(request.URL.Query().Get("p"))
-		if permission == "" {
-			permission = model.READ
-		}
-		result, err, errCode := control.ReadHub(id, jwt, permission)
+		result, err, errCode := control.ReadProtocol(id, jwt)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -55,17 +48,55 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 		return
 	})
 
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
-	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		permission := model.AuthAction(request.URL.Query().Get("p"))
-		if permission == "" {
-			permission = model.READ
+	/*
+			query params:
+			- limit: number; default 100
+		    - offset: number; default 0
+			- sort: <field>[.<direction>]; optional;
+				- field: 'name', 'id'; defined at github.com/SENERGY-Platform/device-repository/lib/database/mongo/protocol.go ListProtocols()
+				- direction: 'asc' || 'desc'; optional
+				- examples:
+					?sort=name.asc
+					?sort=name
+	*/
+	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		var err error
+
+		limitParam := request.URL.Query().Get("limit")
+		var limit int64 = 100
+		if limitParam != "" {
+			limit, err = strconv.ParseInt(limitParam, 10, 64)
 		}
-		id := params.ByName("id")
-		_, _, errCode := control.ReadHub(id, jwt, permission)
-		writer.WriteHeader(errCode)
+		if err != nil {
+			http.Error(writer, "unable to parse limit:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		offsetParam := request.URL.Query().Get("offset")
+		var offset int64 = 0
+		if offsetParam != "" {
+			offset, err = strconv.ParseInt(offsetParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse offset:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		sort := request.URL.Query().Get("sort")
+		if sort == "" {
+			sort = "name.asc"
+		}
+
+		result, err, errCode := control.ListProtocols(jwt, limit, offset, sort)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
 		return
 	})
 
@@ -79,13 +110,13 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		hub := model.Hub{}
-		err = json.NewDecoder(request.Body).Decode(&hub)
+		dt := model.Protocol{}
+		err = json.NewDecoder(request.Body).Decode(&dt)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateHub(hub)
+		err, code := control.ValidateProtocol(dt)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

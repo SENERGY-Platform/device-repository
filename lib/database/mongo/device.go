@@ -18,8 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -27,49 +26,33 @@ import (
 )
 
 const deviceIdFieldName = "Id"
-const deviceUrlFieldName = "Url"
-const deviceDeviceTypeFieldName = "DeviceType"
-const deviceHubFieldName = "Gateway"
+const deviceLocalIdFieldName = "LocalId"
 
 var deviceIdKey string
-var deviceUrlKey string
-var deviceDeviceTypeKey string
-var deviceHubKey string
+var deviceLocalIdKey string
 
 func init() {
 	var err error
-	deviceIdKey, err = getBsonFieldName(model.DeviceInstance{}, deviceIdFieldName)
+	deviceIdKey, err = getBsonFieldName(model.Device{}, deviceIdFieldName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	deviceUrlKey, err = getBsonFieldName(model.DeviceInstance{}, deviceUrlFieldName)
+	deviceLocalIdKey, err = getBsonFieldName(model.Device{}, deviceLocalIdFieldName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	deviceDeviceTypeKey, err = getBsonFieldName(model.DeviceInstance{}, deviceDeviceTypeFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceHubKey, err = getBsonFieldName(model.DeviceInstance{}, deviceHubFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceCollection)
 		err = db.ensureIndex(collection, "deviceidindex", deviceIdKey, true, true)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "deviceurlindex", deviceUrlKey, true, true)
+		err = db.ensureIndex(collection, "devicelocalidindex", deviceLocalIdKey, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "devicedevicetypeindex", deviceDeviceTypeKey, true, false)
-		if err != nil {
-			return err
-		}
-		err = db.ensureIndex(collection, "devicehubindex", deviceHubKey, true, false)
-		return err
+		return nil
 	})
 }
 
@@ -77,8 +60,8 @@ func (this *Mongo) deviceCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceCollection)
 }
 
-func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.DeviceInstance, exists bool, err error) {
-	result := this.deviceCollection().FindOne(ctx, bson.D{{deviceIdKey, id}})
+func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.Device, exists bool, err error) {
+	result := this.deviceCollection().FindOne(ctx, bson.M{deviceIdKey: id})
 	err = result.Err()
 	if err != nil {
 		return
@@ -90,7 +73,7 @@ func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.Devic
 	return device, true, err
 }
 
-func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceInstance) error {
+func (this *Mongo) SetDevice(ctx context.Context, device model.Device) error {
 	_, err := this.deviceCollection().ReplaceOne(ctx, bson.M{deviceIdKey: device.Id}, device, options.Replace().SetUpsert(true))
 	return err
 }
@@ -100,68 +83,8 @@ func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListDevicesOfDeviceType(ctx context.Context, deviceTypeId string, listoptions ...listoptions.ListOptions) (result []model.DeviceInstance, err error) {
-	opt := options.Find()
-	if len(listoptions) > 0 {
-		if limit, ok := listoptions[0].GetLimit(); ok {
-			opt.SetLimit(limit)
-		}
-		if offset, ok := listoptions[0].GetOffset(); ok {
-			opt.SetSkip(offset)
-		}
-		err = listoptions[0].EvalStrict()
-		if err != nil {
-			return result, err
-		}
-	}
-	cursor, err := this.deviceCollection().Find(ctx, bson.M{deviceDeviceTypeKey: deviceTypeId}, opt)
-	if err != nil {
-		return nil, err
-	}
-	for cursor.Next(context.Background()) {
-		device := model.DeviceInstance{}
-		err = cursor.Decode(&device)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, device)
-	}
-	err = cursor.Err()
-	return
-}
-
-func (this *Mongo) ListDevicesWithHub(ctx context.Context, id string, listoptions ...listoptions.ListOptions) (result []model.DeviceInstance, err error) {
-	opt := options.Find()
-	if len(listoptions) > 0 {
-		if limit, ok := listoptions[0].GetLimit(); ok {
-			opt.SetLimit(limit)
-		}
-		if offset, ok := listoptions[0].GetOffset(); ok {
-			opt.SetSkip(offset)
-		}
-		err = listoptions[0].EvalStrict()
-		if err != nil {
-			return result, err
-		}
-	}
-	cursor, err := this.deviceCollection().Find(ctx, bson.M{deviceHubKey: id}, opt)
-	if err != nil {
-		return nil, err
-	}
-	for cursor.Next(context.Background()) {
-		device := model.DeviceInstance{}
-		err = cursor.Decode(&device)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, device)
-	}
-	err = cursor.Err()
-	return
-}
-
-func (this *Mongo) GetDeviceByUri(ctx context.Context, uri string) (device model.DeviceInstance, exists bool, err error) {
-	result := this.deviceCollection().FindOne(ctx, bson.D{{deviceUrlKey, uri}})
+func (this *Mongo) GetDeviceByLocalId(ctx context.Context, localId string) (device model.Device, exists bool, err error) {
+	result := this.deviceCollection().FindOne(ctx, bson.M{deviceLocalIdKey: localId})
 	err = result.Err()
 	if err != nil {
 		return

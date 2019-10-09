@@ -14,35 +14,12 @@
  * limitations under the License.
  */
 
-package main
+package listener
 
 import (
-	"flag"
-	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
-func main() {
-	configLocation := flag.String("config", "config.json", "configuration file")
-	flag.Parse()
+type Listener func(msg []byte) (err error)
 
-	conf, err := config.Load(*configLocation)
-	if err != nil {
-		log.Fatal("ERROR: unable to load config", err)
-	}
-
-	stop, err := lib.Start(conf)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stop()
-
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-	sig := <-shutdown
-	log.Println("received shutdown signal", sig)
-}
+var Factories = []func(config config.Config, control Controller) (topic string, listener Listener, err error){}

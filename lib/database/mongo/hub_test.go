@@ -19,14 +19,13 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/ory/dockertest"
 	"testing"
 	"time"
 )
 
-func TestMongoHub(t *testing.T) {
-
+func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
@@ -53,76 +52,33 @@ func TestMongoHub(t *testing.T) {
 		return
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	_, exists, err := m.GetHub(ctx, "does_not_exist")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err = m.SetHub(ctx, model.Hub{Id: "hid1", Name: "h1", DeviceLocalIds: []string{"a", "b"}})
 	if err != nil {
-		t.Error(err)
-		return
-	}
-	if exists {
-		t.Error("hub should not exist")
-		return
+		t.Fatal(err)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetHub(ctx, model.Hub{Id: "foobar", Name: "foo"})
+	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	err = m.SetHub(ctx, model.Hub{Id: "hid2", Name: "h2", DeviceLocalIds: []string{"b", "c"}})
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	hub, exists, err := m.GetHub(ctx, "foobar")
+	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	hubs, err := m.GetHubsByDeviceLocalId(ctx, "a")
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
-	if !exists {
-		t.Error("hub should exist")
-		return
-	}
-	if hub.Id != "foobar" || hub.Name != "foo" {
-		t.Error("unexpected result", hub)
-		return
+	if len(hubs) != 1 || hubs[0].Id != "hid1" {
+		t.Fatal(hubs)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetHub(ctx, model.Hub{Id: "foobar", Name: "foo2"})
+	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	hubs, err = m.GetHubsByDeviceLocalId(ctx, "b")
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
-
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	hub, exists, err = m.GetHub(ctx, "foobar")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if !exists {
-		t.Error("hub should exist")
-		return
-	}
-	if hub.Id != "foobar" || hub.Name != "foo2" {
-		t.Error("unexpected result", hub)
-		return
-	}
-
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.RemoveHub(ctx, "foobar")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	_, exists, err = m.GetHub(ctx, "foobar")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if exists {
-		t.Error("hub should not exist")
-		return
+	if len(hubs) != 2 {
+		t.Fatal(hubs)
 	}
 }

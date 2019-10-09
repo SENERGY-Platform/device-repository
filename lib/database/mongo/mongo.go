@@ -38,7 +38,7 @@ type Mongo struct {
 var CreateCollections = []func(db *Mongo) error{}
 
 func New(conf config.Config) (*Mongo, error) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.MongoUrl))
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (this *Mongo) Transaction(ctx context.Context) (resultCtx context.Context, 
 }
 
 func (this *Mongo) ensureIndex(collection *mongo.Collection, indexname string, indexKey string, asc bool, unique bool) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	var direction int32 = -1
 	if asc {
 		direction = 1
@@ -106,7 +106,7 @@ func (this *Mongo) ensureIndex(collection *mongo.Collection, indexname string, i
 }
 
 func (this *Mongo) ensureCompoundIndex(collection *mongo.Collection, indexname string, asc bool, unique bool, indexKeys ...string) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, _ := getTimeoutContext()
 	var direction int32 = -1
 	if asc {
 		direction = 1
@@ -133,4 +133,8 @@ func getBsonFieldName(obj interface{}, fieldName string) (bsonName string, err e
 	}
 	tags, err := bsoncodec.DefaultStructTagParser.ParseStructTags(field)
 	return tags.Name, err
+}
+
+func getTimeoutContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 10*time.Second)
 }

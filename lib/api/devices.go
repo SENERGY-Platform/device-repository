@@ -19,11 +19,11 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func init() {
@@ -33,13 +33,30 @@ func init() {
 func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
 	resource := "/devices"
 
+	//use 'as=local_id' query parameter to search device by local_id
+	//use 'p' query parameter to limit selection to a permission;
+	//		used internally to guarantee that user has needed permission for the resource
+	//		example: 'p=x' guaranties the user has execution rights
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		id := params.ByName("id")
-		result, err, errCode := control.ReadDevice(id, jwt)
+		as := request.URL.Query().Get("as")
+		permission := model.AuthAction(request.URL.Query().Get("p"))
+		if permission == "" {
+			permission = model.READ
+		}
+		var result model.Device
+		var err error
+		var errCode int
+		if as == "local_id" {
+			result, err, errCode = control.ReadDeviceByLocalId(id, jwt, permission)
+		} else {
+			result, err, errCode = control.ReadDevice(id, jwt, permission)
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
 		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
 			log.Println("ERROR: unable to encode response", err)
@@ -47,90 +64,28 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 		return
 	})
 
-	/*
-			query params:
-			- limit: number; default 100
-		    - offset: number; default 0
-			- permission: 'r' || 'w' || 'x' || 'x'; default 'r'
-			- sort: <field>[.<direction>]; optional;
-				- field: declared by https://github.com/SENERGY-Platform/permission-search/config.json -> Resources.deviceinstance.Features[*].Name
-				- direction: 'asc' || 'desc'; optional
-				- examples:
-					?sort=name.asc
-					?sort=name
-	*/
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-		options, err := listoptions.FromQueryParameter(request, 100, 0)
+	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		options.Strict()
-		result, err, errCode := control.ListDevices(jwt, options)
-		if err != nil {
-			http.Error(writer, err.Error(), errCode)
+		if !dryRun {
+			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		err = json.NewEncoder(writer).Encode(result)
+		device := model.Device{}
+		err = json.NewDecoder(request.Body).Decode(&device)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
 		}
-		return
+		err, code := control.ValidateDevice(device)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		writer.WriteHeader(http.StatusOK)
 	})
 
-	if config.Commands {
-
-		router.POST(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			device := model.DeviceInstance{}
-			err := json.NewDecoder(request.Body).Decode(&device)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				return
-			}
-			result, err, errCode := control.PublishDeviceCreate(jwt, device)
-			if err != nil {
-				http.Error(writer, err.Error(), errCode)
-				return
-			}
-			err = json.NewEncoder(writer).Encode(result)
-			if err != nil {
-				log.Println("ERROR: unable to encode response", err)
-			}
-			return
-		})
-
-		router.PUT(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			id := params.ByName("id")
-			device := model.DeviceInstance{}
-			err := json.NewDecoder(request.Body).Decode(&device)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				return
-			}
-			result, err, errCode := control.PublishDeviceUpdate(jwt, id, device)
-			if err != nil {
-				http.Error(writer, err.Error(), errCode)
-				return
-			}
-			err = json.NewEncoder(writer).Encode(result)
-			if err != nil {
-				log.Println("ERROR: unable to encode response", err)
-			}
-			return
-		})
-
-		router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
-			id := params.ByName("id")
-			err, errCode := control.PublishDeviceDelete(jwt, id)
-			if err != nil {
-				http.Error(writer, err.Error(), errCode)
-				return
-			}
-			err = json.NewEncoder(writer).Encode(true)
-			if err != nil {
-				log.Println("ERROR: unable to encode response", err)
-			}
-			return
-		})
-	}
 }

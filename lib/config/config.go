@@ -33,25 +33,21 @@ type Config struct {
 	ForceUser                 bool   `json:"force_user"`
 	LogLevel                  string `json:"log_level"` //DEBUG | CALL | NONE
 	ServerPort                string `json:"server_port"`
-	AmqpUrl                   string `json:"amqp_url"`
-	AmqpConsumerName          string `json:"amqp_consumer_name"`
-	AmqpReconnectTimeout      int64  `json:"amqp_reconnect_timeout"`
-	DeviceInstanceTopic       string `json:"device_instance_topic"`
+	ZookeeperUrl              string `json:"zookeeper_url"`
+	GroupId                   string `json:"group_id"`
+	DeviceTopic               string `json:"device_topic"`
 	DeviceTypeTopic           string `json:"device_type_topic"`
 	HubTopic                  string `json:"hub_topic"`
-	ValueTypeTopic            string `json:"value_type_topic"`
+	ProtocolTopic             string `json:"protocol_topic"`
 	PermissionsUrl            string `json:"permissions_url"`
 	MongoUrl                  string `json:"mongo_url"`
-	MongoDeleteByFlag         bool   `json:"mongo_delete_by_flag"`
 	MongoReplSet              bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
 	MongoTable                string `json:"mongo_table"`
 	MongoDeviceCollection     string `json:"mongo_device_collection"`
 	MongoDeviceTypeCollection string `json:"mongo_device_type_collection"`
-	MongoEndpointCollection   string `json:"mongo_endpoint_collection"`
+	MongoProtocolCollection   string `json:"mongo_protocol_collection"`
 	MongoHubCollection        string `json:"mongo_hub_collection"`
-	MongoValueTypeCollection  string `json:"mongo_value_type_collection"`
-
-	Commands bool `json:"commands"`
+	Debug                     bool   `json:"debug"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

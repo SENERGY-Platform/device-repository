@@ -1,0 +1,115 @@
+{
+
+  "beispiel_1_hex_measuring_function_variable": {
+    "variable": {
+      "id": "urn:infai:ses:variable:121212a",
+      "type": "string",
+      "name": "hex"
+    }
+  },
+
+  "beispiel_1_lum_measuring_function_variable": {
+    "variable": {
+      "id": "urn:infai:ses:variable:111222333abc",
+      "name": "lum",
+      "type": "int",
+      "property": {
+        "id": "urn:infai:ses:property:123asd",
+        "unit": "lux"
+      }
+    }
+  },
+
+  "beispiel_1_rgb_lum_service_variable_error": {
+    "error": true,
+    "variable": {
+      "id": "placeholder",
+      "name": "rgb_lum",
+      "type": "structure",
+      "mapping": [
+        {
+          "conversion": "rgb_to_hex",
+          "input": ["r","g","b"],
+          "output": ["urn:infai:ses:variable:121212a"]
+        },
+        {
+          "input": ["lum"],
+          "output": ["urn:infai:ses:variable:111222333abc"]
+        }
+      ],
+      "sub_variables": [
+        {
+          "id": "urn:infai:ses:variable:1112a",
+          "name": "r",
+          "type": "int",
+          "property": {
+            "id": "urn:infai:ses:property:123123123asd",
+            "min_value": 0,
+            "max_value": 255
+          }
+        }
+      ]
+    }
+  },
+
+  "beispiel_1_rgb_lum_service_variable": {
+    "variable": {
+      "id": "placeholder",
+      "name": "rgb_lum",
+      "type": "structure",
+      "mapping": [
+        {
+          "conversion": "rgb_to_hex",
+          "input": ["r","g","b"],
+          "output": ["urn:infai:ses:variable:121212a"]
+        },
+        {
+          "input": ["lum"],
+          "output": ["urn:infai:ses:variable:111222333abc"]
+        }
+      ],
+      "sub_variables": [
+        {
+          "id": "urn:infai:ses:variable:1112a",
+          "name": "r",
+          "type": "int",
+          "property": {
+            "id": "urn:infai:ses:property:123123123asd",
+            "min_value": 0,
+            "max_value": 255
+          }
+        },
+        {
+          "id": "urn:infai:ses:variable:1113a",
+          "name": "g",
+          "type": "int",
+          "property": {
+            "id": "urn:infai:ses:property:1231231233asd",
+            "min_value": 0,
+            "max_value": 255
+          }
+        },
+        {
+          "id": "urn:infai:ses:variable:1114a",
+          "name": "b",
+          "type": "int",
+          "property": {
+            "id": "urn:infai:ses:property:1231231234asd",
+            "min_value": 0,
+            "max_value": 255
+          }
+        },
+        {
+          "id": "urn:infai:ses:variable:1115a",
+          "name": "lum",
+          "type": "int",
+          "property": {
+            "id": "urn:infai:ses:property:123123123asd",
+            "unit": "lux"
+          }
+        }
+
+      ]
+    }
+  }
+}

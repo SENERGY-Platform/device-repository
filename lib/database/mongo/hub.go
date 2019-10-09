@@ -18,8 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/database/listoptions"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -27,8 +26,10 @@ import (
 )
 
 const hubIdFieldName = "Id"
+const hubDeviceLocalIdFieldName = "DeviceLocalIds"
 
 var hubIdKey string
+var hubDeviceLocalIdKey string
 
 func init() {
 	var err error
@@ -36,10 +37,22 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	hubDeviceLocalIdKey, err = getBsonFieldName(model.Hub{}, hubDeviceLocalIdFieldName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoHubCollection)
 		err = db.ensureIndex(collection, "hubidindex", hubIdKey, true, true)
-		return err
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "hubdevicelocalidindex", hubDeviceLocalIdKey, true, false)
+		if err != nil {
+			return err
+		}
+		return nil
 	})
 }
 
@@ -48,7 +61,7 @@ func (this *Mongo) hubCollection() *mongo.Collection {
 }
 
 func (this *Mongo) GetHub(ctx context.Context, id string) (hub model.Hub, exists bool, err error) {
-	result := this.hubCollection().FindOne(ctx, bson.D{{hubIdKey, id}})
+	result := this.hubCollection().FindOne(ctx, bson.M{hubIdKey: id})
 	err = result.Err()
 	if err != nil {
 		return
@@ -70,26 +83,19 @@ func (this *Mongo) RemoveHub(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListHubs(ctx context.Context, listoptions listoptions.ListOptions) (result []model.Hub, err error) {
-	opt := options.Find()
-	if limit, ok := listoptions.GetLimit(); ok {
-		opt.SetLimit(limit)
-	}
-	if offset, ok := listoptions.GetOffset(); ok {
-		opt.SetSkip(offset)
-	}
-	cursor, err := this.hubCollection().Find(ctx, bson.M{}, opt)
+func (this *Mongo) GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []model.Hub, err error) {
+	cursor, err := this.hubCollection().Find(ctx, bson.M{hubDeviceLocalIdKey: localId})
 	if err != nil {
 		return nil, err
 	}
-	for cursor.Next(context.Background()) {
+	for cursor.Next(ctx) {
 		hub := model.Hub{}
 		err = cursor.Decode(&hub)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, hub)
+		hubs = append(hubs, hub)
 	}
 	err = cursor.Err()
-	return
+	return hubs, err
 }

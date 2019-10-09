@@ -17,286 +17,110 @@
 package controller
 
 import (
-	"context"
 	"errors"
-	"github.com/SENERGY-Platform/iot-device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
-	"time"
+	"runtime/debug"
 )
 
-var HubNotFoundError = errors.New("hub not found")
+/////////////////////////
+//		api
+/////////////////////////
 
-func (this *Controller) PublishHubCreate(jwt jwt_http_router.Jwt, hub model.Hub) (result model.Hub, err error, errCode int) {
-	hub.Id = generateId()
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	valid, gw, err := this.hubToFlatGateway(ctx, hub)
-	if err != nil {
-		errCode = http.StatusInternalServerError
-		return result, err, errCode
-	}
-	if !valid {
-		return hub, errors.New("invalid"), http.StatusBadRequest
-	}
-	err = this.source.PublishHub(gw, jwt.UserId)
-	if err != nil {
-		errCode = http.StatusInternalServerError
-	}
-	result = hub
-	return
-}
-
-func (this *Controller) PublishHubUpdate(jwt jwt_http_router.Jwt, id string, hub model.Hub) (result model.Hub, err error, errCode int) {
-	if id != hub.Id {
-		return hub, errors.New("hub.id different from update id"), http.StatusBadRequest
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	valid, gw, err := this.hubToFlatGateway(ctx, hub)
-	if err != nil {
-		errCode = http.StatusInternalServerError
-		return result, err, errCode
-	}
-	if !valid {
-		return hub, errors.New("invalid"), http.StatusBadRequest
-	}
-	allowed, err := this.security.CheckBool(jwt, this.config.HubTopic, hub.Id, model.WRITE)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
-	}
-	if !allowed {
-		return result, errors.New("access denied"), http.StatusForbidden
-	}
-	err = this.source.PublishHub(gw, jwt.UserId)
-	if err != nil {
-		errCode = http.StatusInternalServerError
-	}
-	result = hub
-	return
-}
-
-func (this *Controller) PublishHubDelete(jwt jwt_http_router.Jwt, id string) (err error, errCode int) {
-	allowed, err := this.security.CheckBool(jwt, this.config.HubTopic, id, model.ADMINISTRATE)
-	if err != nil {
-		return err, http.StatusInternalServerError
-	}
-	if !allowed {
-		return errors.New("access denied"), http.StatusForbidden
-	}
-	err = this.source.PublishHubDelete(id)
-	if err != nil {
-		errCode = http.StatusInternalServerError
-	}
-	return
-}
-
-func (this *Controller) ReadHub(jwt jwt_http_router.Jwt, id string) (result model.Hub, err error, errCode int) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	result, exists, err := this.db.GetHub(ctx, id)
+func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Hub, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	hub, exists, err := this.db.GetHub(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	if !exists {
-		return result, HubNotFoundError, http.StatusNotFound
+		return result, errors.New("not found"), http.StatusNotFound
 	}
-	access, err := this.security.CheckBool(jwt, this.config.HubTopic, id, model.READ)
+	ok, err := this.security.CheckBool(jwt, this.config.HubTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
-	}
-	if !access {
-		return result, errors.New("access denied"), http.StatusForbidden
-	}
-	return result, nil, http.StatusOK
-}
-
-func (this *Controller) ReadHubDevices(jwt jwt_http_router.Jwt, id string, as string) (result []string, err error, errCode int) {
-	var hub model.Hub
-	hub, err, errCode = this.ReadHub(jwt, id)
-	if err != nil {
-		return
-	}
-	if as == "uri" || as == "url" || as == "" {
-		return hub.Devices, nil, http.StatusOK
-	} else if as == "id" {
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		valid, flat, err := this.hubToFlatGateway(ctx, hub)
-		if err != nil {
-			return result, err, http.StatusBadRequest
-		}
-		if !valid {
-			return result, errors.New("inconsistent data"), http.StatusInternalServerError
-		}
-		return flat.Devices, err, errCode
-	} else {
-		return result, errors.New("unknown value for 'as' query parameter"), http.StatusBadRequest
-	}
-}
-
-func (this *Controller) SetHub(gw model.GatewayFlat, owner string) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	transaction, finish, err := this.db.Transaction(ctx)
-	if err != nil {
-		return err
-	}
-	ok, hub, err := this.flatGatewayToHub(transaction, gw)
-	if err != nil {
-		_ = finish(false)
-		return err
 	}
 	if !ok {
-		log.Println("ERROR: invalid gateway command; ignore", gw)
-		_ = finish(true)
-		return nil
+		return result, errors.New("access denied"), http.StatusForbidden
 	}
-	err = this.updateDeviceHubs(transaction, gw)
-	if err != nil {
-		_ = finish(false)
-		return err
-	}
-	err = this.db.SetHub(transaction, hub)
-	if err != nil {
-		_ = finish(false)
-		return err
-	}
-	return finish(true)
+	return hub, nil, http.StatusOK
 }
 
-func (this *Controller) DeleteHub(id string, owner string) error {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	transaction, finish, err := this.db.Transaction(ctx)
-	if err != nil {
-		return err
+func (this *Controller) ValidateHub(hub model.Hub) (err error, code int) {
+	if hub.Id == "" {
+		return errors.New("missing hub id"), http.StatusBadRequest
 	}
-	hub, exists, err := this.db.GetHub(transaction, id)
-	if err != nil {
-		_ = finish(false)
-		return err
+	if hub.Name == "" {
+		return errors.New("missing hub name"), http.StatusBadRequest
 	}
-	if !exists {
-		return finish(true)
-	}
-	for _, device := range hub.Devices {
-		err = this.removeHubFromDevice(transaction, device)
+	for _, localId := range hub.DeviceLocalIds {
+		//device exists?
+		ctx, _ := getTimeoutContext()
+		_, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
 		if err != nil {
-			_ = finish(false)
-			return err
-		}
-	}
-	err = this.db.RemoveHub(transaction, id)
-	if err != nil {
-		_ = finish(false)
-		return err
-	}
-	return finish(true)
-}
-
-//updates devices using this hub to ether remove or add hub.id to device.gateway
-func (this *Controller) updateDeviceHubs(ctx context.Context, hub model.GatewayFlat) error {
-	devices, err := this.db.ListDevicesWithHub(ctx, hub.Id)
-	if err != nil {
-		return err
-	}
-
-	inHubList := map[string]bool{}
-	for _, id := range hub.Devices {
-		inHubList[id] = true
-	}
-
-	inDeviceList := map[string]bool{}
-	for _, device := range devices {
-		inDeviceList[device.Id] = true
-	}
-
-	for _, device := range devices {
-		if !inHubList[device.Id] {
-			device.Gateway = ""
-			err = this.db.SetDevice(ctx, device) //remove hub ref from device
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	for _, device := range hub.Devices {
-		if !inDeviceList[device] {
-			err = this.addHubToDevice(ctx, device, hub.Id)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (this *Controller) removeHubFromDevice(ctx context.Context, deviceId string) error {
-	device, exists, err := this.db.GetDevice(ctx, deviceId)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Println("WARNING: removeHubFromDevice(): device not found:", deviceId)
-		return nil
-	}
-	device.Gateway = ""
-	return this.db.SetDevice(ctx, device)
-}
-
-func (this *Controller) addHubToDevice(ctx context.Context, deviceId string, hubId string) error {
-	device, exists, err := this.db.GetDevice(ctx, deviceId)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Println("WARNING: addHubToDevice(): device not found:", deviceId)
-		return nil
-	}
-	device.Gateway = hubId
-	return this.db.SetDevice(ctx, device)
-}
-
-func (this *Controller) resetHubOfDevice(ctx context.Context, device model.DeviceInstance) error {
-	if device.Gateway != "" {
-		hub, exists, err := this.db.GetHub(ctx, device.Gateway)
-		if err != nil {
-			return err
+			return err, http.StatusInternalServerError
 		}
 		if !exists {
-			return HubNotFoundError
+			return errors.New("unknown device local id: " + localId), http.StatusBadRequest
 		}
-		if hub.Name != "" {
-			err = this.source.PublishHub(model.GatewayFlat{Id: hub.Id, Name: hub.Name, Hash: "", Devices: []string{}}, "")
-			if err != nil {
-				return err
+
+	}
+
+	return nil, http.StatusOK
+}
+
+/////////////////////////
+//		source
+/////////////////////////
+
+func (this *Controller) SetHub(hub model.Hub, owner string) (err error) {
+	if hub.Id == "" {
+		log.Println("ERROR: received hub without id")
+		return nil
+	}
+	if err, _ := this.ValidateHub(hub); err != nil {
+		log.Println("ERROR: ", err)
+		debug.PrintStack()
+		if hub.Name == "" {
+			hub.Name = "generated-name"
+		}
+		hub.DeviceLocalIds = []string{}
+		hub.Hash = ""
+		return this.producer.PublishHub(hub)
+	}
+	hubIndex := map[string]model.Hub{}
+	for _, lid := range hub.DeviceLocalIds {
+		ctx, _ := getTimeoutContext()
+		hubs, err := this.db.GetHubsByDeviceLocalId(ctx, lid)
+		if err != nil {
+			return err
+		}
+		for _, hub2 := range hubs {
+			if hub2.Id != hub.Id {
+				hubIndex[hub2.Id] = hub2
 			}
 		}
 	}
-	return nil
+	for _, lid := range hub.DeviceLocalIds {
+		for _, hub2 := range hubIndex {
+			hub2.DeviceLocalIds = filter(hub2.DeviceLocalIds, lid)
+			hubIndex[hub2.Id] = hub2
+		}
+	}
+	for _, hub2 := range hubIndex {
+		err := this.producer.PublishHub(hub2)
+		if err != nil {
+			return err
+		}
+	}
+
+	ctx, _ := getTimeoutContext()
+	return this.db.SetHub(ctx, hub)
 }
 
-func (this *Controller) flatGatewayToHub(ctx context.Context, flat model.GatewayFlat) (valid bool, result model.Hub, err error) {
-	result.Id = flat.Id
-	result.Name = flat.Name
-	result.Hash = flat.Hash
-	for _, deviceId := range flat.Devices {
-		device, exists, err := this.db.GetDevice(ctx, deviceId)
-		if err != nil || !exists {
-			return exists, result, err
-		}
-		result.Devices = append(result.Devices, device.Url)
-	}
-	return true, result, nil
-}
-
-func (this *Controller) hubToFlatGateway(ctx context.Context, hub model.Hub) (valid bool, result model.GatewayFlat, err error) {
-	result.Id = hub.Id
-	result.Name = hub.Name
-	result.Hash = hub.Hash
-	for _, deviceUri := range hub.Devices {
-		device, exists, err := this.db.GetDeviceByUri(ctx, deviceUri)
-		if err != nil || !exists {
-			return exists, result, err
-		}
-		result.Devices = append(result.Devices, device.Id)
-	}
-	return true, result, nil
+func (this *Controller) DeleteHub(id string) error {
+	ctx, _ := getTimeoutContext()
+	return this.db.RemoveHub(ctx, id)
 }

@@ -17,33 +17,33 @@
 package controller
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	uuid "github.com/satori/go.uuid"
+	"time"
 )
 
-func New(config config.Config, db database.Database, security Security, sourceFactory func(*Controller) (Publisher, error)) (ctrl *Controller, err error) {
+func New(config config.Config, db database.Database, security Security, producer Producer) (ctrl *Controller, err error) {
 	ctrl = &Controller{
 		db:       db,
+		producer: producer,
 		security: security,
 		config:   config,
 	}
-	ctrl.source, err = sourceFactory(ctrl)
 	return
 }
 
 type Controller struct {
 	db       database.Database
 	security Security
+	producer Producer
 	config   config.Config
-	source   Publisher
 }
 
 func (this *Controller) Stop() {
 	this.db.Disconnect()
-	this.source.Disconnect()
 }
 
-func generateId() string {
-	return uuid.NewV4().String()
+func getTimeoutContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 10*time.Second)
 }
