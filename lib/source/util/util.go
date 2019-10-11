@@ -22,6 +22,7 @@ import (
 	"github.com/wvanbergen/kazoo-go"
 	"io/ioutil"
 	"log"
+	"runtime/debug"
 )
 
 func GetBroker(zk string) (brokers []string, err error) {
@@ -86,6 +87,8 @@ func InitTopicWithConfig(zkUrl string, numPartitions int, replicationFactor int,
 			NumPartitions:     numPartitions,
 			ReplicationFactor: replicationFactor,
 			ConfigEntries: []kafka.ConfigEntry{
+				{ConfigName: "retention.ms", ConfigValue: "-1"},
+				{ConfigName: "retention.bytes", ConfigValue: "-1"},
 				{ConfigName: "cleanup.policy", ConfigValue: "compact"},
 				{ConfigName: "delete.retention.ms", ConfigValue: "100"},
 				{ConfigName: "segment.ms", ConfigValue: "100"},
@@ -93,6 +96,8 @@ func InitTopicWithConfig(zkUrl string, numPartitions int, replicationFactor int,
 			},
 		})
 		if err != nil {
+			log.Println("ERROR: ", err)
+			debug.PrintStack()
 			return
 		}
 	}
