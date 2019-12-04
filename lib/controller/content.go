@@ -24,7 +24,7 @@ import (
 
 func ValidateContent(content model.Content, protocol model.Protocol) (err error, code int) {
 	if content.Id == "" {
-		return errors.New("missing service id"), http.StatusBadRequest
+		return errors.New("missing content id"), http.StatusBadRequest
 	}
 	if !content.Serialization.Valid() {
 		return errors.New("unknown serialization " + string(content.Serialization)), http.StatusBadRequest
