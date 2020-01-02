@@ -27,6 +27,7 @@ type Controller interface {
 	ValidateDevice(device model.Device) (err error, code int)
 
 	ReadHub(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Hub, err error, errCode int)
+	ListHubDeviceIds(id string, jwt jwt_http_router.Jwt, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
 	ValidateHub(hub model.Hub) (err error, code int)
 
 	ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int)

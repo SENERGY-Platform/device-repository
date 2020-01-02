@@ -58,6 +58,47 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
+	//use 'as' query parameter to decide if a list of device.Id or device.LocalId should be returned
+	//		default is LocalId
+	//		allowed values are 'id', 'local_id' and 'localId'
+	router.GET(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+		id := params.ByName("id")
+		permission := model.AuthAction(request.URL.Query().Get("p"))
+		if permission == "" {
+			permission = model.READ
+		}
+
+		var asLocalId bool
+		asParam := request.URL.Query().Get("as")
+		switch asParam {
+		case "":
+			asLocalId = true
+		case "id":
+			asLocalId = false
+		case "localId":
+			asLocalId = true
+		case "local_id":
+			asLocalId = true
+		default:
+			http.Error(writer, "expect 'id', 'localId' or 'local_id' as value for 'as' query-parameter if it is used", http.StatusBadRequest)
+			return
+		}
+		result, err, errCode := control.ListHubDeviceIds(id, jwt, permission, asLocalId)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+
+	//use 'p' query parameter to limit selection to a permission;
+	//		used internally to guarantee that user has needed permission for the resource
+	//		example: 'p=x' guaranties the user has execution rights
 	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
 		permission := model.AuthAction(request.URL.Query().Get("p"))
 		if permission == "" {

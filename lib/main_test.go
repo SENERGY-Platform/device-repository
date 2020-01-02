@@ -379,6 +379,7 @@ type Publisher struct {
 	devicetypes *kafka.Writer
 	protocols   *kafka.Writer
 	devices     *kafka.Writer
+	hubs        *kafka.Writer
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
@@ -401,7 +402,11 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices}, nil
+	hubs, err := getProducer(broker, conf.HubTopic, conf.LogLevel == "DEBUG")
+	if err != nil {
+		return nil, err
+	}
+	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices, hubs: hubs}, nil
 }
 
 func getProducer(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {
@@ -597,6 +602,46 @@ func (this *Publisher) PublishProtocolCommand(cmd ProtocolCommand) error {
 		return err
 	}
 	err = this.protocols.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+type HubCommand struct {
+	Command string    `json:"command"`
+	Id      string    `json:"id"`
+	Owner   string    `json:"owner"`
+	Hub     model.Hub `json:"hub"`
+}
+
+func (this *Publisher) PublishHub(hub model.Hub, userId string) (err error) {
+	cmd := HubCommand{Command: "PUT", Id: hub.Id, Hub: hub, Owner: userId}
+	return this.PublishHubCommand(cmd)
+}
+
+func (this *Publisher) PublishHubDelete(id string, userId string) error {
+	cmd := HubCommand{Command: "DELETE", Id: id, Owner: userId}
+	return this.PublishHubCommand(cmd)
+}
+
+func (this *Publisher) PublishHubCommand(cmd HubCommand) error {
+	if this.config.LogLevel == "DEBUG" {
+		log.Println("DEBUG: produce hub", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.hubs.WriteMessages(
 		context.Background(),
 		kafka.Message{
 			Key:   []byte(cmd.Id),

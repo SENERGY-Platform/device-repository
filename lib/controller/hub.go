@@ -48,6 +48,37 @@ func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt, action model
 	return hub, nil, http.StatusOK
 }
 
+func (this *Controller) ListHubDeviceIds(id string, jwt jwt_http_router.Jwt, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	hub, exists, err := this.db.GetHub(ctx, id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return result, errors.New("not found"), http.StatusNotFound
+	}
+	ok, err := this.security.CheckBool(jwt, this.config.HubTopic, id, action)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	if asLocalId {
+		return hub.DeviceLocalIds, nil, http.StatusOK
+	}
+	for _, id := range hub.DeviceLocalIds {
+		device, exists, err := this.db.GetDeviceByLocalId(ctx, id)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		if exists {
+			result = append(result, device.Id)
+		}
+	}
+	return result, nil, http.StatusOK
+}
+
 func (this *Controller) ValidateHub(hub model.Hub) (err error, code int) {
 	if hub.Id == "" {
 		return errors.New("missing hub id"), http.StatusBadRequest
