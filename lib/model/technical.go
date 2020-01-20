@@ -45,8 +45,9 @@ type Content struct {
 type Serialization string
 
 const (
-	XML  Serialization = "xml"
-	JSON Serialization = "json"
+	XML       Serialization = "xml"
+	JSON      Serialization = "json"
+	PlainText Serialization = "plain-text"
 )
 
 func (this Serialization) Valid() bool {
@@ -54,6 +55,8 @@ func (this Serialization) Valid() bool {
 	case XML:
 		return true
 	case JSON:
+		return true
+	case PlainText:
 		return true
 	default:
 		return false
@@ -81,4 +84,3 @@ type ContentVariable struct {
 	Value                interface{}       `json:"value"`
 	SerializationOptions []string          `json:"serialization_options"`
 }
-

@@ -29,6 +29,9 @@ func ValidateContent(content model.Content, protocol model.Protocol) (err error,
 	if !content.Serialization.Valid() {
 		return errors.New("unknown serialization " + string(content.Serialization)), http.StatusBadRequest
 	}
+	if content.Serialization == model.PlainText && content.ContentVariable.Type != model.String {
+		return errors.New("plain-text serialization only for string content"), http.StatusBadRequest
+	}
 	if content.ProtocolSegmentId == "" {
 		return errors.New("missing protocol_segment_id"), http.StatusBadRequest
 	}
