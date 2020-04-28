@@ -191,7 +191,7 @@ func testDeviceTypeList(t *testing.T, conf config.Config) {
 		t.Error(err)
 	}
 	if len(result) != 21 {
-		t.Error("unexpected result", result)
+		t.Error("unexpected result", len(result), result)
 		return
 	}
 }
@@ -214,7 +214,7 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 		t.Error(err)
 	}
 	if len(result) != 10 {
-		t.Error("unexpected result", result)
+		t.Error("unexpected result", len(result), result)
 		return
 	}
 }
@@ -237,7 +237,7 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 		t.Error(err)
 	}
 	if len(result) != 1 {
-		t.Error("unexpected result", result)
+		t.Error("unexpected result", len(result), result)
 		return
 	}
 }

@@ -34,14 +34,22 @@ type DeviceType struct {
 }
 
 type Service struct {
-	Id          string     `json:"id"`
-	LocalId     string     `json:"local_id"`
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	Aspects     []Aspect   `json:"aspects"`
-	ProtocolId  string     `json:"protocol_id"`
-	Inputs      []Content  `json:"inputs"`
-	Outputs     []Content  `json:"outputs"`
-	Functions   []Function `json:"functions"`
-	RdfType     string     `json:"rdf_type"`
+	Id          string      `json:"id"`
+	LocalId     string      `json:"local_id"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	Interaction Interaction `json:"interaction"`
+	Aspects     []Aspect    `json:"aspects"`
+	ProtocolId  string      `json:"protocol_id"`
+	Inputs      []Content   `json:"inputs"`
+	Outputs     []Content   `json:"outputs"`
+	Functions   []Function  `json:"functions"`
+	RdfType     string      `json:"rdf_type"`
 }
+
+type Interaction string
+
+const (
+	EVENT   Interaction = "event"
+	REQUEST Interaction = "request"
+)
