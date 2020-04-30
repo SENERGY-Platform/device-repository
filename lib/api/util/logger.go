@@ -46,7 +46,7 @@ func (this *LoggerMiddleWare) log(request *http.Request) {
 		path := request.URL
 
 		if this.logLevel == "CALL" {
-			log.Printf("[%v] %v \n", method, path)
+			log.Printf("%v [%v] %v \n", request.RemoteAddr, method, path)
 		}
 
 		if this.logLevel == "DEBUG" {
