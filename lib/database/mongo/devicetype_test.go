@@ -82,6 +82,18 @@ func TestMongoDeviceType(t *testing.T) {
 					{
 						ContentVariable: model.ContentVariable{
 							Id: "fooval2",
+							SubContentVariables: []model.ContentVariable{
+								{
+									Id:               "sub1",
+									Name:             "sub1_name",
+									CharacteristicId: "something",
+								},
+								{
+									Id:            "sub2",
+									Name:          "sub2_name",
+									UnitReference: "sub1_name",
+								},
+							},
 						},
 					},
 				},
@@ -126,6 +138,11 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 	if device.Id != "foobar1" || device.Name != "foo1" {
+		t.Error("unexpected result", device)
+		return
+	}
+	if device.Services[0].Outputs[0].ContentVariable.SubContentVariables[1].UnitReference !=
+		device.Services[0].Outputs[0].ContentVariable.SubContentVariables[0].Name {
 		t.Error("unexpected result", device)
 		return
 	}
