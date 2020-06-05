@@ -84,10 +84,12 @@ func ValidateListSubVariables(variables []model.ContentVariable, serialization m
 		}
 	}
 	nameIndex := map[string]bool{}
-	for _, variable := range variables {
-		_, err = strconv.Atoi(variable.Name)
-		if err != nil {
-			return errors.New("name of list variable should be a number (if list is variable in length is may be defined with one element and the placeholder '*' as name)"), http.StatusBadRequest
+	for i, variable := range variables {
+		if !(i == 0 && variable.Name == "*") {
+			_, err = strconv.Atoi(variable.Name)
+			if err != nil {
+				return errors.New("name of list variable should be a number (if list is variable in length is may be defined with one element and the placeholder '*' as name)"), http.StatusBadRequest
+			}
 		}
 		nameIndex[variable.Name] = true
 		err, code = ValidateVariable(variable, serialization)
