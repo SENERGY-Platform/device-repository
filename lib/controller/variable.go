@@ -82,14 +82,13 @@ func ValidateListSubVariables(variables []model.ContentVariable, serialization m
 		if len(variables) != 1 {
 			return errors.New("lists with name placeholder '*' have a variable length -> only one sub variable may be defined"), http.StatusBadRequest
 		}
+		return ValidateVariable(variables[0], serialization)
 	}
 	nameIndex := map[string]bool{}
-	for i, variable := range variables {
-		if !(i == 0 && variable.Name == "*") {
-			_, err = strconv.Atoi(variable.Name)
-			if err != nil {
-				return errors.New("name of list variable should be a number (if list is variable in length is may be defined with one element and the placeholder '*' as name)"), http.StatusBadRequest
-			}
+	for _, variable := range variables {
+		_, err = strconv.Atoi(variable.Name)
+		if err != nil {
+			return errors.New("name of list variable should be a number (if list is variable in length is may be defined with one element and the placeholder '*' as name)"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
 		err, code = ValidateVariable(variable, serialization)
