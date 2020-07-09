@@ -60,3 +60,8 @@ type Protocol struct {
 	Interaction      Interaction       `json:"interaction"`
 	ProtocolSegments []ProtocolSegment `json:"protocol_segments"`
 }
+
+type ProtocolSegment struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
