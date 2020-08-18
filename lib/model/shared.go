@@ -59,7 +59,6 @@ type Protocol struct {
 	Id               string            `json:"id"`
 	Name             string            `json:"name"`
 	Handler          string            `json:"handler"`
-	Interaction      Interaction       `json:"interaction"`
 	ProtocolSegments []ProtocolSegment `json:"protocol_segments"`
 }
 
