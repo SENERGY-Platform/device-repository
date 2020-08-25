@@ -24,13 +24,12 @@ type Device struct {
 }
 
 type DeviceType struct {
-	Id          string      `json:"id"`
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	Image       string      `json:"image"`
-	Services    []Service   `json:"services"`
-	DeviceClass DeviceClass `json:"device_class"`
-	RdfType     string      `json:"rdf_type"`
+	Id            string    `json:"id"`
+	Name          string    `json:"name"`
+	Description   string    `json:"description"`
+	Services      []Service `json:"services"`
+	DeviceClassId string    `json:"device_class_id"`
+	RdfType       string    `json:"rdf_type"`
 }
 
 type Service struct {
@@ -39,11 +38,11 @@ type Service struct {
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
 	Interaction Interaction `json:"interaction"`
-	Aspects     []Aspect    `json:"aspects"`
+	AspectIds   []string    `json:"aspect_ids"`
 	ProtocolId  string      `json:"protocol_id"`
 	Inputs      []Content   `json:"inputs"`
 	Outputs     []Content   `json:"outputs"`
-	Functions   []Function  `json:"functions"`
+	FunctionIds []string    `json:"function_ids"`
 	RdfType     string      `json:"rdf_type"`
 }
 
