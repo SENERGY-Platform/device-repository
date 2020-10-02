@@ -62,6 +62,119 @@ func TestServiceQuery(t *testing.T) {
 	})
 }
 
+func TestSubContentVarUpdate(t *testing.T) {
+	closer, conf, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if true {
+		defer closer()
+	}
+
+	producer, err := NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dt := model.DeviceType{
+		Id:   devicetype1id,
+		Name: devicetype1name,
+		Services: []model.Service{{
+			Id:   "service1",
+			Name: "serviceName",
+			Outputs: []model.Content{{
+				Id: "content",
+				ContentVariable: model.ContentVariable{
+					Id:   "main",
+					Name: "main",
+					Type: model.Structure,
+					SubContentVariables: []model.ContentVariable{{
+						Id:   "sub",
+						Name: "sub",
+						Type: model.String,
+					}},
+				},
+				Serialization:     "json",
+				ProtocolSegmentId: "payload",
+			}},
+		}},
+	}
+
+	err = producer.PublishDeviceType(dt, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	t.Run("after create", testDeviceTypeReadV2(conf, dt))
+
+	dtUpdated := model.DeviceType{
+		Id:   devicetype1id,
+		Name: devicetype1name,
+		Services: []model.Service{{
+			Id:   "service1",
+			Name: "serviceName",
+			Outputs: []model.Content{{
+				Id: "content",
+				ContentVariable: model.ContentVariable{
+					Id:   "main",
+					Name: "main",
+					Type: model.Structure,
+					SubContentVariables: []model.ContentVariable{{
+						Id:   "sub2",
+						Name: "sub2",
+						Type: model.Integer,
+					}},
+				},
+				Serialization:     "json",
+				ProtocolSegmentId: "payload",
+			}},
+		}},
+	}
+
+	err = producer.PublishDeviceType(dtUpdated, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	t.Run("after update", testDeviceTypeReadV2(conf, dtUpdated))
+
+	dtSubVarDeleted := model.DeviceType{
+		Id:   devicetype1id,
+		Name: devicetype1name,
+		Services: []model.Service{{
+			Id:   "service1",
+			Name: "serviceName",
+			Outputs: []model.Content{{
+				Id: "content",
+				ContentVariable: model.ContentVariable{
+					Id:   "main",
+					Name: "main",
+					Type: model.Structure,
+				},
+				Serialization:     "json",
+				ProtocolSegmentId: "payload",
+			}},
+		}},
+	}
+
+	err = producer.PublishDeviceType(dtSubVarDeleted, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	t.Run("after sub delete", testDeviceTypeReadV2(conf, dtSubVarDeleted))
+}
+
 func TestDeviceTypeQuery(t *testing.T) {
 	closer, conf, err := createTestEnv()
 	if err != nil {
@@ -147,6 +260,33 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 	if result.Name != expected.Name {
 		t.Error("unexpected result", result)
 		return
+	}
+}
+
+func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t *testing.T) {
+	return func(t *testing.T) {
+		endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
+		resp, err := userjwt.Get(endpoint)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if resp.StatusCode != http.StatusOK {
+			b, _ := ioutil.ReadAll(resp.Body)
+			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+			return
+		}
+		result := model.DeviceType{}
+		err = json.NewDecoder(resp.Body).Decode(&result)
+		if err != nil {
+			t.Error(err)
+		}
+		if !reflect.DeepEqual(result, expected) {
+			actual, _ := json.Marshal(result)
+			expectedStr, _ := json.Marshal(expected)
+			t.Error("unexpected result", string(actual), string(expectedStr))
+			return
+		}
 	}
 }
 
