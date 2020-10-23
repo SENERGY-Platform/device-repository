@@ -39,29 +39,9 @@ func getBroker(zkUrl string) (brokers []string, err error) {
 	}
 }
 
-func GetKafkaController(zkUrl string) (controller string, err error) {
-	zookeeper := kazoo.NewConfig()
-	zookeeper.Logger = log.New(ioutil.Discard, "", 0)
-	zk, chroot := kazoo.ParseConnectionString(zkUrl)
-	zookeeper.Chroot = chroot
-	kz, err := kazoo.NewKazoo(zk, zookeeper)
-	if err != nil {
-		return controller, err
-	}
-	controllerId, err := kz.Controller()
-	if err != nil {
-		return controller, err
-	}
-	brokers, err := kz.Brokers()
-	if err != nil {
-		return controller, err
-	}
-	return brokers[controllerId], err
-}
-
 func InitTopic(zkUrl string, topics ...string) (err error) {
 	for _, topic := range topics {
-		err = topicconfig.Ensure(zkUrl, topic, map[string]string{
+		err = topicconfig.EnsureWithZk(zkUrl, topic, map[string]string{
 			"retention.ms":              "-1",
 			"retention.bytes":           "-1",
 			"cleanup.policy":            "compact",
