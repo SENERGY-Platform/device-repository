@@ -25,6 +25,8 @@ type Controller interface {
 	DeleteHub(id string) error
 	SetDeviceType(deviceType model.DeviceType, owner string) error
 	DeleteDeviceType(id string) error
+	SetDeviceGroup(deviceGroup model.DeviceGroup, owner string) error
+	DeleteDeviceGroup(id string) error
 	SetProtocol(protocol model.Protocol, owner string) error
 	DeleteProtocol(id string) error
 }

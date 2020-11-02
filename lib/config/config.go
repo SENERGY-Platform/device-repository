@@ -28,26 +28,28 @@ import (
 )
 
 type Config struct {
-	JwtPubRsa                 string `json:"jwt_pub_rsa"`
-	ForceAuth                 bool   `json:"force_auth"`
-	ForceUser                 bool   `json:"force_user"`
-	LogLevel                  string `json:"log_level"` //DEBUG | CALL | NONE
-	ServerPort                string `json:"server_port"`
-	ZookeeperUrl              string `json:"zookeeper_url"`
-	GroupId                   string `json:"group_id"`
-	DeviceTopic               string `json:"device_topic"`
-	DeviceTypeTopic           string `json:"device_type_topic"`
-	HubTopic                  string `json:"hub_topic"`
-	ProtocolTopic             string `json:"protocol_topic"`
-	PermissionsUrl            string `json:"permissions_url"`
-	MongoUrl                  string `json:"mongo_url"`
-	MongoReplSet              bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
-	MongoTable                string `json:"mongo_table"`
-	MongoDeviceCollection     string `json:"mongo_device_collection"`
-	MongoDeviceTypeCollection string `json:"mongo_device_type_collection"`
-	MongoProtocolCollection   string `json:"mongo_protocol_collection"`
-	MongoHubCollection        string `json:"mongo_hub_collection"`
-	Debug                     bool   `json:"debug"`
+	JwtPubRsa                  string `json:"jwt_pub_rsa"`
+	ForceAuth                  bool   `json:"force_auth"`
+	ForceUser                  bool   `json:"force_user"`
+	LogLevel                   string `json:"log_level"` //DEBUG | CALL | NONE
+	ServerPort                 string `json:"server_port"`
+	ZookeeperUrl               string `json:"zookeeper_url"`
+	GroupId                    string `json:"group_id"`
+	DeviceTopic                string `json:"device_topic"`
+	DeviceTypeTopic            string `json:"device_type_topic"`
+	DeviceGroupTopic           string `json:"device_group_topic"`
+	HubTopic                   string `json:"hub_topic"`
+	ProtocolTopic              string `json:"protocol_topic"`
+	PermissionsUrl             string `json:"permissions_url"`
+	MongoUrl                   string `json:"mongo_url"`
+	MongoReplSet               bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
+	MongoTable                 string `json:"mongo_table"`
+	MongoDeviceCollection      string `json:"mongo_device_collection"`
+	MongoDeviceTypeCollection  string `json:"mongo_device_type_collection"`
+	MongoDeviceGroupCollection string `json:"mongo_device_group_collection"`
+	MongoProtocolCollection    string `json:"mongo_protocol_collection"`
+	MongoHubCollection         string `json:"mongo_hub_collection"`
+	Debug                      bool   `json:"debug"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

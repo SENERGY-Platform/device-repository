@@ -40,6 +40,11 @@ type Database interface {
 	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceType, err error)
 	GetDeviceTypesByServiceId(ctx context.Context, serviceId string) ([]model.DeviceType, error)
 
+	GetDeviceGroup(ctx context.Context, id string) (deviceGroup model.DeviceGroup, exists bool, err error)
+	SetDeviceGroup(ctx context.Context, deviceGroup model.DeviceGroup) error
+	RemoveDeviceGroup(ctx context.Context, id string) error
+	ListDeviceGroups(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceGroup, err error)
+
 	GetProtocol(ctx context.Context, id string) (result model.Protocol, exists bool, err error)
 	ListProtocols(ctx context.Context, limit int64, offset int64, sort string) ([]model.Protocol, error)
 	SetProtocol(ctx context.Context, protocol model.Protocol) error

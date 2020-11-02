@@ -45,3 +45,10 @@ type ProtocolCommand struct {
 	Owner    string         `json:"owner"`
 	Protocol model.Protocol `json:"protocol"`
 }
+
+type DeviceGroupCommand struct {
+	Command     string            `json:"command"`
+	Id          string            `json:"id"`
+	Owner       string            `json:"owner"`
+	DeviceGroup model.DeviceGroup `json:"device_group"`
+}
