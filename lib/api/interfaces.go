@@ -36,6 +36,7 @@ type Controller interface {
 
 	ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (result model.DeviceGroup, err error, errCode int)
 	ValidateDeviceGroup(deviceGroup model.DeviceGroup) (err error, code int)
+	CheckAccessToDevicesOfGroup(jwt jwt_http_router.Jwt, group model.DeviceGroup) (err error, code int)
 
 	ReadProtocol(id string, jwt jwt_http_router.Jwt) (result model.Protocol, err error, errCode int)
 	ListProtocols(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.Protocol, err error, errCode int)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 InfAI (CC SES)
+ * Copyright 2020 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package controller
+package lib
 
-import (
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
-)
+import "testing"
 
-type Security interface {
-	CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error)
-	CheckMultiple(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
+func TestDeviceGroups(t *testing.T) {
+	t.Error("not implemented")
 }
 
-type Producer interface {
-	PublishDeviceDelete(id string, owner string) error
-	PublishHub(hub model.Hub) (err error)
+func TestDeviceGroupsValidation(t *testing.T) {
+	t.Error("not implemented")
 }

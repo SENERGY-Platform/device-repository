@@ -82,3 +82,41 @@ func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string,
 	}
 	return true, nil
 }
+
+func (this *Security) CheckMultiple(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
+	body := new(bytes.Buffer)
+	err = json.NewEncoder(body).Encode(map[string]interface{}{
+		"resource": kind,
+		"check_ids": map[string]interface{}{
+			"rights": action,
+			"ids":    ids,
+		},
+	})
+	if err != nil {
+		return result, err
+	}
+
+	req, err := http.NewRequest("POST", this.config.PermissionsUrl+"/v2/query", body)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	req.Header.Set("Authorization", string(jwt.Impersonate))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		return result, errors.New(buf.String())
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	return result, nil
+}

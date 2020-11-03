@@ -58,13 +58,18 @@ func DeviceGroupEndpoints(config config.Config, control Controller, router *jwt_
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		dt := model.DeviceGroup{}
-		err = json.NewDecoder(request.Body).Decode(&dt)
+		group := model.DeviceGroup{}
+		err = json.NewDecoder(request.Body).Decode(&group)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDeviceGroup(dt)
+		err, code := control.ValidateDeviceGroup(group)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		err, code = control.CheckAccessToDevicesOfGroup(jwt, group)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
