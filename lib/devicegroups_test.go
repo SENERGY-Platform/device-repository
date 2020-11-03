@@ -251,9 +251,9 @@ func TestDeviceGroupsDeviceFilter(t *testing.T) {
 		return
 	}
 
-	sec.Set(conf.DeviceGroupTopic, "d1", true)
-	sec.Set(conf.DeviceGroupTopic, "d2", true)
-	sec.Set(conf.DeviceGroupTopic, "d3", true)
+	sec.Set(conf.DeviceTopic, "d1", true)
+	sec.Set(conf.DeviceTopic, "d2", true)
+	sec.Set(conf.DeviceTopic, "d3", true)
 
 	t.Run("empty", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
 		Id:   "id",
