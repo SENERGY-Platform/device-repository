@@ -55,6 +55,9 @@ func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (res
 
 func (this *Controller) FilterDevicesOfGroupByAccess(jwt jwt_http_router.Jwt, group model.DeviceGroup) (result model.DeviceGroup, err error, code int) {
 	deviceIds := []string{}
+	if len(group.Devices) == 0 {
+		return group, nil, http.StatusOK
+	}
 	//looping one element of group.Devices is enough because ValidateDeviceGroup() ensures that every used device is referenced in each group.Devices element
 	for _, selection := range group.Devices[0].Selection {
 		deviceIds = append(deviceIds, selection.DeviceId)

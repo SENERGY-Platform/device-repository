@@ -21,7 +21,9 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/testutils/mocks"
+	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"net/http"
+	"reflect"
 	"runtime/debug"
 	"testing"
 )
@@ -237,7 +239,153 @@ func testDeviceGroupValidation(ctrl *controller.Controller, group model.DeviceGr
 }
 
 func TestDeviceGroupsDeviceFilter(t *testing.T) {
-	t.Error("not implemented")
+	conf := config.Config{DeviceGroupTopic: "device-group"}
+	sec := mocks.NewSecurity()
+	ctrl, err := controller.New(conf, nil, sec, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	sec.Set(conf.DeviceGroupTopic, "d1", true)
+	sec.Set(conf.DeviceGroupTopic, "d2", true)
+	sec.Set(conf.DeviceGroupTopic, "d3", true)
+
+	t.Run("empty", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+			Selection: []model.Selection{},
+		}},
+	}, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+			Selection: []model.Selection{},
+		}},
+	}))
+
+	t.Run("empty 2", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+		}},
+	}, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+			Selection: []model.Selection{},
+		}},
+	}))
+
+	t.Run("empty 3", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+		Id:      "id",
+		Name:    "name",
+		Devices: []model.DeviceGroupMapping{},
+	}, model.DeviceGroup{
+		Id:      "id",
+		Name:    "name",
+		Devices: []model.DeviceGroupMapping{},
+	}))
+
+	t.Run("full access", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+			Selection: []model.Selection{
+				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
+				{DeviceId: "d2"},
+				{DeviceId: "d3"},
+			},
+		}},
+	}, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+			Selection: []model.Selection{
+				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
+				{DeviceId: "d2"},
+				{DeviceId: "d3"},
+			},
+		}},
+	}))
+	t.Run("one access missing", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+			Selection: []model.Selection{
+				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
+				{DeviceId: "d2"},
+				{DeviceId: "unknown", ServiceIds: []string{"s1id"}},
+				{DeviceId: "d3"},
+			},
+		}},
+	}, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "unknown",
+			},
+			Selection: []model.Selection{
+				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
+				{DeviceId: "d2"},
+				{DeviceId: "d3"},
+			},
+		}},
+	}))
+}
+
+func testDeviceGroupsDeviceFilter(ctrl *controller.Controller, group model.DeviceGroup, expectedResult model.DeviceGroup) func(t *testing.T) {
+	return func(t *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				t.Error(r, "\n", string(debug.Stack()))
+			}
+		}()
+		result, err, code := ctrl.FilterDevicesOfGroupByAccess(jwt_http_router.Jwt{Impersonate: userjwt}, group)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if code != http.StatusOK {
+			t.Error(code)
+			return
+		}
+		if !reflect.DeepEqual(result, expectedResult) {
+			t.Error(result, expectedResult)
+			return
+		}
+	}
 }
 
 func TestDeviceGroups(t *testing.T) {
