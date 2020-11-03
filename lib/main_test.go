@@ -241,7 +241,7 @@ func PermSearch(pool *dockertest.Pool, zk string, elasticIp string) (closer func
 
 func Elasticsearch(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress string, err error) {
 	log.Println("start elasticsearch")
-	repo, err := pool.Run("docker.elastic.co/elasticsearch/elasticsearch", "6.4.3", []string{"discovery.type=single-node"})
+	repo, err := pool.Run("docker.elastic.co/elasticsearch/elasticsearch", "7.6.1", []string{"discovery.type=single-node"})
 	if err != nil {
 		return func() {}, "", "", err
 	}
@@ -375,11 +375,12 @@ func head(url string, token string) (resp *http.Response, err error) {
 }
 
 type Publisher struct {
-	config      config.Config
-	devicetypes *kafka.Writer
-	protocols   *kafka.Writer
-	devices     *kafka.Writer
-	hubs        *kafka.Writer
+	config       config.Config
+	devicetypes  *kafka.Writer
+	protocols    *kafka.Writer
+	devices      *kafka.Writer
+	devicegroups *kafka.Writer
+	hubs         *kafka.Writer
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
@@ -398,6 +399,10 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
+	devicegroups, err := getProducer(broker, conf.DeviceGroupTopic, conf.LogLevel == "DEBUG")
+	if err != nil {
+		return nil, err
+	}
 	protocols, err := getProducer(broker, conf.ProtocolTopic, conf.LogLevel == "DEBUG")
 	if err != nil {
 		return nil, err
@@ -406,7 +411,7 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices, hubs: hubs}, nil
+	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices, hubs: hubs, devicegroups: devicegroups}, nil
 }
 
 func getProducer(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {
@@ -507,11 +512,46 @@ type DeviceTypeCommand struct {
 	DeviceType model.DeviceType `json:"device_type"`
 }
 
+type DeviceGroupCommand struct {
+	Command     string            `json:"command"`
+	Id          string            `json:"id"`
+	Owner       string            `json:"owner"`
+	DeviceGroup model.DeviceGroup `json:"device_group"`
+}
+
 type DeviceCommand struct {
 	Command string       `json:"command"`
 	Id      string       `json:"id"`
 	Owner   string       `json:"owner"`
 	Device  model.Device `json:"device"`
+}
+
+func (this *Publisher) PublishDeviceGroup(dg model.DeviceGroup, userId string) (err error) {
+	cmd := DeviceGroupCommand{Command: "PUT", Id: dg.Id, DeviceGroup: dg, Owner: userId}
+	return this.PublishDeviceGroupCommand(cmd)
+}
+
+func (this *Publisher) PublishDeviceGroupCommand(cmd DeviceGroupCommand) error {
+	if this.config.LogLevel == "DEBUG" {
+		log.Println("DEBUG: produce", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.devicegroups.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
 }
 
 func (this *Publisher) PublishDeviceType(device model.DeviceType, userId string) (err error) {

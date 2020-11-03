@@ -32,7 +32,7 @@ const FilterDevicesOfGroupByAccess = true
 
 func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (result model.DeviceGroup, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	deviceGroup, exists, err := this.db.GetDeviceGroup(ctx, id)
+	result, exists, err := this.db.GetDeviceGroup(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -41,15 +41,17 @@ func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (res
 	}
 	ok, err := this.security.CheckBool(jwt, this.config.DeviceGroupTopic, id, model.READ)
 	if err != nil {
+		result = model.DeviceGroup{}
 		return result, err, http.StatusInternalServerError
 	}
 	if !ok {
+		result = model.DeviceGroup{}
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
 	if FilterDevicesOfGroupByAccess {
 		return this.FilterDevicesOfGroupByAccess(jwt, result)
 	} else {
-		return deviceGroup, nil, http.StatusOK
+		return result, nil, http.StatusOK
 	}
 }
 
@@ -62,7 +64,7 @@ func (this *Controller) FilterDevicesOfGroupByAccess(jwt jwt_http_router.Jwt, gr
 	for _, selection := range group.Devices[0].Selection {
 		deviceIds = append(deviceIds, selection.DeviceId)
 	}
-	access, err := this.security.CheckMultiple(jwt, this.config.DeviceGroupTopic, deviceIds, model.EXECUTE)
+	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, deviceIds, model.EXECUTE)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

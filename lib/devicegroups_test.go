@@ -17,15 +17,19 @@
 package lib
 
 import (
+	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/testutils/mocks"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"runtime/debug"
 	"testing"
+	"time"
 )
 
 func TestDeviceGroupsValidation(t *testing.T) {
@@ -388,6 +392,119 @@ func testDeviceGroupsDeviceFilter(ctrl *controller.Controller, group model.Devic
 	}
 }
 
-func TestDeviceGroups(t *testing.T) {
-	t.Error("not implemented")
+const devicegroup1id = "dg1id"
+const devicegroup1name = "dg1name"
+
+func TestDeviceGroupsIntegration(t *testing.T) {
+	closer, conf, err := createTestEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if true {
+		defer closer()
+	}
+	producer, err := NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishDeviceType(model.DeviceType{
+		Id:            devicetype1id,
+		Name:          devicetype1name,
+		DeviceClassId: "dcid",
+		Services: []model.Service{{
+			Id:          "s1id",
+			Interaction: model.REQUEST,
+			AspectIds:   []string{"aid"},
+			FunctionIds: []string{"fid"},
+		}},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	d1 := model.Device{
+		Id:           device1id,
+		LocalId:      device1lid,
+		Name:         devicetype1name,
+		DeviceTypeId: devicetype1id,
+	}
+
+	err = producer.PublishDevice(d1, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dg1 := model.DeviceGroup{
+		Id:   devicegroup1id,
+		Name: devicegroup1name,
+		Devices: []model.DeviceGroupMapping{{
+			Criteria: model.FilterCriteria{
+				FunctionId:    "fid",
+				DeviceClassId: "dcid",
+			},
+			Selection: []model.Selection{
+				{DeviceId: device1id, ServiceIds: []string{"s1id"}},
+			},
+		}},
+	}
+
+	err = producer.PublishDeviceGroup(dg1, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(10 * time.Second)
+
+	t.Run("not existing", func(t *testing.T) {
+		testDeviceGroupReadNotFound(t, conf, "foobar")
+	})
+	t.Run("testDeviceRead", func(t *testing.T) {
+		testDeviceGroupRead(t, conf, dg1)
+	})
+}
+
+func testDeviceGroupReadNotFound(t *testing.T, conf config.Config, id string) {
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(id)
+	resp, err := userjwt.Get(endpoint)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+}
+
+func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss ...model.DeviceGroup) {
+	for _, expected := range expectedDeviceGroupss {
+		endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(expected.Id)
+		resp, err := userjwt.Get(endpoint)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if resp.StatusCode != http.StatusOK {
+			b, _ := ioutil.ReadAll(resp.Body)
+			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+			return
+		}
+
+		result := model.DeviceGroup{}
+		err = json.NewDecoder(resp.Body).Decode(&result)
+		if err != nil {
+			t.Error(err)
+		}
+		if !reflect.DeepEqual(expected, result) {
+			t.Error("unexpected result", expected, result)
+			return
+		}
+	}
+
 }

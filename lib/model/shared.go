@@ -75,8 +75,8 @@ type DeviceGroup struct {
 }
 
 type DeviceGroupMapping struct {
-	Criteria  FilterCriteria
-	Selection []Selection
+	Criteria  FilterCriteria `json:"criteria"`
+	Selection []Selection    `json:"selection"`
 }
 
 type FilterCriteria struct {
