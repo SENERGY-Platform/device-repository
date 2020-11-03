@@ -20,12 +20,15 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"log"
 	"net/http"
 )
 
 /////////////////////////
 //		api
 /////////////////////////
+
+const FilterDevicesOfGroupByAccess = true
 
 func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (result model.DeviceGroup, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
@@ -43,7 +46,36 @@ func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (res
 	if !ok {
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
-	return deviceGroup, nil, http.StatusOK
+	if FilterDevicesOfGroupByAccess {
+		return this.FilterDevicesOfGroupByAccess(jwt, result)
+	} else {
+		return deviceGroup, nil, http.StatusOK
+	}
+}
+
+func (this *Controller) FilterDevicesOfGroupByAccess(jwt jwt_http_router.Jwt, group model.DeviceGroup) (result model.DeviceGroup, err error, code int) {
+	deviceIds := []string{}
+	//looping one element of group.Devices is enough because ValidateDeviceGroup() ensures that every used device is referenced in each group.Devices element
+	for _, selection := range group.Devices[0].Selection {
+		deviceIds = append(deviceIds, selection.DeviceId)
+	}
+	access, err := this.security.CheckMultiple(jwt, this.config.DeviceGroupTopic, deviceIds, model.EXECUTE)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+
+	result = group
+	for i, element := range group.Devices {
+		result.Devices[i].Selection = []model.Selection{}
+		for _, selection := range element.Selection {
+			if access[selection.DeviceId] {
+				result.Devices[i].Selection = append(result.Devices[i].Selection, selection)
+			} else if this.config.Debug {
+				log.Println("DEBUG: filtered " + selection.DeviceId + " from result, because user lost execution access to the device")
+			}
+		}
+	}
+	return result, nil, http.StatusOK
 }
 
 //only the first element of group.Devices is checked.
