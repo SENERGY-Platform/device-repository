@@ -110,6 +110,14 @@ func (this *Controller) ValidateDeviceGroup(group model.DeviceGroup) (err error,
 	if group.Name == "" {
 		return errors.New("missing device-group name"), http.StatusBadRequest
 	}
+	switch group.BlockedInteraction {
+	case "":
+	case model.EVENT:
+	case model.REQUEST:
+	case model.EVENT_AND_REQUEST:
+	default:
+		return errors.New("unknown interaction in blocked_interaction: " + string(group.BlockedInteraction)), http.StatusBadRequest
+	}
 	return this.ValidateDeviceGroupMapping(group.BlockedInteraction, group.Devices)
 }
 
