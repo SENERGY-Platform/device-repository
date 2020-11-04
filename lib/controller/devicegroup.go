@@ -95,7 +95,7 @@ func (this *Controller) CheckAccessToDevicesOfGroup(jwt jwt_http_router.Jwt, gro
 	for _, selection := range group.Devices[0].Selection {
 		deviceIds = append(deviceIds, selection.DeviceId)
 	}
-	access, err := this.security.CheckMultiple(jwt, this.config.DeviceGroupTopic, deviceIds, model.EXECUTE)
+	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, deviceIds, model.EXECUTE)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
