@@ -56,28 +56,21 @@ func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (res
 }
 
 func (this *Controller) FilterDevicesOfGroupByAccess(jwt jwt_http_router.Jwt, group model.DeviceGroup) (result model.DeviceGroup, err error, code int) {
-	deviceIds := []string{}
-	if len(group.Devices) == 0 {
+	if len(group.DeviceIds) == 0 {
 		return group, nil, http.StatusOK
 	}
-	//looping one element of group.Devices is enough because ValidateDeviceGroup() ensures that every used device is referenced in each group.Devices element
-	for _, selection := range group.Devices[0].Selection {
-		deviceIds = append(deviceIds, selection.DeviceId)
-	}
-	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, deviceIds, model.EXECUTE)
+	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 
 	result = group
-	for i, element := range group.Devices {
-		result.Devices[i].Selection = []model.Selection{}
-		for _, selection := range element.Selection {
-			if access[selection.DeviceId] {
-				result.Devices[i].Selection = append(result.Devices[i].Selection, selection)
-			} else if this.config.Debug {
-				log.Println("DEBUG: filtered " + selection.DeviceId + " from result, because user lost execution access to the device")
-			}
+	result.DeviceIds = []string{}
+	for _, id := range group.DeviceIds {
+		if access[id] {
+			result.DeviceIds = append(result.DeviceIds, id)
+		} else if this.config.Debug {
+			log.Println("DEBUG: filtered " + id + " from result, because user lost execution access to the device")
 		}
 	}
 	return result, nil, http.StatusOK
@@ -87,22 +80,17 @@ func (this *Controller) FilterDevicesOfGroupByAccess(jwt jwt_http_router.Jwt, gr
 //this should be enough because every used device should be referenced in each element of group.Devices
 //use ValidateDeviceGroup() to ensure that this constraint is adhered to
 func (this *Controller) CheckAccessToDevicesOfGroup(jwt jwt_http_router.Jwt, group model.DeviceGroup) (err error, code int) {
-	if len(group.Devices) == 0 {
+	if len(group.DeviceIds) == 0 {
 		return nil, http.StatusOK
 	}
-	deviceIds := []string{}
-	//looping one element of group.Devices is enough because ValidateDeviceGroup() ensures that every used device is referenced in each group.Devices element
-	for _, selection := range group.Devices[0].Selection {
-		deviceIds = append(deviceIds, selection.DeviceId)
-	}
-	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, deviceIds, model.EXECUTE)
+	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	//looping one element of group.Devices is enough because ValidateDeviceGroup() ensures that every used device is referenced in each group.Devices element
-	for _, selection := range group.Devices[0].Selection {
-		if !access[selection.DeviceId] {
-			return errors.New("no execution access to device " + selection.DeviceId), http.StatusBadRequest
+	for _, id := range group.DeviceIds {
+		if !access[id] {
+			return errors.New("no execution access to device " + id), http.StatusBadRequest
 		}
 	}
 	return nil, http.StatusOK
@@ -123,32 +111,25 @@ func (this *Controller) ValidateDeviceGroup(group model.DeviceGroup) (err error,
 	default:
 		return errors.New("unknown interaction in blocked_interaction: " + string(group.BlockedInteraction)), http.StatusBadRequest
 	}
-	return this.ValidateDeviceGroupMapping(group.BlockedInteraction, group.Devices)
+	return this.ValidateDeviceGroupSelection(group.BlockedInteraction, group.Criteria, group.DeviceIds)
 }
 
-func (this *Controller) ValidateDeviceGroupMapping(blockedInteraction model.Interaction, mapping []model.DeviceGroupMapping) (error, int) {
+func (this *Controller) ValidateDeviceGroupSelection(blockedInteraction model.Interaction, criteria []model.FilterCriteria, devices []string) (error, int) {
 	deviceCache := map[string]model.Device{}
 	deviceTypeCache := map[string]model.DeviceType{}
 	deviceUsageCount := map[string]int{}
-	for _, m := range mapping {
+	for _, c := range criteria {
 		deviceUsedInMapping := map[string]bool{}
-		for _, s := range m.Selection {
-			deviceId := s.DeviceId
+		for _, deviceId := range devices {
 			if deviceUsedInMapping[deviceId] {
 				return errors.New("multiple uses of device-id " + deviceId + " for the same filter-criteria"), http.StatusBadRequest
 			}
 			deviceUsedInMapping[deviceId] = true
 			deviceUsageCount[deviceId] = deviceUsageCount[deviceId] + 1
-			err, code := this.selectionMatchesCriteria(&deviceCache, &deviceTypeCache, blockedInteraction, m.Criteria, s)
+			err, code := this.selectionMatchesCriteria(&deviceCache, &deviceTypeCache, blockedInteraction, c, deviceId)
 			if err != nil {
 				return err, code
 			}
-		}
-	}
-	expectedCount := len(mapping)
-	for deviceId, count := range deviceUsageCount {
-		if count != expectedCount {
-			return errors.New("expect " + deviceId + " to be referenced for every filter-criteria"), http.StatusBadRequest
 		}
 	}
 	return nil, http.StatusOK
@@ -159,21 +140,21 @@ func (this *Controller) selectionMatchesCriteria(
 	dtcache *map[string]model.DeviceType,
 	blockedInteraction model.Interaction,
 	criteria model.FilterCriteria,
-	selection model.Selection) (err error, code int) {
+	deviceId string) (err error, code int) {
 
 	ctx, _ := getTimeoutContext()
 	var exists bool
 
-	device, ok := (*dcache)[selection.DeviceId]
+	device, ok := (*dcache)[deviceId]
 	if !ok {
-		device, exists, err = this.db.GetDevice(ctx, selection.DeviceId)
+		device, exists, err = this.db.GetDevice(ctx, deviceId)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 		if !exists {
-			return errors.New("unknown device-id: " + selection.DeviceId), http.StatusBadRequest
+			return errors.New("unknown device-id: " + deviceId), http.StatusBadRequest
 		}
-		(*dcache)[selection.DeviceId] = device
+		(*dcache)[deviceId] = device
 	}
 
 	deviceType, ok := (*dtcache)[device.DeviceTypeId]
@@ -193,31 +174,15 @@ func (this *Controller) selectionMatchesCriteria(
 		return errors.New("device does not match device-class of filter-criteria"), http.StatusBadRequest
 	}
 
-	for _, serviceId := range selection.ServiceIds {
-		var service *model.Service
-		for _, s := range deviceType.Services {
-			if s.Id == serviceId {
-				service = &s
-				break
-			}
-		}
-		if service == nil {
-			return errors.New("service (" + serviceId + ") not part of device (" + device.Id + ")"), http.StatusBadRequest
-		}
-
-		if service.Interaction == blockedInteraction {
-			return errors.New("device/service uses blocked interaction: " + string(blockedInteraction)), http.StatusBadRequest
-		}
-
-		aspectMatches := false
+	serviceMatches := false
+	for _, service := range deviceType.Services {
+		notInteraction := service.Interaction != blockedInteraction
+		aspectMatches := criteria.AspectId == ""
 		for _, aspectId := range service.AspectIds {
 			if criteria.AspectId == "" || criteria.AspectId == aspectId {
 				aspectMatches = true
 				break
 			}
-		}
-		if !aspectMatches {
-			return errors.New("device/service does not match aspect of filter-criteria"), http.StatusBadRequest
 		}
 		functionMatches := false
 		for _, functionId := range service.FunctionIds {
@@ -226,9 +191,13 @@ func (this *Controller) selectionMatchesCriteria(
 				break
 			}
 		}
-		if !functionMatches {
-			return errors.New("device/service does not match function of filter-criteria"), http.StatusBadRequest
+		if notInteraction && functionMatches && aspectMatches {
+			serviceMatches = true
+			break
 		}
+	}
+	if !serviceMatches {
+		return errors.New("no service of the device matches the filter-criteria"), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }

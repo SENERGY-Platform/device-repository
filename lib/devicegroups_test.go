@@ -88,138 +88,80 @@ func TestDeviceGroupsValidation(t *testing.T) {
 	t.Run("ok with one dc criteria and no device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "dcid",
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "dcid",
 		}},
 	}, http.StatusOK, false))
 
 	t.Run("ok with one dc criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "dcid",
-			},
-			Selection: []model.Selection{{
-				DeviceId:   "did",
-				ServiceIds: []string{"s1id"},
-			}},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "dcid",
 		}},
+		DeviceIds: []string{"did"},
 	}, http.StatusOK, false))
 
 	t.Run("ok with one aspect criteria and no device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId: "fid",
-				AspectId:   "aid",
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId: "fid",
+			AspectId:   "aid",
 		}},
 	}, http.StatusOK, false))
 
 	t.Run("ok with one aspect criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId: "fid",
-				AspectId:   "aid",
-			},
-			Selection: []model.Selection{{
-				DeviceId:   "did",
-				ServiceIds: []string{"s1id"},
-			}},
+		Criteria: []model.FilterCriteria{{
+			FunctionId: "fid",
+			AspectId:   "aid",
 		}},
+		DeviceIds: []string{"did"},
 	}, http.StatusOK, false))
 
 	t.Run("device uses blocked interaction", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:                 "id",
 		Name:               "name",
 		BlockedInteraction: model.REQUEST,
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId: "fid",
-				AspectId:   "aid",
-			},
-			Selection: []model.Selection{{
-				DeviceId:   "did",
-				ServiceIds: []string{"s1id"},
-			}},
+		Criteria: []model.FilterCriteria{{
+			FunctionId: "fid",
+			AspectId:   "aid",
 		}},
-	}, http.StatusBadRequest, true))
-
-	t.Run("asymetric device usage", testDeviceGroupValidation(ctrl, model.DeviceGroup{
-		Id:   "id",
-		Name: "name",
-		Devices: []model.DeviceGroupMapping{
-			{
-				Criteria: model.FilterCriteria{
-					FunctionId: "fid",
-					AspectId:   "aid",
-				},
-				Selection: []model.Selection{{
-					DeviceId:   "did",
-					ServiceIds: []string{"s1id"},
-				}},
-			},
-			{
-				Criteria: model.FilterCriteria{
-					FunctionId: "fid",
-					AspectId:   "aid",
-				},
-				Selection: []model.Selection{},
-			},
-		},
+		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 
 	t.Run("wrong aspect", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId: "fid",
-				AspectId:   "aid_unknown",
-			},
-			Selection: []model.Selection{{
-				DeviceId:   "did",
-				ServiceIds: []string{"s1id"},
-			}},
+		Criteria: []model.FilterCriteria{{
+			FunctionId: "fid",
+			AspectId:   "aid_unknown",
 		}},
+		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 
 	t.Run("wrong function", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId: "fid_unknown",
-				AspectId:   "aid",
-			},
-			Selection: []model.Selection{{
-				DeviceId:   "did",
-				ServiceIds: []string{"s1id"},
-			}},
+		Criteria: []model.FilterCriteria{{
+			FunctionId: "fid_unknown",
+			AspectId:   "aid",
 		}},
+		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 
 	t.Run("wrong device-class", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{{
-				DeviceId:   "did",
-				ServiceIds: []string{"s1id"},
-			}},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
+		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 }
 
@@ -258,114 +200,78 @@ func TestDeviceGroupsDeviceFilter(t *testing.T) {
 	t.Run("empty", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
 	}, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
 	}))
 
 	t.Run("empty 2", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
 	}, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
 	}))
 
 	t.Run("empty 3", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
-		Id:      "id",
-		Name:    "name",
-		Devices: []model.DeviceGroupMapping{},
+		Id:       "id",
+		Name:     "name",
+		Criteria: []model.FilterCriteria{},
 	}, model.DeviceGroup{
-		Id:      "id",
-		Name:    "name",
-		Devices: []model.DeviceGroupMapping{},
+		Id:       "id",
+		Name:     "name",
+		Criteria: []model.FilterCriteria{},
 	}))
 
 	t.Run("full access", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{
-				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
-				{DeviceId: "d2"},
-				{DeviceId: "d3"},
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
+		DeviceIds: []string{"d1", "d2", "d3"},
 	}, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{
-				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
-				{DeviceId: "d2"},
-				{DeviceId: "d3"},
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
+		DeviceIds: []string{"d1", "d2", "d3"},
 	}))
 	t.Run("one access missing", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{
-				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
-				{DeviceId: "d2"},
-				{DeviceId: "unknown", ServiceIds: []string{"s1id"}},
-				{DeviceId: "d3"},
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
+		DeviceIds: []string{"d1", "d2", "unknown", "d3"},
 	}, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "unknown",
-			},
-			Selection: []model.Selection{
-				{DeviceId: "d1", ServiceIds: []string{"s1id"}},
-				{DeviceId: "d2"},
-				{DeviceId: "d3"},
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
 		}},
+		DeviceIds: []string{"d1", "d2", "d3"},
 	}))
 }
 
@@ -441,15 +347,11 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 	dg1 := model.DeviceGroup{
 		Id:   devicegroup1id,
 		Name: devicegroup1name,
-		Devices: []model.DeviceGroupMapping{{
-			Criteria: model.FilterCriteria{
-				FunctionId:    "fid",
-				DeviceClassId: "dcid",
-			},
-			Selection: []model.Selection{
-				{DeviceId: device1id, ServiceIds: []string{"s1id"}},
-			},
+		Criteria: []model.FilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "dcid",
 		}},
+		DeviceIds: []string{device1id},
 	}
 
 	err = producer.PublishDeviceGroup(dg1, userid)

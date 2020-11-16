@@ -67,25 +67,16 @@ type ProtocolSegment struct {
 }
 
 type DeviceGroup struct {
-	Id                 string               `json:"id"`
-	Name               string               `json:"name"`
-	Image              string               `json:"image"`
-	BlockedInteraction Interaction          `json:"blocked_interaction"` //service must not use this interaction
-	Devices            []DeviceGroupMapping `json:"devices"`
-}
-
-type DeviceGroupMapping struct {
-	Criteria  FilterCriteria `json:"criteria"`
-	Selection []Selection    `json:"selection"`
+	Id                 string           `json:"id"`
+	Name               string           `json:"name"`
+	Image              string           `json:"image"`
+	BlockedInteraction Interaction      `json:"blocked_interaction"` //service must not use this interaction
+	Criteria           []FilterCriteria `json:"criteria"`
+	DeviceIds          []string         `json:"device_ids"`
 }
 
 type FilterCriteria struct {
 	FunctionId    string `json:"function_id"`
-	DeviceClassId string `json:"device_class_id"`
 	AspectId      string `json:"aspect_id"`
-}
-
-type Selection struct {
-	DeviceId   string   `json:"device_id"`   //must also exist for other criteria
-	ServiceIds []string `json:"service_ids"` //must have at least one service
+	DeviceClassId string `json:"device_class_id"`
 }
