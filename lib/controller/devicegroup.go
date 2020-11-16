@@ -171,7 +171,7 @@ func (this *Controller) selectionMatchesCriteria(
 
 	deviceClassMatches := criteria.DeviceClassId == "" || criteria.DeviceClassId == deviceType.DeviceClassId
 	if !deviceClassMatches {
-		return errors.New("device does not match device-class of filter-criteria"), http.StatusBadRequest
+		return errors.New("device " + deviceId + " does not match device-class of filter-criteria"), http.StatusBadRequest
 	}
 
 	serviceMatches := false
@@ -197,7 +197,7 @@ func (this *Controller) selectionMatchesCriteria(
 		}
 	}
 	if !serviceMatches {
-		return errors.New("no service of the device matches the filter-criteria"), http.StatusBadRequest
+		return errors.New("no service of the device " + deviceId + " matches filter-criteria"), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }
