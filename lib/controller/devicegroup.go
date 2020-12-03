@@ -103,18 +103,10 @@ func (this *Controller) ValidateDeviceGroup(group model.DeviceGroup) (err error,
 	if group.Name == "" {
 		return errors.New("missing device-group name"), http.StatusBadRequest
 	}
-	switch group.BlockedInteraction {
-	case "":
-	case model.EVENT:
-	case model.REQUEST:
-	case model.EVENT_AND_REQUEST:
-	default:
-		return errors.New("unknown interaction in blocked_interaction: " + string(group.BlockedInteraction)), http.StatusBadRequest
-	}
-	return this.ValidateDeviceGroupSelection(group.BlockedInteraction, group.Criteria, group.DeviceIds)
+	return this.ValidateDeviceGroupSelection(group.Criteria, group.DeviceIds)
 }
 
-func (this *Controller) ValidateDeviceGroupSelection(blockedInteraction model.Interaction, criteria []model.FilterCriteria, devices []string) (error, int) {
+func (this *Controller) ValidateDeviceGroupSelection(criteria []model.DeviceGroupFilterCriteria, devices []string) (error, int) {
 	deviceCache := map[string]model.Device{}
 	deviceTypeCache := map[string]model.DeviceType{}
 	deviceUsageCount := map[string]int{}
@@ -126,7 +118,7 @@ func (this *Controller) ValidateDeviceGroupSelection(blockedInteraction model.In
 			}
 			deviceUsedInMapping[deviceId] = true
 			deviceUsageCount[deviceId] = deviceUsageCount[deviceId] + 1
-			err, code := this.selectionMatchesCriteria(&deviceCache, &deviceTypeCache, blockedInteraction, c, deviceId)
+			err, code := this.selectionMatchesCriteria(&deviceCache, &deviceTypeCache, c, deviceId)
 			if err != nil {
 				return err, code
 			}
@@ -138,8 +130,7 @@ func (this *Controller) ValidateDeviceGroupSelection(blockedInteraction model.In
 func (this *Controller) selectionMatchesCriteria(
 	dcache *map[string]model.Device,
 	dtcache *map[string]model.DeviceType,
-	blockedInteraction model.Interaction,
-	criteria model.FilterCriteria,
+	criteria model.DeviceGroupFilterCriteria,
 	deviceId string) (err error, code int) {
 
 	ctx, _ := getTimeoutContext()
@@ -176,7 +167,10 @@ func (this *Controller) selectionMatchesCriteria(
 
 	serviceMatches := false
 	for _, service := range deviceType.Services {
-		notInteraction := service.Interaction != blockedInteraction
+		interactionMatches := service.Interaction == criteria.Interaction
+		if service.Interaction == model.EVENT_AND_REQUEST {
+			interactionMatches = true
+		}
 		aspectMatches := criteria.AspectId == ""
 		for _, aspectId := range service.AspectIds {
 			if criteria.AspectId == "" || criteria.AspectId == aspectId {
@@ -191,7 +185,7 @@ func (this *Controller) selectionMatchesCriteria(
 				break
 			}
 		}
-		if notInteraction && functionMatches && aspectMatches {
+		if interactionMatches && functionMatches && aspectMatches {
 			serviceMatches = true
 			break
 		}
