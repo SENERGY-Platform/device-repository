@@ -22,8 +22,8 @@ import (
 	"strconv"
 )
 
-func GetBroker(zk string) (brokers []string, err error) {
-	return getBroker(zk)
+func GetBroker(bootstrapUrl string) (brokers []string, err error) {
+	return getBroker(bootstrapUrl)
 }
 
 func getBroker(bootstrapUrl string) (result []string, err error) {

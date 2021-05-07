@@ -18,7 +18,7 @@
     "mongo_protocol_collection": "protocol",
     "mongo_hub_collection": "hub",
     "mongo_repl_set": true,
-    "kafka_url": "kafka-broker-url",
+    "kafka_url": "kafka-broker-url:9092",
     "group_id": "device-repository",
     "debug": true
 }
