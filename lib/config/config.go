@@ -33,7 +33,7 @@ type Config struct {
 	ForceUser                  bool   `json:"force_user"`
 	LogLevel                   string `json:"log_level"` //DEBUG | CALL | NONE
 	ServerPort                 string `json:"server_port"`
-	ZookeeperUrl               string `json:"zookeeper_url"`
+	KafkaUrl                   string `json:"kafka_url"`
 	GroupId                    string `json:"group_id"`
 	DeviceTopic                string `json:"device_topic"`
 	DeviceTypeTopic            string `json:"device_type_topic"`

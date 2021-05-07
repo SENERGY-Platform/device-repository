@@ -27,6 +27,8 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
@@ -35,11 +37,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -184,10 +184,11 @@ func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown fun
 			globalError = err
 			return
 		}
-		config.ZookeeperUrl = zkIp + ":2181"
+		zookeeperUrl := zkIp + ":2181"
 
 		//kafka
-		closeKafka, err := Kafka(pool, config.ZookeeperUrl)
+		var closeKafka func()
+		config.KafkaUrl, closeKafka, err = Kafka(pool, zookeeperUrl)
 		listMux.Lock()
 		closerList = append(closerList, closeKafka)
 		listMux.Unlock()
@@ -197,7 +198,7 @@ func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown fun
 		}
 
 		//permsearch
-		closePerm, _, permIp, err := PermSearch(pool, config.ZookeeperUrl, elasticIp)
+		closePerm, _, permIp, err := PermSearch(pool, zookeeperUrl, elasticIp)
 		listMux.Lock()
 		closerList = append(closerList, closePerm)
 		listMux.Unlock()
@@ -274,7 +275,7 @@ func MongoTestServer(pool *dockertest.Pool) (closer func(), hostPort string, ipA
 	return func() { repo.Close() }, hostPort, repo.Container.NetworkSettings.IPAddress, err
 }
 
-func Kafka(pool *dockertest.Pool, zookeeperUrl string) (closer func(), err error) {
+func Kafka(pool *dockertest.Pool, zookeeperUrl string) (kafkaUrl string, closer func(), err error) {
 	kafkaport, err := getFreePort()
 	if err != nil {
 		log.Fatalf("Could not find new port: %s", err)
@@ -286,11 +287,13 @@ func Kafka(pool *dockertest.Pool, zookeeperUrl string) (closer func(), err error
 			hostIp = network.IPAM.Config[0].Gateway
 		}
 	}
+	kafkaUrl = hostIp + ":" + strconv.Itoa(kafkaport)
 	log.Println("host ip: ", hostIp)
+	log.Println("kafka url:", kafkaUrl)
 	env := []string{
 		"ALLOW_PLAINTEXT_LISTENER=yes",
 		"KAFKA_LISTENERS=OUTSIDE://:9092",
-		"KAFKA_ADVERTISED_LISTENERS=OUTSIDE://" + hostIp + ":" + strconv.Itoa(kafkaport),
+		"KAFKA_ADVERTISED_LISTENERS=OUTSIDE://" + kafkaUrl,
 		"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=OUTSIDE:PLAINTEXT",
 		"KAFKA_INTER_BROKER_LISTENER_NAME=OUTSIDE",
 		"KAFKA_ZOOKEEPER_CONNECT=" + zookeeperUrl,
@@ -300,7 +303,7 @@ func Kafka(pool *dockertest.Pool, zookeeperUrl string) (closer func(), err error
 		"9092/tcp": {{HostIP: "", HostPort: strconv.Itoa(kafkaport)}},
 	}})
 	if err != nil {
-		return func() {}, err
+		return kafkaUrl, func() {}, err
 	}
 	err = pool.Retry(func() error {
 		log.Println("try kafka connection...")
@@ -312,7 +315,7 @@ func Kafka(pool *dockertest.Pool, zookeeperUrl string) (closer func(), err error
 		defer conn.Close()
 		return nil
 	})
-	return func() { kafkaContainer.Close() }, err
+	return kafkaUrl, func() { kafkaContainer.Close() }, err
 }
 
 func Zookeeper(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress string, err error) {
@@ -384,125 +387,34 @@ type Publisher struct {
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
-	broker, err := GetBroker(conf.ZookeeperUrl)
+	broker, err := util.GetBroker(conf.KafkaUrl)
 	if err != nil {
 		return nil, err
 	}
 	if len(broker) == 0 {
 		return nil, errors.New("missing kafka broker")
 	}
-	devicetypes, err := getProducer(broker, conf.DeviceTypeTopic, conf.LogLevel == "DEBUG")
+	devicetypes, err := producer.GetKafkaWriter(broker, conf.DeviceTypeTopic, conf.LogLevel == "DEBUG")
 	if err != nil {
 		return nil, err
 	}
-	devices, err := getProducer(broker, conf.DeviceTopic, conf.LogLevel == "DEBUG")
+	devices, err := producer.GetKafkaWriter(broker, conf.DeviceTopic, conf.LogLevel == "DEBUG")
 	if err != nil {
 		return nil, err
 	}
-	devicegroups, err := getProducer(broker, conf.DeviceGroupTopic, conf.LogLevel == "DEBUG")
+	devicegroups, err := producer.GetKafkaWriter(broker, conf.DeviceGroupTopic, conf.LogLevel == "DEBUG")
 	if err != nil {
 		return nil, err
 	}
-	protocols, err := getProducer(broker, conf.ProtocolTopic, conf.LogLevel == "DEBUG")
+	protocols, err := producer.GetKafkaWriter(broker, conf.ProtocolTopic, conf.LogLevel == "DEBUG")
 	if err != nil {
 		return nil, err
 	}
-	hubs, err := getProducer(broker, conf.HubTopic, conf.LogLevel == "DEBUG")
+	hubs, err := producer.GetKafkaWriter(broker, conf.HubTopic, conf.LogLevel == "DEBUG")
 	if err != nil {
 		return nil, err
 	}
 	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices, hubs: hubs, devicegroups: devicegroups}, nil
-}
-
-func getProducer(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {
-	var logger *log.Logger
-	if debug {
-		logger = log.New(os.Stdout, "[KAFKA-PRODUCER] ", 0)
-	} else {
-		logger = log.New(ioutil.Discard, "", 0)
-	}
-	writer = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:     broker,
-		Topic:       topic,
-		MaxAttempts: 10,
-		Logger:      logger,
-	})
-	return writer, err
-}
-
-func GetBroker(zk string) (brokers []string, err error) {
-	return getBroker(zk)
-}
-
-func getBroker(zkUrl string) (brokers []string, err error) {
-	zookeeper := kazoo.NewConfig()
-	zookeeper.Logger = log.New(ioutil.Discard, "", 0)
-	zk, chroot := kazoo.ParseConnectionString(zkUrl)
-	zookeeper.Chroot = chroot
-	if kz, err := kazoo.NewKazoo(zk, zookeeper); err != nil {
-		return brokers, err
-	} else {
-		return kz.BrokerList()
-	}
-}
-
-func GetKafkaController(zkUrl string) (controller string, err error) {
-	zookeeper := kazoo.NewConfig()
-	zookeeper.Logger = log.New(ioutil.Discard, "", 0)
-	zk, chroot := kazoo.ParseConnectionString(zkUrl)
-	zookeeper.Chroot = chroot
-	kz, err := kazoo.NewKazoo(zk, zookeeper)
-	if err != nil {
-		return controller, err
-	}
-	controllerId, err := kz.Controller()
-	if err != nil {
-		return controller, err
-	}
-	brokers, err := kz.Brokers()
-	if err != nil {
-		return controller, err
-	}
-	return brokers[controllerId], err
-}
-
-func InitTopic(zkUrl string, topics ...string) (err error) {
-	return InitTopicWithConfig(zkUrl, 1, 1, topics...)
-}
-
-func InitTopicWithConfig(zkUrl string, numPartitions int, replicationFactor int, topics ...string) (err error) {
-	controller, err := GetKafkaController(zkUrl)
-	if err != nil {
-		log.Println("ERROR: unable to find controller", err)
-		return err
-	}
-	if controller == "" {
-		log.Println("ERROR: unable to find controller")
-		return errors.New("unable to find controller")
-	}
-	initConn, err := kafka.Dial("tcp", controller)
-	if err != nil {
-		log.Println("ERROR: while init topic connection ", err)
-		return err
-	}
-	defer initConn.Close()
-	for _, topic := range topics {
-		err = initConn.CreateTopics(kafka.TopicConfig{
-			Topic:             topic,
-			NumPartitions:     numPartitions,
-			ReplicationFactor: replicationFactor,
-			ConfigEntries: []kafka.ConfigEntry{
-				{ConfigName: "cleanup.policy", ConfigValue: "compact"},
-				{ConfigName: "delete.retention.ms", ConfigValue: "100"},
-				{ConfigName: "segment.ms", ConfigValue: "100"},
-				{ConfigName: "min.cleanable.dirty.ratio", ConfigValue: "0.01"},
-			},
-		})
-		if err != nil {
-			return
-		}
-	}
-	return nil
 }
 
 type DeviceTypeCommand struct {

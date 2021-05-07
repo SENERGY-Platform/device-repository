@@ -18,7 +18,7 @@
     "mongo_protocol_collection": "protocol",
     "mongo_hub_collection": "hub",
     "mongo_repl_set": true,
-    "zookeeper_url": "zk:2181",
+    "kafka_url": "kafka-broker-url",
     "group_id": "device-repository",
     "debug": true
 }

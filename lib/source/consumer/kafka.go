@@ -27,15 +27,15 @@ import (
 	"time"
 )
 
-func NewConsumer(zk string, groupid string, topic string, listener func(topic string, msg []byte) error, errorhandler func(err error, consumer *Consumer)) (consumer *Consumer, err error) {
-	consumer = &Consumer{groupId: groupid, zkUrl: zk, topic: topic, listener: listener, errorhandler: errorhandler}
+func NewConsumer(bootstrapUrl string, groupid string, topic string, listener func(topic string, msg []byte) error, errorhandler func(err error, consumer *Consumer)) (consumer *Consumer, err error) {
+	consumer = &Consumer{groupId: groupid, bootstrapUrl: bootstrapUrl, topic: topic, listener: listener, errorhandler: errorhandler}
 	err = consumer.start()
 	return
 }
 
 type Consumer struct {
 	count        int
-	zkUrl        string
+	bootstrapUrl string
 	groupId      string
 	topic        string
 	ctx          context.Context
@@ -52,12 +52,12 @@ func (this *Consumer) Stop() {
 func (this *Consumer) start() error {
 	log.Println("DEBUG: consume topic: \"" + this.topic + "\"")
 	this.ctx, this.cancel = context.WithCancel(context.Background())
-	broker, err := util.GetBroker(this.zkUrl)
+	broker, err := util.GetBroker(this.bootstrapUrl)
 	if err != nil {
 		log.Println("ERROR: unable to get broker list", err)
 		return err
 	}
-	err = util.InitTopic(this.zkUrl, this.topic)
+	err = util.InitTopic(this.bootstrapUrl, this.topic)
 	if err != nil {
 		log.Println("ERROR: unable to create topic", err)
 		return err

@@ -35,7 +35,7 @@ func Start(config config.Config, control listener.Controller) (stop func(), err 
 			log.Println("ERROR: listener.factory", topic, err)
 			return stop, err
 		}
-		consumer, err := NewConsumer(config.ZookeeperUrl, config.GroupId, topic, func(topic string, msg []byte) error {
+		consumer, err := NewConsumer(config.KafkaUrl, config.GroupId, topic, func(topic string, msg []byte) error {
 			if config.Debug {
 				log.Println("DEBUG: consume", topic, string(msg))
 			}
