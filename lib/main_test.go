@@ -198,7 +198,7 @@ func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown fun
 		}
 
 		//permsearch
-		closePerm, _, permIp, err := PermSearch(pool, zookeeperUrl, elasticIp)
+		closePerm, _, permIp, err := PermSearch(pool, config.KafkaUrl, elasticIp)
 		listMux.Lock()
 		closerList = append(closerList, closePerm)
 		listMux.Unlock()
@@ -221,8 +221,8 @@ func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown fun
 
 func PermSearch(pool *dockertest.Pool, zk string, elasticIp string) (closer func(), hostPort string, ipAddress string, err error) {
 	log.Println("start permsearch")
-	repo, err := pool.Run("fgseitsrancher.wifa.intern.uni-leipzig.de:5000/permission-search", "dev", []string{
-		"ZOOKEEPER_URL=" + zk,
+	repo, err := pool.Run("ghcr.io/senergy-platform/permission-search", "dev", []string{
+		"KAFKA_URL=" + zk,
 		"ELASTIC_URL=" + "http://" + elasticIp + ":9200",
 	})
 	if err != nil {
