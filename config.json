@@ -20,5 +20,7 @@
     "mongo_repl_set": true,
     "kafka_url": "kafka-broker-url:9092",
     "group_id": "device-repository",
-    "debug": true
+    "debug": true,
+    "disable_kafka_consumer": false,
+    "disable_http_api": false
 }

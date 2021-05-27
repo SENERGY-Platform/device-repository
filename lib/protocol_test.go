@@ -17,6 +17,7 @@
 package lib
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -25,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -35,12 +37,14 @@ var protocol2id = uuid.NewV4().String()
 var protocol2name = uuid.NewV4().String()
 
 func TestProtocolQuery(t *testing.T) {
-	closer, conf, err := createTestEnv()
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
 	if err != nil {
-		t.Fatal(err)
-	}
-	if true {
-		defer closer()
+		t.Error(err)
+		return
 	}
 
 	/*

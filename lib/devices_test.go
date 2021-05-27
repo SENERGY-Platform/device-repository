@@ -17,6 +17,7 @@
 package lib
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -25,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -37,12 +39,14 @@ var device2lid = "lid2"
 var device2name = uuid.NewV4().String()
 
 func TestDeviceQuery(t *testing.T) {
-	closer, conf, err := createTestEnv()
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
 	if err != nil {
-		t.Fatal(err)
-	}
-	if true {
-		defer closer()
+		t.Error(err)
+		return
 	}
 	producer, err := NewPublisher(conf)
 	if err != nil {

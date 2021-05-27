@@ -17,6 +17,7 @@
 package lib
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
@@ -28,6 +29,7 @@ import (
 	"net/url"
 	"reflect"
 	"runtime/debug"
+	"sync"
 	"testing"
 	"time"
 )
@@ -297,12 +299,14 @@ const devicegroup1id = "dg1id"
 const devicegroup1name = "dg1name"
 
 func TestDeviceGroupsIntegration(t *testing.T) {
-	closer, conf, err := createTestEnv()
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
 	if err != nil {
-		t.Fatal(err)
-	}
-	if true {
-		defer closer()
+		t.Error(err)
+		return
 	}
 	producer, err := NewPublisher(conf)
 	if err != nil {

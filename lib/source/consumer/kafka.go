@@ -27,8 +27,8 @@ import (
 	"time"
 )
 
-func NewConsumer(bootstrapUrl string, groupid string, topic string, listener func(topic string, msg []byte) error, errorhandler func(err error, consumer *Consumer)) (consumer *Consumer, err error) {
-	consumer = &Consumer{groupId: groupid, bootstrapUrl: bootstrapUrl, topic: topic, listener: listener, errorhandler: errorhandler}
+func NewConsumer(ctx context.Context, bootstrapUrl string, groupid string, topic string, listener func(topic string, msg []byte) error, errorhandler func(err error, consumer *Consumer)) (consumer *Consumer, err error) {
+	consumer = &Consumer{ctx: ctx, groupId: groupid, bootstrapUrl: bootstrapUrl, topic: topic, listener: listener, errorhandler: errorhandler}
 	err = consumer.start()
 	return
 }
@@ -39,19 +39,13 @@ type Consumer struct {
 	groupId      string
 	topic        string
 	ctx          context.Context
-	cancel       context.CancelFunc
 	listener     func(topic string, msg []byte) error
 	errorhandler func(err error, consumer *Consumer)
 	mux          sync.Mutex
 }
 
-func (this *Consumer) Stop() {
-	this.cancel()
-}
-
 func (this *Consumer) start() error {
 	log.Println("DEBUG: consume topic: \"" + this.topic + "\"")
-	this.ctx, this.cancel = context.WithCancel(context.Background())
 	broker, err := util.GetBroker(this.bootstrapUrl)
 	if err != nil {
 		log.Println("ERROR: unable to get broker list", err)
@@ -76,6 +70,7 @@ func (this *Consumer) start() error {
 			select {
 			case <-this.ctx.Done():
 				log.Println("close kafka reader ", this.topic)
+				r.Close()
 				return
 			default:
 				m, err := r.FetchMessage(this.ctx)
@@ -98,9 +93,4 @@ func (this *Consumer) start() error {
 		}
 	}()
 	return err
-}
-
-func (this *Consumer) Restart() {
-	this.Stop()
-	this.start()
 }

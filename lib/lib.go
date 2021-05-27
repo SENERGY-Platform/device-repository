@@ -17,6 +17,7 @@
 package lib
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
 	"github.com/SENERGY-Platform/device-repository/lib/com"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
@@ -25,54 +26,67 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"log"
+	"sync"
 )
 
-func Start(conf config.Config) (stop func(), err error) {
+//set wg if you want to wait for clean disconnects after ctx is done
+func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err error) {
+	ctx, cancel := context.WithCancel(baseCtx)
+	defer func() {
+		if err != nil {
+			cancel()
+		}
+	}()
 	db, err := database.New(conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
-		return stop, err
+		return err
 	}
+	if wg != nil {
+		wg.Add(1)
+	}
+	go func() {
+		<-ctx.Done()
+		db.Disconnect()
+		if wg != nil {
+			wg.Done()
+		}
+	}()
 
 	perm, err := com.NewSecurity(conf)
 	if err != nil {
 		log.Println("ERROR: unable to create permission handler", err)
-		return stop, err
+		return err
 	}
 
 	p, err := producer.New(conf)
 	if err != nil {
 		log.Println("ERROR: unable to create producer", err)
-		return stop, err
+		return err
 	}
 
 	ctrl, err := controller.New(conf, db, perm, p)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
-		return stop, err
+		return err
 	}
 
-	sourceStop, err := consumer.Start(conf, ctrl)
-	if err != nil {
-		db.Disconnect()
-		ctrl.Stop()
-		log.Println("ERROR: unable to start source", err)
-		return stop, err
+	if !conf.DisableKafkaConsumer {
+		err = consumer.Start(ctx, conf, ctrl)
+		if err != nil {
+			log.Println("ERROR: unable to start source", err)
+			return err
+		}
 	}
 
-	err = api.Start(conf, ctrl)
-	if err != nil {
-		sourceStop()
-		db.Disconnect()
-		ctrl.Stop()
-		log.Println("ERROR: unable to start api", err)
-		return stop, err
+	if !conf.DisableHttpApi {
+		err = api.Start(conf, ctrl)
+		if err != nil {
+			log.Println("ERROR: unable to start api", err)
+			return err
+		}
 	}
 
-	return func() {
-		sourceStop()
-		db.Disconnect()
-		ctrl.Stop()
-	}, err
+	return err
 }

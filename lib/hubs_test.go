@@ -17,6 +17,7 @@
 package lib
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,6 +27,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -34,13 +36,16 @@ var hub1id = "urn:infai:ses:device:1"
 var hub1name = "hub1"
 
 func TestHubs(t *testing.T) {
-	closer, conf, err := createTestEnv()
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
+		return
 	}
-	if true {
-		defer closer()
-	}
+
 	producer, err := NewPublisher(conf)
 	if err != nil {
 		t.Error(err)

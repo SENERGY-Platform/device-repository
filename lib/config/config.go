@@ -50,6 +50,8 @@ type Config struct {
 	MongoProtocolCollection    string `json:"mongo_protocol_collection"`
 	MongoHubCollection         string `json:"mongo_hub_collection"`
 	Debug                      bool   `json:"debug"`
+	DisableKafkaConsumer       bool   `json:"disable_kafka_consumer"`
+	DisableHttpApi             bool   `json:"disable_http_api"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

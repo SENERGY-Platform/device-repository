@@ -17,6 +17,7 @@
 package lib
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -25,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -35,14 +37,15 @@ var devicetype2id = uuid.NewV4().String()
 var devicetype2name = uuid.NewV4().String()
 
 func TestServiceQuery(t *testing.T) {
-	closer, conf, err := createTestEnv()
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
+		return
 	}
-	if true {
-		defer closer()
-	}
-
 	producer, err := NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
@@ -63,12 +66,14 @@ func TestServiceQuery(t *testing.T) {
 }
 
 func TestSubContentVarUpdate(t *testing.T) {
-	closer, conf, err := createTestEnv()
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
 	if err != nil {
-		t.Fatal(err)
-	}
-	if true {
-		defer closer()
+		t.Error(err)
+		return
 	}
 
 	producer, err := NewPublisher(conf)
@@ -176,12 +181,14 @@ func TestSubContentVarUpdate(t *testing.T) {
 }
 
 func TestDeviceTypeQuery(t *testing.T) {
-	closer, conf, err := createTestEnv()
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
 	if err != nil {
-		t.Fatal(err)
-	}
-	if true {
-		defer closer()
+		t.Error(err)
+		return
 	}
 
 	producer, err := NewPublisher(conf)

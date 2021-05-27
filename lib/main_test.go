@@ -71,200 +71,156 @@ func jwtput(jwt jwt_http_router.JwtImpersonate, url string, contenttype string, 
 	return
 }
 
-func createTestEnv() (closer func(), conf config.Config, err error) {
+func createTestEnv(ctx context.Context, wg *sync.WaitGroup) (conf config.Config, err error) {
 	conf, err = config.Load("../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
-		return func() {}, conf, err
+		return conf, err
 	}
 	conf.MongoReplSet = false
-	conf, closer, err = NewDockerEnv(conf)
+	conf, err = NewDockerEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)
-		return func() {}, conf, err
+		return conf, err
 	}
 	time.Sleep(1 * time.Second)
-	stop, err := Start(conf)
+	err = Start(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
-		closer()
-		return closer, conf, err
+		return conf, err
 	}
-	dockerCloser := closer
-	closer = func() {
-		stop()
-		dockerCloser()
-	}
-	time.Sleep(10 * time.Second)
-	return closer, conf, err
+	time.Sleep(1 * time.Second)
+	return conf, err
 }
 
-func NewDockerEnv(startConfig config.Config) (config config.Config, shutdown func(), err error) {
+func NewDockerEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config) (config config.Config, err error) {
 	config = startConfig
+	ctx, cancel := context.WithCancel(baseCtx)
+	defer func() {
+		if err != nil {
+			cancel()
+		}
+	}()
 
 	whPort, err := getFreePort()
 	if err != nil {
 		log.Println("unable to find free port", err)
-		return config, func() {}, err
+		return config, err
 	}
 	config.ServerPort = strconv.Itoa(whPort)
 
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Println("Could not connect to docker:", err)
-		return config, func() {}, err
+		return config, err
 	}
 
-	var wait sync.WaitGroup
+	_, ip, err := MongoTestServer(pool, ctx, wg)
+	if err != nil {
+		return config, err
+	}
+	config.MongoUrl = "mongodb://" + ip + ":27017"
 
-	listMux := sync.Mutex{}
-	var globalError error
-	closerList := []func(){}
-	close := func(list []func()) {
-		for i := len(list)/2 - 1; i >= 0; i-- {
-			opp := len(list) - 1 - i
-			list[i], list[opp] = list[opp], list[i]
-		}
-		for _, c := range list {
-			if c != nil {
-				c()
-			}
-		}
+	_, zkIp, err := Zookeeper(pool, ctx, wg)
+	if err != nil {
+		return config, err
+	}
+	zookeeperUrl := zkIp + ":2181"
+
+	config.KafkaUrl, err = Kafka(pool, ctx, wg, zookeeperUrl)
+	if err != nil {
+		return config, err
 	}
 
-	//mongo
-	wait.Add(1)
-	go func() {
-		defer wait.Done()
-		closer, _, ip, err := MongoTestServer(pool)
-		listMux.Lock()
-		closerList = append(closerList, closer)
-		listMux.Unlock()
-		if err != nil {
-			globalError = err
-			return
-		}
-		config.MongoUrl = "mongodb://" + ip + ":27017"
-	}()
-
-	wait.Add(1)
-	go func() {
-		defer wait.Done()
-
-		var wait2 sync.WaitGroup
-
-		var elasticIp string
-
-		wait2.Add(1)
-		go func() {
-			defer wait2.Done()
-			//elasticsearch
-			closeElastic, _, ip, err := Elasticsearch(pool)
-			elasticIp = ip
-			listMux.Lock()
-			closerList = append(closerList, closeElastic)
-			listMux.Unlock()
-			if err != nil {
-				globalError = err
-				return
-			}
-		}()
-
-		wait2.Wait()
-
-		if globalError != nil {
-			return
-		}
-
-		closeZk, _, zkIp, err := Zookeeper(pool)
-		listMux.Lock()
-		closerList = append(closerList, closeZk)
-		listMux.Unlock()
-		if err != nil {
-			globalError = err
-			return
-		}
-		zookeeperUrl := zkIp + ":2181"
-
-		//kafka
-		var closeKafka func()
-		config.KafkaUrl, closeKafka, err = Kafka(pool, zookeeperUrl)
-		listMux.Lock()
-		closerList = append(closerList, closeKafka)
-		listMux.Unlock()
-		if err != nil {
-			globalError = err
-			return
-		}
-
-		//permsearch
-		closePerm, _, permIp, err := PermSearch(pool, config.KafkaUrl, elasticIp)
-		listMux.Lock()
-		closerList = append(closerList, closePerm)
-		listMux.Unlock()
-		if err != nil {
-			globalError = err
-			return
-		}
-
-		config.PermissionsUrl = "http://" + permIp + ":8080"
-	}()
-
-	wait.Wait()
-	if globalError != nil {
-		close(closerList)
-		return config, shutdown, globalError
+	_, elasticIp, err := Elasticsearch(pool, ctx, wg)
+	if err != nil {
+		return config, err
 	}
 
-	return config, func() { close(closerList) }, nil
+	_, permIp, err := PermSearch(pool, ctx, wg, config.KafkaUrl, elasticIp)
+	if err != nil {
+		return config, err
+	}
+	config.PermissionsUrl = "http://" + permIp + ":8080"
+
+	return
 }
 
-func PermSearch(pool *dockertest.Pool, zk string, elasticIp string) (closer func(), hostPort string, ipAddress string, err error) {
+func PermSearch(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, zk string, elasticIp string) (hostPort string, ipAddress string, err error) {
 	log.Println("start permsearch")
-	repo, err := pool.Run("ghcr.io/senergy-platform/permission-search", "dev", []string{
+	container, err := pool.Run("ghcr.io/senergy-platform/permission-search", "dev", []string{
 		"KAFKA_URL=" + zk,
 		"ELASTIC_URL=" + "http://" + elasticIp + ":9200",
 	})
 	if err != nil {
-		return func() {}, "", "", err
+		return "", "", err
 	}
-	hostPort = repo.GetPort("8080/tcp")
+
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		log.Println("DEBUG: remove container " + container.Container.Name)
+		container.Close()
+		wg.Done()
+	}()
+
+	hostPort = container.GetPort("8080/tcp")
 	err = pool.Retry(func() error {
 		log.Println("try permsearch connection...")
-		_, err := http.Get("http://" + repo.Container.NetworkSettings.IPAddress + ":8080/jwt/check/deviceinstance/foo/r/bool")
+		_, err := http.Get("http://" + container.Container.NetworkSettings.IPAddress + ":8080/jwt/check/deviceinstance/foo/r/bool")
 		if err != nil {
 			log.Println(err)
 		}
 		return err
 	})
-	return func() { repo.Close() }, hostPort, repo.Container.NetworkSettings.IPAddress, err
+	return hostPort, container.Container.NetworkSettings.IPAddress, err
 }
 
-func Elasticsearch(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress string, err error) {
+func Elasticsearch(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup) (hostPort string, ipAddress string, err error) {
 	log.Println("start elasticsearch")
-	repo, err := pool.Run("docker.elastic.co/elasticsearch/elasticsearch", "7.6.1", []string{"discovery.type=single-node"})
+	container, err := pool.Run("docker.elastic.co/elasticsearch/elasticsearch", "7.6.1", []string{"discovery.type=single-node"})
 	if err != nil {
-		return func() {}, "", "", err
+		return "", "", err
 	}
-	hostPort = repo.GetPort("9200/tcp")
+
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		log.Println("DEBUG: remove container " + container.Container.Name)
+		container.Close()
+		wg.Done()
+	}()
+
+	hostPort = container.GetPort("9200/tcp")
 	err = pool.Retry(func() error {
 		log.Println("try elastic connection...")
-		_, err := http.Get("http://" + repo.Container.NetworkSettings.IPAddress + ":9200/_cluster/health")
+		_, err := http.Get("http://" + container.Container.NetworkSettings.IPAddress + ":9200/_cluster/health")
 		return err
 	})
 	if err != nil {
 		log.Println(err)
 	}
-	return func() { repo.Close() }, hostPort, repo.Container.NetworkSettings.IPAddress, err
+	return hostPort, container.Container.NetworkSettings.IPAddress, err
 }
 
-func MongoTestServer(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress string, err error) {
-	log.Println("start mongodb")
-	repo, err := pool.Run("mongo", "4.1.11", []string{})
+func MongoTestServer(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup) (hostPort string, ipAddress string, err error) {
+	container, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "mongo",
+		Tag:        "4.1.11",
+	}, func(config *docker.HostConfig) {
+		config.Tmpfs = map[string]string{"/data/db": "rw"}
+	})
 	if err != nil {
-		return func() {}, "", "", err
+		return "", "", err
 	}
-	hostPort = repo.GetPort("27017/tcp")
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		log.Println("DEBUG: remove container " + container.Container.Name)
+		container.Close()
+		wg.Done()
+	}()
+	hostPort = container.GetPort("27017/tcp")
 	err = pool.Retry(func() error {
 		log.Println("try mongodb connection...")
 		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -272,10 +228,10 @@ func MongoTestServer(pool *dockertest.Pool) (closer func(), hostPort string, ipA
 		err = client.Ping(ctx, readpref.Primary())
 		return err
 	})
-	return func() { repo.Close() }, hostPort, repo.Container.NetworkSettings.IPAddress, err
+	return hostPort, container.Container.NetworkSettings.IPAddress, err
 }
 
-func Kafka(pool *dockertest.Pool, zookeeperUrl string) (kafkaUrl string, closer func(), err error) {
+func Kafka(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, zookeeperUrl string) (kafkaUrl string, err error) {
 	kafkaport, err := getFreePort()
 	if err != nil {
 		log.Fatalf("Could not find new port: %s", err)
@@ -299,12 +255,19 @@ func Kafka(pool *dockertest.Pool, zookeeperUrl string) (kafkaUrl string, closer 
 		"KAFKA_ZOOKEEPER_CONNECT=" + zookeeperUrl,
 	}
 	log.Println("start kafka with env ", env)
-	kafkaContainer, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "bitnami/kafka", Tag: "latest", Env: env, PortBindings: map[docker.Port][]docker.PortBinding{
+	container, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "bitnami/kafka", Tag: "latest", Env: env, PortBindings: map[docker.Port][]docker.PortBinding{
 		"9092/tcp": {{HostIP: "", HostPort: strconv.Itoa(kafkaport)}},
 	}})
 	if err != nil {
-		return kafkaUrl, func() {}, err
+		return kafkaUrl, err
 	}
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		log.Println("DEBUG: remove container " + container.Container.Name)
+		container.Close()
+		wg.Done()
+	}()
 	err = pool.Retry(func() error {
 		log.Println("try kafka connection...")
 		conn, err := kafka.Dial("tcp", hostIp+":"+strconv.Itoa(kafkaport))
@@ -315,27 +278,34 @@ func Kafka(pool *dockertest.Pool, zookeeperUrl string) (kafkaUrl string, closer 
 		defer conn.Close()
 		return nil
 	})
-	return kafkaUrl, func() { kafkaContainer.Close() }, err
+	return kafkaUrl, err
 }
 
-func Zookeeper(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress string, err error) {
+func Zookeeper(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup) (hostPort string, ipAddress string, err error) {
 	zkport, err := getFreePort()
 	if err != nil {
 		log.Fatalf("Could not find new port: %s", err)
 	}
 	env := []string{}
 	log.Println("start zookeeper on ", zkport)
-	zkContainer, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "wurstmeister/zookeeper", Tag: "latest", Env: env, PortBindings: map[docker.Port][]docker.PortBinding{
+	container, err := pool.RunWithOptions(&dockertest.RunOptions{Repository: "wurstmeister/zookeeper", Tag: "latest", Env: env, PortBindings: map[docker.Port][]docker.PortBinding{
 		"2181/tcp": {{HostIP: "", HostPort: strconv.Itoa(zkport)}},
 	}})
 	if err != nil {
-		return func() {}, "", "", err
+		return "", "", err
 	}
 	hostPort = strconv.Itoa(zkport)
+	wg.Add(1)
+	go func() {
+		<-ctx.Done()
+		log.Println("DEBUG: remove container " + container.Container.Name)
+		container.Close()
+		wg.Done()
+	}()
 	err = pool.Retry(func() error {
 		log.Println("try zk connection...")
 		zookeeper := kazoo.NewConfig()
-		zk, chroot := kazoo.ParseConnectionString(zkContainer.Container.NetworkSettings.IPAddress)
+		zk, chroot := kazoo.ParseConnectionString(container.Container.NetworkSettings.IPAddress)
 		zookeeper.Chroot = chroot
 		kz, err := kazoo.NewKazoo(zk, zookeeper)
 		if err != nil {
@@ -349,7 +319,7 @@ func Zookeeper(pool *dockertest.Pool) (closer func(), hostPort string, ipAddress
 		}
 		return nil
 	})
-	return func() { zkContainer.Close() }, hostPort, zkContainer.Container.NetworkSettings.IPAddress, err
+	return hostPort, container.Container.NetworkSettings.IPAddress, err
 }
 
 func getFreePort() (int, error) {

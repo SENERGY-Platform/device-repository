@@ -123,7 +123,8 @@ func (this *Mongo) ensureCompoundIndex(collection *mongo.Collection, indexname s
 }
 
 func (this *Mongo) Disconnect() {
-	log.Println(this.client.Disconnect(context.Background()))
+	timeout, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	log.Println(this.client.Disconnect(timeout))
 }
 
 func getBsonFieldName(obj interface{}, fieldName string) (bsonName string, err error) {
