@@ -19,9 +19,8 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"log"
 	"net/http"
-	"runtime/debug"
+	"regexp"
 	"strconv"
 )
 
@@ -35,6 +34,12 @@ func ValidateVariable(variable model.ContentVariable, serialization model.Serial
 	if variable.Type == "" {
 		return errors.New("missing content variable type for " + variable.Name), http.StatusBadRequest
 	}
+
+	err, code = ValidateVariableName(variable.Name)
+	if err != nil {
+		return err, code
+	}
+
 	switch variable.Type {
 	case model.String:
 		if len(variable.SubContentVariables) > 0 {
@@ -68,10 +73,27 @@ func ValidateVariable(variable model.ContentVariable, serialization model.Serial
 	return nil, http.StatusOK
 }
 
-func validateSerializationOptions(options []string, serialization model.Serialization) error {
-	log.Println("TODO:")
-	debug.PrintStack()
-	return nil
+func ValidateName(name string) (err error, code int) {
+	pattern := `^[A-Za-z_][A-Za-z0-9-_]*$`
+	re := regexp.MustCompile(pattern)
+	if !re.MatchString(name) {
+		return errors.New("invalid name:" + name), http.StatusBadRequest
+	}
+	return nil, http.StatusOK
+}
+
+func ValidateVariableName(name string) (err error, code int) {
+	//may be placeholder for map key or list index
+	if name == "*" {
+		return nil, http.StatusOK
+	}
+
+	//may be a number as index of an array
+	if _, err = strconv.Atoi(name); err == nil {
+		return nil, http.StatusOK
+	}
+
+	return ValidateName(name)
 }
 
 func ValidateListSubVariables(variables []model.ContentVariable, serialization model.Serialization) (err error, code int) {

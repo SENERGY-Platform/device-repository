@@ -78,3 +78,36 @@ func TestValidateVariable3(t *testing.T) {
 		t.Error("expected error")
 	}
 }
+
+func TestValidateVariable4(t *testing.T) {
+	err, _ := ValidateVariable(model.ContentVariable{
+		Id:   "foo.bar",
+		Name: "foo.bar",
+		Type: model.String,
+	}, model.JSON)
+	if err == nil {
+		t.Error("expected error")
+	}
+}
+
+func TestValidateVariable5(t *testing.T) {
+	err, _ := ValidateVariable(model.ContentVariable{
+		Id:   "foobar",
+		Name: "foobar",
+		Type: model.String,
+	}, model.JSON)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestValidateVariable6(t *testing.T) {
+	err, _ := ValidateVariable(model.ContentVariable{
+		Id:   "foo_bar",
+		Name: "foo_bar",
+		Type: model.String,
+	}, model.JSON)
+	if err != nil {
+		t.Error(err)
+	}
+}

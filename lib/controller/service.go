@@ -45,6 +45,24 @@ func (this *Controller) ValidateService(service model.Service) (error, int) {
 	if !exists {
 		return errors.New("unknown protocol id: " + service.ProtocolId), http.StatusBadRequest
 	}
+
+	knownContentNames := map[string]bool{}
+	for _, content := range service.Inputs {
+		if _, ok := knownContentNames[content.ContentVariable.Name]; ok {
+			return errors.New("reused input content name: " + content.ContentVariable.Name), http.StatusBadRequest
+		} else {
+			knownContentNames[content.ContentVariable.Name] = true
+		}
+	}
+	knownContentNames = map[string]bool{}
+	for _, content := range service.Outputs {
+		if _, ok := knownContentNames[content.ContentVariable.Name]; ok {
+			return errors.New("reused output content name: " + content.ContentVariable.Name), http.StatusBadRequest
+		} else {
+			knownContentNames[content.ContentVariable.Name] = true
+		}
+	}
+
 	for _, content := range append(service.Inputs, service.Outputs...) {
 		err, code := ValidateContent(content, protocol)
 		if err != nil {
