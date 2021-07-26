@@ -20,7 +20,7 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/ory/dockertest"
+	"github.com/ory/dockertest/v3"
 	"testing"
 	"time"
 )
