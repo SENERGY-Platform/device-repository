@@ -1,6 +1,6 @@
 module github.com/SENERGY-Platform/device-repository
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
@@ -12,7 +12,6 @@ require (
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gotestyourself/gotestyourself v1.4.0 // indirect
 	github.com/lib/pq v1.8.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
@@ -22,9 +21,7 @@ require (
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.4.15
-	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect
 	github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a
-	go.mongodb.org/mongo-driver v1.0.3
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
+	go.mongodb.org/mongo-driver v1.7.0
 )

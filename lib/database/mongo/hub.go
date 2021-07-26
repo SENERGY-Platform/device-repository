@@ -63,6 +63,9 @@ func (this *Mongo) hubCollection() *mongo.Collection {
 func (this *Mongo) GetHub(ctx context.Context, id string) (hub model.Hub, exists bool, err error) {
 	result := this.hubCollection().FindOne(ctx, bson.M{hubIdKey: id})
 	err = result.Err()
+	if err == mongo.ErrNoDocuments {
+		return hub, false, nil
+	}
 	if err != nil {
 		return
 	}

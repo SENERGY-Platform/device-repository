@@ -85,6 +85,9 @@ func (this *Mongo) deviceTypeCollection() *mongo.Collection {
 func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error) {
 	result := this.deviceTypeCollection().FindOne(ctx, bson.M{deviceTypeIdKey: id})
 	err = result.Err()
+	if err == mongo.ErrNoDocuments {
+		return deviceType, false, nil
+	}
 	if err != nil {
 		return
 	}

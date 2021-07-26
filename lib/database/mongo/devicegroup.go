@@ -65,6 +65,9 @@ func (this *Mongo) deviceGroupCollection() *mongo.Collection {
 func (this *Mongo) GetDeviceGroup(ctx context.Context, id string) (deviceGroup model.DeviceGroup, exists bool, err error) {
 	result := this.deviceGroupCollection().FindOne(ctx, bson.M{deviceGroupIdKey: id})
 	err = result.Err()
+	if err == mongo.ErrNoDocuments {
+		return deviceGroup, false, nil
+	}
 	if err != nil {
 		return
 	}

@@ -65,6 +65,9 @@ func (this *Mongo) protocolCollection() *mongo.Collection {
 func (this *Mongo) GetProtocol(ctx context.Context, id string) (protocol model.Protocol, exists bool, err error) {
 	result := this.protocolCollection().FindOne(ctx, bson.M{protocolIdKey: id})
 	err = result.Err()
+	if err == mongo.ErrNoDocuments {
+		return protocol, false, nil
+	}
 	if err != nil {
 		return
 	}

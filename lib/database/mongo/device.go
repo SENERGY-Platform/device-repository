@@ -63,6 +63,9 @@ func (this *Mongo) deviceCollection() *mongo.Collection {
 func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.Device, exists bool, err error) {
 	result := this.deviceCollection().FindOne(ctx, bson.M{deviceIdKey: id})
 	err = result.Err()
+	if err == mongo.ErrNoDocuments {
+		return device, false, nil
+	}
 	if err != nil {
 		return
 	}
@@ -86,6 +89,9 @@ func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
 func (this *Mongo) GetDeviceByLocalId(ctx context.Context, localId string) (device model.Device, exists bool, err error) {
 	result := this.deviceCollection().FindOne(ctx, bson.M{deviceLocalIdKey: localId})
 	err = result.Err()
+	if err == mongo.ErrNoDocuments {
+		return device, false, nil
+	}
 	if err != nil {
 		return
 	}
