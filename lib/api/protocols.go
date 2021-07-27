@@ -18,9 +18,10 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
@@ -30,12 +31,12 @@ func init() {
 	endpoints = append(endpoints, ProtocolEndpoints)
 }
 
-func ProtocolEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
+func ProtocolEndpoints(config config.Config, control Controller, router *httprouter.Router) {
 	resource := "/protocols"
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
-		result, err, errCode := control.ReadProtocol(id, jwt)
+		result, err, errCode := control.ReadProtocol(id, util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -59,7 +60,7 @@ func ProtocolEndpoints(config config.Config, control Controller, router *jwt_htt
 					?sort=name.asc
 					?sort=name
 	*/
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		var err error
 
 		limitParam := request.URL.Query().Get("limit")
@@ -87,7 +88,7 @@ func ProtocolEndpoints(config config.Config, control Controller, router *jwt_htt
 			sort = "name.asc"
 		}
 
-		result, err, errCode := control.ListProtocols(jwt, limit, offset, sort)
+		result, err, errCode := control.ListProtocols(util.GetAuthToken(request), limit, offset, sort)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -100,7 +101,7 @@ func ProtocolEndpoints(config config.Config, control Controller, router *jwt_htt
 		return
 	})
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

@@ -114,7 +114,13 @@ func TestHubs(t *testing.T) {
 
 func testHubReadNotFound(t *testing.T, conf config.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(id)
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -129,7 +135,13 @@ func testHubReadNotFound(t *testing.T, conf config.Config, id string) {
 func testHubRead(t *testing.T, conf config.Config, expectedHubs ...model.Hub) {
 	for _, expected := range expectedHubs {
 		endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(expected.Id)
-		resp, err := userjwt.Get(endpoint)
+		req, err := http.NewRequest("GET", endpoint, nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		req.Header.Set("Authorization", userjwt)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Error(err)
 			return
@@ -156,7 +168,12 @@ func testHubDeviceRead(t *testing.T, conf config.Config, hub model.Hub, expected
 	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(hub.Id) + "/devices"
 	call := func(endpoint string) ([]string, error) {
 		var result []string
-		resp, err := userjwt.Get(endpoint)
+		req, err := http.NewRequest("GET", endpoint, nil)
+		if err != nil {
+			return result, err
+		}
+		req.Header.Set("Authorization", userjwt)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return result, err
 		}

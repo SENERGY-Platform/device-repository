@@ -23,7 +23,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/testutils/mocks"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -279,7 +278,7 @@ func testDeviceGroupsDeviceFilter(ctrl *controller.Controller, group model.Devic
 				t.Error(r, "\n", string(debug.Stack()))
 			}
 		}()
-		result, err, code := ctrl.FilterDevicesOfGroupByAccess(jwt_http_router.Jwt{Impersonate: userjwt}, group)
+		result, err, code := ctrl.FilterDevicesOfGroupByAccess(userjwt, group)
 		if err != nil {
 			t.Error(err)
 			return
@@ -372,7 +371,13 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 
 func testDeviceGroupReadNotFound(t *testing.T, conf config.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(id)
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -387,7 +392,13 @@ func testDeviceGroupReadNotFound(t *testing.T, conf config.Config, id string) {
 func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss ...model.DeviceGroup) {
 	for _, expected := range expectedDeviceGroupss {
 		endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(expected.Id)
-		resp, err := userjwt.Get(endpoint)
+		req, err := http.NewRequest("GET", endpoint, nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		req.Header.Set("Authorization", userjwt)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Error(err)
 			return

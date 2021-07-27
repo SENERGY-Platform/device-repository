@@ -19,7 +19,6 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
 )
@@ -30,7 +29,7 @@ import (
 
 const FilterDevicesOfGroupByAccess = true
 
-func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (result model.DeviceGroup, err error, errCode int) {
+func (this *Controller) ReadDeviceGroup(id string, token string) (result model.DeviceGroup, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetDeviceGroup(ctx, id)
 	if err != nil {
@@ -39,7 +38,7 @@ func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (res
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(jwt, this.config.DeviceGroupTopic, id, model.READ)
+	ok, err := this.security.CheckBool(token, this.config.DeviceGroupTopic, id, model.READ)
 	if err != nil {
 		result = model.DeviceGroup{}
 		return result, err, http.StatusInternalServerError
@@ -49,17 +48,17 @@ func (this *Controller) ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (res
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
 	if FilterDevicesOfGroupByAccess {
-		return this.FilterDevicesOfGroupByAccess(jwt, result)
+		return this.FilterDevicesOfGroupByAccess(token, result)
 	} else {
 		return result, nil, http.StatusOK
 	}
 }
 
-func (this *Controller) FilterDevicesOfGroupByAccess(jwt jwt_http_router.Jwt, group model.DeviceGroup) (result model.DeviceGroup, err error, code int) {
+func (this *Controller) FilterDevicesOfGroupByAccess(token string, group model.DeviceGroup) (result model.DeviceGroup, err error, code int) {
 	if len(group.DeviceIds) == 0 {
 		return group, nil, http.StatusOK
 	}
-	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
+	access, err := this.security.CheckMultiple(token, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -79,11 +78,11 @@ func (this *Controller) FilterDevicesOfGroupByAccess(jwt jwt_http_router.Jwt, gr
 //only the first element of group.Devices is checked.
 //this should be enough because every used device should be referenced in each element of group.Devices
 //use ValidateDeviceGroup() to ensure that this constraint is adhered to
-func (this *Controller) CheckAccessToDevicesOfGroup(jwt jwt_http_router.Jwt, group model.DeviceGroup) (err error, code int) {
+func (this *Controller) CheckAccessToDevicesOfGroup(token string, group model.DeviceGroup) (err error, code int) {
 	if len(group.DeviceIds) == 0 {
 		return nil, http.StatusOK
 	}
-	access, err := this.security.CheckMultiple(jwt, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
+	access, err := this.security.CheckMultiple(token, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

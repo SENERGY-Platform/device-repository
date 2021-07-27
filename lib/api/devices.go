@@ -18,9 +18,10 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
@@ -30,14 +31,14 @@ func init() {
 	endpoints = append(endpoints, DeviceEndpoints)
 }
 
-func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
+func DeviceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
 	resource := "/devices"
 
 	//use 'as=local_id' query parameter to search device by local_id
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
 		as := request.URL.Query().Get("as")
 		permission := model.AuthAction(request.URL.Query().Get("p"))
@@ -48,9 +49,9 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 		var err error
 		var errCode int
 		if as == "local_id" {
-			result, err, errCode = control.ReadDeviceByLocalId(id, jwt, permission)
+			result, err, errCode = control.ReadDeviceByLocalId(id, util.GetAuthToken(request), permission)
 		} else {
-			result, err, errCode = control.ReadDevice(id, jwt, permission)
+			result, err, errCode = control.ReadDevice(id, util.GetAuthToken(request), permission)
 		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -64,7 +65,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *jwt_http_
 		return
 	})
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

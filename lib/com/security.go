@@ -25,8 +25,6 @@ import (
 	"net/http"
 	"net/url"
 	"runtime/debug"
-
-	"github.com/SmartEnergyPlatform/jwt-http-router"
 )
 
 func NewSecurity(config config.Config) (*Security, error) {
@@ -41,10 +39,6 @@ type IdWrapper struct {
 	Id string `json:"id"`
 }
 
-func IsAdmin(jwt jwt_http_router.Jwt) bool {
-	return contains(jwt.RealmAccess.Roles, "admin")
-}
-
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
@@ -54,16 +48,13 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error) {
-	if IsAdmin(jwt) {
-		return true, nil
-	}
+func (this *Security) CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error) {
 	req, err := http.NewRequest("GET", this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+action.String()+"/bool", nil)
 	if err != nil {
 		debug.PrintStack()
 		return false, err
 	}
-	req.Header.Set("Authorization", string(jwt.Impersonate))
+	req.Header.Set("Authorization", token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		debug.PrintStack()
@@ -83,7 +74,7 @@ func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string,
 	return true, nil
 }
 
-func (this *Security) CheckMultiple(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
+func (this *Security) CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
 	body := new(bytes.Buffer)
 	err = json.NewEncoder(body).Encode(map[string]interface{}{
 		"resource": kind,
@@ -101,7 +92,7 @@ func (this *Security) CheckMultiple(jwt jwt_http_router.Jwt, kind string, ids []
 		debug.PrintStack()
 		return result, err
 	}
-	req.Header.Set("Authorization", string(jwt.Impersonate))
+	req.Header.Set("Authorization", token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		debug.PrintStack()

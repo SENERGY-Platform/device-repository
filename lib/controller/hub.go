@@ -19,7 +19,6 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -29,7 +28,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Hub, err error, errCode int) {
+func (this *Controller) ReadHub(id string, token string, action model.AuthAction) (result model.Hub, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	hub, exists, err := this.db.GetHub(ctx, id)
 	if err != nil {
@@ -38,7 +37,7 @@ func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt, action model
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(jwt, this.config.HubTopic, id, action)
+	ok, err := this.security.CheckBool(token, this.config.HubTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -48,7 +47,7 @@ func (this *Controller) ReadHub(id string, jwt jwt_http_router.Jwt, action model
 	return hub, nil, http.StatusOK
 }
 
-func (this *Controller) ListHubDeviceIds(id string, jwt jwt_http_router.Jwt, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
+func (this *Controller) ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	hub, exists, err := this.db.GetHub(ctx, id)
 	if err != nil {
@@ -57,7 +56,7 @@ func (this *Controller) ListHubDeviceIds(id string, jwt jwt_http_router.Jwt, act
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(jwt, this.config.HubTopic, id, action)
+	ok, err := this.security.CheckBool(token, this.config.HubTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

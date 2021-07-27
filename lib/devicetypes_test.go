@@ -249,7 +249,13 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 		expected = expectedDt[0]
 	}
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -273,7 +279,13 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t *testing.T) {
 	return func(t *testing.T) {
 		endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
-		resp, err := userjwt.Get(endpoint)
+		req, err := http.NewRequest("GET", endpoint, nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		req.Header.Set("Authorization", userjwt)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Error(err)
 			return
@@ -299,7 +311,13 @@ func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t 
 
 func testServiceRead(t *testing.T, conf config.Config, expected model.Service) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/services/" + url.PathEscape(expected.Id)
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -322,7 +340,13 @@ func testServiceRead(t *testing.T, conf config.Config, expected model.Service) {
 
 func testDeviceTypeList(t *testing.T, conf config.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types"
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -345,7 +369,13 @@ func testDeviceTypeList(t *testing.T, conf config.Config) {
 
 func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10"
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -368,7 +398,13 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 
 func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10&offset=20"
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -391,7 +427,13 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 
 func testDeviceTypeListSort(t *testing.T, config config.Config) {
 	defaultendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name"
-	resp, err := userjwt.Get(defaultendpoint)
+	req, err := http.NewRequest("GET", defaultendpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -411,7 +453,13 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		return
 	}
 	ascendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name.asc"
-	resp, err = userjwt.Get(ascendpoint)
+	req, err = http.NewRequest("GET", ascendpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -436,7 +484,13 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 	}
 
 	descendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name.desc"
-	resp, err = userjwt.Get(descendpoint)
+	req, err = http.NewRequest("GET", descendpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -466,7 +520,13 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 
 func testDeviceTypeReadNotFound(t *testing.T, conf config.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(id)
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return

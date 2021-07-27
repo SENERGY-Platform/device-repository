@@ -18,9 +18,10 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
@@ -30,19 +31,19 @@ func init() {
 	endpoints = append(endpoints, HubEndpoints)
 }
 
-func HubEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
+func HubEndpoints(config config.Config, control Controller, router *httprouter.Router) {
 	resource := "/hubs"
 
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
 		permission := model.AuthAction(request.URL.Query().Get("p"))
 		if permission == "" {
 			permission = model.READ
 		}
-		result, err, errCode := control.ReadHub(id, jwt, permission)
+		result, err, errCode := control.ReadHub(id, util.GetAuthToken(request), permission)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -61,7 +62,7 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 	//use 'as' query parameter to decide if a list of device.Id or device.LocalId should be returned
 	//		default is LocalId
 	//		allowed values are 'id', 'local_id' and 'localId'
-	router.GET(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
 		permission := model.AuthAction(request.URL.Query().Get("p"))
 		if permission == "" {
@@ -83,7 +84,7 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 			http.Error(writer, "expect 'id', 'localId' or 'local_id' as value for 'as' query-parameter if it is used", http.StatusBadRequest)
 			return
 		}
-		result, err, errCode := control.ListHubDeviceIds(id, jwt, permission, asLocalId)
+		result, err, errCode := control.ListHubDeviceIds(id, util.GetAuthToken(request), permission, asLocalId)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -99,18 +100,18 @@ func HubEndpoints(config config.Config, control Controller, router *jwt_http_rou
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
-	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		permission := model.AuthAction(request.URL.Query().Get("p"))
 		if permission == "" {
 			permission = model.READ
 		}
 		id := params.ByName("id")
-		_, _, errCode := control.ReadHub(id, jwt, permission)
+		_, _, errCode := control.ReadHub(id, util.GetAuthToken(request), permission)
 		writer.WriteHeader(errCode)
 		return
 	})
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

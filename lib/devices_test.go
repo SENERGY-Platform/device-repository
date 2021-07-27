@@ -111,7 +111,13 @@ func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDe
 		} else {
 			endpoint = endpoint + url.PathEscape(expected.Id)
 		}
-		resp, err := userjwt.Get(endpoint)
+		req, err := http.NewRequest("GET", endpoint, nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		req.Header.Set("Authorization", userjwt)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Error(err)
 			return
@@ -140,7 +146,13 @@ func testDeviceReadNotFound(t *testing.T, conf config.Config, asLocalId bool, id
 	if asLocalId {
 		endpoint = endpoint + "?as=local_id"
 	}
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return

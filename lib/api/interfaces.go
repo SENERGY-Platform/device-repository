@@ -18,28 +18,27 @@ package api
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SmartEnergyPlatform/jwt-http-router"
 )
 
 type Controller interface {
-	ReadDevice(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Device, err error, errCode int)
-	ReadDeviceByLocalId(localId string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Device, err error, errCode int)
+	ReadDevice(id string, token string, action model.AuthAction) (result model.Device, err error, errCode int)
+	ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result model.Device, err error, errCode int)
 	ValidateDevice(device model.Device) (err error, code int)
 
-	ReadHub(id string, jwt jwt_http_router.Jwt, action model.AuthAction) (result model.Hub, err error, errCode int)
-	ListHubDeviceIds(id string, jwt jwt_http_router.Jwt, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
+	ReadHub(id string, token string, action model.AuthAction) (result model.Hub, err error, errCode int)
+	ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
 	ValidateHub(hub model.Hub) (err error, code int)
 
-	ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int)
-	ListDeviceTypes(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int)
+	ReadDeviceType(id string, token string) (result model.DeviceType, err error, errCode int)
+	ListDeviceTypes(token string, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int)
 	ValidateDeviceType(deviceType model.DeviceType) (err error, code int)
 
-	ReadDeviceGroup(id string, jwt jwt_http_router.Jwt) (result model.DeviceGroup, err error, errCode int)
+	ReadDeviceGroup(id string, token string) (result model.DeviceGroup, err error, errCode int)
 	ValidateDeviceGroup(deviceGroup model.DeviceGroup) (err error, code int)
-	CheckAccessToDevicesOfGroup(jwt jwt_http_router.Jwt, group model.DeviceGroup) (err error, code int)
+	CheckAccessToDevicesOfGroup(token string, group model.DeviceGroup) (err error, code int)
 
-	ReadProtocol(id string, jwt jwt_http_router.Jwt) (result model.Protocol, err error, errCode int)
-	ListProtocols(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.Protocol, err error, errCode int)
+	ReadProtocol(id string, token string) (result model.Protocol, err error, errCode int)
+	ListProtocols(token string, limit int64, offset int64, sort string) (result []model.Protocol, err error, errCode int)
 	ValidateProtocol(protocol model.Protocol) (err error, code int)
 
 	GetService(id string) (result model.Service, err error, code int)

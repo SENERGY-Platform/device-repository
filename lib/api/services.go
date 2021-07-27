@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
+	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 )
@@ -28,10 +28,10 @@ func init() {
 	endpoints = append(endpoints, ServiceEndpoints)
 }
 
-func ServiceEndpoints(config config.Config, control Controller, router *jwt_http_router.Router) {
+func ServiceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
 	resource := "/services"
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params jwt_http_router.Params, jwt jwt_http_router.Jwt) {
+	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
 		result, err, errCode := control.GetService(id)
 		if err != nil {

@@ -100,7 +100,13 @@ func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...model.Prot
 		expected = expectedDt[0]
 	}
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols/" + url.PathEscape(expected.Id)
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -123,7 +129,13 @@ func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...model.Prot
 
 func testProtocolList(t *testing.T, conf config.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols"
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -146,7 +158,13 @@ func testProtocolList(t *testing.T, conf config.Config) {
 
 func testProtocolListLimit10(t *testing.T, conf config.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols?limit=10"
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -169,7 +187,13 @@ func testProtocolListLimit10(t *testing.T, conf config.Config) {
 
 func testProtocolListLimit10Offset20(t *testing.T, conf config.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols?limit=10&offset=20"
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -192,7 +216,13 @@ func testProtocolListLimit10Offset20(t *testing.T, conf config.Config) {
 
 func testProtocolListSort(t *testing.T, config config.Config) {
 	defaultendpoint := "http://localhost:" + config.ServerPort + "/protocols?sort=name"
-	resp, err := userjwt.Get(defaultendpoint)
+	req, err := http.NewRequest("GET", defaultendpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -212,7 +242,13 @@ func testProtocolListSort(t *testing.T, config config.Config) {
 		return
 	}
 	ascendpoint := "http://localhost:" + config.ServerPort + "/protocols?sort=name.asc"
-	resp, err = userjwt.Get(ascendpoint)
+	req, err = http.NewRequest("GET", ascendpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -237,7 +273,13 @@ func testProtocolListSort(t *testing.T, config config.Config) {
 	}
 
 	descendpoint := "http://localhost:" + config.ServerPort + "/protocols?sort=name.desc"
-	resp, err = userjwt.Get(descendpoint)
+	req, err = http.NewRequest("GET", descendpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return
@@ -267,7 +309,13 @@ func testProtocolListSort(t *testing.T, config config.Config) {
 
 func testProtocolReadNotFound(t *testing.T, conf config.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols/" + url.PathEscape(id)
-	resp, err := userjwt.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
 		return

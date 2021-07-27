@@ -18,7 +18,6 @@ package mocks
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 )
 
 type Security struct {
@@ -29,14 +28,14 @@ func NewSecurity() *Security {
 	return &Security{access: map[string]bool{}}
 }
 
-func (this *Security) CheckBool(jwt jwt_http_router.Jwt, kind string, id string, action model.AuthAction) (allowed bool, err error) {
+func (this *Security) CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error) {
 	return this.access[this.getKey(kind, id)], nil
 }
 
-func (this *Security) CheckMultiple(jwt jwt_http_router.Jwt, kind string, ids []string, action model.AuthAction) (map[string]bool, error) {
+func (this *Security) CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error) {
 	result := map[string]bool{}
 	for _, id := range ids {
-		result[id], _ = this.CheckBool(jwt, kind, id, action)
+		result[id], _ = this.CheckBool(token, kind, id, action)
 	}
 	return result, nil
 }

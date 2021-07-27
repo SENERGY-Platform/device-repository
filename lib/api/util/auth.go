@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 InfAI (CC SES)
+ * Copyright 2021 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package controller
+package util
 
-import (
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-)
+import "net/http"
 
-type Security interface {
-	CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error)
-	CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
-}
-
-type Producer interface {
-	PublishDeviceDelete(id string, owner string) error
-	PublishHub(hub model.Hub) (err error)
+func GetAuthToken(req *http.Request) string {
+	return req.Header.Get("Authorization")
 }

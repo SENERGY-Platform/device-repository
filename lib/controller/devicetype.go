@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	jwt_http_router "github.com/SmartEnergyPlatform/jwt-http-router"
 	"net/http"
 	"time"
 )
@@ -29,7 +28,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ReadDeviceType(id string, jwt jwt_http_router.Jwt) (result model.DeviceType, err error, errCode int) {
+func (this *Controller) ReadDeviceType(id string, token string) (result model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	deviceType, exists, err := this.db.GetDeviceType(ctx, id)
 	if err != nil {
@@ -41,7 +40,7 @@ func (this *Controller) ReadDeviceType(id string, jwt jwt_http_router.Jwt) (resu
 	return deviceType, nil, http.StatusOK
 }
 
-func (this *Controller) ListDeviceTypes(jwt jwt_http_router.Jwt, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int) {
+func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort)
 	return
