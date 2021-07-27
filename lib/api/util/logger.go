@@ -17,18 +17,16 @@
 package util
 
 import (
-	"bytes"
 	"log"
 	"net/http"
 )
 
-func NewLogger(handler http.Handler, logLevel string) *LoggerMiddleWare {
-	return &LoggerMiddleWare{handler: handler, logLevel: logLevel}
+func NewLogger(handler http.Handler) *LoggerMiddleWare {
+	return &LoggerMiddleWare{handler: handler}
 }
 
 type LoggerMiddleWare struct {
-	handler  http.Handler
-	logLevel string //DEBUG | CALL | NONE
+	handler http.Handler
 }
 
 func (this *LoggerMiddleWare) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -41,23 +39,7 @@ func (this *LoggerMiddleWare) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 
 func (this *LoggerMiddleWare) log(request *http.Request) {
-	if this.logLevel != "NONE" {
-		method := request.Method
-		path := request.URL
-
-		if this.logLevel == "CALL" {
-			log.Printf("%v [%v] %v \n", request.RemoteAddr, method, path)
-		}
-
-		if this.logLevel == "DEBUG" {
-			buf := new(bytes.Buffer)
-			buf.ReadFrom(request.Body)
-			body := buf.String()
-
-			client := request.RemoteAddr
-
-			log.Printf("%v [%v] %v\n%v\n", client, method, path, body)
-		}
-
-	}
+	method := request.Method
+	path := request.URL
+	log.Printf("%v [%v] %v \n", request.RemoteAddr, method, path)
 }

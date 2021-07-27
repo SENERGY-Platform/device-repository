@@ -363,23 +363,23 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if len(broker) == 0 {
 		return nil, errors.New("missing kafka broker")
 	}
-	devicetypes, err := producer.GetKafkaWriter(broker, conf.DeviceTypeTopic, conf.LogLevel == "DEBUG")
+	devicetypes, err := producer.GetKafkaWriter(broker, conf.DeviceTypeTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	devices, err := producer.GetKafkaWriter(broker, conf.DeviceTopic, conf.LogLevel == "DEBUG")
+	devices, err := producer.GetKafkaWriter(broker, conf.DeviceTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	devicegroups, err := producer.GetKafkaWriter(broker, conf.DeviceGroupTopic, conf.LogLevel == "DEBUG")
+	devicegroups, err := producer.GetKafkaWriter(broker, conf.DeviceGroupTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	protocols, err := producer.GetKafkaWriter(broker, conf.ProtocolTopic, conf.LogLevel == "DEBUG")
+	protocols, err := producer.GetKafkaWriter(broker, conf.ProtocolTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	hubs, err := producer.GetKafkaWriter(broker, conf.HubTopic, conf.LogLevel == "DEBUG")
+	hubs, err := producer.GetKafkaWriter(broker, conf.HubTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
@@ -413,7 +413,7 @@ func (this *Publisher) PublishDeviceGroup(dg model.DeviceGroup, userId string) (
 }
 
 func (this *Publisher) PublishDeviceGroupCommand(cmd DeviceGroupCommand) error {
-	if this.config.LogLevel == "DEBUG" {
+	if this.config.Debug {
 		log.Println("DEBUG: produce", cmd)
 	}
 	message, err := json.Marshal(cmd)
@@ -446,7 +446,7 @@ func (this *Publisher) PublishDeviceTypeDelete(id string, userId string) error {
 }
 
 func (this *Publisher) PublishDeviceTypeCommand(cmd DeviceTypeCommand) error {
-	if this.config.LogLevel == "DEBUG" {
+	if this.config.Debug {
 		log.Println("DEBUG: produce", cmd)
 	}
 	message, err := json.Marshal(cmd)
@@ -474,7 +474,7 @@ func (this *Publisher) PublishDevice(device model.Device, userId string) (err er
 }
 
 func (this *Publisher) PublishDeviceCommand(cmd DeviceCommand) error {
-	if this.config.LogLevel == "DEBUG" {
+	if this.config.Debug {
 		log.Println("DEBUG: produce", cmd)
 	}
 	message, err := json.Marshal(cmd)
@@ -514,7 +514,7 @@ func (this *Publisher) PublishProtocolDelete(id string, userId string) error {
 }
 
 func (this *Publisher) PublishProtocolCommand(cmd ProtocolCommand) error {
-	if this.config.LogLevel == "DEBUG" {
+	if this.config.Debug {
 		log.Println("DEBUG: produce", cmd)
 	}
 	message, err := json.Marshal(cmd)
@@ -554,7 +554,7 @@ func (this *Publisher) PublishHubDelete(id string, userId string) error {
 }
 
 func (this *Publisher) PublishHubCommand(cmd HubCommand) error {
-	if this.config.LogLevel == "DEBUG" {
+	if this.config.Debug {
 		log.Println("DEBUG: produce hub", cmd)
 	}
 	message, err := json.Marshal(cmd)

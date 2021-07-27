@@ -39,7 +39,7 @@ func (this *Producer) PublishHub(hub model.Hub) (err error) {
 }
 
 func (this *Producer) PublishHubCommand(cmd HubCommand) error {
-	if this.config.LogLevel == "DEBUG" {
+	if this.config.Debug {
 		log.Println("DEBUG: produce hub", cmd)
 	}
 	message, err := json.Marshal(cmd)

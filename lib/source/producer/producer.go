@@ -40,11 +40,11 @@ func New(conf config.Config) (*Producer, error) {
 	if len(broker) == 0 {
 		return nil, errors.New("missing kafka broker")
 	}
-	devices, err := GetKafkaWriter(broker, conf.DeviceTopic, conf.LogLevel == "DEBUG")
+	devices, err := GetKafkaWriter(broker, conf.DeviceTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	hubs, err := GetKafkaWriter(broker, conf.HubTopic, conf.LogLevel == "DEBUG")
+	hubs, err := GetKafkaWriter(broker, conf.HubTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}

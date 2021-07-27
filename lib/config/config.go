@@ -28,10 +28,6 @@ import (
 )
 
 type Config struct {
-	JwtPubRsa                  string `json:"jwt_pub_rsa"`
-	ForceAuth                  bool   `json:"force_auth"`
-	ForceUser                  bool   `json:"force_user"`
-	LogLevel                   string `json:"log_level"` //DEBUG | CALL | NONE
 	ServerPort                 string `json:"server_port"`
 	KafkaUrl                   string `json:"kafka_url"`
 	GroupId                    string `json:"group_id"`

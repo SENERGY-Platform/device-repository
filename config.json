@@ -1,8 +1,5 @@
 {
     "server_port": "8080",
-    "jwt_pub_rsa": "",
-    "force_auth": true,
-    "force_user": true,
     "log_level": "CALL",
     "device_topic": "devices",
     "device_type_topic": "device-types",
@@ -20,7 +17,7 @@
     "mongo_repl_set": true,
     "kafka_url": "kafka-broker-url:9092",
     "group_id": "device-repository",
-    "debug": true,
+    "debug": false,
     "disable_kafka_consumer": false,
     "disable_http_api": false
 }
