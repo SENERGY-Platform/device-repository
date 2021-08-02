@@ -37,6 +37,9 @@ var device1name = uuid.NewV4().String()
 var device2id = "urn:infai:ses:device:2"
 var device2lid = "lid2"
 var device2name = uuid.NewV4().String()
+var device3id = "urn:infai:ses:device:3"
+var device3lid = "lid3"
+var device3name = uuid.NewV4().String()
 
 func TestDeviceQuery(t *testing.T) {
 	wg := &sync.WaitGroup{}
@@ -64,7 +67,7 @@ func TestDeviceQuery(t *testing.T) {
 	d1 := model.Device{
 		Id:           device1id,
 		LocalId:      device1lid,
-		Name:         devicetype1name,
+		Name:         device1name,
 		DeviceTypeId: devicetype1id,
 	}
 
@@ -77,11 +80,28 @@ func TestDeviceQuery(t *testing.T) {
 	d2 := model.Device{
 		Id:           device2id,
 		LocalId:      device2lid,
-		Name:         devicetype2name,
+		Name:         device2name,
 		DeviceTypeId: devicetype2id,
 	}
 
 	err = producer.PublishDevice(d2, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	d3 := model.Device{
+		Id:      device3id,
+		LocalId: device3lid,
+		Name:    device3name,
+		Attributes: []model.Attribute{
+			{Key: "foo", Value: "bar"},
+			{Key: "bar", Value: "batz"},
+		},
+		DeviceTypeId: devicetype2id,
+	}
+
+	err = producer.PublishDevice(d3, userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -96,10 +116,10 @@ func TestDeviceQuery(t *testing.T) {
 		testDeviceReadNotFound(t, conf, true, "foobar")
 	})
 	t.Run("testDeviceRead", func(t *testing.T) {
-		testDeviceRead(t, conf, false, d1, d2)
+		testDeviceRead(t, conf, false, d1, d2, d3)
 	})
 	t.Run("testDeviceRead localid", func(t *testing.T) {
-		testDeviceRead(t, conf, true, d1, d2)
+		testDeviceRead(t, conf, true, d1, d2, d3)
 	})
 }
 

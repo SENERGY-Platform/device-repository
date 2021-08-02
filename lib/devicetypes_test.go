@@ -243,6 +243,37 @@ func TestDeviceTypeQuery(t *testing.T) {
 	})
 }
 
+func TestDeviceTypeWithAttriburte(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	producer, err := NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}}
+
+	err = producer.PublishDeviceType(dt, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(2 * time.Second)
+
+	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
+
+}
+
 func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.DeviceType) {
 	expected := model.DeviceType{Id: devicetype1id, Name: devicetype1name}
 	if len(expectedDt) > 0 {
