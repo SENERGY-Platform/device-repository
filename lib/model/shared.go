@@ -30,7 +30,7 @@ type DeviceType struct {
 	Description   string      `json:"description"`
 	Services      []Service   `json:"services"`
 	DeviceClassId string      `json:"device_class_id"`
-	Attributes    []Attribute `json:"labels"`
+	Attributes    []Attribute `json:"attributes"`
 	RdfType       string      `json:"rdf_type"`
 }
 
