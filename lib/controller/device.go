@@ -54,7 +54,7 @@ func (this *Controller) ReadDeviceByLocalId(localId string, token string, action
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, localId, action)
+	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, device.Id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

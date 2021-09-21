@@ -71,7 +71,7 @@ func (this *Security) CheckBool(token string, kind string, id string, action mod
 		debug.PrintStack()
 		return false, err
 	}
-	return true, nil
+	return allowed, nil
 }
 
 func (this *Security) CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
