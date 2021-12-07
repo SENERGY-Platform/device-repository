@@ -17,7 +17,9 @@
 package controller
 
 import (
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"log"
 )
 
 type Security interface {
@@ -28,4 +30,18 @@ type Security interface {
 type Producer interface {
 	PublishDeviceDelete(id string, owner string) error
 	PublishHub(hub model.Hub) (err error)
+}
+
+type ErrorProducer struct{}
+
+func (this ErrorProducer) PublishDeviceDelete(id string, owner string) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
+
+func (this ErrorProducer) PublishHub(hub model.Hub) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
 }

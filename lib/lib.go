@@ -59,10 +59,13 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		return err
 	}
 
-	p, err := producer.New(conf)
-	if err != nil {
-		log.Println("ERROR: unable to create producer", err)
-		return err
+	var p controller.Producer = controller.ErrorProducer{}
+	if !conf.DisableKafkaConsumer {
+		p, err = producer.New(conf)
+		if err != nil {
+			log.Println("ERROR: unable to create producer", err)
+			return err
+		}
 	}
 
 	ctrl, err := controller.New(conf, db, perm, p)
