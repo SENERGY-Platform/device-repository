@@ -35,8 +35,9 @@ type DeviceType struct {
 }
 
 type Attribute struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	Origin string `json:"origin"`
 }
 
 type Service struct {
