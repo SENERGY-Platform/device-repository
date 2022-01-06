@@ -50,6 +50,7 @@ type Service struct {
 	Inputs      []Content   `json:"inputs"`
 	Outputs     []Content   `json:"outputs"`
 	FunctionIds []string    `json:"function_ids"`
+	Attributes  []Attribute `json:"attributes"`
 	RdfType     string      `json:"rdf_type"`
 }
 

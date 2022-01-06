@@ -243,7 +243,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 	})
 }
 
-func TestDeviceTypeWithAttriburte(t *testing.T) {
+func TestDeviceTypeWithAttribute(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -261,6 +261,51 @@ func TestDeviceTypeWithAttriburte(t *testing.T) {
 	}
 
 	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}}
+
+	err = producer.PublishDeviceType(dt, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(5 * time.Second)
+
+	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
+
+}
+
+func TestServiceWithAttribute(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	producer, err := NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}, Services: []model.Service{
+		{
+			Id:          "sid1",
+			LocalId:     "lsid1",
+			Name:        "s",
+			Description: "s",
+			Interaction: model.EVENT,
+			AspectIds:   []string{"aid1"},
+			ProtocolId:  "pid1",
+			Inputs:      nil,
+			Outputs:     nil,
+			FunctionIds: []string{"fid1"},
+			Attributes:  []model.Attribute{{Key: "batz", Value: "blub"}},
+		},
+	}}
 
 	err = producer.PublishDeviceType(dt, userid)
 	if err != nil {
