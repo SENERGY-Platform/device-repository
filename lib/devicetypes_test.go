@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
@@ -243,7 +244,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 	})
 }
 
-func TestDeviceTypeWithAttribute(t *testing.T) {
+func TestDeviceTypeWithServiceGroups(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -260,7 +261,42 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}}
+	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []model.ServiceGroup{
+		{
+			Key:         "test",
+			Name:        "test group",
+			Description: "foo",
+		},
+	}, Services: []model.Service{
+		{
+			Id:              "s1",
+			LocalId:         "s1",
+			Name:            "n1",
+			Interaction:     model.REQUEST,
+			AspectIds:       []string{"a1"},
+			ProtocolId:      "p1",
+			FunctionIds:     []string{"f1"},
+			ServiceGroupKey: "test",
+		},
+		{
+			Id:              "s2",
+			LocalId:         "s2",
+			Name:            "n2",
+			Interaction:     model.REQUEST,
+			AspectIds:       []string{"a1"},
+			ProtocolId:      "p1",
+			FunctionIds:     []string{"f1"},
+			ServiceGroupKey: "",
+		},
+	}}
+
+	t.Run("validation of service-groups", func(t *testing.T) {
+		err = controller.ValidateServiceGroups(dt.ServiceGroups, dt.Services)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
 
 	err = producer.PublishDeviceType(dt, userid)
 	if err != nil {
@@ -269,6 +305,39 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 	}
 
 	time.Sleep(5 * time.Second)
+
+	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
+
+}
+
+func TestDeviceTypeWithAttribute(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(10 * time.Second)
+
+	producer, err := NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}}
+
+	err = producer.PublishDeviceType(dt, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(10 * time.Second)
 
 	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
 
@@ -284,6 +353,8 @@ func TestServiceWithAttribute(t *testing.T) {
 		t.Error(err)
 		return
 	}
+
+	time.Sleep(10 * time.Second)
 
 	producer, err := NewPublisher(conf)
 	if err != nil {
@@ -313,7 +384,7 @@ func TestServiceWithAttribute(t *testing.T) {
 		return
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
 

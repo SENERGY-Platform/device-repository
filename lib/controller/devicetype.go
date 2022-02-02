@@ -73,7 +73,30 @@ func (this *Controller) ValidateDeviceType(dt model.DeviceType) (err error, code
 			return err, code
 		}
 	}
+	err = ValidateServiceGroups(dt.ServiceGroups, dt.Services)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
 	return nil, http.StatusOK
+}
+
+func ValidateServiceGroups(groups []model.ServiceGroup, services []model.Service) error {
+	groupIndex := map[string]bool{}
+	for _, g := range groups {
+		if _, ok := groupIndex[g.Key]; ok {
+			return errors.New("duplicate service-group key: " + g.Key)
+		}
+		groupIndex[g.Key] = true
+	}
+	for _, s := range services {
+		if s.ServiceGroupKey != "" {
+			_, ok := groupIndex[s.ServiceGroupKey]
+			if !ok {
+				return errors.New("unknown service-group key: " + s.ServiceGroupKey)
+			}
+		}
+	}
+	return nil
 }
 
 /////////////////////////
