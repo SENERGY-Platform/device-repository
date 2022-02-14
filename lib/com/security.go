@@ -22,6 +22,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"log"
 	"net/http"
 	"net/url"
 	"runtime/debug"
@@ -49,7 +50,7 @@ func contains(s []string, e string) bool {
 }
 
 func (this *Security) CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error) {
-	req, err := http.NewRequest("GET", this.config.PermissionsUrl+"/jwt/check/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/"+action.String()+"/bool", nil)
+	req, err := http.NewRequest("GET", this.config.PermissionsUrl+"/v3/resources/"+url.QueryEscape(kind)+"/"+url.QueryEscape(id)+"/access", nil)
 	if err != nil {
 		debug.PrintStack()
 		return false, err
@@ -57,6 +58,7 @@ func (this *Security) CheckBool(token string, kind string, id string, action mod
 	req.Header.Set("Authorization", token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Println("ERROR: ", err)
 		debug.PrintStack()
 		return false, err
 	}

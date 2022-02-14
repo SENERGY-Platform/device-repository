@@ -62,7 +62,6 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 	*/
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		var err error
-
 		limitParam := request.URL.Query().Get("limit")
 		var limit int64 = 100
 		if limitParam != "" {
@@ -88,7 +87,17 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 			sort = "name.asc"
 		}
 
-		result, err, errCode := control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort)
+		filter := request.URL.Query().Get("filter")
+		deviceTypesFilter := []model.FilterCriteria{}
+		if filter != "" {
+			err = json.Unmarshal([]byte(filter), &deviceTypesFilter)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		result, err, errCode := control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

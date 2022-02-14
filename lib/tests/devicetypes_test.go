@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 InfAI (CC SES)
+ * Copyright 2022 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package lib
+package tests
 
 import (
 	"context"
@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
@@ -47,7 +48,7 @@ func TestServiceQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -77,7 +78,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		return
 	}
 
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -192,7 +193,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 		return
 	}
 
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -255,7 +256,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		return
 	}
 
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -273,20 +274,28 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 			LocalId:         "s1",
 			Name:            "n1",
 			Interaction:     model.REQUEST,
-			AspectIds:       []string{"a1"},
 			ProtocolId:      "p1",
-			FunctionIds:     []string{"f1"},
 			ServiceGroupKey: "test",
+			Outputs: []model.Content{{
+				ContentVariable: model.ContentVariable{
+					FunctionId: "f1",
+					AspectId:   "a1",
+				},
+			}},
 		},
 		{
 			Id:              "s2",
 			LocalId:         "s2",
 			Name:            "n2",
 			Interaction:     model.REQUEST,
-			AspectIds:       []string{"a1"},
 			ProtocolId:      "p1",
-			FunctionIds:     []string{"f1"},
 			ServiceGroupKey: "",
+			Outputs: []model.Content{{
+				ContentVariable: model.ContentVariable{
+					FunctionId: "f1",
+					AspectId:   "a1",
+				},
+			}},
 		},
 	}}
 
@@ -323,7 +332,7 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -356,7 +365,7 @@ func TestServiceWithAttribute(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -369,12 +378,15 @@ func TestServiceWithAttribute(t *testing.T) {
 			Name:        "s",
 			Description: "s",
 			Interaction: model.EVENT,
-			AspectIds:   []string{"aid1"},
 			ProtocolId:  "pid1",
 			Inputs:      nil,
-			Outputs:     nil,
-			FunctionIds: []string{"fid1"},
 			Attributes:  []model.Attribute{{Key: "batz", Value: "blub"}},
+			Outputs: []model.Content{{
+				ContentVariable: model.ContentVariable{
+					FunctionId: "fid1",
+					AspectId:   "aid1",
+				},
+			}},
 		},
 	}}
 

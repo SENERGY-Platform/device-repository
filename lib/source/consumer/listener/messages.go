@@ -52,3 +52,45 @@ type DeviceGroupCommand struct {
 	Owner       string            `json:"owner"`
 	DeviceGroup model.DeviceGroup `json:"device_group"`
 }
+
+type ConceptCommand struct {
+	Command string        `json:"command"`
+	Id      string        `json:"id"`
+	Owner   string        `json:"owner"`
+	Concept model.Concept `json:"concept"`
+}
+
+type CharacteristicCommand struct {
+	Command        string               `json:"command"`
+	Id             string               `json:"id"`
+	Owner          string               `json:"owner"`
+	Characteristic model.Characteristic `json:"characteristic"`
+}
+
+type DeviceClassCommand struct {
+	Command     string            `json:"command"`
+	Id          string            `json:"id"`
+	Owner       string            `json:"owner"`
+	DeviceClass model.DeviceClass `json:"device_class"`
+}
+
+type AspectCommand struct {
+	Command string       `json:"command"`
+	Id      string       `json:"id"`
+	Owner   string       `json:"owner"`
+	Aspect  model.Aspect `json:"aspect"`
+}
+
+type FunctionCommand struct {
+	Command  string         `json:"command"`
+	Id       string         `json:"id"`
+	Owner    string         `json:"owner"`
+	Function model.Function `json:"function"`
+}
+
+type LocationCommand struct {
+	Command  string         `json:"command"`
+	Id       string         `json:"id"`
+	Owner    string         `json:"owner"`
+	Location model.Location `json:"location"`
+}

@@ -22,7 +22,7 @@ import (
 	"net/http"
 )
 
-func ValidateContent(content model.Content, protocol model.Protocol) (err error, code int) {
+func (this *Controller) ValidateContent(content model.Content, protocol model.Protocol) (err error, code int) {
 	if content.Id == "" {
 		return errors.New("missing content id"), http.StatusBadRequest
 	}
@@ -38,7 +38,7 @@ func ValidateContent(content model.Content, protocol model.Protocol) (err error,
 	if !protocolContainsSegment(protocol, content.ProtocolSegmentId) {
 		return errors.New("protocol_segment_id does not match to protocol"), http.StatusBadRequest
 	}
-	err, code = ValidateVariable(content.ContentVariable, content.Serialization)
+	err, code = this.ValidateVariable(content.ContentVariable, content.Serialization)
 	if err != nil {
 		return err, code
 	}

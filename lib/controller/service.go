@@ -21,6 +21,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -63,13 +64,48 @@ func (this *Controller) ValidateService(service model.Service) (error, int) {
 		}
 	}
 
-	for _, content := range append(service.Inputs, service.Outputs...) {
-		err, code := ValidateContent(content, protocol)
+	for _, content := range service.Inputs {
+		err, code := this.ValidateContent(content, protocol)
 		if err != nil {
 			return err, code
 		}
+		err = validateFunctionTypeUse(content.ContentVariable, true)
+		if err != nil {
+			return err, http.StatusBadRequest
+		}
+	}
+	for _, content := range service.Outputs {
+		err, code := this.ValidateContent(content, protocol)
+		if err != nil {
+			return err, code
+		}
+		err = validateFunctionTypeUse(content.ContentVariable, false)
+		if err != nil {
+			return err, http.StatusBadRequest
+		}
 	}
 	return nil, http.StatusOK
+}
+
+func validateFunctionTypeUse(variable model.ContentVariable, isInput bool) (err error) {
+	if variable.FunctionId != "" && strings.HasPrefix(variable.FunctionId, model.URN_PREFIX) {
+		isCtrlFun := isControllingFunction(variable.FunctionId)
+		if isCtrlFun != isInput {
+			if isCtrlFun {
+				return errors.New("use controlling function " + variable.FunctionId + " in output variable " + variable.Name + " (" + variable.Id + ")")
+			} else {
+				return errors.New("use measuring function " + variable.FunctionId + " in input variable " + variable.Name + " (" + variable.Id + ")")
+			}
+		}
+	}
+	return nil
+}
+
+func isControllingFunction(functionId string) bool {
+	if strings.HasPrefix(functionId, "urn:infai:ses:controlling-function:") {
+		return true
+	}
+	return false
 }
 
 func (this *Controller) GetService(id string) (result model.Service, err error, code int) {

@@ -170,21 +170,20 @@ func (this *Controller) selectionMatchesCriteria(
 		if service.Interaction == model.EVENT_AND_REQUEST {
 			interactionMatches = true
 		}
-		aspectMatches := criteria.AspectId == ""
-		for _, aspectId := range service.AspectIds {
-			if criteria.AspectId == "" || criteria.AspectId == aspectId {
-				aspectMatches = true
+		contentMatches := false
+		for _, content := range service.Inputs {
+			if contentVariableContainsCriteria(content.ContentVariable, criteria) {
+				contentMatches = true
 				break
 			}
 		}
-		functionMatches := false
-		for _, functionId := range service.FunctionIds {
-			if criteria.FunctionId == functionId {
-				functionMatches = true
+		for _, content := range service.Outputs {
+			if contentVariableContainsCriteria(content.ContentVariable, criteria) {
+				contentMatches = true
 				break
 			}
 		}
-		if interactionMatches && functionMatches && aspectMatches {
+		if interactionMatches && contentMatches {
 			serviceMatches = true
 			break
 		}
@@ -193,6 +192,18 @@ func (this *Controller) selectionMatchesCriteria(
 		return errors.New("no service of the device " + deviceId + " matches filter-criteria"), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
+}
+
+func contentVariableContainsCriteria(variable model.ContentVariable, criteria model.DeviceGroupFilterCriteria) bool {
+	if variable.FunctionId == criteria.FunctionId && (criteria.AspectId == "" || variable.AspectId == criteria.AspectId) {
+		return true
+	}
+	for _, sub := range variable.SubContentVariables {
+		if contentVariableContainsCriteria(sub, criteria) {
+			return true
+		}
+	}
+	return false
 }
 
 /////////////////////////

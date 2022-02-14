@@ -98,7 +98,7 @@ func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType mod
 	return deviceType, true, err
 }
 
-func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceType, err error) {
+func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria) (result []model.DeviceType, err error) {
 	opt := options.Find()
 	opt.SetLimit(limit)
 	opt.SetSkip(offset)
@@ -119,7 +119,16 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	}
 	opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
 
-	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{}, opt)
+	filter := bson.M{}
+	if len(filterCriteria) > 0 {
+		deviceTypeIds, err := this.getDeviceTypeIdsByFilterCriteria(ctx, filterCriteria)
+		if err != nil {
+			return nil, err
+		}
+		filter = bson.M{deviceTypeIdKey: bson.M{"$in": deviceTypeIds}}
+	}
+
+	cursor, err := this.deviceTypeCollection().Find(ctx, filter, opt)
 	if err != nil {
 		return nil, err
 	}
@@ -137,11 +146,25 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 
 func (this *Mongo) SetDeviceType(ctx context.Context, deviceType model.DeviceType) error {
 	_, err := this.deviceTypeCollection().ReplaceOne(ctx, bson.M{deviceTypeIdKey: deviceType.Id}, deviceType, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = this.setDeviceTypeCriteria(ctx, deviceType)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
 func (this *Mongo) RemoveDeviceType(ctx context.Context, id string) error {
 	_, err := this.deviceTypeCollection().DeleteOne(ctx, bson.M{deviceTypeIdKey: id})
+	if err != nil {
+		return err
+	}
+	err = this.removeDeviceTypeCriteriaByDeviceType(ctx, id)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
@@ -163,5 +186,47 @@ func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId stri
 		result = append(result, deviceType)
 	}
 	err = cursor.Err()
+	return
+}
+
+//all criteria must match
+func (this *Mongo) getDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria) (result []interface{}, err error) {
+	for _, c := range criteria {
+		result, err = this.filterDeviceTypeIdsByFilterCriteria(ctx, result, c)
+		if err != nil {
+			return result, err
+		}
+	}
+	return
+}
+
+func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria) (result []interface{}, err error) {
+	result = []interface{}{}
+	if deviceTypeIds != nil && len(deviceTypeIds) == 0 {
+		return result, nil
+	}
+	filter := bson.M{}
+	if deviceTypeIds != nil {
+		filter = bson.M{
+			deviceTypeCriteriaDeviceTypeIdKey: bson.M{"$in": deviceTypeIds},
+		}
+	}
+	if criteria.DeviceClassId != "" {
+		filter[deviceTypeCriteriaDeviceClassIdKey] = criteria.DeviceClassId
+	}
+	if criteria.FunctionId != "" {
+		filter[deviceTypeCriteriaFunctionIdKey] = criteria.FunctionId
+	}
+	if criteria.AspectId != "" {
+		filter[deviceTypeCriteriaAspectIdKey] = criteria.AspectId
+	}
+
+	temp, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaDeviceTypeIdKey, filter)
+	if err != nil {
+		return result, err
+	}
+	if temp != nil {
+		result = temp
+	}
 	return
 }

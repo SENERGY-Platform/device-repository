@@ -29,4 +29,17 @@ type Controller interface {
 	DeleteDeviceGroup(id string) error
 	SetProtocol(protocol model.Protocol, owner string) error
 	DeleteProtocol(id string) error
+
+	SetAspect(aspect model.Aspect, owner string) error
+	DeleteAspect(id string) error
+	SetCharacteristic(characteristic model.Characteristic, owner string) error
+	DeleteCharacteristic(id string) error
+	SetConcept(concept model.Concept, owner string) error
+	DeleteConcept(id string) error
+	SetDeviceClass(class model.DeviceClass, owner string) error
+	DeleteDeviceClass(id string) error
+	SetFunction(function model.Function, owner string) error
+	DeleteFunction(id string) error
+	SetLocation(location model.Location, owner string) error
+	DeleteLocation(id string) error
 }

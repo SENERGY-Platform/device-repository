@@ -37,7 +37,7 @@ type Database interface {
 	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
 	RemoveDeviceType(ctx context.Context, id string) error
-	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceType, err error)
+	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error)
 	GetDeviceTypesByServiceId(ctx context.Context, serviceId string) ([]model.DeviceType, error)
 
 	GetDeviceGroup(ctx context.Context, id string) (deviceGroup model.DeviceGroup, exists bool, err error)
@@ -49,4 +49,38 @@ type Database interface {
 	ListProtocols(ctx context.Context, limit int64, offset int64, sort string) ([]model.Protocol, error)
 	SetProtocol(ctx context.Context, protocol model.Protocol) error
 	RemoveProtocol(ctx context.Context, id string) error
+
+	GetAspect(ctx context.Context, id string) (result model.Aspect, exists bool, err error)
+	SetAspect(ctx context.Context, aspect model.Aspect) error
+	RemoveAspect(ctx context.Context, id string) error
+	ListAllAspects(ctx context.Context) ([]model.Aspect, error)
+	ListAspectsWithMeasuringFunction(ctx context.Context) ([]model.Aspect, error) //returns all aspects used in combination with measuring functions
+
+	SetCharacteristic(ctx context.Context, characteristic model.Characteristic) error
+	RemoveCharacteristic(ctx context.Context, id string) error
+	GetCharacteristic(ctx context.Context, id string) (result model.Characteristic, exists bool, err error)
+	ListAllCharacteristics(ctx context.Context) ([]model.Characteristic, error)
+
+	SetConcept(ctx context.Context, concept model.Concept) error
+	RemoveConcept(ctx context.Context, id string) error
+	GetConceptWithCharacteristics(ctx context.Context, id string) (result model.ConceptWithCharacteristics, exists bool, err error)
+	GetConceptWithoutCharacteristics(ctx context.Context, id string) (result model.Concept, exists bool, err error)
+
+	SetDeviceClass(ctx context.Context, class model.DeviceClass) error
+	RemoveDeviceClass(ctx context.Context, id string) error
+	ListAllDeviceClasses(ctx context.Context) ([]model.DeviceClass, error)
+	ListAllDeviceClassesUsedWithControllingFunctions(ctx context.Context) ([]model.DeviceClass, error) //returns all device-classes used in combination with controlling functions
+	GetDeviceClass(ctx context.Context, id string) (result model.DeviceClass, exists bool, err error)
+
+	SetFunction(ctx context.Context, function model.Function) error
+	GetFunction(ctx context.Context, id string) (result model.Function, exists bool, err error)
+	RemoveFunction(ctx context.Context, id string) error
+	ListAllFunctionsByType(ctx context.Context, rdfType string) ([]model.Function, error)
+	ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string) ([]model.Function, error)       //returns all measuring functions used in combination with given aspect
+	ListAllFunctionsByDeviceClass(ctx context.Context, class string) ([]model.Function, error)            //returns all functions used in combination with given device-class
+	ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) ([]model.Function, error) //returns all controlling functions used in combination with given device-class
+
+	SetLocation(ctx context.Context, location model.Location) error
+	RemoveLocation(ctx context.Context, id string) error
+	GetLocation(ctx context.Context, id string) (result model.Location, exists bool, err error)
 }

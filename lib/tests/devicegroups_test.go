@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 InfAI (CC SES)
+ * Copyright 2022 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package lib
+package tests
 
 import (
 	"context"
@@ -22,7 +22,8 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/testutils/mocks"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -41,8 +42,14 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		Services: []model.Service{{
 			Id:          "s1id",
 			Interaction: model.REQUEST,
-			AspectIds:   []string{"aid"},
-			FunctionIds: []string{"fid"},
+			Outputs: []model.Content{
+				{
+					ContentVariable: model.ContentVariable{
+						FunctionId: "fid",
+						AspectId:   "aid",
+					},
+				},
+			},
 		}},
 	})
 
@@ -307,7 +314,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -320,8 +327,12 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		Services: []model.Service{{
 			Id:          "s1id",
 			Interaction: model.REQUEST,
-			AspectIds:   []string{"aid"},
-			FunctionIds: []string{"fid"},
+			Outputs: []model.Content{
+				{ContentVariable: model.ContentVariable{
+					FunctionId: "fid",
+					AspectId:   "aid",
+				}},
+			},
 		}},
 	}, userid)
 	if err != nil {

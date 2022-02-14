@@ -30,7 +30,7 @@ type Controller interface {
 	ValidateHub(hub model.Hub) (err error, code int)
 
 	ReadDeviceType(id string, token string) (result model.DeviceType, err error, errCode int)
-	ListDeviceTypes(token string, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int)
+	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error, errCode int)
 	ValidateDeviceType(deviceType model.DeviceType) (err error, code int)
 
 	ReadDeviceGroup(id string, token string) (result model.DeviceGroup, err error, errCode int)
@@ -42,4 +42,32 @@ type Controller interface {
 	ValidateProtocol(protocol model.Protocol) (err error, code int)
 
 	GetService(id string) (result model.Service, err error, code int)
+
+	GetAspects() ([]model.Aspect, error, int)
+	GetAspectsWithMeasuringFunction() ([]model.Aspect, error, int) //returns all aspects used in combination with measuring functions
+	GetAspect(id string) (model.Aspect, error, int)
+	GetAspectsMeasuringFunctions(id string) (result []model.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect
+	ValidateAspect(aspect model.Aspect) (err error, code int)
+
+	GetLeafCharacteristics() (result []model.Characteristic, err error, errCode int)
+	GetCharacteristic(id string) (result model.Characteristic, err error, errCode int)
+	ValidateCharacteristics(characteristic model.Characteristic) (err error, code int)
+
+	GetConceptWithCharacteristics(id string) (model.ConceptWithCharacteristics, error, int)
+	GetConceptWithoutCharacteristics(id string) (model.Concept, error, int)
+	ValidateConcept(concept model.Concept) (err error, code int)
+
+	GetDeviceClasses() ([]model.DeviceClass, error, int)
+	GetDeviceClassesWithControllingFunctions() ([]model.DeviceClass, error, int)                      //returns all device-classes used in combination with controlling functions
+	GetDeviceClassesFunctions(id string) (result []model.Function, err error, errCode int)            //returns all functions used in combination with given device-class
+	GetDeviceClassesControllingFunctions(id string) (result []model.Function, err error, errCode int) //returns all controlling functions used in combination with given device-class
+	GetDeviceClass(id string) (result model.DeviceClass, err error, errCode int)
+	ValidateDeviceClass(deviceclass model.DeviceClass) (err error, code int)
+
+	GetFunctionsByType(rdfType string) (result []model.Function, err error, errCode int)
+	GetFunction(id string) (result model.Function, err error, errCode int)
+	ValidateFunction(function model.Function) (err error, code int)
+
+	GetLocation(id string, token string) (location model.Location, err error, errCode int)
+	ValidateLocation(location model.Location) (err error, code int)
 }

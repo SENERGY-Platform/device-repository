@@ -40,9 +40,9 @@ func (this *Controller) ReadDeviceType(id string, token string) (result model.De
 	return deviceType, nil, http.StatusOK
 }
 
-func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string) (result []model.DeviceType, err error, errCode int) {
+func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort)
+	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort, filter)
 	return
 }
 

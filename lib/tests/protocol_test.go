@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 InfAI (CC SES)
+ * Copyright 2022 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package lib
+package tests
 
 import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
@@ -54,7 +55,7 @@ func TestProtocolQuery(t *testing.T) {
 			return
 		}
 	*/
-	producer, err := NewPublisher(conf)
+	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return

@@ -30,27 +30,39 @@ import (
 )
 
 type Config struct {
-	ServerPort                 string `json:"server_port"`
-	KafkaUrl                   string `json:"kafka_url"`
-	GroupId                    string `json:"group_id"`
-	DeviceTopic                string `json:"device_topic"`
-	DeviceTypeTopic            string `json:"device_type_topic"`
-	DeviceGroupTopic           string `json:"device_group_topic"`
-	HubTopic                   string `json:"hub_topic"`
-	ProtocolTopic              string `json:"protocol_topic"`
-	PermissionsUrl             string `json:"permissions_url"`
-	MongoUrl                   string `json:"mongo_url"`
-	MongoReplSet               bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
-	MongoTable                 string `json:"mongo_table"`
-	MongoDeviceCollection      string `json:"mongo_device_collection"`
-	MongoDeviceTypeCollection  string `json:"mongo_device_type_collection"`
-	MongoDeviceGroupCollection string `json:"mongo_device_group_collection"`
-	MongoProtocolCollection    string `json:"mongo_protocol_collection"`
-	MongoHubCollection         string `json:"mongo_hub_collection"`
-	Debug                      bool   `json:"debug"`
-	DisableKafkaConsumer       bool   `json:"disable_kafka_consumer"`
-	DisableHttpApi             bool   `json:"disable_http_api"`
-	HttpClientTimeout          string `json:"http_client_timeout"`
+	ServerPort                    string `json:"server_port"`
+	KafkaUrl                      string `json:"kafka_url"`
+	GroupId                       string `json:"group_id"`
+	DeviceTopic                   string `json:"device_topic"`
+	DeviceTypeTopic               string `json:"device_type_topic"`
+	DeviceGroupTopic              string `json:"device_group_topic"`
+	HubTopic                      string `json:"hub_topic"`
+	ProtocolTopic                 string `json:"protocol_topic"`
+	ConceptTopic                  string `json:"concept_topic"`
+	CharacteristicTopic           string `json:"characteristic_topic"`
+	AspectTopic                   string `json:"aspect_topic"`
+	FunctionTopic                 string `json:"function_topic"`
+	DeviceClassTopic              string `json:"device_class_topic"`
+	LocationTopic                 string `json:"location_topic"`
+	PermissionsUrl                string `json:"permissions_url"`
+	MongoUrl                      string `json:"mongo_url"`
+	MongoReplSet                  bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
+	MongoTable                    string `json:"mongo_table"`
+	MongoDeviceCollection         string `json:"mongo_device_collection"`
+	MongoDeviceTypeCollection     string `json:"mongo_device_type_collection"`
+	MongoDeviceGroupCollection    string `json:"mongo_device_group_collection"`
+	MongoProtocolCollection       string `json:"mongo_protocol_collection"`
+	MongoHubCollection            string `json:"mongo_hub_collection"`
+	MongoAspectCollection         string `json:"mongo_aspect_collection"`
+	MongoCharacteristicCollection string `json:"mongo_characteristic_collection"`
+	MongoConceptCollection        string `json:"mongo_concept_collection"`
+	MongoDeviceClassCollection    string `json:"mongo_device_class_collection"`
+	MongoFunctionCollection       string `json:"mongo_function_collection"`
+	MongoLocationCollection       string `json:"mongo_location_collection"`
+	Debug                         bool   `json:"debug"`
+	DisableKafkaConsumer          bool   `json:"disable_kafka_consumer"`
+	DisableHttpApi                bool   `json:"disable_http_api"`
+	HttpClientTimeout             string `json:"http_client_timeout"`
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
