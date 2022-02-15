@@ -28,10 +28,12 @@ import (
 	"log"
 	"strconv"
 	"sync"
+	"testing"
 )
 
-func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config) (config config.Config, ctrl *controller.Controller, prod *producer.Producer, err error) {
+func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config, t *testing.T) (config config.Config, ctrl *controller.Controller, prod *producer.Producer, err error) {
 	config = startConfig
+	config.FatalErrHandler = t.Fatal
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {

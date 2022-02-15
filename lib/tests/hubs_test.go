@@ -41,7 +41,7 @@ func TestHubs(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return

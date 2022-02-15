@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 const conceptIdFieldName = "Id"
@@ -30,13 +29,12 @@ const conceptIdFieldName = "Id"
 var conceptIdKey string
 
 func init() {
-	var err error
-	conceptIdKey, err = getBsonFieldName(model.Concept{}, conceptIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		conceptIdKey, err = getBsonFieldName(model.Concept{}, conceptIdFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoConceptCollection)
 		err = db.ensureIndex(collection, "conceptidindex", conceptIdKey, true, true)
 		if err != nil {

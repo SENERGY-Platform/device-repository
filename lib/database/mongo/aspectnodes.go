@@ -24,7 +24,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
-	"log"
 	"sort"
 )
 
@@ -34,24 +33,24 @@ var aspectNodeDescendentIdsFieldName, aspectNodeDescendentIdsKey = "DescendentId
 var aspectNodeAncestorIdsFieldName, aspectNodeAncestorIdsKey = "AncestorIds", ""
 
 func init() {
-	var err error
-	aspectNodeIdKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	aspectNodeRootIdKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeRootIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	aspectNodeDescendentIdsKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeDescendentIdsFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	aspectNodeAncestorIdsKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeAncestorIdsFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		aspectNodeIdKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeIdFieldName)
+		if err != nil {
+			return err
+		}
+		aspectNodeRootIdKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeRootIdFieldName)
+		if err != nil {
+			return err
+		}
+		aspectNodeDescendentIdsKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeDescendentIdsFieldName)
+		if err != nil {
+			return err
+		}
+		aspectNodeAncestorIdsKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeAncestorIdsFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(getAspectNodeCollectionName(db.config))
 		err = db.ensureIndex(collection, "aspectNodeidindex", aspectNodeIdKey, true, true)
 		if err != nil {

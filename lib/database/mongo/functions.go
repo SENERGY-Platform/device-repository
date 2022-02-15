@@ -23,7 +23,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
-	"log"
 )
 
 const functionIdFieldName = "Id"
@@ -33,17 +32,16 @@ var functionIdKey string
 var functionRdfTypeKey string
 
 func init() {
-	var err error
-	functionIdKey, err = getBsonFieldName(model.Function{}, functionIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	functionRdfTypeKey, err = getBsonFieldName(model.Function{}, functionRdfTypeFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		functionIdKey, err = getBsonFieldName(model.Function{}, functionIdFieldName)
+		if err != nil {
+			return err
+		}
+		functionRdfTypeKey, err = getBsonFieldName(model.Function{}, functionRdfTypeFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoFunctionCollection)
 		err = db.ensureIndex(collection, "functionidindex", functionIdKey, true, true)
 		if err != nil {

@@ -43,7 +43,7 @@ func TestServiceQuery(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -72,7 +72,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -187,7 +187,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -250,7 +250,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -324,7 +324,7 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -357,7 +357,7 @@ func TestServiceWithAttribute(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return

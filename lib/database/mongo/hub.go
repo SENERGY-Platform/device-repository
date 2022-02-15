@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 const hubIdFieldName = "Id"
@@ -32,17 +31,16 @@ var hubIdKey string
 var hubDeviceLocalIdKey string
 
 func init() {
-	var err error
-	hubIdKey, err = getBsonFieldName(model.Hub{}, hubIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	hubDeviceLocalIdKey, err = getBsonFieldName(model.Hub{}, hubDeviceLocalIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		hubIdKey, err = getBsonFieldName(model.Hub{}, hubIdFieldName)
+		if err != nil {
+			return err
+		}
+		hubDeviceLocalIdKey, err = getBsonFieldName(model.Hub{}, hubDeviceLocalIdFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoHubCollection)
 		err = db.ensureIndex(collection, "hubidindex", hubIdKey, true, true)
 		if err != nil {

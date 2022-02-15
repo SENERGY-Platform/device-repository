@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 const characteristicIdFieldName = "Id"
@@ -30,13 +29,12 @@ const characteristicIdFieldName = "Id"
 var characteristicIdKey string
 
 func init() {
-	var err error
-	characteristicIdKey, err = getBsonFieldName(model.Characteristic{}, characteristicIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		characteristicIdKey, err = getBsonFieldName(model.Characteristic{}, characteristicIdFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoCharacteristicCollection)
 		err = db.ensureIndex(collection, "characteristicidindex", characteristicIdKey, true, true)
 		if err != nil {

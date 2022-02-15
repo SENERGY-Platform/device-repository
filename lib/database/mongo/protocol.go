@@ -23,7 +23,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
-	"log"
 	"strings"
 )
 
@@ -34,17 +33,16 @@ var protocolIdKey string
 var protocolNameKey string
 
 func init() {
-	var err error
-	protocolIdKey, err = getBsonFieldName(model.Protocol{}, protocolIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	protocolNameKey, err = getBsonFieldName(model.Protocol{}, protocolNameFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		protocolIdKey, err = getBsonFieldName(model.Protocol{}, protocolIdFieldName)
+		if err != nil {
+			return err
+		}
+		protocolNameKey, err = getBsonFieldName(model.Protocol{}, protocolNameFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoProtocolCollection)
 		err = db.ensureIndex(collection, "protocolidindex", protocolIdKey, true, true)
 		if err != nil {

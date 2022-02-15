@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 const locationIdFieldName = "Id"
@@ -30,13 +29,12 @@ const locationIdFieldName = "Id"
 var locationIdKey string
 
 func init() {
-	var err error
-	locationIdKey, err = getBsonFieldName(model.Location{}, locationIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		locationIdKey, err = getBsonFieldName(model.Location{}, locationIdFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoLocationCollection)
 		err = db.ensureIndex(collection, "locationidindex", locationIdKey, true, true)
 		if err != nil {

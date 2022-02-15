@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 const deviceClassIdFieldName = "Id"
@@ -30,13 +29,12 @@ const deviceClassIdFieldName = "Id"
 var deviceClassIdKey string
 
 func init() {
-	var err error
-	deviceClassIdKey, err = getBsonFieldName(model.DeviceClass{}, deviceClassIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		deviceClassIdKey, err = getBsonFieldName(model.DeviceClass{}, deviceClassIdFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceClassCollection)
 		err = db.ensureIndex(collection, "deviceclassidindex", deviceClassIdKey, true, true)
 		if err != nil {

@@ -40,27 +40,26 @@ var deviceTypeServicesKey string
 var deviceTypeByServicePath string
 
 func init() {
-	var err error
-	deviceTypeIdKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeNameKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeNameFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeServicesKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeServiceFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	deviceTypeByServicePath = deviceTypeServicesKey + "." + serviceIdKey
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		deviceTypeIdKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeNameKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeNameFieldName)
+		if err != nil {
+			return err
+		}
+		serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeServicesKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeServiceFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeByServicePath = deviceTypeServicesKey + "." + serviceIdKey
+
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceTypeCollection)
 		err = db.ensureIndex(collection, "devicetypeidindex", deviceTypeIdKey, true, true)
 		if err != nil {

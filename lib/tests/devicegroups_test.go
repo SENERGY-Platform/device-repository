@@ -48,6 +48,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	conf.FatalErrHandler = t.Fatal
 	conf.MongoReplSet = false
 	conf, err = docker.NewEnv(ctx, wg, conf)
 	if err != nil {
@@ -393,7 +394,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg)
+	conf, err := createTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return

@@ -29,6 +29,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"testing"
 	"time"
 )
 
@@ -56,12 +57,13 @@ func jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 	return
 }
 
-func createTestEnv(ctx context.Context, wg *sync.WaitGroup) (conf config.Config, err error) {
+func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf config.Config, err error) {
 	conf, err = config.Load("../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return conf, err
 	}
+	conf.FatalErrHandler = t.Fatal
 	conf.MongoReplSet = false
 	conf, err = docker.NewEnv(ctx, wg, conf)
 	if err != nil {

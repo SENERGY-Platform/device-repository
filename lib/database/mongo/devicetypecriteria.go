@@ -22,7 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
 	"strings"
 )
 
@@ -52,41 +51,40 @@ func getDeviceTypeCriteriaCollectionName(config config.Config) string {
 }
 
 func init() {
-	var err error
-	deviceTypeCriteriaDeviceTypeIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaDeviceTypeIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeCriteriaServiceIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaServiceIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeCriteriaContentVariableIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaContentVariableIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeCriteriaFunctionIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaFunctionIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeCriteriaDeviceClassIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaDeviceClassIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeCriteriaAspectIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaAspectIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeCriteriaIsControllingFunctionKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaIsControllingFunctionFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceTypeCriteriaInteractionKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaInteractionFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		deviceTypeCriteriaDeviceTypeIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaDeviceTypeIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaServiceIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaServiceIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaContentVariableIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaContentVariableIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaFunctionIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaFunctionIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaDeviceClassIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaDeviceClassIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaAspectIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaAspectIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaIsControllingFunctionKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaIsControllingFunctionFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaInteractionKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaInteractionFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(getDeviceTypeCriteriaCollectionName(db.config))
 
 		err = db.ensureIndex(collection, "deviceTypeCriteriaDeviceTypeIdIndex", deviceTypeCriteriaDeviceTypeIdKey, true, false)

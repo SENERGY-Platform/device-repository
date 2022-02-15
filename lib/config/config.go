@@ -63,6 +63,15 @@ type Config struct {
 	DisableKafkaConsumer          bool   `json:"disable_kafka_consumer"`
 	DisableHttpApi                bool   `json:"disable_http_api"`
 	HttpClientTimeout             string `json:"http_client_timeout"`
+	FatalErrHandler               func(v ...interface{})
+}
+
+func (this Config) HandleFatalError(v ...interface{}) {
+	if this.FatalErrHandler != nil {
+		this.FatalErrHandler(v...)
+	} else {
+		log.Fatal(v...)
+	}
 }
 
 //loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
@@ -80,6 +89,7 @@ func Load(location string) (config Config, err error) {
 	}
 	handleEnvironmentVars(&config)
 	setDefaultHttpClient(config)
+	config.FatalErrHandler = log.Fatal
 	return config, nil
 }
 

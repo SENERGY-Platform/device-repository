@@ -23,7 +23,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
-	"log"
 	"strings"
 )
 
@@ -34,21 +33,20 @@ var deviceGroupIdKey string
 var deviceGroupNameKey string
 
 func init() {
-	var err error
-	deviceGroupIdKey, err = getBsonFieldName(model.DeviceGroup{}, deviceGroupIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	deviceGroupNameKey, err = getBsonFieldName(model.DeviceGroup{}, deviceGroupNameFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		deviceGroupIdKey, err = getBsonFieldName(model.DeviceGroup{}, deviceGroupIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceGroupNameKey, err = getBsonFieldName(model.DeviceGroup{}, deviceGroupNameFieldName)
+		if err != nil {
+			return err
+		}
+		serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceGroupCollection)
 		err = db.ensureIndex(collection, "deviceGroupidindex", deviceGroupIdKey, true, true)
 		if err != nil {

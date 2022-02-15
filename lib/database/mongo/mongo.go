@@ -27,6 +27,7 @@ import (
 	"go.mongodb.org/mongo-driver/x/bsonx"
 	"log"
 	"reflect"
+	"runtime/debug"
 	"time"
 )
 
@@ -102,6 +103,9 @@ func (this *Mongo) ensureIndex(collection *mongo.Collection, indexname string, i
 		Keys:    bsonx.Doc{{indexKey, bsonx.Int32(direction)}},
 		Options: options.Index().SetName(indexname).SetUnique(unique),
 	})
+	if err != nil {
+		debug.PrintStack()
+	}
 	return err
 }
 

@@ -23,7 +23,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
-	"log"
 )
 
 const aspectIdFieldName = "Id"
@@ -31,13 +30,12 @@ const aspectIdFieldName = "Id"
 var aspectIdKey string
 
 func init() {
-	var err error
-	aspectIdKey, err = getBsonFieldName(model.Aspect{}, aspectIdFieldName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
+		var err error
+		aspectIdKey, err = getBsonFieldName(model.Aspect{}, aspectIdFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoAspectCollection)
 		err = db.ensureIndex(collection, "aspectidindex", aspectIdKey, true, true)
 		if err != nil {

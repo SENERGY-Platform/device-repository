@@ -36,7 +36,7 @@ func Start(ctx context.Context, config config.Config, control listener.Controlle
 			}
 			return handler(msg)
 		}, func(err error, consumer *Consumer) {
-			log.Fatal(err)
+			config.HandleFatalError(err)
 		})
 		if err != nil {
 			return err
