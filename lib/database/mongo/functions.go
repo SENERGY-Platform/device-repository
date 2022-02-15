@@ -104,10 +104,30 @@ func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (
 	return
 }
 
-func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string) (result []model.Function, err error) {
+//returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []model.Function, err error) {
+	var aspectFilter interface{}
+	if ancestors || descendants {
+		relatedIds := []string{}
+		node, exists, err := this.GetAspectNode(ctx, aspect)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
+			if ancestors {
+				relatedIds = append(relatedIds, node.AncestorIds...)
+			}
+			if descendants {
+				relatedIds = append(relatedIds, node.DescendentIds...)
+			}
+			aspectFilter = bson.M{"$in": relatedIds}
+		}
+	} else {
+		aspectFilter = aspect
+	}
 	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaFunctionIdKey, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
-		deviceTypeCriteriaAspectIdKey:              aspect,
+		deviceTypeCriteriaAspectIdKey:              aspectFilter,
 		deviceTypeCriteriaFunctionIdKey:            bson.M{"$exists": true, "$ne": ""},
 	})
 	if err != nil {

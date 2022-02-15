@@ -44,10 +44,11 @@ func (this *Controller) GetFunctionsByType(rdfType string) (result []model.Funct
 	return
 }
 
-func (this *Controller) GetAspectsMeasuringFunctions(aspect string) (result []model.Function, err error, code int) {
+//returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+func (this *Controller) GetAspectNodesMeasuringFunctions(aspect string, ancestors bool, descendants bool) (result []model.Function, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListAllMeasuringFunctionsByAspect(ctx, aspect)
+	result, err = this.db.ListAllMeasuringFunctionsByAspect(ctx, aspect, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
 	}

@@ -54,7 +54,13 @@ type Database interface {
 	SetAspect(ctx context.Context, aspect model.Aspect) error
 	RemoveAspect(ctx context.Context, id string) error
 	ListAllAspects(ctx context.Context) ([]model.Aspect, error)
-	ListAspectsWithMeasuringFunction(ctx context.Context) ([]model.Aspect, error) //returns all aspects used in combination with measuring functions
+	ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]model.Aspect, error) //returns all aspects used in combination with measuring functions
+
+	AddAspectNode(ctx context.Context, node model.AspectNode) error
+	RemoveAspectNodesByRootId(ctx context.Context, id string) error
+	GetAspectNode(ctx context.Context, id string) (result model.AspectNode, exists bool, err error)
+	ListAllAspectNodes(ctx context.Context) ([]model.AspectNode, error)
+	ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]model.AspectNode, error) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 
 	SetCharacteristic(ctx context.Context, characteristic model.Characteristic) error
 	RemoveCharacteristic(ctx context.Context, id string) error
@@ -76,9 +82,9 @@ type Database interface {
 	GetFunction(ctx context.Context, id string) (result model.Function, exists bool, err error)
 	RemoveFunction(ctx context.Context, id string) error
 	ListAllFunctionsByType(ctx context.Context, rdfType string) ([]model.Function, error)
-	ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string) ([]model.Function, error)       //returns all measuring functions used in combination with given aspect
-	ListAllFunctionsByDeviceClass(ctx context.Context, class string) ([]model.Function, error)            //returns all functions used in combination with given device-class
-	ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) ([]model.Function, error) //returns all controlling functions used in combination with given device-class
+	ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) ([]model.Function, error) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+	ListAllFunctionsByDeviceClass(ctx context.Context, class string) ([]model.Function, error)                                        //returns all functions used in combination with given device-class
+	ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) ([]model.Function, error)                             //returns all controlling functions used in combination with given device-class
 
 	SetLocation(ctx context.Context, location model.Location) error
 	RemoveLocation(ctx context.Context, id string) error

@@ -77,13 +77,15 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 	}
 	zookeeperUrl := zkIp + ":2181"
 
+	time.Sleep(2 * time.Second)
+
 	config.KafkaUrl, err = Kafka(pool, ctx, wg, zookeeperUrl)
 	if err != nil {
 		return config, err
 	}
 
-	time.Sleep(1 * time.Second)
-	
+	time.Sleep(2 * time.Second)
+
 	_, elasticIp, err := Elasticsearch(pool, ctx, wg)
 	if err != nil {
 		return config, err

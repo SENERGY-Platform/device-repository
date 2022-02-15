@@ -30,21 +30,21 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, AspectsEndpoints)
+	endpoints = append(endpoints, AspectNodesEndpoints)
 }
 
-func AspectsEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/aspects"
+func AspectNodesEndpoints(config config.Config, control Controller, router *httprouter.Router) {
+	resource := "/aspect-nodes"
 
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		var result []model.Aspect
+		var result []model.AspectNode
 		var err error
 		var errCode int
 
 		function := request.URL.Query().Get("function")
 
 		if function == "" {
-			result, err, errCode = control.GetAspects()
+			result, err, errCode = control.GetAspectNodes()
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
 				return
@@ -69,7 +69,7 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 				}
 			}
 			if function == "measuring-function" {
-				result, err, errCode = control.GetAspectsWithMeasuringFunction(ancestors, descendants)
+				result, err, errCode = control.GetAspectNodesWithMeasuringFunction(ancestors, descendants)
 				if err != nil {
 					http.Error(writer, err.Error(), errCode)
 					return
@@ -87,7 +87,7 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
-		result, err, errCode := control.GetAspect(id)
+		result, err, errCode := control.GetAspectNode(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -98,30 +98,6 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 			log.Println("ERROR: unable to encode response", err)
 		}
 		return
-	})
-
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
-		aspect := model.Aspect{}
-		err = json.NewDecoder(request.Body).Decode(&aspect)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		err, code := control.ValidateAspect(aspect)
-		if err != nil {
-			http.Error(writer, err.Error(), code)
-			return
-		}
-		writer.WriteHeader(http.StatusOK)
 	})
 
 	router.GET(resource+"/:id/measuring-functions", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
@@ -157,4 +133,5 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 		}
 		return
 	})
+
 }

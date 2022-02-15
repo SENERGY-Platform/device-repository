@@ -44,10 +44,14 @@ type Controller interface {
 	GetService(id string) (result model.Service, err error, code int)
 
 	GetAspects() ([]model.Aspect, error, int)
-	GetAspectsWithMeasuringFunction() ([]model.Aspect, error, int) //returns all aspects used in combination with measuring functions
+	GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]model.Aspect, error, int) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 	GetAspect(id string) (model.Aspect, error, int)
-	GetAspectsMeasuringFunctions(id string) (result []model.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect
 	ValidateAspect(aspect model.Aspect) (err error, code int)
+
+	GetAspectNode(id string) (model.AspectNode, error, int)
+	GetAspectNodes() ([]model.AspectNode, error, int)
+	GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []model.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+	GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]model.AspectNode, error, int)                          //returns all aspect-nodes used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 
 	GetLeafCharacteristics() (result []model.Characteristic, err error, errCode int)
 	GetCharacteristic(id string) (result model.Characteristic, err error, errCode int)

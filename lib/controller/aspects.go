@@ -25,11 +25,19 @@ import (
 
 func (this *Controller) SetAspect(aspect model.Aspect, owner string) error {
 	ctx, _ := getTimeoutContext()
-	return this.db.SetAspect(ctx, aspect)
+	err := this.db.SetAspect(ctx, aspect)
+	if err != nil {
+		return err
+	}
+	return this.setAspectNodes(aspect)
 }
 
 func (this *Controller) DeleteAspect(id string) error {
 	ctx, _ := getTimeoutContext()
+	err := this.db.RemoveAspectNodesByRootId(ctx, id)
+	if err != nil {
+		return err
+	}
 	return this.db.RemoveAspect(ctx, id)
 }
 
@@ -55,10 +63,10 @@ func (this *Controller) GetAspect(id string) (result model.Aspect, err error, co
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspectsWithMeasuringFunction() (result []model.Aspect, err error, code int) {
+func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) (result []model.Aspect, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListAspectsWithMeasuringFunction(ctx)
+	result, err = this.db.ListAspectsWithMeasuringFunction(ctx, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
 	}
@@ -74,6 +82,12 @@ func (this *Controller) ValidateAspect(aspect model.Aspect) (err error, code int
 	}
 	if aspect.Name == "" {
 		return errors.New("missing aspect name"), http.StatusBadRequest
+	}
+	for _, sub := range aspect.SubAspects {
+		err, code = this.ValidateAspect(sub)
+		if err != nil {
+			return err, code
+		}
 	}
 	return nil, http.StatusOK
 }

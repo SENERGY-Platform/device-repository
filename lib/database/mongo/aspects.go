@@ -93,7 +93,8 @@ func (this *Mongo) ListAllAspects(ctx context.Context) (result []model.Aspect, e
 	return
 }
 
-func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context) (result []model.Aspect, err error) {
+//returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []model.Aspect, err error) {
 	aspectIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaAspectIdKey, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
 		deviceTypeCriteriaAspectIdKey:              bson.M{"$exists": true, "$ne": ""},
@@ -101,9 +102,30 @@ func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context) (result
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": aspectIds}})
-	if err != nil {
-		return nil, err
+	var cursor *mongo.Cursor
+	if ancestors || descendants {
+		or := bson.A{
+			bson.D{{aspectNodeIdKey, bson.M{"$in": aspectIds}}},
+		}
+		if ancestors {
+			or = append(or, bson.D{{aspectNodeAncestorIdsKey, bson.M{"$in": aspectIds}}})
+		}
+		if descendants {
+			or = append(or, bson.D{{aspectNodeDescendentIdsKey, bson.M{"$in": aspectIds}}})
+		}
+		rootIds, err := this.aspectNodeCollection().Distinct(ctx, aspectNodeRootIdKey, bson.D{{"$or", or}})
+		if err != nil {
+			return nil, err
+		}
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": rootIds}})
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": aspectIds}})
+		if err != nil {
+			return nil, err
+		}
 	}
 	for cursor.Next(context.Background()) {
 		aspect := model.Aspect{}

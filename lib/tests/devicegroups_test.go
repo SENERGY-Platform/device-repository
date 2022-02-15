@@ -21,10 +21,13 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -35,8 +38,55 @@ import (
 )
 
 func TestDeviceGroupsValidation(t *testing.T) {
-	dbMock := mocks.NewDatabase()
-	dbMock.SetDeviceType(nil, model.DeviceType{
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := config.Load("../../config.json")
+	if err != nil {
+		log.Println("ERROR: unable to load config: ", err)
+		t.Error(err)
+		return
+	}
+	conf.MongoReplSet = false
+	conf, err = docker.NewEnv(ctx, wg, conf)
+	if err != nil {
+		log.Println("ERROR: unable to create docker env", err)
+		t.Error(err)
+		return
+	}
+	time.Sleep(1 * time.Second)
+	dbMock, err := mongo.New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	ctrl, err := controller.New(config.Config{}, dbMock, nil, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = ctrl.SetAspect(model.Aspect{
+		Id:   "parent",
+		Name: "parent",
+		SubAspects: []model.Aspect{
+			{
+				Id:   "aid",
+				Name: "aid",
+				SubAspects: []model.Aspect{
+					{
+						Id:   "child",
+						Name: "child",
+					},
+				},
+			},
+		},
+	}, "")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = ctrl.SetDeviceType(model.DeviceType{
 		Id:            "dt1",
 		DeviceClassId: "dcid",
 		Services: []model.Service{{
@@ -51,13 +101,15 @@ func TestDeviceGroupsValidation(t *testing.T) {
 				},
 			},
 		}},
-	})
-
-	dbMock.SetDevice(nil, model.Device{
+	}, "")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = ctrl.SetDevice(model.Device{
 		Id:           "did",
 		DeviceTypeId: "dt1",
-	})
-	ctrl, err := controller.New(config.Config{}, dbMock, nil, nil)
+	}, "")
 	if err != nil {
 		t.Error(err)
 		return
@@ -112,6 +164,16 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		}},
 	}, http.StatusOK, false))
 
+	t.Run("ok with one parent aspect criteria and no device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Criteria: []model.DeviceGroupFilterCriteria{{
+			FunctionId:  "fid",
+			AspectId:    "parent",
+			Interaction: model.REQUEST,
+		}},
+	}, http.StatusOK, false))
+
 	t.Run("ok with one aspect criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",
 		Name: "name",
@@ -122,6 +184,28 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusOK, false))
+
+	t.Run("ok with one parent aspect criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Criteria: []model.DeviceGroupFilterCriteria{{
+			FunctionId:  "fid",
+			AspectId:    "parent",
+			Interaction: model.REQUEST,
+		}},
+		DeviceIds: []string{"did"},
+	}, http.StatusOK, false))
+
+	t.Run("not ok with one child aspect criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Criteria: []model.DeviceGroupFilterCriteria{{
+			FunctionId:  "fid",
+			AspectId:    "child",
+			Interaction: model.REQUEST,
+		}},
+		DeviceIds: []string{"did"},
+	}, http.StatusBadRequest, true))
 
 	t.Run("device uses blocked interaction", testDeviceGroupValidation(ctrl, model.DeviceGroup{
 		Id:   "id",

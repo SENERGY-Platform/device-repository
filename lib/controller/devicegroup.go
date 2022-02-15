@@ -135,6 +135,17 @@ func (this *Controller) selectionMatchesCriteria(
 	ctx, _ := getTimeoutContext()
 	var exists bool
 
+	var aspectNode model.AspectNode
+	if criteria.AspectId != "" {
+		aspectNode, exists, err = this.db.GetAspectNode(ctx, criteria.AspectId)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		if !exists {
+			return errors.New("unknown aspect-node-id: " + criteria.AspectId), http.StatusBadRequest
+		}
+	}
+
 	device, ok := (*dcache)[deviceId]
 	if !ok {
 		device, exists, err = this.db.GetDevice(ctx, deviceId)
@@ -172,13 +183,13 @@ func (this *Controller) selectionMatchesCriteria(
 		}
 		contentMatches := false
 		for _, content := range service.Inputs {
-			if contentVariableContainsCriteria(content.ContentVariable, criteria) {
+			if contentVariableContainsCriteria(content.ContentVariable, criteria, aspectNode) {
 				contentMatches = true
 				break
 			}
 		}
 		for _, content := range service.Outputs {
-			if contentVariableContainsCriteria(content.ContentVariable, criteria) {
+			if contentVariableContainsCriteria(content.ContentVariable, criteria, aspectNode) {
 				contentMatches = true
 				break
 			}
@@ -194,12 +205,24 @@ func (this *Controller) selectionMatchesCriteria(
 	return nil, http.StatusOK
 }
 
-func contentVariableContainsCriteria(variable model.ContentVariable, criteria model.DeviceGroupFilterCriteria) bool {
-	if variable.FunctionId == criteria.FunctionId && (criteria.AspectId == "" || variable.AspectId == criteria.AspectId) {
+func contentVariableContainsCriteria(variable model.ContentVariable, criteria model.DeviceGroupFilterCriteria, aspectNode model.AspectNode) bool {
+	if variable.FunctionId == criteria.FunctionId &&
+		(criteria.AspectId == "" ||
+			variable.AspectId == criteria.AspectId ||
+			listContains(aspectNode.DescendentIds, variable.AspectId)) {
 		return true
 	}
 	for _, sub := range variable.SubContentVariables {
-		if contentVariableContainsCriteria(sub, criteria) {
+		if contentVariableContainsCriteria(sub, criteria, aspectNode) {
+			return true
+		}
+	}
+	return false
+}
+
+func listContains(list []string, search string) bool {
+	for _, element := range list {
+		if element == search {
 			return true
 		}
 	}

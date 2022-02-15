@@ -218,7 +218,17 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, devi
 		filter[deviceTypeCriteriaFunctionIdKey] = criteria.FunctionId
 	}
 	if criteria.AspectId != "" {
-		filter[deviceTypeCriteriaAspectIdKey] = criteria.AspectId
+		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
+		if err != nil {
+			return result, err
+		}
+		if exists {
+			filter[deviceTypeCriteriaAspectIdKey] = bson.M{"$in": append(node.DescendentIds, node.Id)}
+		} else {
+			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
+			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
+			filter[deviceTypeCriteriaAspectIdKey] = criteria.AspectId
+		}
 	}
 
 	temp, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaDeviceTypeIdKey, filter)

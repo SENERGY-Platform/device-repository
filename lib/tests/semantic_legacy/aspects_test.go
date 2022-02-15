@@ -195,7 +195,7 @@ func testProduceDeviceTypeForAspectTest(producer *producer.Producer) func(t *tes
 
 func testReadAspectMeasuringFunctions(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetAspectsMeasuringFunctions("urn:infai:ses:aspect:4e4e-AspectTest")
+		res, err, code := con.GetAspectNodesMeasuringFunctions("urn:infai:ses:aspect:4e4e-AspectTest", false, false)
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {
@@ -323,7 +323,7 @@ func test_2_ProduceDeviceTypeforAspectTest(producer *producer.Producer) func(t *
 
 func test_2_ReadAspectsWithMeasuringFunctions(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetAspectsWithMeasuringFunction()
+		res, err, code := con.GetAspectsWithMeasuringFunction(false, false)
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {
