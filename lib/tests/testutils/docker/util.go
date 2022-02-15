@@ -21,12 +21,12 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	uuid "github.com/satori/go.uuid"
 	"log"
 	"net"
 	"os"
 	"strconv"
 	"sync"
-	"time"
 )
 
 func GetFreePort() (int, error) {
@@ -45,6 +45,7 @@ func GetFreePort() (int, error) {
 
 func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config) (config config.Config, err error) {
 	config = startConfig
+	config.GroupId = uuid.NewV4().String()
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {
@@ -77,14 +78,10 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 	}
 	zookeeperUrl := zkIp + ":2181"
 
-	time.Sleep(2 * time.Second)
-
 	config.KafkaUrl, err = Kafka(pool, ctx, wg, zookeeperUrl)
 	if err != nil {
 		return config, err
 	}
-
-	time.Sleep(2 * time.Second)
 
 	_, elasticIp, err := Elasticsearch(pool, ctx, wg)
 	if err != nil {
@@ -96,8 +93,6 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 		return config, err
 	}
 	config.PermissionsUrl = "http://" + permIp + ":8080"
-
-	time.Sleep(2 * time.Second)
 
 	return
 }

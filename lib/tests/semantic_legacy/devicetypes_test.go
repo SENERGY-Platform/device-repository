@@ -361,7 +361,7 @@ func testReadDeviceType_2MF_sameAspect_DifferentDeviceClasses(con *controller.Co
 			if err != nil {
 				t.Fatal(deviceType, err, code)
 			}
-			if string(b) != "null" {
+			if string(b) != "[]" {
 				t.Log("expected: null")
 				t.Log("was:", string(b))
 				t.Fatal("error")
