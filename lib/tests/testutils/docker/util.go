@@ -97,6 +97,8 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 	}
 	config.PermissionsUrl = "http://" + permIp + ":8080"
 
+	time.Sleep(2 * time.Second)
+
 	return
 }
 

@@ -92,6 +92,7 @@ func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (
 	if err != nil {
 		return nil, err
 	}
+	result = []model.Function{}
 	for cursor.Next(context.Background()) {
 		function := model.Function{}
 		err = cursor.Decode(&function)
@@ -108,7 +109,7 @@ func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (
 func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []model.Function, err error) {
 	var aspectFilter interface{}
 	if ancestors || descendants {
-		relatedIds := []string{}
+		relatedIds := []string{aspect}
 		node, exists, err := this.GetAspectNode(ctx, aspect)
 		if err != nil {
 			return nil, err
@@ -137,6 +138,7 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	if err != nil {
 		return nil, err
 	}
+	result = []model.Function{}
 	for cursor.Next(context.Background()) {
 		function := model.Function{}
 		err = cursor.Decode(&function)
@@ -161,6 +163,7 @@ func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class stri
 	if err != nil {
 		return nil, err
 	}
+	result = []model.Function{}
 	for cursor.Next(context.Background()) {
 		function := model.Function{}
 		err = cursor.Decode(&function)
@@ -186,6 +189,7 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+	result = []model.Function{}
 	for cursor.Next(context.Background()) {
 		function := model.Function{}
 		err = cursor.Decode(&function)

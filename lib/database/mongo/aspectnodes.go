@@ -22,7 +22,10 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 	"log"
+	"sort"
 )
 
 var aspectNodeIdFieldName, aspectNodeIdKey = "Id", ""
@@ -91,6 +94,7 @@ func (this *Mongo) GetAspectNode(ctx context.Context, id string) (aspectNode mod
 	if err == mongo.ErrNoDocuments {
 		return aspectNode, false, nil
 	}
+	sortSubIds(&aspectNode)
 	return aspectNode, true, err
 }
 
@@ -105,16 +109,18 @@ func (this *Mongo) RemoveAspectNodesByRootId(ctx context.Context, id string) err
 }
 
 func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []model.AspectNode, err error) {
-	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{})
+	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
 	if err != nil {
 		return nil, err
 	}
+	result = []model.AspectNode{}
 	for cursor.Next(context.Background()) {
 		aspectNode := model.AspectNode{}
 		err = cursor.Decode(&aspectNode)
 		if err != nil {
 			return nil, err
 		}
+		sortSubIds(&aspectNode)
 		result = append(result, aspectNode)
 	}
 	err = cursor.Err()
@@ -139,18 +145,26 @@ func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, anc
 	if descendants {
 		or = append(or, bson.D{{aspectNodeDescendentIdsKey, bson.M{"$in": aspectNodeIds}}})
 	}
-	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{{"$or", or}})
+	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{{"$or", or}}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
 	if err != nil {
 		return nil, err
 	}
+	result = []model.AspectNode{}
 	for cursor.Next(context.Background()) {
 		aspectNode := model.AspectNode{}
 		err = cursor.Decode(&aspectNode)
 		if err != nil {
 			return nil, err
 		}
+		sortSubIds(&aspectNode)
 		result = append(result, aspectNode)
 	}
 	err = cursor.Err()
 	return
+}
+
+func sortSubIds(a *model.AspectNode) {
+	sort.Strings(a.DescendentIds)
+	sort.Strings(a.AncestorIds)
+	sort.Strings(a.ChildIds)
 }
