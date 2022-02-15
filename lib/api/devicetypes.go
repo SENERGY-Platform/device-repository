@@ -59,6 +59,8 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 				- examples:
 					?sort=name.asc
 					?sort=name
+			- filter: json encoded []model.FilterCriteria; optional
+					all criteria must be satisfied
 	*/
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		var err error

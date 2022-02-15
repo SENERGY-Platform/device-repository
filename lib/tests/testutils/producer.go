@@ -37,6 +37,7 @@ type Publisher struct {
 	devices      *kafka.Writer
 	devicegroups *kafka.Writer
 	hubs         *kafka.Writer
+	aspects      *kafka.Writer
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
@@ -67,7 +68,11 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices, hubs: hubs, devicegroups: devicegroups}, nil
+	aspects, err := producer.GetKafkaWriter(broker, conf.AspectTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
+	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices, hubs: hubs, devicegroups: devicegroups, aspects: aspects}, nil
 }
 
 type DeviceTypeCommand struct {
@@ -258,4 +263,39 @@ func (this *Publisher) PublishHubCommand(cmd HubCommand) error {
 		debug.PrintStack()
 	}
 	return err
+}
+
+func (this *Publisher) PublishAspect(aspect model.Aspect, userid string) error {
+	cmd := AspectCommand{Command: "PUT", Id: aspect.Id, Aspect: aspect, Owner: userid}
+	return this.PublishAspectCommand(cmd)
+}
+
+func (this *Publisher) PublishAspectCommand(cmd AspectCommand) error {
+	if this.config.Debug {
+		log.Println("DEBUG: produce hub", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.aspects.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+type AspectCommand struct {
+	Command string       `json:"command"`
+	Id      string       `json:"id"`
+	Owner   string       `json:"owner"`
+	Aspect  model.Aspect `json:"aspect"`
 }

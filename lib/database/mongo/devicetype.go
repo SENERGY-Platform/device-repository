@@ -99,6 +99,7 @@ func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType mod
 }
 
 func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria) (result []model.DeviceType, err error) {
+	result = []model.DeviceType{}
 	opt := options.Find()
 	opt.SetLimit(limit)
 	opt.SetSkip(offset)
