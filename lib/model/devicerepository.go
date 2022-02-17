@@ -25,3 +25,30 @@ type AspectNode struct {
 	AncestorIds   []string `json:"ancestor_ids"`
 	DescendentIds []string `json:"descendent_ids"`
 }
+
+type DeviceTypeCriteria struct {
+	DeviceTypeId          string `json:"device_type_id"`
+	ServiceId             string `json:"service_id"`
+	ContentVariableId     string `json:"content_variable_id"`
+	ContentVariablePath   string `json:"content_variable_path"`
+	FunctionId            string `json:"function_id"`
+	Interaction           string `json:"interaction"`
+	IsControllingFunction bool   `json:"controlling_function"`
+	DeviceClassId         string `json:"device_class_id"`
+	AspectId              string `json:"aspect_id"`
+	CharacteristicId      string `json:"characteristic_id"`
+}
+
+type DeviceTypeSelectable struct {
+	DeviceTypeId       string                         `json:"deviceTypeId,omitempty"`
+	Services           []Service                      `json:"services,omitempty"`
+	ServicePathOptions map[string][]ServicePathOption `json:"servicePathOptions,omitempty"`
+}
+
+type ServicePathOption struct {
+	ServiceId        string `json:"serviceId"`
+	Path             string `json:"path"`
+	CharacteristicId string `json:"characteristicId"`
+	AspectNodeId     string `json:"aspectNodeId"`
+	FunctionId       string `json:"functionId"`
+}

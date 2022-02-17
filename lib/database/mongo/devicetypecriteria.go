@@ -22,20 +22,9 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 	"strings"
 )
-
-type DeviceTypeCriteria struct {
-	DeviceTypeId          string `json:"device_type_id"`
-	ServiceId             string `json:"service_id"`
-	ContentVariableId     string `json:"content_variable_id"`
-	ContentVariablePath   string `json:"content_variable_path"`
-	FunctionId            string `json:"function_id"`
-	Interaction           string `json:"interaction"`
-	IsControllingFunction bool   `json:"controlling_function"`
-	DeviceClassId         string `json:"device_class_id"`
-	AspectId              string `json:"aspect_id"`
-}
 
 var deviceTypeCriteriaDeviceTypeIdFieldName, deviceTypeCriteriaDeviceTypeIdKey = "DeviceTypeId", ""
 var deviceTypeCriteriaServiceIdFieldName, deviceTypeCriteriaServiceIdKey = "ServiceId", ""
@@ -45,6 +34,7 @@ var deviceTypeCriteriaDeviceClassIdFieldName, deviceTypeCriteriaDeviceClassIdKey
 var deviceTypeCriteriaAspectIdFieldName, deviceTypeCriteriaAspectIdKey = "AspectId", ""
 var deviceTypeCriteriaIsControllingFunctionFieldName, deviceTypeCriteriaIsControllingFunctionKey = "IsControllingFunction", ""
 var deviceTypeCriteriaInteractionFieldName, deviceTypeCriteriaInteractionKey = "Interaction", ""
+var deviceTypeCriteriaCharacteristicIdFieldName, deviceTypeCriteriaCharacteristicIdKey = "CharacteristicId", ""
 
 func getDeviceTypeCriteriaCollectionName(config config.Config) string {
 	return config.MongoDeviceTypeCollection + "_criteria"
@@ -53,35 +43,39 @@ func getDeviceTypeCriteriaCollectionName(config config.Config) string {
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceTypeCriteriaDeviceTypeIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaDeviceTypeIdFieldName)
+		deviceTypeCriteriaDeviceTypeIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaDeviceTypeIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeCriteriaServiceIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaServiceIdFieldName)
+		deviceTypeCriteriaServiceIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaServiceIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeCriteriaContentVariableIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaContentVariableIdFieldName)
+		deviceTypeCriteriaContentVariableIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaContentVariableIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeCriteriaFunctionIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaFunctionIdFieldName)
+		deviceTypeCriteriaFunctionIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaFunctionIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeCriteriaDeviceClassIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaDeviceClassIdFieldName)
+		deviceTypeCriteriaDeviceClassIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaDeviceClassIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeCriteriaAspectIdKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaAspectIdFieldName)
+		deviceTypeCriteriaAspectIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaAspectIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeCriteriaIsControllingFunctionKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaIsControllingFunctionFieldName)
+		deviceTypeCriteriaIsControllingFunctionKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsControllingFunctionFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeCriteriaInteractionKey, err = getBsonFieldName(DeviceTypeCriteria{}, deviceTypeCriteriaInteractionFieldName)
+		deviceTypeCriteriaInteractionKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaInteractionFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaCharacteristicIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaCharacteristicIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -119,7 +113,7 @@ func (this *Mongo) deviceTypeCriteriaCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(getDeviceTypeCriteriaCollectionName(this.config))
 }
 
-func (this *Mongo) addDeviceTypeCriteria(ctx context.Context, deviceTypeCriteria []DeviceTypeCriteria) error {
+func (this *Mongo) addDeviceTypeCriteria(ctx context.Context, deviceTypeCriteria []model.DeviceTypeCriteria) error {
 	if len(deviceTypeCriteria) == 0 {
 		return nil
 	}
@@ -144,14 +138,14 @@ func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt model.DeviceTyp
 	return this.addDeviceTypeCriteria(ctx, createCriteriaListFromDeviceType(dt))
 }
 
-func createCriteriaListFromDeviceType(dt model.DeviceType) (result []DeviceTypeCriteria) {
+func createCriteriaListFromDeviceType(dt model.DeviceType) (result []model.DeviceTypeCriteria) {
 	for _, s := range dt.Services {
 		result = append(result, createCriteriaFromService(dt.Id, dt.DeviceClassId, s)...)
 	}
 	return result
 }
 
-func createCriteriaFromService(deviceTypeId string, deviceClassId string, service model.Service) (result []DeviceTypeCriteria) {
+func createCriteriaFromService(deviceTypeId string, deviceClassId string, service model.Service) (result []model.DeviceTypeCriteria) {
 	for _, content := range service.Inputs {
 		result = append(result, createCriteriaFromContentVariables(deviceTypeId, deviceClassId, service.Id, service.Interaction, content.ContentVariable, true, []string{})...)
 	}
@@ -161,12 +155,12 @@ func createCriteriaFromService(deviceTypeId string, deviceClassId string, servic
 	return result
 }
 
-func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId string, serviceId string, interaction model.Interaction, variable model.ContentVariable, isInput bool, pathParts []string) (result []DeviceTypeCriteria) {
+func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId string, serviceId string, interaction model.Interaction, variable model.ContentVariable, isInput bool, pathParts []string) (result []model.DeviceTypeCriteria) {
 	currentPath := append(pathParts, variable.Name)
 	if variable.FunctionId != "" {
 		isCtrlFun := isControllingFunction(variable.FunctionId)
 		if !strings.HasPrefix(variable.FunctionId, model.URN_PREFIX) || isCtrlFun == isInput {
-			result = append(result, DeviceTypeCriteria{
+			result = append(result, model.DeviceTypeCriteria{
 				DeviceTypeId:          deviceTypeId,
 				ServiceId:             serviceId,
 				ContentVariableId:     variable.Id,
@@ -176,6 +170,7 @@ func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId strin
 				IsControllingFunction: isCtrlFun,
 				DeviceClassId:         deviceClassId,
 				AspectId:              variable.AspectId,
+				CharacteristicId:      variable.CharacteristicId,
 			})
 		}
 	}
@@ -190,4 +185,44 @@ func isControllingFunction(functionId string) bool {
 		return true
 	}
 	return false
+}
+
+func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria) (result []model.DeviceTypeCriteria, err error) {
+	filter := bson.M{
+		deviceTypeCriteriaDeviceTypeIdKey: bson.M{"$in": deviceTypeIds},
+	}
+	if criteria.DeviceClassId != "" {
+		filter[deviceTypeCriteriaDeviceClassIdKey] = criteria.DeviceClassId
+	}
+	if criteria.FunctionId != "" {
+		filter[deviceTypeCriteriaFunctionIdKey] = criteria.FunctionId
+	}
+	if criteria.AspectId != "" {
+		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
+		if err != nil {
+			return result, err
+		}
+		if exists {
+			filter[deviceTypeCriteriaAspectIdKey] = bson.M{"$in": append(node.DescendentIds, node.Id)}
+		} else {
+			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
+			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
+			filter[deviceTypeCriteriaAspectIdKey] = criteria.AspectId
+		}
+	}
+
+	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		dtCriteria := model.DeviceTypeCriteria{}
+		err = cursor.Decode(&dtCriteria)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dtCriteria)
+	}
+	err = cursor.Err()
+	return
 }

@@ -99,6 +99,62 @@ func ValidateServiceGroups(groups []model.ServiceGroup, services []model.Service
 	return nil
 }
 
+func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error, code int) {
+	code = http.StatusOK
+	ctx, _ := getTimeoutContext()
+	result, err = this.getDeviceTypeSelectables(ctx, query, pathPrefix)
+	if err != nil {
+		code = http.StatusInternalServerError
+	}
+	return
+}
+
+func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error) {
+	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteria(ctx, query)
+	if err != nil {
+		return result, err
+	}
+	groupByDeviceType := map[string][]model.DeviceTypeCriteria{}
+	for _, criteria := range query {
+		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria)
+		if err != nil {
+			return result, err
+		}
+		for _, element := range dtCriteria {
+			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], element)
+		}
+	}
+	for dtId, dtCriteria := range groupByDeviceType {
+		dt, _, err := this.db.GetDeviceType(ctx, dtId)
+		if err != nil {
+			return result, err
+		}
+		element := model.DeviceTypeSelectable{
+			DeviceTypeId:       dtId,
+			Services:           []model.Service{},
+			ServicePathOptions: map[string][]model.ServicePathOption{},
+		}
+		for _, criteria := range dtCriteria {
+			element.ServicePathOptions[criteria.ServiceId] = append(element.ServicePathOptions[criteria.ServiceId], model.ServicePathOption{
+				ServiceId:        criteria.ServiceId,
+				Path:             pathPrefix + criteria.ContentVariablePath,
+				CharacteristicId: criteria.CharacteristicId,
+				AspectNodeId:     criteria.AspectId,
+				FunctionId:       criteria.FunctionId,
+			})
+		}
+		for sid, _ := range element.ServicePathOptions {
+			for _, service := range dt.Services {
+				if service.Id == sid {
+					element.Services = append(element.Services, service)
+				}
+			}
+		}
+		result = append(result, element)
+	}
+	return result, nil
+}
+
 /////////////////////////
 //		source
 /////////////////////////

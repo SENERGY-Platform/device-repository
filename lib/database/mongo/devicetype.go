@@ -121,7 +121,7 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 
 	filter := bson.M{}
 	if len(filterCriteria) > 0 {
-		deviceTypeIds, err := this.getDeviceTypeIdsByFilterCriteria(ctx, filterCriteria)
+		deviceTypeIds, err := this.GetDeviceTypeIdsByFilterCriteria(ctx, filterCriteria)
 		if err != nil {
 			return nil, err
 		}
@@ -190,7 +190,7 @@ func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId stri
 }
 
 //all criteria must match
-func (this *Mongo) getDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria) (result []interface{}, err error) {
+func (this *Mongo) GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria) (result []interface{}, err error) {
 	for _, c := range criteria {
 		result, err = this.filterDeviceTypeIdsByFilterCriteria(ctx, result, c)
 		if err != nil {
