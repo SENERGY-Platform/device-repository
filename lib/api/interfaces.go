@@ -52,6 +52,7 @@ type Controller interface {
 	GetAspectNodes() ([]model.AspectNode, error, int)
 	GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []model.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
 	GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]model.AspectNode, error, int)                          //returns all aspect-nodes used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	GetAspectNodesByIdList(strings []string) ([]model.AspectNode, error, int)
 
 	GetLeafCharacteristics() (result []model.Characteristic, err error, errCode int)
 	GetCharacteristic(id string) (result model.Characteristic, err error, errCode int)

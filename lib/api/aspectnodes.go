@@ -33,8 +33,36 @@ func init() {
 	endpoints = append(endpoints, AspectNodesEndpoints)
 }
 
+type AspectNodeQuery struct {
+	Ids *[]string `json:"ids,omitempty"`
+}
+
 func AspectNodesEndpoints(config config.Config, control Controller, router *httprouter.Router) {
 	resource := "/aspect-nodes"
+
+	router.POST("/query"+resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		query := AspectNodeQuery{}
+		err := json.NewDecoder(request.Body).Decode(&query)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if query.Ids != nil {
+			result, err, errCode := control.GetAspectNodesByIdList(*query.Ids)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+			writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+			err = json.NewEncoder(writer).Encode(result)
+			if err != nil {
+				log.Println("ERROR: unable to encode response", err)
+			}
+			return
+		}
+		http.Error(writer, "no known query content found", http.StatusBadRequest)
+		return
+	})
 
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		var result []model.AspectNode

@@ -167,3 +167,22 @@ func sortSubIds(a *model.AspectNode) {
 	sort.Strings(a.AncestorIds)
 	sort.Strings(a.ChildIds)
 }
+
+func (this *Mongo) ListAspectNodesByIdList(ctx context.Context, ids []string) (result []model.AspectNode, err error) {
+	cursor, err := this.aspectNodeCollection().Find(ctx, bson.M{aspectNodeIdKey: bson.M{"$in": ids}}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
+	if err != nil {
+		return nil, err
+	}
+	result = []model.AspectNode{}
+	for cursor.Next(context.Background()) {
+		aspectNode := model.AspectNode{}
+		err = cursor.Decode(&aspectNode)
+		if err != nil {
+			return nil, err
+		}
+		sortSubIds(&aspectNode)
+		result = append(result, aspectNode)
+	}
+	err = cursor.Err()
+	return
+}

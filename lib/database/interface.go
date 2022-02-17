@@ -61,6 +61,7 @@ type Database interface {
 	GetAspectNode(ctx context.Context, id string) (result model.AspectNode, exists bool, err error)
 	ListAllAspectNodes(ctx context.Context) ([]model.AspectNode, error)
 	ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]model.AspectNode, error) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	ListAspectNodesByIdList(ctx context.Context, ids []string) ([]model.AspectNode, error)
 
 	SetCharacteristic(ctx context.Context, characteristic model.Characteristic) error
 	RemoveCharacteristic(ctx context.Context, id string) error

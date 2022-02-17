@@ -88,3 +88,13 @@ func (this *Controller) GetAspectNodesWithMeasuringFunction(ancestors bool, desc
 	}
 	return
 }
+
+func (this *Controller) GetAspectNodesByIdList(ids []string) (result []model.AspectNode, err error, code int) {
+	code = http.StatusOK
+	ctx, _ := getTimeoutContext()
+	result, err = this.db.ListAspectNodesByIdList(ctx, ids)
+	if err != nil {
+		code = http.StatusInternalServerError
+	}
+	return
+}
