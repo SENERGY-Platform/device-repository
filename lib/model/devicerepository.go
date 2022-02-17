@@ -40,15 +40,15 @@ type DeviceTypeCriteria struct {
 }
 
 type DeviceTypeSelectable struct {
-	DeviceTypeId       string                         `json:"deviceTypeId,omitempty"`
+	DeviceTypeId       string                         `json:"device_type_id,omitempty"`
 	Services           []Service                      `json:"services,omitempty"`
-	ServicePathOptions map[string][]ServicePathOption `json:"servicePathOptions,omitempty"`
+	ServicePathOptions map[string][]ServicePathOption `json:"service_path_options,omitempty"`
 }
 
 type ServicePathOption struct {
-	ServiceId        string `json:"serviceId"`
+	ServiceId        string `json:"service_id"`
 	Path             string `json:"path"`
-	CharacteristicId string `json:"characteristicId"`
-	AspectNodeId     string `json:"aspectNodeId"`
-	FunctionId       string `json:"functionId"`
+	CharacteristicId string `json:"characteristic_id"`
+	AspectNodeId     string `json:"aspect_node_id"`
+	FunctionId       string `json:"function_id"`
 }
