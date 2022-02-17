@@ -30,10 +30,10 @@ type Controller interface {
 	ValidateHub(hub model.Hub) (err error, code int)
 
 	ReadDeviceType(id string, token string) (result model.DeviceType, err error, errCode int)
-	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error, errCode int)
+	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string) (result []model.DeviceType, err error, errCode int)
 	ValidateDeviceType(deviceType model.DeviceType) (err error, code int)
 
-	GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error, code int)
+	GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error, code int)
 
 	ReadDeviceGroup(id string, token string) (result model.DeviceGroup, err error, errCode int)
 	ValidateDeviceGroup(deviceGroup model.DeviceGroup) (err error, code int)

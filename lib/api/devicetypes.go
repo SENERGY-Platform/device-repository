@@ -25,6 +25,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -61,6 +62,9 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 					?sort=name
 			- filter: json encoded []model.FilterCriteria; optional
 					all criteria must be satisfied
+			- interactions-filter: comma seperated list of interactions
+					if set: returns only device-types with at least one matching interaction on criteria matching services
+					ignored if empty
 	*/
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		var err error
@@ -98,8 +102,14 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 				return
 			}
 		}
-
-		result, err, errCode := control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter)
+		interactionsFilter := []string{}
+		interactionsFilterStr := request.URL.Query().Get("interactions-filter")
+		if interactionsFilterStr != "" {
+			for _, interaction := range strings.Split(interactionsFilterStr, ",") {
+				interactionsFilter = append(interactionsFilter, strings.TrimSpace(interaction))
+			}
+		}
+		result, err, errCode := control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, interactionsFilter)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

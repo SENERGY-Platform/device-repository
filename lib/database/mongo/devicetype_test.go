@@ -191,7 +191,7 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	result, err := m.ListDeviceTypes(ctx, 100, 0, "name.asc", nil)
+	result, err := m.ListDeviceTypes(ctx, 100, 0, "name.asc", nil, nil)
 	if err != nil {
 		t.Error(err)
 		return

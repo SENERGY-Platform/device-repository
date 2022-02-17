@@ -23,6 +23,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func init() {
@@ -40,7 +41,14 @@ func DeviceTypeSelectableEndpoints(config config.Config, control Controller, rou
 			return
 		}
 		pathPrefix := request.URL.Query().Get("path-prefix")
-		result, err, errCode := control.GetDeviceTypeSelectables(query, pathPrefix)
+		interactionsFilter := []string{}
+		interactionsFilterStr := request.URL.Query().Get("interactions-filter")
+		if interactionsFilterStr != "" {
+			for _, interaction := range strings.Split(interactionsFilterStr, ",") {
+				interactionsFilter = append(interactionsFilter, strings.TrimSpace(interaction))
+			}
+		}
+		result, err, errCode := control.GetDeviceTypeSelectables(query, pathPrefix, interactionsFilter)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

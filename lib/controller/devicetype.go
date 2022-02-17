@@ -40,9 +40,9 @@ func (this *Controller) ReadDeviceType(id string, token string) (result model.De
 	return deviceType, nil, http.StatusOK
 }
 
-func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error, errCode int) {
+func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string) (result []model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort, filter)
+	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort, filter, interactionsFilter)
 	return
 }
 
@@ -99,18 +99,18 @@ func ValidateServiceGroups(groups []model.ServiceGroup, services []model.Service
 	return nil
 }
 
-func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error, code int) {
+func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
-	result, err = this.getDeviceTypeSelectables(ctx, query, pathPrefix)
+	result, err = this.getDeviceTypeSelectables(ctx, query, pathPrefix, interactionsFilter)
 	if err != nil {
 		code = http.StatusInternalServerError
 	}
 	return
 }
 
-func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error) {
-	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteria(ctx, query)
+func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error) {
+	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteria(ctx, query, interactionsFilter)
 	if err != nil {
 		return result, err
 	}
