@@ -110,6 +110,7 @@ func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, p
 }
 
 func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error) {
+	result = []model.DeviceTypeSelectable{}
 	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteria(ctx, query, interactionsFilter)
 	if err != nil {
 		return result, err

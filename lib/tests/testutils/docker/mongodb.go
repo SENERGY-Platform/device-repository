@@ -46,7 +46,7 @@ func MongoDB(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup) (ho
 	//go Dockerlog(pool, ctx, container, "MONGODB")
 	hostPort = container.GetPort("27017/tcp")
 	err = pool.Retry(func() error {
-		log.Println("try device-manager connection...")
+		log.Println("try mongo connection...")
 		_, err := http.Get("http://localhost:" + hostPort)
 		if err != nil {
 			log.Println(err)
