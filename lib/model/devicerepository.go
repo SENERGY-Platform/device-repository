@@ -46,9 +46,9 @@ type DeviceTypeSelectable struct {
 }
 
 type ServicePathOption struct {
-	ServiceId        string `json:"service_id"`
-	Path             string `json:"path"`
-	CharacteristicId string `json:"characteristic_id"`
-	AspectNodeId     string `json:"aspect_node_id"`
-	FunctionId       string `json:"function_id"`
+	ServiceId        string     `json:"service_id"`
+	Path             string     `json:"path"`
+	CharacteristicId string     `json:"characteristic_id"`
+	AspectNode       AspectNode `json:"aspect_node"`
+	FunctionId       string     `json:"function_id"`
 }

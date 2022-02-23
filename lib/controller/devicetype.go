@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"log"
 	"net/http"
 	"time"
 )
@@ -125,6 +126,7 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], element)
 		}
 	}
+	aspectCache := &map[string]model.AspectNode{}
 	for dtId, dtCriteria := range groupByDeviceType {
 		dt, _, err := this.db.GetDeviceType(ctx, dtId)
 		if err != nil {
@@ -136,11 +138,15 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 			ServicePathOptions: map[string][]model.ServicePathOption{},
 		}
 		for _, criteria := range dtCriteria {
+			aspectNode, err := this.getAspectNodeWithCache(aspectCache, criteria.AspectId)
+			if err != nil {
+				return result, err
+			}
 			element.ServicePathOptions[criteria.ServiceId] = append(element.ServicePathOptions[criteria.ServiceId], model.ServicePathOption{
 				ServiceId:        criteria.ServiceId,
 				Path:             pathPrefix + criteria.ContentVariablePath,
 				CharacteristicId: criteria.CharacteristicId,
-				AspectNodeId:     criteria.AspectId,
+				AspectNode:       aspectNode,
 				FunctionId:       criteria.FunctionId,
 			})
 		}
@@ -154,6 +160,25 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 		result = append(result, element)
 	}
 	return result, nil
+}
+
+func (this *Controller) getAspectNodeWithCache(aspectCache *map[string]model.AspectNode, aspectId string) (aspectNode model.AspectNode, err error) {
+	var ok bool
+	aspectNode, ok = (*aspectCache)[aspectId]
+	if !ok {
+		ctx, _ := getTimeoutContext()
+		aspectNode, ok, err = this.db.GetAspectNode(ctx, aspectId)
+		if err != nil {
+			log.Println("WARNING: unable to load aspect node", aspectId, err)
+			return aspectNode, err
+		}
+		if !ok {
+			log.Println("WARNING: unknown aspect node", aspectId)
+			return aspectNode, err
+		}
+		(*aspectCache)[aspectId] = aspectNode
+	}
+	return aspectNode, nil
 }
 
 /////////////////////////

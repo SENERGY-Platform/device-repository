@@ -27,6 +27,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 )
 
 func GetFreePort() (int, error) {
@@ -93,6 +94,8 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 		return config, err
 	}
 	config.PermissionsUrl = "http://" + permIp + ":8080"
+
+	time.Sleep(5 * time.Second)
 
 	return
 }
