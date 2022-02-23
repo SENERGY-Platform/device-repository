@@ -138,7 +138,7 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 			ServicePathOptions: map[string][]model.ServicePathOption{},
 		}
 		for _, criteria := range dtCriteria {
-			aspectNode, err := this.getAspectNodeWithCache(aspectCache, criteria.AspectId)
+			aspectNode, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, criteria.AspectId)
 			if err != nil {
 				return result, err
 			}
@@ -162,7 +162,10 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 	return result, nil
 }
 
-func (this *Controller) getAspectNodeWithCache(aspectCache *map[string]model.AspectNode, aspectId string) (aspectNode model.AspectNode, err error) {
+func (this *Controller) getAspectNodeForDeviceTypeSelectables(aspectCache *map[string]model.AspectNode, aspectId string) (aspectNode model.AspectNode, err error) {
+	if aspectId == "" {
+		return aspectNode, nil
+	}
 	var ok bool
 	aspectNode, ok = (*aspectCache)[aspectId]
 	if !ok {
