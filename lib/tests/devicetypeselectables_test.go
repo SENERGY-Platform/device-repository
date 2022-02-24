@@ -927,7 +927,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 }
 
 func TestDeviceTypeControllingSelectables(t *testing.T) {
-	t.Skip("not implemented") //TODO
+	//t.Skip("not implemented") //TODO
 
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
@@ -939,7 +939,933 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		return
 	}
 
-	t.Run("init metadata", createTestMetadata(conf, model.EVENT_AND_REQUEST))
+	interaction := model.EVENT_AND_REQUEST
+
+	t.Run("init metadata", createTestMetadata(conf, interaction))
+
+	t.Run("thermostat", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "thermostat",
+			Services: []model.Service{{
+				Id:          "setTargetTemperature",
+				Interaction: interaction,
+				Inputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:         "temperature",
+							Name:       "temperature",
+							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							AspectId:   "inside_air",
+						},
+					},
+				},
+			}},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId: "setTargetTemperature",
+						Path:      "temperature",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_base",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "air",
+							RootId:        "air",
+							ParentId:      "",
+							ChildIds:      []string{"inside_air", "outside_air"},
+							AncestorIds:   []string{},
+							DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_multiservice",
+			Services: []model.Service{
+				{
+					Id:          "setInsideTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setOutsideTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "outside_air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setInsideTargetTemperature": {
+					{
+						ServiceId:        "setInsideTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+				"setOutsideTargetTemperature": {
+					{
+						ServiceId:        "setOutsideTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "outside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_multivalue",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:   "temperature",
+								Name: "temperature",
+								SubContentVariables: []model.ContentVariable{
+									{
+										Id:         "inside",
+										Name:       "inside",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+										AspectId:   "inside_air",
+									},
+									{
+										Id:         "outside",
+										Name:       "outside",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+										AspectId:   "outside_air",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature.inside",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature.outside",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "outside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_without_aspect",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode:       model.AspectNode{},
+						FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+	}))
+
+	t.Run("thermostat air", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "air"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "thermostat",
+			Services: []model.Service{{
+				Id:          "setTargetTemperature",
+				Interaction: interaction,
+				Inputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:         "temperature",
+							Name:       "temperature",
+							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							AspectId:   "inside_air",
+						},
+					},
+				},
+			}},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId: "setTargetTemperature",
+						Path:      "temperature",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_base",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "air",
+							RootId:        "air",
+							ParentId:      "",
+							ChildIds:      []string{"inside_air", "outside_air"},
+							AncestorIds:   []string{},
+							DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_multiservice",
+			Services: []model.Service{
+				{
+					Id:          "setInsideTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setOutsideTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "outside_air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setInsideTargetTemperature": {
+					{
+						ServiceId:        "setInsideTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+				"setOutsideTargetTemperature": {
+					{
+						ServiceId:        "setOutsideTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "outside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_multivalue",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:   "temperature",
+								Name: "temperature",
+								SubContentVariables: []model.ContentVariable{
+									{
+										Id:         "inside",
+										Name:       "inside",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+										AspectId:   "inside_air",
+									},
+									{
+										Id:         "outside",
+										Name:       "outside",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+										AspectId:   "outside_air",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature.inside",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature.outside",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "outside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+	}))
+
+	t.Run("thermostat inside air", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "inside_air"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "thermostat",
+			Services: []model.Service{{
+				Id:          "setTargetTemperature",
+				Interaction: interaction,
+				Inputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:         "temperature",
+							Name:       "temperature",
+							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							AspectId:   "inside_air",
+						},
+					},
+				},
+			}},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId: "setTargetTemperature",
+						Path:      "temperature",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_multiservice",
+			Services: []model.Service{
+				{
+					Id:          "setInsideTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setInsideTargetTemperature": {
+					{
+						ServiceId:        "setInsideTargetTemperature",
+						Path:             "temperature",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+		{
+			DeviceTypeId: "thermostat_without_get_multivalue",
+			Services: []model.Service{
+				{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:   "temperature",
+								Name: "temperature",
+								SubContentVariables: []model.ContentVariable{
+									{
+										Id:         "inside",
+										Name:       "inside",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+										AspectId:   "inside_air",
+									},
+									{
+										Id:         "outside",
+										Name:       "outside",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+										AspectId:   "outside_air",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setTargetTemperature": {
+					{
+						ServiceId:        "setTargetTemperature",
+						Path:             "temperature.inside",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "inside_air",
+							RootId:        "air",
+							ParentId:      "air",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"air"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+					},
+				},
+			},
+		},
+	}))
+
+	t.Run("pc_cooling_controller fan_speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "pc_cooling_controller",
+			Services: []model.Service{
+				{
+					Id:          "setCaseFan1Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "case_fan_1",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setCaseFan2Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "case_fan_2",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setCpuSpeed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "cpu_fan",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setGpuSpeed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "gpu_fan",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setCaseFan1Speed": {
+					{
+						ServiceId:        "setCaseFan1Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_1",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+					},
+				},
+				"setCaseFan2Speed": {
+					{
+						ServiceId:        "setCaseFan2Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_2",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+					},
+				},
+				"setCpuSpeed": {
+					{
+						ServiceId:        "setCpuSpeed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "cpu_fan",
+							RootId:        "fan",
+							ParentId:      "fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+					},
+				},
+				"setGpuSpeed": {
+					{
+						ServiceId:        "setGpuSpeed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "gpu_fan",
+							RootId:        "fan",
+							ParentId:      "fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+					},
+				},
+			},
+		},
+	}))
+
+	t.Run("pc_cooling_controller fan_speed case_fan", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "pc_cooling_controller",
+			Services: []model.Service{
+				{
+					Id:          "setCaseFan1Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "case_fan_1",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setCaseFan2Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "case_fan_2",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setCaseFan1Speed": {
+					{
+						ServiceId:        "setCaseFan1Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_1",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+					},
+				},
+				"setCaseFan2Speed": {
+					{
+						ServiceId:        "setCaseFan2Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_2",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+					},
+				},
+			},
+		},
+	}))
+
+	t.Run("pc_cooling_controller fan_speed case_fan_1", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan_1"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "pc_cooling_controller",
+			Services: []model.Service{
+				{
+					Id:          "setCaseFan1Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "case_fan_1",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setCaseFan1Speed": {
+					{
+						ServiceId:        "setCaseFan1Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_1",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+					},
+				},
+			},
+		},
+	}))
 }
 
 func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []model.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
@@ -1017,6 +1943,132 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "triggerToggle",
 						Interaction: interaction,
+					},
+				},
+			},
+			{
+				Id:            "thermostat_without_get",
+				DeviceClassId: "thermostat",
+				Services: []model.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Id:            "thermostat_without_get_base",
+				DeviceClassId: "thermostat",
+				Services: []model.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "air",
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Id:            "thermostat_without_get_without_aspect",
+				DeviceClassId: "thermostat",
+				Services: []model.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "",
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Id:            "thermostat_without_get_multivalue",
+				DeviceClassId: "thermostat",
+				Services: []model.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:   "temperature",
+									Name: "temperature",
+									SubContentVariables: []model.ContentVariable{
+										{
+											Id:         "inside",
+											Name:       "inside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "inside_air",
+										},
+										{
+											Id:         "outside",
+											Name:       "outside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "outside_air",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Id:            "thermostat_without_get_multiservice",
+				DeviceClassId: "thermostat",
+				Services: []model.Service{
+					{
+						Id:          "setInsideTargetTemperature",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setOutsideTargetTemperature",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "outside_air",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1204,15 +2256,57 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 						},
 					},
 					{
-						Id:          "setCase1FanSpeed",
+						Id:          "setCaseFan1Speed",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Inputs: []model.Content{
 							{
 								ContentVariable: model.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
 									AspectId:   "case_fan_1",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setCaseFan2Speed",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "case_fan_2",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setCpuSpeed",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "cpu_fan",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setGpuSpeed",
+						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "gpu_fan",
 								},
 							},
 						},
