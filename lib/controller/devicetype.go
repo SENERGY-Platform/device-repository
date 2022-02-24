@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -150,15 +151,22 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 				FunctionId:       criteria.FunctionId,
 			})
 		}
-		for sid, _ := range element.ServicePathOptions {
+		for sid, options := range element.ServicePathOptions {
 			for _, service := range dt.Services {
 				if service.Id == sid {
 					element.Services = append(element.Services, service)
 				}
 			}
+			sort.Slice(options, func(i, j int) bool {
+				return options[i].Path < options[j].Path
+			})
+			element.ServicePathOptions[sid] = options
 		}
 		result = append(result, element)
 	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].DeviceTypeId < result[j].DeviceTypeId
+	})
 	return result, nil
 }
 
