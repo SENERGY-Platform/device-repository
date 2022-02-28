@@ -37,6 +37,7 @@ type DeviceTypeCriteria struct {
 	DeviceClassId         string `json:"device_class_id"`
 	AspectId              string `json:"aspect_id"`
 	CharacteristicId      string `json:"characteristic_id"`
+	IsVoid                bool   `json:"is_void"`
 }
 
 type DeviceTypeSelectable struct {
@@ -51,4 +52,5 @@ type ServicePathOption struct {
 	CharacteristicId string     `json:"characteristic_id"`
 	AspectNode       AspectNode `json:"aspect_node"`
 	FunctionId       string     `json:"function_id"`
+	IsVoid           bool       `json:"is_void"`
 }

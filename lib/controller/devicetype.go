@@ -149,6 +149,7 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 				CharacteristicId: criteria.CharacteristicId,
 				AspectNode:       aspectNode,
 				FunctionId:       criteria.FunctionId,
+				IsVoid:           criteria.IsVoid,
 			})
 		}
 		for sid, options := range element.ServicePathOptions {

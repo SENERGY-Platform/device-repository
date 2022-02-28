@@ -171,6 +171,7 @@ func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId strin
 				DeviceClassId:         deviceClassId,
 				AspectId:              variable.AspectId,
 				CharacteristicId:      variable.CharacteristicId,
+				IsVoid:                variable.IsVoid,
 			})
 		}
 	}

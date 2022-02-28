@@ -79,6 +79,7 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 					CharacteristicId: "",
 					AspectNode:       model.AspectNode{},
 					FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "toggle",
+					IsVoid:           true,
 				},
 			},
 		},
