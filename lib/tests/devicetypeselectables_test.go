@@ -60,16 +60,25 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 			{
 				Id:          "triggerToggle",
 				Interaction: model.REQUEST,
+				Inputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:         "void",
+							IsVoid:     true,
+							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "toggle",
+						},
+					},
+				},
 			},
 		},
 		ServicePathOptions: map[string][]model.ServicePathOption{
-			"toggle": {
+			"triggerToggle": {
 				{
-					ServiceId:        "toggle",
-					Path:             "prefix.void",
+					ServiceId:        "triggerToggle",
+					Path:             "prefix.",
 					CharacteristicId: "",
 					AspectNode:       model.AspectNode{},
-					FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+					FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "toggle",
 				},
 			},
 		},
@@ -1943,6 +1952,15 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "triggerToggle",
 						Interaction: interaction,
+						Inputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:         "void",
+									IsVoid:     true,
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "toggle",
+								},
+							},
+						},
 					},
 				},
 			},

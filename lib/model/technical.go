@@ -66,6 +66,7 @@ const (
 type ContentVariable struct {
 	Id                   string            `json:"id"`
 	Name                 string            `json:"name"`
+	IsVoid               bool              `json:"is_void"`
 	Type                 Type              `json:"type"`
 	SubContentVariables  []ContentVariable `json:"sub_content_variables"`
 	CharacteristicId     string            `json:"characteristic_id"`

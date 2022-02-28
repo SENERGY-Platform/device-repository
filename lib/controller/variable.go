@@ -30,12 +30,52 @@ func (this *Controller) ValidateVariable(variable model.ContentVariable, seriali
 	if variable.Id == "" {
 		return errors.New("missing content variable id"), http.StatusBadRequest
 	}
-	if variable.Name == "" {
-		return errors.New("missing content variable name"), http.StatusBadRequest
+
+	if !variable.IsVoid {
+		if variable.Name == "" {
+			return errors.New("missing content variable name"), http.StatusBadRequest
+		}
+		if variable.Type == "" {
+			return errors.New("missing content variable type for " + variable.Name), http.StatusBadRequest
+		}
+
+		err, code = ValidateVariableName(variable.Name)
+		if err != nil {
+			return err, code
+		}
+
+		switch variable.Type {
+		case model.String:
+			if len(variable.SubContentVariables) > 0 {
+				return errors.New("strings can not have sub content variables for " + variable.Name), http.StatusBadRequest
+			}
+		case model.Integer:
+			if len(variable.SubContentVariables) > 0 {
+				return errors.New("integers can not have sub content variables for " + variable.Name), http.StatusBadRequest
+			}
+		case model.Float:
+			if len(variable.SubContentVariables) > 0 {
+				return errors.New("floats can not have sub content variables for " + variable.Name), http.StatusBadRequest
+			}
+		case model.Boolean:
+			if len(variable.SubContentVariables) > 0 {
+				return errors.New("booleans can not have sub content variables for " + variable.Name), http.StatusBadRequest
+			}
+		case model.List:
+			err, code = this.ValidateListSubVariables(variable.SubContentVariables, serialization)
+			if err != nil {
+				return err, code
+			}
+		case model.Structure:
+			err, code = this.ValidateStructureSubVariables(variable.SubContentVariables, serialization)
+			if err != nil {
+				return err, code
+			}
+		default:
+			return errors.New("unknown content value type: " + string(variable.Type) + " in " + variable.Name), http.StatusBadRequest
+		}
 	}
-	if variable.Type == "" {
-		return errors.New("missing content variable type for " + variable.Name), http.StatusBadRequest
-	}
+
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	if variable.AspectId != "" && this != nil {
 		_, exists, err := this.db.GetAspect(ctx, variable.AspectId)
@@ -58,41 +98,6 @@ func (this *Controller) ValidateVariable(variable model.ContentVariable, seriali
 		}
 	}
 
-	err, code = ValidateVariableName(variable.Name)
-	if err != nil {
-		return err, code
-	}
-
-	switch variable.Type {
-	case model.String:
-		if len(variable.SubContentVariables) > 0 {
-			return errors.New("strings can not have sub content variables for " + variable.Name), http.StatusBadRequest
-		}
-	case model.Integer:
-		if len(variable.SubContentVariables) > 0 {
-			return errors.New("integers can not have sub content variables for " + variable.Name), http.StatusBadRequest
-		}
-	case model.Float:
-		if len(variable.SubContentVariables) > 0 {
-			return errors.New("floats can not have sub content variables for " + variable.Name), http.StatusBadRequest
-		}
-	case model.Boolean:
-		if len(variable.SubContentVariables) > 0 {
-			return errors.New("booleans can not have sub content variables for " + variable.Name), http.StatusBadRequest
-		}
-	case model.List:
-		err, code = this.ValidateListSubVariables(variable.SubContentVariables, serialization)
-		if err != nil {
-			return err, code
-		}
-	case model.Structure:
-		err, code = this.ValidateStructureSubVariables(variable.SubContentVariables, serialization)
-		if err != nil {
-			return err, code
-		}
-	default:
-		return errors.New("unknown content value type: " + string(variable.Type) + " in " + variable.Name), http.StatusBadRequest
-	}
 	return nil, http.StatusOK
 }
 
