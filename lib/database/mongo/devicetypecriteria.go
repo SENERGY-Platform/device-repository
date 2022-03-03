@@ -35,6 +35,8 @@ var deviceTypeCriteriaAspectIdFieldName, deviceTypeCriteriaAspectIdKey = "Aspect
 var deviceTypeCriteriaIsControllingFunctionFieldName, deviceTypeCriteriaIsControllingFunctionKey = "IsControllingFunction", ""
 var deviceTypeCriteriaInteractionFieldName, deviceTypeCriteriaInteractionKey = "Interaction", ""
 var deviceTypeCriteriaCharacteristicIdFieldName, deviceTypeCriteriaCharacteristicIdKey = "CharacteristicId", ""
+var deviceTypeCriteriaIsLeafFieldName, deviceTypeCriteriaIsLeafKey = "IsLeaf", ""
+var deviceTypeCriteriaIsVoidFieldName, deviceTypeCriteriaIsVoidKey = "IsVoid", ""
 
 func getDeviceTypeCriteriaCollectionName(config config.Config) string {
 	return config.MongoDeviceTypeCollection + "_criteria"
@@ -76,6 +78,14 @@ func init() {
 			return err
 		}
 		deviceTypeCriteriaCharacteristicIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaCharacteristicIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaIsLeafKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsLeafFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaIsVoidKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsVoidFieldName)
 		if err != nil {
 			return err
 		}
@@ -157,23 +167,26 @@ func createCriteriaFromService(deviceTypeId string, deviceClassId string, servic
 
 func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId string, serviceId string, interaction model.Interaction, variable model.ContentVariable, isInput bool, pathParts []string) (result []model.DeviceTypeCriteria) {
 	currentPath := append(pathParts, variable.Name)
-	if variable.FunctionId != "" {
-		isCtrlFun := isControllingFunction(variable.FunctionId)
-		if !strings.HasPrefix(variable.FunctionId, model.URN_PREFIX) || isCtrlFun == isInput {
-			result = append(result, model.DeviceTypeCriteria{
-				DeviceTypeId:          deviceTypeId,
-				ServiceId:             serviceId,
-				ContentVariableId:     variable.Id,
-				ContentVariablePath:   strings.Join(currentPath, "."),
-				FunctionId:            variable.FunctionId,
-				Interaction:           string(interaction),
-				IsControllingFunction: isCtrlFun,
-				DeviceClassId:         deviceClassId,
-				AspectId:              variable.AspectId,
-				CharacteristicId:      variable.CharacteristicId,
-				IsVoid:                variable.IsVoid,
-			})
-		}
+	isLeaf := len(variable.SubContentVariables) == 0
+	isCtrlFun := isControllingFunction(variable.FunctionId)
+	isInputControllingFunction := (variable.FunctionId != "" && (!strings.HasPrefix(variable.FunctionId, model.URN_PREFIX) || isCtrlFun == isInput))
+	isConfigurableCandidate := isLeaf && isInput
+	if isInputControllingFunction || isConfigurableCandidate {
+		result = append(result, model.DeviceTypeCriteria{
+			DeviceTypeId:          deviceTypeId,
+			ServiceId:             serviceId,
+			ContentVariableId:     variable.Id,
+			ContentVariablePath:   strings.Join(currentPath, "."),
+			FunctionId:            variable.FunctionId,
+			Interaction:           string(interaction),
+			IsControllingFunction: isCtrlFun,
+			DeviceClassId:         deviceClassId,
+			AspectId:              variable.AspectId,
+			CharacteristicId:      variable.CharacteristicId,
+			IsVoid:                variable.IsVoid,
+			Value:                 variable.Value,
+			IsLeaf:                isLeaf,
+		})
 	}
 	for _, sub := range variable.SubContentVariables {
 		result = append(result, createCriteriaFromContentVariables(deviceTypeId, deviceClassId, serviceId, interaction, sub, isInput, currentPath)...)
@@ -212,6 +225,29 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 		}
 	}
 
+	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		dtCriteria := model.DeviceTypeCriteria{}
+		err = cursor.Decode(&dtCriteria)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dtCriteria)
+	}
+	err = cursor.Err()
+	return
+}
+
+func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId string) (result []model.DeviceTypeCriteria, err error) {
+	filter := bson.M{
+		deviceTypeCriteriaServiceIdKey:             serviceId,
+		deviceTypeCriteriaIsLeafKey:                true,
+		deviceTypeCriteriaIsControllingFunctionKey: true,
+		deviceTypeCriteriaIsVoidKey:                false,
+	}
 	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
 	if err != nil {
 		return result, err

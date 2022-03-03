@@ -30,6 +30,7 @@ import (
 	"net/url"
 	"reflect"
 	"runtime/debug"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -74,18 +75,19 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 		ServicePathOptions: map[string][]model.ServicePathOption{
 			"triggerToggle": {
 				{
-					ServiceId:        "triggerToggle",
-					Path:             "prefix.",
-					CharacteristicId: "",
-					AspectNode:       model.AspectNode{},
-					FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "toggle",
-					IsVoid:           true,
+					ServiceId:             "triggerToggle",
+					Path:                  "prefix.",
+					CharacteristicId:      "",
+					AspectNode:            model.AspectNode{},
+					FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "toggle",
+					IsControllingFunction: true,
+					IsVoid:                true,
 				},
 			},
 		},
 	}
 
-	t.Run("find toggle", testDeviceTypeSelectables(conf, toggleCriteria, "prefix.", nil, []model.DeviceTypeSelectable{toggleSelectable}))
+	t.Run("find toggle", testDeviceTypeSelectablesWithoutConfigurables(conf, toggleCriteria, "prefix.", nil, []model.DeviceTypeSelectable{toggleSelectable}))
 }
 
 func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
@@ -145,12 +147,12 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 		},
 	}
 
-	t.Run("nil", testDeviceTypeSelectables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("empty", testDeviceTypeSelectables(conf, waterProbeCriteria, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT}, []model.DeviceTypeSelectable{}))
-	t.Run("request", testDeviceTypeSelectables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT, model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event_and_request", testDeviceTypeSelectables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
+	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT}, []model.DeviceTypeSelectable{}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT, model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
 }
 
 func TestDeviceTypeMeasuringSelectables(t *testing.T) {
@@ -169,7 +171,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 
 	t.Run("init metadata", createTestMetadata(conf, interaction))
 
-	t.Run("inside and outside temp", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("inside and outside temp", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "inside_air"},
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "outside_air"},
 	}, "", nil, []model.DeviceTypeSelectable{
@@ -242,7 +244,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("inside temp", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("inside temp", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "inside_air"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -321,7 +323,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("air temperature", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("air temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "air"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -467,7 +469,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("device temperature", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("device temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "device"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -555,7 +557,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("cpu temperature", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("cpu temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "cpu"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -615,7 +617,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("fan speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "fan"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -723,7 +725,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("cpu fan speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("cpu fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "cpu_fan"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -789,7 +791,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("case fan speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("case fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "case_fan"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -869,7 +871,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 	}))
 
-	t.Run("case fan speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("case fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "case_fan_1"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -953,7 +955,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 
 	t.Run("init metadata", createTestMetadata(conf, interaction))
 
-	t.Run("thermostat", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("thermostat", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -986,7 +988,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1022,7 +1025,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1059,7 +1063,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{},
 							DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1110,7 +1115,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 				"setOutsideTargetTemperature": {
@@ -1126,7 +1132,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1175,7 +1182,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 					{
 						ServiceId:        "setTargetTemperature",
@@ -1189,7 +1197,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1215,18 +1224,19 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 			ServicePathOptions: map[string][]model.ServicePathOption{
 				"setTargetTemperature": {
 					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode:       model.AspectNode{},
-						FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						ServiceId:             "setTargetTemperature",
+						Path:                  "temperature",
+						CharacteristicId:      "",
+						AspectNode:            model.AspectNode{},
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
 		},
 	}))
 
-	t.Run("thermostat air", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("thermostat air", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "air"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -1259,7 +1269,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1295,7 +1306,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1332,7 +1344,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{},
 							DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1383,7 +1396,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 				"setOutsideTargetTemperature": {
@@ -1399,7 +1413,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1448,7 +1463,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 					{
 						ServiceId:        "setTargetTemperature",
@@ -1462,14 +1478,15 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
 		},
 	}))
 
-	t.Run("thermostat inside air", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("thermostat inside air", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "inside_air"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -1502,7 +1519,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1538,7 +1556,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1575,7 +1594,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1624,14 +1644,15 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"air"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+						IsControllingFunction: true,
 					},
 				},
 			},
 		},
 	}))
 
-	t.Run("pc_cooling_controller fan_speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("pc_cooling_controller fan_speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -1708,7 +1729,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"case_fan", "fan"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
 					},
 				},
 				"setCaseFan2Speed": {
@@ -1724,7 +1746,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"case_fan", "fan"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
 					},
 				},
 				"setCpuSpeed": {
@@ -1740,7 +1763,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"fan"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
 					},
 				},
 				"setGpuSpeed": {
@@ -1756,14 +1780,15 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"fan"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
 					},
 				},
 			},
 		},
 	}))
 
-	t.Run("pc_cooling_controller fan_speed case_fan", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("pc_cooling_controller fan_speed case_fan", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -1812,7 +1837,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"case_fan", "fan"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
 					},
 				},
 				"setCaseFan2Speed": {
@@ -1828,14 +1854,15 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"case_fan", "fan"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
 					},
 				},
 			},
 		},
 	}))
 
-	t.Run("pc_cooling_controller fan_speed case_fan_1", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+	t.Run("pc_cooling_controller fan_speed case_fan_1", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
 		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan_1"},
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
@@ -1870,7 +1897,8 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 							AncestorIds:   []string{"case_fan", "fan"},
 							DescendentIds: []string{},
 						},
-						FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
 					},
 				},
 			},
@@ -1878,19 +1906,50 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}))
 }
 
-func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []model.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []model.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectables(config, userjwt, pathPrefix, interactionsFilter, criteria)
 		if err != nil {
 			t.Error(err)
 			return
 		}
+		expectedResult = removeConfigurables(expectedResult)
+		expectedResult = sortServices(expectedResult)
+		result = removeConfigurables(result)
+		result = sortServices(result)
 		if !reflect.DeepEqual(result, expectedResult) {
 			resultJson, _ := json.Marshal(result)
 			expectedJson, _ := json.Marshal(expectedResult)
 			t.Error("\n", string(resultJson), "\n", string(expectedJson))
 		}
 	}
+}
+
+func removeConfigurables(list []model.DeviceTypeSelectable) (result []model.DeviceTypeSelectable) {
+	result = []model.DeviceTypeSelectable{}
+	for _, e := range list {
+		for sid, pathoptions := range e.ServicePathOptions {
+			temp := []model.ServicePathOption{}
+			for _, option := range pathoptions {
+				option.Configurables = nil
+				temp = append(temp, option)
+			}
+			e.ServicePathOptions[sid] = temp
+		}
+		result = append(result, e)
+	}
+	return
+}
+
+func sortServices(list []model.DeviceTypeSelectable) (result []model.DeviceTypeSelectable) {
+	result = []model.DeviceTypeSelectable{}
+	for _, e := range list {
+		sort.Slice(e.Services, func(i, j int) bool {
+			return e.Services[i].Id < e.Services[j].Id
+		})
+		result = append(result, e)
+	}
+	return
 }
 
 func createTestMetadata(config config.Config, interaction model.Interaction) func(t *testing.T) {

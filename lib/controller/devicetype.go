@@ -23,6 +23,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -144,15 +145,24 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 				return result, err
 			}
 			element.ServicePathOptions[criteria.ServiceId] = append(element.ServicePathOptions[criteria.ServiceId], model.ServicePathOption{
-				ServiceId:        criteria.ServiceId,
-				Path:             pathPrefix + criteria.ContentVariablePath,
-				CharacteristicId: criteria.CharacteristicId,
-				AspectNode:       aspectNode,
-				FunctionId:       criteria.FunctionId,
-				IsVoid:           criteria.IsVoid,
+				ServiceId:             criteria.ServiceId,
+				Path:                  pathPrefix + criteria.ContentVariablePath,
+				CharacteristicId:      criteria.CharacteristicId,
+				AspectNode:            aspectNode,
+				FunctionId:            criteria.FunctionId,
+				IsVoid:                criteria.IsVoid,
+				Value:                 criteria.Value,
+				IsControllingFunction: criteria.IsControllingFunction,
 			})
 		}
 		for sid, options := range element.ServicePathOptions {
+			configurablesCandidates, err := this.db.GetConfigurableCandidates(ctx, sid)
+			if err != nil {
+				return result, err
+			}
+			for i, option := range options {
+				options[i].Configurables = getConfigurables(configurablesCandidates, option)
+			}
 			for _, service := range dt.Services {
 				if service.Id == sid {
 					element.Services = append(element.Services, service)
@@ -191,6 +201,31 @@ func (this *Controller) getAspectNodeForDeviceTypeSelectables(aspectCache *map[s
 		(*aspectCache)[aspectId] = aspectNode
 	}
 	return aspectNode, nil
+}
+
+func getConfigurables(candidates []model.DeviceTypeCriteria, pathOption model.ServicePathOption) (result []model.Configurable) {
+	for _, candidate := range candidates {
+		if !pathOption.IsControllingFunction || !pathOptionIsAncestorOfConfigurableCandidate(pathOption, candidate) {
+			result = append(result, model.Configurable{
+				Path:             candidate.ContentVariablePath,
+				CharacteristicId: candidate.CharacteristicId,
+				AspectNode:       pathOption.AspectNode,
+				FunctionId:       candidate.FunctionId,
+				Value:            nil,
+			})
+		}
+	}
+	return result
+}
+
+func pathOptionIsAncestorOfConfigurableCandidate(option model.ServicePathOption, candidate model.DeviceTypeCriteria) bool {
+	if candidate.ContentVariablePath == option.Path {
+		return true
+	}
+	if strings.HasPrefix(candidate.ContentVariablePath, option.Path+".") {
+		return true
+	}
+	return false
 }
 
 /////////////////////////

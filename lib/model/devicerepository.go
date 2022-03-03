@@ -27,17 +27,19 @@ type AspectNode struct {
 }
 
 type DeviceTypeCriteria struct {
-	DeviceTypeId          string `json:"device_type_id"`
-	ServiceId             string `json:"service_id"`
-	ContentVariableId     string `json:"content_variable_id"`
-	ContentVariablePath   string `json:"content_variable_path"`
-	FunctionId            string `json:"function_id"`
-	Interaction           string `json:"interaction"`
-	IsControllingFunction bool   `json:"controlling_function"`
-	DeviceClassId         string `json:"device_class_id"`
-	AspectId              string `json:"aspect_id"`
-	CharacteristicId      string `json:"characteristic_id"`
-	IsVoid                bool   `json:"is_void"`
+	DeviceTypeId          string      `json:"device_type_id"`
+	ServiceId             string      `json:"service_id"`
+	ContentVariableId     string      `json:"content_variable_id"`
+	ContentVariablePath   string      `json:"content_variable_path"`
+	FunctionId            string      `json:"function_id"`
+	Interaction           string      `json:"interaction"`
+	IsControllingFunction bool        `json:"controlling_function"`
+	DeviceClassId         string      `json:"device_class_id"`
+	AspectId              string      `json:"aspect_id"`
+	CharacteristicId      string      `json:"characteristic_id"`
+	IsVoid                bool        `json:"is_void"`
+	Value                 interface{} `json:"value"`
+	IsLeaf                bool        `json:"is_leaf"`
 }
 
 type DeviceTypeSelectable struct {
@@ -47,10 +49,21 @@ type DeviceTypeSelectable struct {
 }
 
 type ServicePathOption struct {
-	ServiceId        string     `json:"service_id"`
-	Path             string     `json:"path"`
-	CharacteristicId string     `json:"characteristic_id"`
-	AspectNode       AspectNode `json:"aspect_node"`
-	FunctionId       string     `json:"function_id"`
-	IsVoid           bool       `json:"is_void"`
+	ServiceId             string         `json:"service_id"`
+	Path                  string         `json:"path"`
+	CharacteristicId      string         `json:"characteristic_id"`
+	AspectNode            AspectNode     `json:"aspect_node"`
+	FunctionId            string         `json:"function_id"`
+	IsVoid                bool           `json:"is_void"`
+	Value                 interface{}    `json:"value,omitempty"`
+	IsControllingFunction bool           `json:"is_controlling_function"`
+	Configurables         []Configurable `json:"configurables,omitempty"`
+}
+
+type Configurable struct {
+	Path             string      `json:"path"`
+	CharacteristicId string      `json:"characteristic_id"`
+	AspectNode       AspectNode  `json:"aspect_node"`
+	FunctionId       string      `json:"function_id"`
+	Value            interface{} `json:"value,omitempty"`
 }
