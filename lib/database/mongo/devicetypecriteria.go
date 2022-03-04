@@ -37,6 +37,7 @@ var deviceTypeCriteriaInteractionFieldName, deviceTypeCriteriaInteractionKey = "
 var deviceTypeCriteriaCharacteristicIdFieldName, deviceTypeCriteriaCharacteristicIdKey = "CharacteristicId", ""
 var deviceTypeCriteriaIsLeafFieldName, deviceTypeCriteriaIsLeafKey = "IsLeaf", ""
 var deviceTypeCriteriaIsVoidFieldName, deviceTypeCriteriaIsVoidKey = "IsVoid", ""
+var deviceTypeCriteriaIsInputFieldName, deviceTypeCriteriaIsInputKey = "IsInput", ""
 
 func getDeviceTypeCriteriaCollectionName(config config.Config) string {
 	return config.MongoDeviceTypeCollection + "_criteria"
@@ -86,6 +87,10 @@ func init() {
 			return err
 		}
 		deviceTypeCriteriaIsVoidKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsVoidFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaIsInputKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsInputFieldName)
 		if err != nil {
 			return err
 		}
@@ -185,7 +190,9 @@ func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId strin
 			CharacteristicId:      variable.CharacteristicId,
 			IsVoid:                variable.IsVoid,
 			Value:                 variable.Value,
+			Type:                  variable.Type,
 			IsLeaf:                isLeaf,
+			IsInput:               isInput,
 		})
 	}
 	for _, sub := range variable.SubContentVariables {
@@ -243,10 +250,10 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 
 func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId string) (result []model.DeviceTypeCriteria, err error) {
 	filter := bson.M{
-		deviceTypeCriteriaServiceIdKey:             serviceId,
-		deviceTypeCriteriaIsLeafKey:                true,
-		deviceTypeCriteriaIsControllingFunctionKey: true,
-		deviceTypeCriteriaIsVoidKey:                false,
+		deviceTypeCriteriaServiceIdKey: serviceId,
+		deviceTypeCriteriaIsLeafKey:    true,
+		deviceTypeCriteriaIsInputKey:   true,
+		deviceTypeCriteriaIsVoidKey:    false,
 	}
 	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
 	if err != nil {

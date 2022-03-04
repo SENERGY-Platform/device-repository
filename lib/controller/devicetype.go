@@ -152,6 +152,7 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 				FunctionId:            criteria.FunctionId,
 				IsVoid:                criteria.IsVoid,
 				Value:                 criteria.Value,
+				Type:                  criteria.Type,
 				IsControllingFunction: criteria.IsControllingFunction,
 			})
 		}
@@ -161,7 +162,10 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 				return result, err
 			}
 			for i, option := range options {
-				options[i].Configurables = getConfigurables(configurablesCandidates, option)
+				options[i].Configurables, err = this.getConfigurables(configurablesCandidates, option)
+				if err != nil {
+					return result, err
+				}
 			}
 			for _, service := range dt.Services {
 				if service.Id == sid {
@@ -203,19 +207,27 @@ func (this *Controller) getAspectNodeForDeviceTypeSelectables(aspectCache *map[s
 	return aspectNode, nil
 }
 
-func getConfigurables(candidates []model.DeviceTypeCriteria, pathOption model.ServicePathOption) (result []model.Configurable) {
+func (this *Controller) getConfigurables(candidates []model.DeviceTypeCriteria, pathOption model.ServicePathOption) (result []model.Configurable, err error) {
 	for _, candidate := range candidates {
+		aspectNode := model.AspectNode{}
+		if candidate.AspectId != "" {
+			aspectNode, err, _ = this.GetAspectNode(candidate.AspectId)
+			if err != nil {
+				return result, err
+			}
+		}
 		if !pathOption.IsControllingFunction || !pathOptionIsAncestorOfConfigurableCandidate(pathOption, candidate) {
 			result = append(result, model.Configurable{
 				Path:             candidate.ContentVariablePath,
 				CharacteristicId: candidate.CharacteristicId,
-				AspectNode:       pathOption.AspectNode,
+				AspectNode:       aspectNode,
 				FunctionId:       candidate.FunctionId,
-				Value:            nil,
+				Type:             candidate.Type,
+				Value:            candidate.Value,
 			})
 		}
 	}
-	return result
+	return result, nil
 }
 
 func pathOptionIsAncestorOfConfigurableCandidate(option model.ServicePathOption, candidate model.DeviceTypeCriteria) bool {

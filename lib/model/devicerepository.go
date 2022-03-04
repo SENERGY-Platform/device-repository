@@ -39,7 +39,9 @@ type DeviceTypeCriteria struct {
 	CharacteristicId      string      `json:"characteristic_id"`
 	IsVoid                bool        `json:"is_void"`
 	Value                 interface{} `json:"value"`
+	Type                  Type        `json:"type"`
 	IsLeaf                bool        `json:"is_leaf"`
+	IsInput               bool        `json:"is_input"`
 }
 
 type DeviceTypeSelectable struct {
@@ -58,6 +60,7 @@ type ServicePathOption struct {
 	Value                 interface{}    `json:"value,omitempty"`
 	IsControllingFunction bool           `json:"is_controlling_function"`
 	Configurables         []Configurable `json:"configurables,omitempty"`
+	Type                  Type           `json:"type,omitempty"`
 }
 
 type Configurable struct {
@@ -66,4 +69,5 @@ type Configurable struct {
 	AspectNode       AspectNode  `json:"aspect_node"`
 	FunctionId       string      `json:"function_id"`
 	Value            interface{} `json:"value,omitempty"`
+	Type             Type        `json:"type,omitempty"`
 }
