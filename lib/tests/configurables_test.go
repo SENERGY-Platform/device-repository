@@ -263,6 +263,393 @@ func TestConfigurables(t *testing.T) {
 			},
 		},
 	}))
+
+	t.Run("measuring fan speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "fan"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "pc_cooling_controller",
+			Services: []model.Service{
+				{
+					Id:          "getCaseFan1Speed",
+					Interaction: interaction,
+					Outputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "case_fan_1",
+							},
+						},
+					},
+				},
+				{
+					Id:          "getCaseFan2Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:               "sec",
+								Name:             "sec",
+								Type:             model.Integer,
+								CharacteristicId: "",
+								Value:            24.0,
+							},
+						},
+					},
+					Outputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "case_fan_2",
+							},
+						},
+					},
+				},
+				{
+					Id:          "getCpuSpeed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:               "sec",
+								Name:             "sec",
+								Type:             model.Integer,
+								CharacteristicId: "sec",
+								Value:            24.0,
+							},
+						},
+					},
+					Outputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "cpu_fan",
+							},
+						},
+					},
+				},
+				{
+					Id:          "getGpuSpeed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:               "sec",
+								Name:             "sec",
+								Type:             model.Integer,
+								CharacteristicId: "sec",
+								FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime",
+								Value:            24.0,
+							},
+						},
+					},
+					Outputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "gpu_fan",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"getCaseFan1Speed": {
+					{
+						ServiceId:        "getCaseFan1Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_1",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId:    model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						Configurables: []model.Configurable{},
+					},
+				},
+				"getCaseFan2Speed": {
+					{
+						ServiceId:        "getCaseFan2Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_2",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						Configurables: []model.Configurable{
+							{
+								Path:             "sec",
+								CharacteristicId: "",
+								AspectNode:       model.AspectNode{},
+								FunctionId:       "",
+								Value:            24.0,
+								Type:             model.Integer,
+							},
+						},
+					},
+				},
+				"getCpuSpeed": {
+					{
+						ServiceId:        "getCpuSpeed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "cpu_fan",
+							RootId:        "fan",
+							ParentId:      "fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						Configurables: []model.Configurable{
+							{
+								Path:             "sec",
+								CharacteristicId: "sec",
+								AspectNode:       model.AspectNode{},
+								FunctionId:       "",
+								Value:            24.0,
+								Type:             model.Integer,
+							},
+						},
+					},
+				},
+				"getGpuSpeed": {
+					{
+						ServiceId:        "getGpuSpeed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "gpu_fan",
+							RootId:        "fan",
+							ParentId:      "fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						Configurables: []model.Configurable{
+							{
+								Path:             "sec",
+								CharacteristicId: "sec",
+								AspectNode:       model.AspectNode{},
+								FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime",
+								Value:            24.0,
+								Type:             model.Integer,
+							},
+						},
+					},
+				},
+			},
+		},
+	}))
+
+	t.Run("set fan speed", testDeviceTypeSelectables(conf, []model.FilterCriteria{
+		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", AspectId: "fan"},
+	}, "", nil, []model.DeviceTypeSelectable{
+		{
+			DeviceTypeId: "pc_cooling_controller",
+			Services: []model.Service{
+				{
+					Id:          "setCaseFanSpeed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:   "speed",
+								Name: "speed",
+								SubContentVariables: []model.ContentVariable{
+									{
+										Id:         "1",
+										Name:       "1",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+										AspectId:   "case_fan_1",
+										Value:      13.0,
+									},
+									{
+										Id:         "2",
+										Name:       "2",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+										AspectId:   "case_fan_2",
+										Value:      14.0,
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Id:          "setCaseFan1Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "case_fan_1",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setCaseFan2Speed",
+					Interaction: interaction,
+					Inputs: []model.Content{
+						{
+							ContentVariable: model.ContentVariable{
+								Id:    "header",
+								Name:  "header",
+								Type:  model.String,
+								Value: "auth",
+							},
+						},
+						{
+							ContentVariable: model.ContentVariable{
+								Id:               "speed",
+								Name:             "speed",
+								CharacteristicId: "foo",
+								FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:         "case_fan_2",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"setCaseFanSpeed": {
+					{
+						ServiceId:        "setCaseFanSpeed",
+						Path:             "speed.1",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_1",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						Value:                 13.0,
+						IsControllingFunction: true,
+						Configurables: []model.Configurable{
+							{
+								Path:             "speed.2",
+								CharacteristicId: "",
+								AspectNode: model.AspectNode{
+									Id:            "case_fan_2",
+									RootId:        "fan",
+									ParentId:      "case_fan",
+									ChildIds:      []string{},
+									AncestorIds:   []string{"case_fan", "fan"},
+									DescendentIds: []string{},
+								},
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								Value:      14.0,
+							},
+						},
+					},
+					{
+						ServiceId:        "setCaseFanSpeed",
+						Path:             "speed.2",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_2",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						Value:                 14.0,
+						IsControllingFunction: true,
+						Configurables: []model.Configurable{
+							{
+								Path:             "speed.1",
+								CharacteristicId: "",
+								AspectNode: model.AspectNode{
+									Id:            "case_fan_1",
+									RootId:        "fan",
+									ParentId:      "case_fan",
+									ChildIds:      []string{},
+									AncestorIds:   []string{"case_fan", "fan"},
+									DescendentIds: []string{},
+								},
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								Value:      13.0,
+							},
+						},
+					},
+				},
+				"setCaseFan1Speed": {
+					{
+						ServiceId:        "setCaseFan1Speed",
+						Path:             "speed",
+						CharacteristicId: "",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_1",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
+						Configurables:         []model.Configurable{},
+						Type:                  "",
+					},
+				},
+				"setCaseFan2Speed": {
+					{
+						ServiceId:        "setCaseFan2Speed",
+						Path:             "speed",
+						CharacteristicId: "foo",
+						AspectNode: model.AspectNode{
+							Id:            "case_fan_2",
+							RootId:        "fan",
+							ParentId:      "case_fan",
+							ChildIds:      []string{},
+							AncestorIds:   []string{"case_fan", "fan"},
+							DescendentIds: []string{},
+						},
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+						IsControllingFunction: true,
+						Configurables: []model.Configurable{
+							{
+								Path:             "header",
+								CharacteristicId: "",
+								AspectNode:       model.AspectNode{},
+								FunctionId:       "",
+								Value:            "auth",
+								Type:             model.String,
+							},
+						},
+						Type: "",
+					},
+				},
+			},
+		},
+	}))
 }
 
 func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []model.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
@@ -274,7 +661,7 @@ func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCrit
 		}
 		expectedResult = sortServices(expectedResult)
 		result = sortServices(result)
-		if !reflect.DeepEqual(result, expectedResult) {
+		if !reflect.DeepEqual(normalize(result), normalize(expectedResult)) {
 			resultJson, _ := json.Marshal(result)
 			expectedJson, _ := json.Marshal(expectedResult)
 			t.Error("\n", string(resultJson), "\n", string(expectedJson))
@@ -500,15 +887,15 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 									Name: "speed",
 									SubContentVariables: []model.ContentVariable{
 										{
-											Id:         "speed",
-											Name:       "speed",
+											Id:         "1",
+											Name:       "1",
 											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
 											AspectId:   "case_fan_1",
 											Value:      13,
 										},
 										{
-											Id:         "speed",
-											Name:       "speed",
+											Id:         "2",
+											Name:       "2",
 											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
 											AspectId:   "case_fan_2",
 											Value:      14,
@@ -538,10 +925,19 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 						Inputs: []model.Content{
 							{
 								ContentVariable: model.ContentVariable{
-									Id:         "speed",
-									Name:       "speed",
-									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-									AspectId:   "case_fan_2",
+									Id:    "header",
+									Name:  "header",
+									Type:  model.String,
+									Value: "auth",
+								},
+							},
+							{
+								ContentVariable: model.ContentVariable{
+									Id:               "speed",
+									Name:             "speed",
+									FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:         "case_fan_2",
+									CharacteristicId: "foo",
 								},
 							},
 						},
