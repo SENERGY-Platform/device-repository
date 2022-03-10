@@ -114,6 +114,12 @@ func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, p
 
 func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error) {
 	result = []model.DeviceTypeSelectable{}
+
+	//EVENT|REQUEST should also find EVENT_AND_REQUEST
+	if (contains(interactionsFilter, string(model.EVENT)) || contains(interactionsFilter, string(model.REQUEST))) && !contains(interactionsFilter, string(model.EVENT_AND_REQUEST)) {
+		interactionsFilter = append(interactionsFilter, string(model.EVENT_AND_REQUEST))
+	}
+
 	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteria(ctx, query, interactionsFilter)
 	if err != nil {
 		return result, err
@@ -183,6 +189,15 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 		return result[i].DeviceTypeId < result[j].DeviceTypeId
 	})
 	return result, nil
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 func (this *Controller) getAspectNodeForDeviceTypeSelectables(aspectCache *map[string]model.AspectNode, aspectId string) (aspectNode model.AspectNode, err error) {

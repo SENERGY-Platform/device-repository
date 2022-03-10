@@ -155,6 +155,71 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
 }
 
+func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Run("init metadata", createTestMetadata(conf, model.EVENT_AND_REQUEST))
+
+	waterProbeCriteria := []model.FilterCriteria{{
+		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+		AspectId:   "water",
+	}}
+	waterprobeSelectable := model.DeviceTypeSelectable{
+		DeviceTypeId: "water-probe",
+		Services: []model.Service{
+			{
+				Id:          "getTemperature",
+				Interaction: model.EVENT_AND_REQUEST,
+				Outputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:               "temperature",
+							Name:             "temperature",
+							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+							AspectId:         "water",
+							CharacteristicId: "water-probe-test-characteristic",
+						},
+					},
+				},
+			},
+		},
+		ServicePathOptions: map[string][]model.ServicePathOption{
+			"getTemperature": {
+				{
+					ServiceId:        "getTemperature",
+					Path:             "prefix.temperature",
+					CharacteristicId: "water-probe-test-characteristic",
+					AspectNode: model.AspectNode{
+						Id:            "water",
+						Name:          "",
+						RootId:        "water",
+						ParentId:      "",
+						ChildIds:      []string{},
+						AncestorIds:   []string{},
+						DescendentIds: []string{},
+					},
+					FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+				},
+			},
+		},
+	}
+
+	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT, model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+}
+
 func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	//t.Skip("not implemented") //TODO
 	wg := &sync.WaitGroup{}
