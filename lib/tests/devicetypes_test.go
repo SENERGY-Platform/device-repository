@@ -17,6 +17,7 @@
 package tests
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
@@ -37,6 +38,122 @@ var devicetype1id = "urn:infai:ses:device-type:2cc43032-207e-494e-8de4-94784cd49
 var devicetype1name = uuid.NewV4().String()
 var devicetype2id = uuid.NewV4().String()
 var devicetype2name = uuid.NewV4().String()
+
+func TestDeviceTypeSubAspectValidation(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishAspect(model.Aspect{
+		Id:   "parent_2",
+		Name: "parent_2",
+		SubAspects: []model.Aspect{
+			{
+				Id:   "aid_2",
+				Name: "aid_2",
+				SubAspects: []model.Aspect{
+					{
+						Id:   "child_2",
+						Name: "child_2",
+					},
+				},
+			},
+		},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishProtocol(model.Protocol{
+		Id:      "p",
+		Name:    "p",
+		Handler: "p",
+		ProtocolSegments: []model.ProtocolSegment{
+			{
+				Id:   "ps",
+				Name: "ps",
+			},
+		},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(5 * time.Second)
+
+	body, err := json.Marshal(model.DeviceType{
+		Id:            "dt",
+		Name:          "test",
+		Description:   "",
+		ServiceGroups: nil,
+		Services: []model.Service{
+			{
+				Id:          "s",
+				LocalId:     "sid",
+				Name:        "s",
+				Description: "",
+				Interaction: model.REQUEST,
+				ProtocolId:  "p",
+				Inputs: []model.Content{
+					{
+						Id: "i",
+						ContentVariable: model.ContentVariable{
+							Id:                   "v",
+							Name:                 "val",
+							IsVoid:               false,
+							Type:                 model.String,
+							SubContentVariables:  nil,
+							CharacteristicId:     "",
+							Value:                nil,
+							SerializationOptions: nil,
+							UnitReference:        "",
+							FunctionId:           "",
+							AspectId:             "aid_2",
+						},
+						Serialization:     "json",
+						ProtocolSegmentId: "ps",
+					},
+				},
+				Outputs:         nil,
+				Attributes:      nil,
+				ServiceGroupKey: "",
+			},
+		},
+		DeviceClassId: "",
+		Attributes:    nil,
+	})
+
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?dry-run=true"
+	req, err := http.NewRequest("PUT", endpoint, bytes.NewReader(body))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := ioutil.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+}
 
 func TestServiceQuery(t *testing.T) {
 	wg := &sync.WaitGroup{}

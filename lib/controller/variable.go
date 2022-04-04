@@ -78,7 +78,7 @@ func (this *Controller) ValidateVariable(variable model.ContentVariable, seriali
 
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	if variable.AspectId != "" && this != nil {
-		_, exists, err := this.db.GetAspect(ctx, variable.AspectId)
+		_, exists, err := this.db.GetAspectNode(ctx, variable.AspectId)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
