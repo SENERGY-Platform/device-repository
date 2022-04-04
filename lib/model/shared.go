@@ -86,6 +86,7 @@ type DeviceGroup struct {
 	Criteria      []DeviceGroupFilterCriteria `json:"criteria"`
 	DeviceIds     []string                    `json:"device_ids"`
 	CriteriaShort []string                    `json:"criteria_short,omitempty"`
+	Attributes    []Attribute                 `json:"attributes"`
 }
 
 func (this *DeviceGroup) SetShortCriteria() {

@@ -465,6 +465,59 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 	})
 }
 
+func TestDeviceGroupsAttributes(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dg1 := model.DeviceGroup{
+		Id:   devicegroup1id,
+		Name: devicegroup1name,
+		Criteria: []model.DeviceGroupFilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "dcid",
+			Interaction:   model.REQUEST,
+		}},
+		Attributes: []model.Attribute{
+			{
+				Key:    "a1",
+				Value:  "v1",
+				Origin: "test",
+			},
+			{
+				Key:   "a2",
+				Value: "v2",
+			},
+		},
+	}
+
+	err = producer.PublishDeviceGroup(dg1, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(10 * time.Second)
+
+	t.Run("not existing", func(t *testing.T) {
+		testDeviceGroupReadNotFound(t, conf, "foobar")
+	})
+	t.Run("testDeviceRead", func(t *testing.T) {
+		testDeviceGroupRead(t, conf, dg1)
+	})
+}
+
 func testDeviceGroupReadNotFound(t *testing.T, conf config.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(id)
 	req, err := http.NewRequest("GET", endpoint, nil)
