@@ -23,9 +23,9 @@ import (
 	"net/http"
 )
 
-func (this *Controller) setAspectNodes(aspect model.Aspect) error {
+func (this *Controller) setAspectNodes(aspect model.Aspect) (err error) {
 	ctx, _ := getTimeoutContext()
-	err := this.db.RemoveAspectNodesByRootId(ctx, aspect.Id)
+	err = this.db.RemoveAspectNodesByRootId(ctx, aspect.Id)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func CreateAspectNodes(db database.Database, aspect model.Aspect, rootId string,
 		descendents = append(descendents, temp...)
 	}
 	ctx, _ := getTimeoutContext()
-	err = db.AddAspectNode(ctx, model.AspectNode{
+	err = db.SetAspectNode(ctx, model.AspectNode{
 		Id:            aspect.Id,
 		Name:          aspect.Name,
 		RootId:        rootId,

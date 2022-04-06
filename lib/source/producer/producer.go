@@ -30,6 +30,7 @@ type Producer struct {
 	config  config.Config
 	devices *kafka.Writer
 	hubs    *kafka.Writer
+	aspects *kafka.Writer
 }
 
 func New(conf config.Config) (*Producer, error) {
@@ -44,11 +45,15 @@ func New(conf config.Config) (*Producer, error) {
 	if err != nil {
 		return nil, err
 	}
+	aspects, err := GetKafkaWriter(broker, conf.AspectTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
 	hubs, err := GetKafkaWriter(broker, conf.HubTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	return &Producer{config: conf, devices: devices, hubs: hubs}, nil
+	return &Producer{config: conf, devices: devices, hubs: hubs, aspects: aspects}, nil
 }
 
 func GetKafkaWriter(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {

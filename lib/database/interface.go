@@ -60,7 +60,7 @@ type Database interface {
 	ListAllAspects(ctx context.Context) ([]model.Aspect, error)
 	ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]model.Aspect, error) //returns all aspects used in combination with measuring functions
 
-	AddAspectNode(ctx context.Context, node model.AspectNode) error
+	SetAspectNode(ctx context.Context, node model.AspectNode) error
 	RemoveAspectNodesByRootId(ctx context.Context, id string) error
 	GetAspectNode(ctx context.Context, id string) (result model.AspectNode, exists bool, err error)
 	ListAllAspectNodes(ctx context.Context) ([]model.AspectNode, error)

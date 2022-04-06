@@ -94,6 +94,16 @@ func (s SecurityMock) CheckMultiple(token string, kind string, ids []string, act
 
 type VoidProducerMock struct{}
 
+func (v VoidProducerMock) PublishAspectDelete(id string, owner string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (v VoidProducerMock) PublishAspectUpdate(aspect model.Aspect, owner string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (v VoidProducerMock) PublishDeviceDelete(id string, owner string) error {
 	//TODO implement me
 	panic("implement me")

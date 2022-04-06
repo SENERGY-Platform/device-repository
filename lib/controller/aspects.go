@@ -29,7 +29,76 @@ func (this *Controller) SetAspect(aspect model.Aspect, owner string) error {
 	if err != nil {
 		return err
 	}
+	descendentNodeIds := getDescendentNodeIds(aspect)
+	err = this.handleMovedSubAspects(aspect, descendentNodeIds, owner)
+	if err != nil {
+		return err
+	}
 	return this.setAspectNodes(aspect)
+}
+
+func getDescendentNodeIds(aspect model.Aspect) (result []string) {
+	result = []string{aspect.Id}
+	for _, sub := range aspect.SubAspects {
+		result = append(result, getDescendentNodeIds(sub)...)
+	}
+	return result
+}
+
+func (this *Controller) handleMovedSubAspects(aspect model.Aspect, descendentNodesIds []string, owner string) error {
+	ctx, _ := getTimeoutContext()
+	nodes, err := this.db.ListAspectNodesByIdList(ctx, descendentNodesIds)
+	if err != nil {
+		return err
+	}
+	movedFrom := map[string][]string{}
+	deletedAspect := map[string]bool{}
+	for _, node := range nodes {
+		//is moved aspect
+		if node.RootId != aspect.Id {
+			movedFrom[node.RootId] = append(movedFrom[node.RootId], node.Id)
+		}
+		//sub aspect is moved root aspect
+		if node.Id == node.RootId && node.Id != aspect.Id {
+			deletedAspect[node.Id] = true
+			err = this.producer.PublishAspectDelete(node.Id, owner)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+	for rootId, movedIds := range movedFrom {
+		if !deletedAspect[rootId] {
+			sourceAspect, exists, err := this.db.GetAspect(ctx, rootId)
+			if err != nil {
+				return err
+			}
+			if exists {
+				changedAspect := filterSubAspects(sourceAspect, movedIds)
+				err = this.producer.PublishAspectUpdate(changedAspect, owner)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func filterSubAspects(aspect model.Aspect, ids []string) model.Aspect {
+	filterSubAspect := map[string]bool{}
+	for _, id := range ids {
+		filterSubAspect[id] = true
+	}
+	subAspects := []model.Aspect{}
+	for _, sub := range aspect.SubAspects {
+		if !filterSubAspect[sub.Id] {
+			subAspects = append(subAspects, filterSubAspects(sub, ids))
+		}
+	}
+	aspect.SubAspects = subAspects
+	return aspect
 }
 
 func (this *Controller) DeleteAspect(id string) error {

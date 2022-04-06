@@ -31,6 +31,429 @@ import (
 	"time"
 )
 
+func TestSubAspectMovePartial(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishAspect(model.Aspect{
+		Id:   "a1",
+		Name: "a1",
+		SubAspects: []model.Aspect{
+			{
+				Id:   "a1.1",
+				Name: "a1.1",
+				SubAspects: []model.Aspect{
+					{
+						Id:   "a1.1.1",
+						Name: "a1.1.1",
+					},
+				},
+			},
+		},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishAspect(model.Aspect{
+		Id:   "a2",
+		Name: "a2",
+		SubAspects: []model.Aspect{
+			{
+				Id:   "a2.1",
+				Name: "a2.1",
+				SubAspects: []model.Aspect{
+					{
+						Id:   "a2.1.1",
+						Name: "a2.1.1",
+					},
+				},
+			},
+		},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(2 * time.Second)
+
+	t.Run("aspect-nodes before move", testGetRequest(userjwt, conf, "/aspect-nodes", []model.AspectNode{
+		{
+			Id:            "a1",
+			Name:          "a1",
+			RootId:        "a1",
+			AncestorIds:   []string{},
+			ChildIds:      []string{"a1.1"},
+			DescendentIds: []string{"a1.1", "a1.1.1"},
+		},
+		{
+			Id:            "a1.1",
+			Name:          "a1.1",
+			RootId:        "a1",
+			ParentId:      "a1",
+			AncestorIds:   []string{"a1"},
+			ChildIds:      []string{"a1.1.1"},
+			DescendentIds: []string{"a1.1.1"},
+		},
+		{
+			Id:            "a1.1.1",
+			Name:          "a1.1.1",
+			RootId:        "a1",
+			ParentId:      "a1.1",
+			AncestorIds:   []string{"a1", "a1.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+
+		{
+			Id:            "a2",
+			Name:          "a2",
+			RootId:        "a2",
+			AncestorIds:   []string{},
+			ChildIds:      []string{"a2.1"},
+			DescendentIds: []string{"a2.1", "a2.1.1"},
+		},
+		{
+			Id:            "a2.1",
+			Name:          "a2.1",
+			RootId:        "a2",
+			ParentId:      "a2",
+			AncestorIds:   []string{"a2"},
+			ChildIds:      []string{"a2.1.1"},
+			DescendentIds: []string{"a2.1.1"},
+		},
+		{
+			Id:            "a2.1.1",
+			Name:          "a2.1.1",
+			RootId:        "a2",
+			ParentId:      "a2.1",
+			AncestorIds:   []string{"a2", "a2.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+	}))
+
+	t.Run("aspect-nodes move", func(t *testing.T) {
+		err = producer.PublishAspect(model.Aspect{
+			Id:   "a1",
+			Name: "a1",
+			SubAspects: []model.Aspect{
+				{
+					Id:   "a1.1",
+					Name: "a1.1",
+					SubAspects: []model.Aspect{
+						{
+							Id:   "a1.1.1",
+							Name: "a1.1.1",
+						},
+					},
+				},
+				{
+					Id:   "a2.1",
+					Name: "a2.1",
+					SubAspects: []model.Aspect{
+						{
+							Id:   "a2.1.1",
+							Name: "a2.1.1",
+						},
+					},
+				},
+			},
+		}, userid)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
+
+	time.Sleep(2 * time.Second)
+
+	t.Run("aspect-nodes after move", testGetRequest(userjwt, conf, "/aspect-nodes", []model.AspectNode{
+		{
+			Id:            "a1",
+			Name:          "a1",
+			RootId:        "a1",
+			AncestorIds:   []string{},
+			ChildIds:      []string{"a1.1", "a2.1"},
+			DescendentIds: []string{"a1.1", "a1.1.1", "a2.1", "a2.1.1"},
+		},
+		{
+			Id:            "a1.1",
+			Name:          "a1.1",
+			RootId:        "a1",
+			ParentId:      "a1",
+			AncestorIds:   []string{"a1"},
+			ChildIds:      []string{"a1.1.1"},
+			DescendentIds: []string{"a1.1.1"},
+		},
+		{
+			Id:            "a1.1.1",
+			Name:          "a1.1.1",
+			RootId:        "a1",
+			ParentId:      "a1.1",
+			AncestorIds:   []string{"a1", "a1.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+
+		{
+			Id:            "a2",
+			Name:          "a2",
+			RootId:        "a2",
+			AncestorIds:   []string{},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+		{
+			Id:            "a2.1",
+			Name:          "a2.1",
+			RootId:        "a1",
+			ParentId:      "a1",
+			AncestorIds:   []string{"a1"},
+			ChildIds:      []string{"a2.1.1"},
+			DescendentIds: []string{"a2.1.1"},
+		},
+		{
+			Id:            "a2.1.1",
+			Name:          "a2.1.1",
+			RootId:        "a1",
+			ParentId:      "a2.1",
+			AncestorIds:   []string{"a1", "a2.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+	}))
+}
+
+func TestSubAspectMoveRoot(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishAspect(model.Aspect{
+		Id:   "a1",
+		Name: "a1",
+		SubAspects: []model.Aspect{
+			{
+				Id:   "a1.1",
+				Name: "a1.1",
+				SubAspects: []model.Aspect{
+					{
+						Id:   "a1.1.1",
+						Name: "a1.1.1",
+					},
+				},
+			},
+		},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishAspect(model.Aspect{
+		Id:   "a2",
+		Name: "a2",
+		SubAspects: []model.Aspect{
+			{
+				Id:   "a2.1",
+				Name: "a2.1",
+				SubAspects: []model.Aspect{
+					{
+						Id:   "a2.1.1",
+						Name: "a2.1.1",
+					},
+				},
+			},
+		},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(2 * time.Second)
+
+	t.Run("aspect-nodes before move", testGetRequest(userjwt, conf, "/aspect-nodes", []model.AspectNode{
+		{
+			Id:            "a1",
+			Name:          "a1",
+			RootId:        "a1",
+			AncestorIds:   []string{},
+			ChildIds:      []string{"a1.1"},
+			DescendentIds: []string{"a1.1", "a1.1.1"},
+		},
+		{
+			Id:            "a1.1",
+			Name:          "a1.1",
+			RootId:        "a1",
+			ParentId:      "a1",
+			AncestorIds:   []string{"a1"},
+			ChildIds:      []string{"a1.1.1"},
+			DescendentIds: []string{"a1.1.1"},
+		},
+		{
+			Id:            "a1.1.1",
+			Name:          "a1.1.1",
+			RootId:        "a1",
+			ParentId:      "a1.1",
+			AncestorIds:   []string{"a1", "a1.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+
+		{
+			Id:            "a2",
+			Name:          "a2",
+			RootId:        "a2",
+			AncestorIds:   []string{},
+			ChildIds:      []string{"a2.1"},
+			DescendentIds: []string{"a2.1", "a2.1.1"},
+		},
+		{
+			Id:            "a2.1",
+			Name:          "a2.1",
+			RootId:        "a2",
+			ParentId:      "a2",
+			AncestorIds:   []string{"a2"},
+			ChildIds:      []string{"a2.1.1"},
+			DescendentIds: []string{"a2.1.1"},
+		},
+		{
+			Id:            "a2.1.1",
+			Name:          "a2.1.1",
+			RootId:        "a2",
+			ParentId:      "a2.1",
+			AncestorIds:   []string{"a2", "a2.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+	}))
+
+	t.Run("aspect-nodes move", func(t *testing.T) {
+		err = producer.PublishAspect(model.Aspect{
+			Id:   "a1",
+			Name: "a1",
+			SubAspects: []model.Aspect{
+				{
+					Id:   "a1.1",
+					Name: "a1.1",
+					SubAspects: []model.Aspect{
+						{
+							Id:   "a1.1.1",
+							Name: "a1.1.1",
+						},
+					},
+				},
+				{
+					Id:   "a2",
+					Name: "a2",
+					SubAspects: []model.Aspect{
+						{
+							Id:   "a2.1",
+							Name: "a2.1",
+							SubAspects: []model.Aspect{
+								{
+									Id:   "a2.1.1",
+									Name: "a2.1.1",
+								},
+							},
+						},
+					},
+				},
+			},
+		}, userid)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
+
+	time.Sleep(2 * time.Second)
+
+	t.Run("aspect-nodes after move", testGetRequest(userjwt, conf, "/aspect-nodes", []model.AspectNode{
+		{
+			Id:            "a1",
+			Name:          "a1",
+			RootId:        "a1",
+			AncestorIds:   []string{},
+			ChildIds:      []string{"a1.1", "a2"},
+			DescendentIds: []string{"a1.1", "a1.1.1", "a2", "a2.1", "a2.1.1"},
+		},
+		{
+			Id:            "a1.1",
+			Name:          "a1.1",
+			RootId:        "a1",
+			ParentId:      "a1",
+			AncestorIds:   []string{"a1"},
+			ChildIds:      []string{"a1.1.1"},
+			DescendentIds: []string{"a1.1.1"},
+		},
+		{
+			Id:            "a1.1.1",
+			Name:          "a1.1.1",
+			RootId:        "a1",
+			ParentId:      "a1.1",
+			AncestorIds:   []string{"a1", "a1.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+
+		{
+			Id:            "a2",
+			Name:          "a2",
+			RootId:        "a1",
+			ParentId:      "a1",
+			AncestorIds:   []string{"a1"},
+			ChildIds:      []string{"a2.1"},
+			DescendentIds: []string{"a2.1", "a2.1.1"},
+		},
+		{
+			Id:            "a2.1",
+			Name:          "a2.1",
+			RootId:        "a1",
+			ParentId:      "a2",
+			AncestorIds:   []string{"a1", "a2"},
+			ChildIds:      []string{"a2.1.1"},
+			DescendentIds: []string{"a2.1.1"},
+		},
+		{
+			Id:            "a2.1.1",
+			Name:          "a2.1.1",
+			RootId:        "a1",
+			ParentId:      "a2.1",
+			AncestorIds:   []string{"a1", "a2", "a2.1"},
+			ChildIds:      []string{},
+			DescendentIds: []string{},
+		},
+	}))
+}
+
 func TestAspectFunctions(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()

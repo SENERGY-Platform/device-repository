@@ -277,7 +277,7 @@ func (this *Publisher) PublishAspect(aspect model.Aspect, userid string) error {
 
 func (this *Publisher) PublishAspectCommand(cmd AspectCommand) error {
 	if this.config.Debug {
-		log.Println("DEBUG: produce hub", cmd)
+		log.Println("DEBUG: produce aspect", cmd)
 	}
 	message, err := json.Marshal(cmd)
 	if err != nil {

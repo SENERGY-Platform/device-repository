@@ -30,9 +30,23 @@ type Security interface {
 type Producer interface {
 	PublishDeviceDelete(id string, owner string) error
 	PublishHub(hub model.Hub) (err error)
+	PublishAspectDelete(id string, owner string) error
+	PublishAspectUpdate(aspect model.Aspect, owner string) error
 }
 
 type ErrorProducer struct{}
+
+func (this ErrorProducer) PublishAspectDelete(id string, owner string) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
+
+func (this ErrorProducer) PublishAspectUpdate(aspect model.Aspect, owner string) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
 
 func (this ErrorProducer) PublishDeviceDelete(id string, owner string) (err error) {
 	err = errors.New("no producer usage expected")

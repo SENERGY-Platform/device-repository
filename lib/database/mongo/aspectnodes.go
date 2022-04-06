@@ -97,8 +97,9 @@ func (this *Mongo) GetAspectNode(ctx context.Context, id string) (aspectNode mod
 	return aspectNode, true, err
 }
 
-func (this *Mongo) AddAspectNode(ctx context.Context, aspectNode model.AspectNode) error {
-	_, err := this.aspectNodeCollection().InsertOne(ctx, aspectNode)
+func (this *Mongo) SetAspectNode(ctx context.Context, aspectNode model.AspectNode) error {
+	//_, err := this.aspectNodeCollection().InsertOne(ctx, aspectNode)
+	_, err := this.aspectNodeCollection().ReplaceOne(ctx, bson.M{aspectNodeIdKey: aspectNode.Id}, aspectNode, options.Replace().SetUpsert(true))
 	return err
 }
 
