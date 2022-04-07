@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
 	"regexp"
@@ -89,12 +90,22 @@ func (this *Controller) ValidateVariable(variable model.ContentVariable, seriali
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
 	if variable.FunctionId != "" && this != nil {
-		_, exists, err := this.db.GetFunction(ctx, variable.FunctionId)
+		function, exists, err := this.db.GetFunction(ctx, variable.FunctionId)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 		if !exists {
 			return errors.New("unknown function id:" + variable.FunctionId), http.StatusBadRequest
+		}
+		if variable.CharacteristicId != "" && function.ConceptId != "" {
+			concept, exists, err := this.db.GetConceptWithoutCharacteristics(ctx, function.ConceptId)
+			if err != nil {
+				return err, http.StatusInternalServerError
+			}
+			if exists && !contains(concept.CharacteristicIds, variable.CharacteristicId) {
+				return errors.New(fmt.Sprintf("variable characteristicId does not match variable function: %v, %v, %v, %v, %v",
+					variable.Id, variable.Name, function.Id, function.ConceptId, variable.CharacteristicId)), http.StatusInternalServerError
+			}
 		}
 	}
 
