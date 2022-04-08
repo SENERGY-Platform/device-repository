@@ -113,6 +113,8 @@ func retry(f func() error, waitProvider func(n int64) time.Duration, timeout tim
 			if time.Since(start)+wait < timeout {
 				log.Println("ERROR: retry after:", wait.String())
 				time.Sleep(wait)
+			} else {
+				return err
 			}
 		}
 	}
