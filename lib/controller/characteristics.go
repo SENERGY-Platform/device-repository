@@ -91,7 +91,12 @@ func (this *Controller) ValidateCharacteristics(characteristic model.Characteris
 }
 
 func (this *Controller) validateSubCharacteristics(characteristics []model.Characteristic) (error, int) {
+	knownName := map[string]bool{}
 	for _, characteristic := range characteristics {
+		if knownName[characteristic.Name] {
+			return errors.New("duplicate sub characteristic name: " + characteristic.Name), http.StatusBadRequest
+		}
+		knownName[characteristic.Name] = true
 		err, code := this.ValidateCharacteristics(characteristic)
 		if err != nil {
 			return err, code

@@ -471,6 +471,42 @@ func TestVariableValidation(t *testing.T) {
 		CharacteristicId: "",
 		FunctionId:       "",
 	}))
+
+	t.Run("struct duplicate sub variable name", testValidateVariable(ctrl, true, model.ContentVariable{
+		Id:   "root",
+		Name: "root",
+		Type: model.Structure,
+		SubContentVariables: []model.ContentVariable{
+			{
+				Id:   "v",
+				Name: "v",
+				Type: model.String,
+			},
+			{
+				Id:   "v2",
+				Name: "v",
+				Type: model.Integer,
+			},
+		},
+	}))
+
+	t.Run("list duplicate sub variable name", testValidateVariable(ctrl, true, model.ContentVariable{
+		Id:   "root",
+		Name: "root",
+		Type: model.List,
+		SubContentVariables: []model.ContentVariable{
+			{
+				Id:   "v",
+				Name: "0",
+				Type: model.String,
+			},
+			{
+				Id:   "v2",
+				Name: "0",
+				Type: model.String,
+			},
+		},
+	}))
 }
 
 func testValidateVariable(ctrl *controller.Controller, expectError bool, variable model.ContentVariable) func(t *testing.T) {
