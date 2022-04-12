@@ -39,9 +39,24 @@ func (this *Controller) ValidateConcept(concept model.Concept) (err error, code 
 	if concept.Name == "" {
 		return errors.New("missing concept name"), http.StatusBadRequest
 	}
+	if len(concept.CharacteristicIds) > 0 && concept.BaseCharacteristicId == "" {
+		return errors.New("missing concept base characteristic"), http.StatusBadRequest
+	}
+	if concept.BaseCharacteristicId != "" && !contains(concept.CharacteristicIds, concept.BaseCharacteristicId) {
+		return errors.New("concept base characteristic not in characteristic ids list"), http.StatusBadRequest
+	}
+
 	for _, charId := range concept.CharacteristicIds {
 		if charId == "" {
 			return errors.New("missing char id"), http.StatusBadRequest
+		}
+		ctx, _ := getTimeoutContext()
+		_, exists, err := this.db.GetCharacteristic(ctx, charId)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		if !exists {
+			return errors.New("unknown characteristic: " + charId), http.StatusBadRequest
 		}
 	}
 	return nil, http.StatusOK
