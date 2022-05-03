@@ -64,12 +64,23 @@ func (this *Controller) ReadDeviceByLocalId(localId string, token string, action
 	return device, nil, http.StatusOK
 }
 
+const DisplayNameAttributeName = "shared/nickname"
+
 func (this *Controller) ValidateDevice(device model.Device) (err error, code int) {
 	if device.Id == "" {
 		return errors.New("missing device id"), http.StatusBadRequest
 	}
 	if device.Name == "" {
-		return errors.New("missing device name"), http.StatusBadRequest
+		hasDisplayNameAttribute := false
+		for _, attr := range device.Attributes {
+			if attr.Key == DisplayNameAttributeName {
+				hasDisplayNameAttribute = true
+				break
+			}
+		}
+		if !hasDisplayNameAttribute {
+			return errors.New("missing device name"), http.StatusBadRequest
+		}
 	}
 	if device.LocalId == "" {
 		return errors.New("missing device local id"), http.StatusBadRequest
