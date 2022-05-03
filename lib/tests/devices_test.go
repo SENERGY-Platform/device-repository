@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	uuid "github.com/satori/go.uuid"
@@ -41,6 +42,25 @@ var device2name = uuid.NewV4().String()
 var device3id = "urn:infai:ses:device:3"
 var device3lid = "lid3"
 var device3name = uuid.NewV4().String()
+
+func TestDeviceNameValidation(t *testing.T) {
+	err := controller.ValidateDeviceName(model.Device{Name: "foo"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = controller.ValidateDeviceName(model.Device{Name: "", Attributes: []model.Attribute{{Key: "shared/nickname", Origin: "shared", Value: "bar"}}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = controller.ValidateDeviceName(model.Device{})
+	if err == nil {
+		t.Error("missing error")
+		return
+	}
+}
 
 func TestDeviceQuery(t *testing.T) {
 	wg := &sync.WaitGroup{}
