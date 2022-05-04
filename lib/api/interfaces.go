@@ -49,6 +49,7 @@ type Controller interface {
 	GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]model.Aspect, error, int) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 	GetAspect(id string) (model.Aspect, error, int)
 	ValidateAspect(aspect model.Aspect) (err error, code int)
+	ValidateAspectDelete(id string) (err error, code int)
 
 	GetAspectNode(id string) (model.AspectNode, error, int)
 	GetAspectNodes() ([]model.AspectNode, error, int)
@@ -59,10 +60,12 @@ type Controller interface {
 	GetLeafCharacteristics() (result []model.Characteristic, err error, errCode int)
 	GetCharacteristic(id string) (result model.Characteristic, err error, errCode int)
 	ValidateCharacteristics(characteristic model.Characteristic) (err error, code int)
+	ValidateCharacteristicDelete(id string) (err error, code int)
 
 	GetConceptWithCharacteristics(id string) (model.ConceptWithCharacteristics, error, int)
 	GetConceptWithoutCharacteristics(id string) (model.Concept, error, int)
 	ValidateConcept(concept model.Concept) (err error, code int)
+	ValidateConceptDelete(id string) (err error, code int)
 
 	GetDeviceClasses() ([]model.DeviceClass, error, int)
 	GetDeviceClassesWithControllingFunctions() ([]model.DeviceClass, error, int)                      //returns all device-classes used in combination with controlling functions
@@ -70,10 +73,12 @@ type Controller interface {
 	GetDeviceClassesControllingFunctions(id string) (result []model.Function, err error, errCode int) //returns all controlling functions used in combination with given device-class
 	GetDeviceClass(id string) (result model.DeviceClass, err error, errCode int)
 	ValidateDeviceClass(deviceclass model.DeviceClass) (err error, code int)
+	ValidateDeviceClassDelete(id string) (err error, code int)
 
 	GetFunctionsByType(rdfType string) (result []model.Function, err error, errCode int)
 	GetFunction(id string) (result model.Function, err error, errCode int)
 	ValidateFunction(function model.Function) (err error, code int)
+	ValidateFunctionDelete(id string) (err error, code int)
 
 	GetLocation(id string, token string) (location model.Location, err error, errCode int)
 	ValidateLocation(location model.Location) (err error, code int)

@@ -124,6 +124,25 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 		writer.WriteHeader(http.StatusOK)
 	})
 
+	router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if !dryRun {
+			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
+			return
+		}
+		id := params.ByName("id")
+		err, code := control.ValidateAspectDelete(id)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		writer.WriteHeader(http.StatusOK)
+	})
+
 	router.GET(resource+"/:id/measuring-functions", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
 		ancestors := false

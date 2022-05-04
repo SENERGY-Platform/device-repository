@@ -31,14 +31,17 @@ import (
 )
 
 type Publisher struct {
-	config       config.Config
-	devicetypes  *kafka.Writer
-	protocols    *kafka.Writer
-	devices      *kafka.Writer
-	devicegroups *kafka.Writer
-	hubs         *kafka.Writer
-	aspects      *kafka.Writer
-	functions    *kafka.Writer
+	config          config.Config
+	devicetypes     *kafka.Writer
+	protocols       *kafka.Writer
+	devices         *kafka.Writer
+	devicegroups    *kafka.Writer
+	hubs            *kafka.Writer
+	aspects         *kafka.Writer
+	functions       *kafka.Writer
+	deviceclass     *kafka.Writer
+	characteristics *kafka.Writer
+	concepts        *kafka.Writer
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
@@ -49,35 +52,48 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if len(broker) == 0 {
 		return nil, errors.New("missing kafka broker")
 	}
-	devicetypes, err := producer.GetKafkaWriter(broker, conf.DeviceTypeTopic, conf.Debug)
+	publisher := &Publisher{config: conf}
+	publisher.devicetypes, err = producer.GetKafkaWriter(broker, conf.DeviceTypeTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	devices, err := producer.GetKafkaWriter(broker, conf.DeviceTopic, conf.Debug)
+	publisher.devices, err = producer.GetKafkaWriter(broker, conf.DeviceTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	devicegroups, err := producer.GetKafkaWriter(broker, conf.DeviceGroupTopic, conf.Debug)
+	publisher.devicegroups, err = producer.GetKafkaWriter(broker, conf.DeviceGroupTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	protocols, err := producer.GetKafkaWriter(broker, conf.ProtocolTopic, conf.Debug)
+	publisher.protocols, err = producer.GetKafkaWriter(broker, conf.ProtocolTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	hubs, err := producer.GetKafkaWriter(broker, conf.HubTopic, conf.Debug)
+	publisher.hubs, err = producer.GetKafkaWriter(broker, conf.HubTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	aspects, err := producer.GetKafkaWriter(broker, conf.AspectTopic, conf.Debug)
+	publisher.aspects, err = producer.GetKafkaWriter(broker, conf.AspectTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	functions, err := producer.GetKafkaWriter(broker, conf.FunctionTopic, conf.Debug)
+	publisher.functions, err = producer.GetKafkaWriter(broker, conf.FunctionTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	return &Publisher{config: conf, devicetypes: devicetypes, protocols: protocols, devices: devices, hubs: hubs, devicegroups: devicegroups, aspects: aspects, functions: functions}, nil
+	publisher.deviceclass, err = producer.GetKafkaWriter(broker, conf.DeviceClassTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
+	publisher.characteristics, err = producer.GetKafkaWriter(broker, conf.CharacteristicTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
+	publisher.concepts, err = producer.GetKafkaWriter(broker, conf.ConceptTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
+	return publisher, nil
 }
 
 type DeviceTypeCommand struct {
@@ -338,4 +354,109 @@ type FunctionCommand struct {
 	Id       string         `json:"id"`
 	Owner    string         `json:"owner"`
 	Function model.Function `json:"function"`
+}
+
+func (this *Publisher) PublishDeviceClass(deviceClass model.DeviceClass, userid string) error {
+	cmd := DeviceClassCommand{Command: "PUT", Id: deviceClass.Id, DeviceClass: deviceClass, Owner: userid}
+	return this.PublishDeviceClassCommand(cmd)
+}
+
+func (this *Publisher) PublishDeviceClassCommand(cmd DeviceClassCommand) error {
+	if this.config.Debug {
+		log.Println("DEBUG: produce hub", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.deviceclass.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+type DeviceClassCommand struct {
+	Command     string            `json:"command"`
+	Id          string            `json:"id"`
+	Owner       string            `json:"owner"`
+	DeviceClass model.DeviceClass `json:"device_class"`
+}
+
+func (this *Publisher) PublishCharacteristic(characteristic model.Characteristic, userid string) error {
+	cmd := CharacteristicCommand{Command: "PUT", Id: characteristic.Id, Characteristic: characteristic, Owner: userid}
+	return this.PublishCharacteristicCommand(cmd)
+}
+
+func (this *Publisher) PublishCharacteristicCommand(cmd CharacteristicCommand) error {
+	if this.config.Debug {
+		log.Println("DEBUG: produce hub", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.characteristics.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+type CharacteristicCommand struct {
+	Command        string               `json:"command"`
+	Id             string               `json:"id"`
+	Owner          string               `json:"owner"`
+	Characteristic model.Characteristic `json:"characteristic"`
+}
+
+func (this *Publisher) PublishConcept(concept model.Concept, userid string) error {
+	cmd := ConceptCommand{Command: "PUT", Id: concept.Id, Concept: concept, Owner: userid}
+	return this.PublishConceptCommand(cmd)
+}
+
+func (this *Publisher) PublishConceptCommand(cmd ConceptCommand) error {
+	if this.config.Debug {
+		log.Println("DEBUG: produce hub", cmd)
+	}
+	message, err := json.Marshal(cmd)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.concepts.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(cmd.Id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+type ConceptCommand struct {
+	Command string        `json:"command"`
+	Id      string        `json:"id"`
+	Owner   string        `json:"owner"`
+	Concept model.Concept `json:"concept"`
 }

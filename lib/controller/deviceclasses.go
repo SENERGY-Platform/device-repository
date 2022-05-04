@@ -77,3 +77,15 @@ func (this *Controller) GetDeviceClassesWithControllingFunctions() (result []mod
 	}
 	return
 }
+
+func (this *Controller) ValidateDeviceClassDelete(id string) (err error, code int) {
+	ctx, _ := getTimeoutContext()
+	isUsed, err := this.db.DeviceClassIsUsed(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if isUsed {
+		return errors.New("still in use"), http.StatusBadRequest
+	}
+	return nil, http.StatusOK
+}

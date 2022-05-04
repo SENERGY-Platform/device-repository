@@ -270,3 +270,63 @@ func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId stri
 	err = cursor.Err()
 	return
 }
+
+func (this *Mongo) AspectIsUsed(ctx context.Context, id string) (result bool, err error) {
+	filter := bson.M{
+		deviceTypeCriteriaAspectIdKey: id,
+	}
+	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
+	err = temp.Err()
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if err != nil {
+		return result, err
+	}
+	return true, nil
+}
+
+func (this *Mongo) FunctionIsUsed(ctx context.Context, id string) (result bool, err error) {
+	filter := bson.M{
+		deviceTypeCriteriaFunctionIdKey: id,
+	}
+	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
+	err = temp.Err()
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if err != nil {
+		return result, err
+	}
+	return true, nil
+}
+
+func (this *Mongo) DeviceClassIsUsed(ctx context.Context, id string) (result bool, err error) {
+	filter := bson.M{
+		deviceTypeCriteriaDeviceClassIdKey: id,
+	}
+	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
+	err = temp.Err()
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if err != nil {
+		return result, err
+	}
+	return true, nil
+}
+
+func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result bool, err error) {
+	filter := bson.M{
+		deviceTypeCriteriaCharacteristicIdKey: id,
+	}
+	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
+	err = temp.Err()
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if err != nil {
+		return result, err
+	}
+	return true, nil
+}

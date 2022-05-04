@@ -27,9 +27,11 @@ import (
 
 const functionIdFieldName = "Id"
 const functionRdfTypeFieldName = "RdfType"
+const functionConceptFieldName = "ConceptId"
 
 var functionIdKey string
 var functionRdfTypeKey string
+var functionConceptKey string
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
@@ -42,12 +44,20 @@ func init() {
 		if err != nil {
 			return err
 		}
+		functionConceptKey, err = getBsonFieldName(model.Function{}, functionConceptFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoFunctionCollection)
 		err = db.ensureIndex(collection, "functionidindex", functionIdKey, true, true)
 		if err != nil {
 			return err
 		}
 		err = db.ensureIndex(collection, "functionrdftypeindex", functionRdfTypeKey, true, false)
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "functionconceptindex", functionConceptKey, true, false)
 		if err != nil {
 			return err
 		}
@@ -198,4 +208,19 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 	}
 	err = cursor.Err()
 	return
+}
+
+func (this *Mongo) ConceptIsUsed(ctx context.Context, id string) (result bool, err error) {
+	filter := bson.M{
+		functionConceptKey: id,
+	}
+	temp := this.functionCollection().FindOne(ctx, filter)
+	err = temp.Err()
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if err != nil {
+		return result, err
+	}
+	return true, nil
 }

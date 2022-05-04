@@ -104,3 +104,15 @@ func (this *Controller) validateSubCharacteristics(characteristics []model.Chara
 	}
 	return nil, http.StatusOK
 }
+
+func (this *Controller) ValidateCharacteristicDelete(id string) (err error, code int) {
+	ctx, _ := getTimeoutContext()
+	isUsed, err := this.db.CharacteristicIsUsed(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if isUsed {
+		return errors.New("still in use"), http.StatusBadRequest
+	}
+	return nil, http.StatusOK
+}

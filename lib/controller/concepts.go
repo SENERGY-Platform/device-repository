@@ -85,3 +85,15 @@ func (this *Controller) GetConceptWithoutCharacteristics(id string) (result mode
 	}
 	return result, nil, http.StatusOK
 }
+
+func (this *Controller) ValidateConceptDelete(id string) (err error, code int) {
+	ctx, _ := getTimeoutContext()
+	isUsed, err := this.db.ConceptIsUsed(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if isUsed {
+		return errors.New("still in use"), http.StatusBadRequest
+	}
+	return nil, http.StatusOK
+}

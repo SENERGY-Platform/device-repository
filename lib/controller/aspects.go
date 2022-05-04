@@ -66,7 +66,6 @@ func (this *Controller) handleMovedSubAspects(aspect model.Aspect, descendentNod
 				return err
 			}
 		}
-
 	}
 	for rootId, movedIds := range movedFrom {
 		if !deletedAspect[rootId] {
@@ -156,6 +155,56 @@ func (this *Controller) ValidateAspect(aspect model.Aspect) (err error, code int
 		err, code = this.ValidateAspect(sub)
 		if err != nil {
 			return err, code
+		}
+	}
+
+	//check for deleted sub aspects
+	ctx, _ := getTimeoutContext()
+	old, exists, err := this.db.GetAspectNode(ctx, aspect.Id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !exists {
+		return nil, http.StatusOK
+	}
+	newDescendentNodesIds := getDescendentNodeIds(aspect)
+	newDescendentsSet := map[string]bool{}
+	for _, id := range newDescendentNodesIds {
+		newDescendentsSet[id] = true
+	}
+	for _, id := range old.DescendentIds {
+		if !newDescendentsSet[id] {
+			isUsed, err := this.db.AspectIsUsed(ctx, id)
+			if err != nil {
+				return err, http.StatusInternalServerError
+			}
+			if isUsed {
+				return errors.New("sub aspect " + id + " is still in use"), http.StatusBadRequest
+			}
+		}
+	}
+
+	return nil, http.StatusOK
+}
+
+func (this *Controller) ValidateAspectDelete(id string) (err error, code int) {
+	ctx, _ := getTimeoutContext()
+	aspect, exists, err := this.db.GetAspectNode(ctx, id)
+	if !exists {
+		//deleting nothing is ok
+		return nil, http.StatusOK
+	}
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	isUsed, err := this.db.AspectIsUsed(ctx, id)
+	if isUsed {
+		return errors.New("still in use"), http.StatusBadRequest
+	}
+	for _, sub := range aspect.DescendentIds {
+		isUsed, err = this.db.AspectIsUsed(ctx, sub)
+		if isUsed {
+			return errors.New("sub aspect " + sub + " is still in use"), http.StatusBadRequest
 		}
 	}
 	return nil, http.StatusOK

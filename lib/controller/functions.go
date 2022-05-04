@@ -102,3 +102,15 @@ func (this *Controller) ValidateFunction(function model.Function) (err error, co
 	}
 	return nil, http.StatusOK
 }
+
+func (this *Controller) ValidateFunctionDelete(id string) (err error, code int) {
+	ctx, _ := getTimeoutContext()
+	isUsed, err := this.db.FunctionIsUsed(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if isUsed {
+		return errors.New("still in use"), http.StatusBadRequest
+	}
+	return nil, http.StatusOK
+}

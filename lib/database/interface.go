@@ -94,4 +94,10 @@ type Database interface {
 	SetLocation(ctx context.Context, location model.Location) error
 	RemoveLocation(ctx context.Context, id string) error
 	GetLocation(ctx context.Context, id string) (result model.Location, exists bool, err error)
+
+	AspectIsUsed(ctx context.Context, id string) (result bool, err error)
+	FunctionIsUsed(ctx context.Context, id string) (result bool, err error)
+	DeviceClassIsUsed(ctx context.Context, id string) (result bool, err error)
+	CharacteristicIsUsed(ctx context.Context, id string) (result bool, err error)
+	ConceptIsUsed(ctx context.Context, id string) (result bool, err error)
 }
