@@ -110,3 +110,31 @@ func (this *Mongo) getCharacteristicsByIds(ctx context.Context, ids []string) (r
 	err = cursor.Err()
 	return
 }
+
+func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result bool, err error) {
+	//used in device-type
+	filter := bson.M{
+		deviceTypeCriteriaCharacteristicIdKey: id,
+	}
+	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
+	err = temp.Err()
+	if err != nil && err != mongo.ErrNoDocuments {
+		return result, err
+	}
+	if err == nil {
+		return true, nil
+	}
+
+	//used in concept
+	temp = this.deviceTypeCriteriaCollection().FindOne(ctx, bson.M{
+		conceptCharacteristicsKey: id,
+	})
+	err = temp.Err()
+	if err != nil && err != mongo.ErrNoDocuments {
+		return result, err
+	}
+	if err == nil {
+		return true, nil
+	}
+	return false, nil
+}

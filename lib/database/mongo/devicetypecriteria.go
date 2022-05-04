@@ -315,18 +315,3 @@ func (this *Mongo) DeviceClassIsUsed(ctx context.Context, id string) (result boo
 	}
 	return true, nil
 }
-
-func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result bool, err error) {
-	filter := bson.M{
-		deviceTypeCriteriaCharacteristicIdKey: id,
-	}
-	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
-	err = temp.Err()
-	if err == mongo.ErrNoDocuments {
-		return false, nil
-	}
-	if err != nil {
-		return result, err
-	}
-	return true, nil
-}

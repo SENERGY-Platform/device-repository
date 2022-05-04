@@ -25,8 +25,10 @@ import (
 )
 
 const conceptIdFieldName = "Id"
+const conceptCharacteristicFieldName = "CharacteristicIds"
 
 var conceptIdKey string
+var conceptCharacteristicsKey string
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
@@ -35,8 +37,16 @@ func init() {
 		if err != nil {
 			return err
 		}
+		conceptCharacteristicsKey, err = getBsonFieldName(model.Concept{}, conceptCharacteristicFieldName)
+		if err != nil {
+			return err
+		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoConceptCollection)
 		err = db.ensureIndex(collection, "conceptidindex", conceptIdKey, true, true)
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "conceptcharacteristicsindex", conceptCharacteristicsKey, true, false)
 		if err != nil {
 			return err
 		}
