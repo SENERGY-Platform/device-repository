@@ -111,7 +111,7 @@ func (this *Mongo) getCharacteristicsByIds(ctx context.Context, ids []string) (r
 	return
 }
 
-func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result bool, err error) {
+func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	//used in device-type
 	filter := bson.M{
 		deviceTypeCriteriaCharacteristicIdKey: id,
@@ -119,22 +119,26 @@ func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result 
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
 	if err != nil && err != mongo.ErrNoDocuments {
-		return result, err
+		return result, nil, err
 	}
 	if err == nil {
-		return true, nil
+		criteria := model.DeviceTypeCriteria{}
+		_ = temp.Decode(&criteria)
+		return true, []string{criteria.DeviceTypeId, criteria.ContentVariableId, criteria.ContentVariablePath}, nil
 	}
 
 	//used in concept
-	temp = this.deviceTypeCriteriaCollection().FindOne(ctx, bson.M{
+	temp = this.conceptCollection().FindOne(ctx, bson.M{
 		conceptCharacteristicsKey: id,
 	})
 	err = temp.Err()
 	if err != nil && err != mongo.ErrNoDocuments {
-		return result, err
+		return result, nil, err
 	}
 	if err == nil {
-		return true, nil
+		concept := model.Concept{}
+		_ = temp.Decode(&concept)
+		return true, []string{concept.Id, concept.Name}, nil
 	}
-	return false, nil
+	return false, nil, nil
 }

@@ -271,47 +271,53 @@ func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId stri
 	return
 }
 
-func (this *Mongo) AspectIsUsed(ctx context.Context, id string) (result bool, err error) {
+func (this *Mongo) AspectIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
 		deviceTypeCriteriaAspectIdKey: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
 	if err == mongo.ErrNoDocuments {
-		return false, nil
+		return false, nil, nil
 	}
 	if err != nil {
-		return result, err
+		return result, nil, err
 	}
-	return true, nil
+	criteria := model.DeviceTypeCriteria{}
+	_ = temp.Decode(&criteria)
+	return true, []string{criteria.DeviceTypeId, criteria.ContentVariableId, criteria.ContentVariablePath}, nil
 }
 
-func (this *Mongo) FunctionIsUsed(ctx context.Context, id string) (result bool, err error) {
+func (this *Mongo) FunctionIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
 		deviceTypeCriteriaFunctionIdKey: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
 	if err == mongo.ErrNoDocuments {
-		return false, nil
+		return false, nil, nil
 	}
 	if err != nil {
-		return result, err
+		return result, nil, err
 	}
-	return true, nil
+	criteria := model.DeviceTypeCriteria{}
+	_ = temp.Decode(&criteria)
+	return true, []string{criteria.DeviceTypeId, criteria.ContentVariableId, criteria.ContentVariablePath}, nil
 }
 
-func (this *Mongo) DeviceClassIsUsed(ctx context.Context, id string) (result bool, err error) {
+func (this *Mongo) DeviceClassIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
 		deviceTypeCriteriaDeviceClassIdKey: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
 	if err == mongo.ErrNoDocuments {
-		return false, nil
+		return false, nil, nil
 	}
 	if err != nil {
-		return result, err
+		return result, nil, err
 	}
-	return true, nil
+	criteria := model.DeviceTypeCriteria{}
+	_ = temp.Decode(&criteria)
+	return true, []string{criteria.DeviceTypeId, criteria.ContentVariableId, criteria.ContentVariablePath}, nil
 }

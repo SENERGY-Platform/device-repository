@@ -174,12 +174,12 @@ func (this *Controller) ValidateAspect(aspect model.Aspect) (err error, code int
 	}
 	for _, id := range old.DescendentIds {
 		if !newDescendentsSet[id] {
-			isUsed, err := this.db.AspectIsUsed(ctx, id)
+			isUsed, where, err := this.db.AspectIsUsed(ctx, id)
 			if err != nil {
 				return err, http.StatusInternalServerError
 			}
 			if isUsed {
-				return errors.New("sub aspect " + id + " is still in use"), http.StatusBadRequest
+				return errors.New("sub aspect " + id + " is still in use: " + strings.Join(where, ",")), http.StatusBadRequest
 			}
 		}
 	}
@@ -197,14 +197,14 @@ func (this *Controller) ValidateAspectDelete(id string) (err error, code int) {
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	isUsed, err := this.db.AspectIsUsed(ctx, id)
+	isUsed, where, err := this.db.AspectIsUsed(ctx, id)
 	if isUsed {
-		return errors.New("still in use"), http.StatusBadRequest
+		return errors.New("still in use: " + strings.Join(where, ",")), http.StatusBadRequest
 	}
 	for _, sub := range aspect.DescendentIds {
-		isUsed, err = this.db.AspectIsUsed(ctx, sub)
+		isUsed, where, err = this.db.AspectIsUsed(ctx, sub)
 		if isUsed {
-			return errors.New("sub aspect " + sub + " is still in use"), http.StatusBadRequest
+			return errors.New("sub aspect " + sub + " is still in use: " + strings.Join(where, ",")), http.StatusBadRequest
 		}
 	}
 	return nil, http.StatusOK

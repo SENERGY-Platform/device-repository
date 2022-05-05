@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
+	"strings"
 )
 
 func (this *Controller) SetConcept(concept model.Concept, owner string) error {
@@ -88,12 +89,12 @@ func (this *Controller) GetConceptWithoutCharacteristics(id string) (result mode
 
 func (this *Controller) ValidateConceptDelete(id string) (err error, code int) {
 	ctx, _ := getTimeoutContext()
-	isUsed, err := this.db.ConceptIsUsed(ctx, id)
+	isUsed, where, err := this.db.ConceptIsUsed(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if isUsed {
-		return errors.New("still in use"), http.StatusBadRequest
+		return errors.New("still in use: " + strings.Join(where, ",")), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }

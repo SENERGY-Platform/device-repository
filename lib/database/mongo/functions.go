@@ -210,17 +210,19 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 	return
 }
 
-func (this *Mongo) ConceptIsUsed(ctx context.Context, id string) (result bool, err error) {
+func (this *Mongo) ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
 		functionConceptKey: id,
 	}
 	temp := this.functionCollection().FindOne(ctx, filter)
 	err = temp.Err()
 	if err == mongo.ErrNoDocuments {
-		return false, nil
+		return false, nil, nil
 	}
 	if err != nil {
-		return result, err
+		return result, nil, err
 	}
-	return true, nil
+	function := model.Function{}
+	_ = temp.Decode(&function)
+	return true, []string{function.Id}, nil
 }

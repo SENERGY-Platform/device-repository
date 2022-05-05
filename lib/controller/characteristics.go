@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
+	"strings"
 )
 
 func (this *Controller) SetCharacteristic(characteristic model.Characteristic, owner string) error {
@@ -107,12 +108,12 @@ func (this *Controller) validateSubCharacteristics(characteristics []model.Chara
 
 func (this *Controller) ValidateCharacteristicDelete(id string) (err error, code int) {
 	ctx, _ := getTimeoutContext()
-	isUsed, err := this.db.CharacteristicIsUsed(ctx, id)
+	isUsed, where, err := this.db.CharacteristicIsUsed(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if isUsed {
-		return errors.New("still in use"), http.StatusBadRequest
+		return errors.New("still in use: " + strings.Join(where, ",")), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
 }
