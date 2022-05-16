@@ -47,10 +47,11 @@ type Aspect struct {
 }
 
 type Concept struct {
-	Id                   string   `json:"id"`
-	Name                 string   `json:"name"`
-	CharacteristicIds    []string `json:"characteristic_ids"`
-	BaseCharacteristicId string   `json:"base_characteristic_id"`
+	Id                   string               `json:"id"`
+	Name                 string               `json:"name"`
+	CharacteristicIds    []string             `json:"characteristic_ids"`
+	BaseCharacteristicId string               `json:"base_characteristic_id"`
+	Conversions          []ConverterExtension `json:"conversions"`
 }
 
 type Characteristic struct {
@@ -65,10 +66,11 @@ type Characteristic struct {
 }
 
 type ConceptWithCharacteristics struct {
-	Id                   string           `json:"id"`
-	Name                 string           `json:"name"`
-	BaseCharacteristicId string           `json:"base_characteristic_id"`
-	Characteristics      []Characteristic `json:"characteristics"`
+	Id                   string               `json:"id"`
+	Name                 string               `json:"name"`
+	BaseCharacteristicId string               `json:"base_characteristic_id"`
+	Characteristics      []Characteristic     `json:"characteristics"`
+	Conversions          []ConverterExtension `json:"conversions"`
 }
 
 type Location struct {
@@ -84,4 +86,12 @@ type FilterCriteria struct {
 	FunctionId    string `json:"function_id"`
 	DeviceClassId string `json:"device_class_id"`
 	AspectId      string `json:"aspect_id"`
+}
+
+type ConverterExtension struct {
+	From            string `json:"from"`
+	To              string `json:"to"`
+	Distance        int64  `json:"distance"`
+	Formula         string `json:"formula"`
+	PlaceholderName string `json:"placeholder_name"`
 }

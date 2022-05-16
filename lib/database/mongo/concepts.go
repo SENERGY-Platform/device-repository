@@ -80,6 +80,7 @@ func (this *Mongo) GetConceptWithCharacteristics(ctx context.Context, id string)
 	concept.Name = temp.Name
 	concept.BaseCharacteristicId = temp.BaseCharacteristicId
 	concept.Characteristics, err = this.getCharacteristicsByIds(ctx, temp.CharacteristicIds)
+	concept.Conversions = temp.Conversions
 	return concept, exists, err
 }
 
