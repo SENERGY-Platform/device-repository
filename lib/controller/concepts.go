@@ -18,6 +18,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
 	"strings"
@@ -46,12 +47,12 @@ func (this *Controller) ValidateConcept(concept model.Concept) (err error, code 
 	if concept.BaseCharacteristicId != "" && !contains(concept.CharacteristicIds, concept.BaseCharacteristicId) {
 		return errors.New("concept base characteristic not in characteristic ids list"), http.StatusBadRequest
 	}
-
+	newCharacteristicIds := map[string]bool{}
+	ctx, _ := getTimeoutContext()
 	for _, charId := range concept.CharacteristicIds {
 		if charId == "" {
 			return errors.New("missing char id"), http.StatusBadRequest
 		}
-		ctx, _ := getTimeoutContext()
 		_, exists, err := this.db.GetCharacteristic(ctx, charId)
 		if err != nil {
 			return err, http.StatusInternalServerError
@@ -59,7 +60,26 @@ func (this *Controller) ValidateConcept(concept model.Concept) (err error, code 
 		if !exists {
 			return errors.New("unknown characteristic: " + charId), http.StatusBadRequest
 		}
+		newCharacteristicIds[charId] = true
 	}
+	old, exists, err := this.db.GetConceptWithoutCharacteristics(ctx, concept.Id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if exists {
+		for _, charid := range old.CharacteristicIds {
+			if !newCharacteristicIds[charid] {
+				used, where, err := this.db.CharacteristicIsUsedWithConceptInDeviceType(ctx, charid, concept.Id)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+				if used {
+					return fmt.Errorf("removed characteristic is still used with this concept in %v", strings.Join(where, ", ")), http.StatusBadRequest
+				}
+			}
+		}
+	}
+
 	return nil, http.StatusOK
 }
 

@@ -142,3 +142,28 @@ func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result 
 	}
 	return false, nil, nil
 }
+
+func (this *Mongo) CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error) {
+	filter := bson.M{
+		deviceTypeCriteriaCharacteristicIdKey: characteristicId,
+	}
+	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
+	err = temp.Err()
+	if err != nil && err != mongo.ErrNoDocuments {
+		return result, nil, err
+	}
+	if err == nil {
+		criteria := model.DeviceTypeCriteria{}
+		_ = temp.Decode(&criteria)
+		if criteria.FunctionId != "" {
+			f, exists, err := this.GetFunction(ctx, criteria.FunctionId)
+			if err != nil {
+				return result, where, err
+			}
+			if exists && f.ConceptId == conceptId {
+				return true, []string{criteria.DeviceTypeId, criteria.ContentVariableId, criteria.ContentVariablePath}, nil
+			}
+		}
+	}
+	return false, nil, nil
+}

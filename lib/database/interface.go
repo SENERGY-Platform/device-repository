@@ -99,5 +99,6 @@ type Database interface {
 	FunctionIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 	DeviceClassIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 	CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
+	CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error)
 	ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 }
