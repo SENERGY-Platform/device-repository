@@ -114,7 +114,7 @@ func (this *Mongo) getCharacteristicsByIds(ctx context.Context, ids []string) (r
 func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	//used in device-type
 	filter := bson.M{
-		deviceTypeCriteriaCharacteristicIdKey: id,
+		DeviceTypeCriteriaBson.CharacteristicId: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
@@ -145,7 +145,7 @@ func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result 
 
 func (this *Mongo) CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error) {
 	filter := bson.M{
-		deviceTypeCriteriaCharacteristicIdKey: characteristicId,
+		DeviceTypeCriteriaBson.CharacteristicId: characteristicId,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()

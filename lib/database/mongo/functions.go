@@ -134,10 +134,10 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	} else {
 		aspectFilter = aspect
 	}
-	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaFunctionIdKey, bson.M{
+	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.FunctionId, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
-		deviceTypeCriteriaAspectIdKey:              aspectFilter,
-		deviceTypeCriteriaFunctionIdKey:            bson.M{"$exists": true, "$ne": ""},
+		DeviceTypeCriteriaBson.AspectId:            aspectFilter,
+		DeviceTypeCriteriaBson.FunctionId:          bson.M{"$exists": true, "$ne": ""},
 	})
 	if err != nil {
 		return nil, err
@@ -160,9 +160,9 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 }
 
 func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class string) (result []model.Function, err error) {
-	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaFunctionIdKey, bson.M{
-		deviceTypeCriteriaDeviceClassIdKey: class,
-		deviceTypeCriteriaFunctionIdKey:    bson.M{"$exists": true, "$ne": ""},
+	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.FunctionId, bson.M{
+		DeviceTypeCriteriaBson.DeviceClassId: class,
+		DeviceTypeCriteriaBson.FunctionId:    bson.M{"$exists": true, "$ne": ""},
 	})
 	if err != nil {
 		return nil, err
@@ -185,10 +185,10 @@ func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class stri
 }
 
 func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) (result []model.Function, err error) {
-	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaFunctionIdKey, bson.M{
-		deviceTypeCriteriaDeviceClassIdKey:         class,
+	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.FunctionId, bson.M{
+		DeviceTypeCriteriaBson.DeviceClassId:       class,
 		deviceTypeCriteriaIsControllingFunctionKey: true,
-		deviceTypeCriteriaFunctionIdKey:            bson.M{"$exists": true, "$ne": ""},
+		DeviceTypeCriteriaBson.FunctionId:          bson.M{"$exists": true, "$ne": ""},
 	})
 	if err != nil {
 		return nil, err

@@ -49,6 +49,12 @@ func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64,
 	return
 }
 
+func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, err = this.db.ListDeviceTypesV2(ctx, limit, offset, sort, filter)
+	return
+}
+
 func (this *Controller) ValidateDeviceType(dt model.DeviceType) (err error, code int) {
 	if dt.Id == "" {
 		return errors.New("missing device-type id"), http.StatusBadRequest
@@ -112,6 +118,16 @@ func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, p
 	return
 }
 
+func (this *Controller) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error, code int) {
+	code = http.StatusOK
+	ctx, _ := getTimeoutContext()
+	result, err = this.getDeviceTypeSelectablesV2(ctx, query, pathPrefix)
+	if err != nil {
+		code = http.StatusInternalServerError
+	}
+	return
+}
+
 func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error) {
 	result = []model.DeviceTypeSelectable{}
 
@@ -161,6 +177,88 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 				Type:                  criteria.Type,
 				IsControllingFunction: criteria.IsControllingFunction,
 			})
+		}
+		for sid, options := range element.ServicePathOptions {
+			configurablesCandidates, err := this.db.GetConfigurableCandidates(ctx, sid)
+			if err != nil {
+				return result, err
+			}
+			for i, option := range options {
+				options[i].Configurables, err = this.getConfigurables(configurablesCandidates, option)
+				if err != nil {
+					return result, err
+				}
+			}
+			for _, service := range dt.Services {
+				if service.Id == sid {
+					element.Services = append(element.Services, service)
+				}
+			}
+			sort.Slice(options, func(i, j int) bool {
+				return options[i].Path < options[j].Path
+			})
+			element.ServicePathOptions[sid] = options
+		}
+		result = append(result, element)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].DeviceTypeId < result[j].DeviceTypeId
+	})
+	return result, nil
+}
+
+func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error) {
+	result = []model.DeviceTypeSelectable{}
+
+	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteriaV2(ctx, query)
+	if err != nil {
+		return result, err
+	}
+	groupByDeviceType := map[string][]model.DeviceTypeCriteria{}
+	for _, criteria := range query {
+		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria)
+		if err != nil {
+			return result, err
+		}
+		for _, element := range dtCriteria {
+			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], element)
+		}
+	}
+	aspectCache := &map[string]model.AspectNode{}
+	for dtId, dtCriteria := range groupByDeviceType {
+		dt, _, err := this.db.GetDeviceType(ctx, dtId)
+		if err != nil {
+			return result, err
+		}
+		element := model.DeviceTypeSelectable{
+			DeviceTypeId:       dtId,
+			Services:           []model.Service{},
+			ServicePathOptions: map[string][]model.ServicePathOption{},
+		}
+		usedPaths := map[string]map[string]bool{}
+		for _, criteria := range dtCriteria {
+			aspectNode, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, criteria.AspectId)
+			if err != nil {
+				return result, err
+			}
+			if _, ok := usedPaths[criteria.ServiceId]; !ok {
+				usedPaths[criteria.ServiceId] = map[string]bool{}
+			}
+			if !usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] {
+				usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] = true
+				element.ServicePathOptions[criteria.ServiceId] = append(element.ServicePathOptions[criteria.ServiceId], model.ServicePathOption{
+					ServiceId:             criteria.ServiceId,
+					Path:                  pathPrefix + criteria.ContentVariablePath,
+					CharacteristicId:      criteria.CharacteristicId,
+					AspectNode:            aspectNode,
+					FunctionId:            criteria.FunctionId,
+					IsVoid:                criteria.IsVoid,
+					Value:                 criteria.Value,
+					Type:                  criteria.Type,
+					IsControllingFunction: criteria.IsControllingFunction,
+					Interaction:           model.Interaction(criteria.Interaction),
+				})
+			}
 		}
 		for sid, options := range element.ServicePathOptions {
 			configurablesCandidates, err := this.db.GetConfigurableCandidates(ctx, sid)

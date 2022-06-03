@@ -61,6 +61,7 @@ type ServicePathOption struct {
 	IsControllingFunction bool           `json:"is_controlling_function"`
 	Configurables         []Configurable `json:"configurables,omitempty"`
 	Type                  Type           `json:"type,omitempty"`
+	Interaction           Interaction    `json:"interaction"`
 }
 
 type Configurable struct {

@@ -220,6 +220,148 @@ func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
 	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
 }
 
+func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Run("init metadata", createTestMetadata(conf, model.REQUEST))
+
+	waterProbeCriteria := []model.FilterCriteria{{
+		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+		AspectId:   "water",
+	}}
+	waterprobeSelectable := model.DeviceTypeSelectable{
+		DeviceTypeId: "water-probe",
+		Services: []model.Service{
+			{
+				Id:          "getTemperature",
+				Interaction: model.REQUEST,
+				Outputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:               "temperature",
+							Name:             "temperature",
+							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+							AspectId:         "water",
+							CharacteristicId: "water-probe-test-characteristic",
+						},
+					},
+				},
+			},
+		},
+		ServicePathOptions: map[string][]model.ServicePathOption{
+			"getTemperature": {
+				{
+					ServiceId:        "getTemperature",
+					Path:             "prefix.temperature",
+					CharacteristicId: "water-probe-test-characteristic",
+					AspectNode: model.AspectNode{
+						Id:            "water",
+						Name:          "",
+						RootId:        "water",
+						ParentId:      "",
+						ChildIds:      []string{},
+						AncestorIds:   []string{},
+						DescendentIds: []string{},
+					},
+					FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+					Interaction: model.REQUEST,
+				},
+			},
+		},
+	}
+
+	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT, model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+}
+
+func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Run("init metadata", createTestMetadata(conf, model.EVENT_AND_REQUEST))
+
+	waterProbeCriteria := []model.FilterCriteria{{
+		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+		AspectId:   "water",
+	}}
+	waterprobeSelectable := model.DeviceTypeSelectable{
+		DeviceTypeId: "water-probe",
+		Services: []model.Service{
+			{
+				Id:          "getTemperature",
+				Interaction: model.EVENT_AND_REQUEST,
+				Outputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:               "temperature",
+							Name:             "temperature",
+							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+							AspectId:         "water",
+							CharacteristicId: "water-probe-test-characteristic",
+						},
+					},
+				},
+			},
+		},
+		ServicePathOptions: map[string][]model.ServicePathOption{
+			"getTemperature": {
+				{
+					ServiceId:        "getTemperature",
+					Path:             "prefix.temperature",
+					CharacteristicId: "water-probe-test-characteristic",
+					AspectNode: model.AspectNode{
+						Id:            "water",
+						Name:          "",
+						RootId:        "water",
+						ParentId:      "",
+						ChildIds:      []string{},
+						AncestorIds:   []string{},
+						DescendentIds: []string{},
+					},
+					FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+					Interaction: model.EVENT_AND_REQUEST,
+				},
+			},
+		},
+	}
+
+	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT, model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+}
+
+func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions []model.Interaction) (result []model.FilterCriteria) {
+	for _, interaction := range interactions {
+		for _, c := range criteria {
+			c.Interaction = interaction
+			result = append(result, c)
+		}
+	}
+	return result
+}
+
 func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	//t.Skip("not implemented") //TODO
 	wg := &sync.WaitGroup{}
@@ -1990,6 +2132,25 @@ func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteri
 	}
 }
 
+func testDeviceTypeSelectablesWithoutConfigurablesV2(config config.Config, criteria []model.FilterCriteria, pathPrefix string, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+	return func(t *testing.T) {
+		result, err := GetDeviceTypeSelectablesV2(config, userjwt, pathPrefix, criteria)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expectedResult = removeConfigurables(expectedResult)
+		expectedResult = sortServices(expectedResult)
+		result = removeConfigurables(result)
+		result = sortServices(result)
+		if !reflect.DeepEqual(result, expectedResult) {
+			resultJson, _ := json.Marshal(result)
+			expectedJson, _ := json.Marshal(expectedResult)
+			t.Error("\n", string(resultJson), "\n", string(expectedJson))
+		}
+	}
+}
+
 func removeConfigurables(list []model.DeviceTypeSelectable) (result []model.DeviceTypeSelectable) {
 	result = []model.DeviceTypeSelectable{}
 	for _, e := range list {
@@ -2513,6 +2674,48 @@ func GetDeviceTypeSelectables(config config.Config, token string, prefix string,
 	req, err := http.NewRequest(
 		"POST",
 		"http://localhost:"+config.ServerPort+"/query/device-type-selectables?path-prefix="+url.QueryEscape(prefix)+interactionsQuery,
+		payload,
+	)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	req.Header.Set("Authorization", token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		debug.PrintStack()
+		temp, _ := io.ReadAll(resp.Body)
+		log.Println("ERROR: GetDeviceTypeSelectables():", resp.StatusCode, string(temp))
+		return result, errors.New("unexpected statuscode")
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+
+	return result, err
+}
+
+func GetDeviceTypeSelectablesV2(config config.Config, token string, prefix string, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	payload := new(bytes.Buffer)
+	err = json.NewEncoder(payload).Encode(descriptions)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	req, err := http.NewRequest(
+		"POST",
+		"http://localhost:"+config.ServerPort+"/v2/query/device-type-selectables?path-prefix="+url.QueryEscape(prefix),
 		payload,
 	)
 	if err != nil {

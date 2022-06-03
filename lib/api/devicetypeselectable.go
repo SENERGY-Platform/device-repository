@@ -60,4 +60,25 @@ func DeviceTypeSelectableEndpoints(config config.Config, control Controller, rou
 		}
 		return
 	})
+
+	router.POST("/v2/query"+resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		query := []model.FilterCriteria{}
+		err := json.NewDecoder(request.Body).Decode(&query)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		pathPrefix := request.URL.Query().Get("path-prefix")
+		result, err, errCode := control.GetDeviceTypeSelectablesV2(query, pathPrefix)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
 }

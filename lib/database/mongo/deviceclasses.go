@@ -92,9 +92,9 @@ func (this *Mongo) ListAllDeviceClasses(ctx context.Context) (result []model.Dev
 }
 
 func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.Context) (result []model.DeviceClass, err error) {
-	deviceClassIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaDeviceClassIdKey, bson.M{
+	deviceClassIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.DeviceClassId, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: true,
-		deviceTypeCriteriaDeviceClassIdKey:         bson.M{"$exists": true, "$ne": ""},
+		DeviceTypeCriteriaBson.DeviceClassId:       bson.M{"$exists": true, "$ne": ""},
 	})
 	if err != nil {
 		return nil, err

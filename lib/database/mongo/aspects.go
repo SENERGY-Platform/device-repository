@@ -95,9 +95,9 @@ func (this *Mongo) ListAllAspects(ctx context.Context) (result []model.Aspect, e
 
 //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []model.Aspect, err error) {
-	aspectIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaAspectIdKey, bson.M{
+	aspectIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.AspectId, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
-		deviceTypeCriteriaAspectIdKey:              bson.M{"$exists": true, "$ne": ""},
+		DeviceTypeCriteriaBson.AspectId:            bson.M{"$exists": true, "$ne": ""},
 	})
 	if err != nil {
 		return nil, err

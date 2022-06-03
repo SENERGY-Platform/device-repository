@@ -144,6 +144,53 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	return
 }
 
+func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria) (result []model.DeviceType, err error) {
+	result = []model.DeviceType{}
+	opt := options.Find()
+	opt.SetLimit(limit)
+	opt.SetSkip(offset)
+
+	parts := strings.Split(sort, ".")
+	sortby := deviceTypeIdKey
+	switch parts[0] {
+	case "id":
+		sortby = deviceTypeIdKey
+	case "name":
+		sortby = deviceTypeNameKey
+	default:
+		sortby = deviceTypeIdKey
+	}
+	direction := int32(1)
+	if len(parts) > 1 && parts[1] == "desc" {
+		direction = int32(-1)
+	}
+	opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
+
+	filter := bson.M{}
+	if len(filterCriteria) > 0 {
+		deviceTypeIds, err := this.GetDeviceTypeIdsByFilterCriteriaV2(ctx, filterCriteria)
+		if err != nil {
+			return nil, err
+		}
+		filter = bson.M{deviceTypeIdKey: bson.M{"$in": deviceTypeIds}}
+	}
+
+	cursor, err := this.deviceTypeCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		deviceType := model.DeviceType{}
+		err = cursor.Decode(&deviceType)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, deviceType)
+	}
+	err = cursor.Err()
+	return
+}
+
 func (this *Mongo) SetDeviceType(ctx context.Context, deviceType model.DeviceType) error {
 	_, err := this.deviceTypeCollection().ReplaceOne(ctx, bson.M{deviceTypeIdKey: deviceType.Id}, deviceType, options.Replace().SetUpsert(true))
 	if err != nil {
@@ -200,6 +247,16 @@ func (this *Mongo) GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteri
 	return
 }
 
+func (this *Mongo) GetDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, criteria []model.FilterCriteria) (result []interface{}, err error) {
+	for _, c := range criteria {
+		result, err = this.filterDeviceTypeIdsByFilterCriteriaV2(ctx, result, c)
+		if err != nil {
+			return result, err
+		}
+	}
+	return
+}
+
 func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, interactions []string) (result []interface{}, err error) {
 	result = []interface{}{}
 	if deviceTypeIds != nil && len(deviceTypeIds) == 0 {
@@ -208,17 +265,17 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, devi
 	filter := bson.M{}
 	if deviceTypeIds != nil {
 		filter = bson.M{
-			deviceTypeCriteriaDeviceTypeIdKey: bson.M{"$in": deviceTypeIds},
+			DeviceTypeCriteriaBson.DeviceTypeId: bson.M{"$in": deviceTypeIds},
 		}
 	}
 	if len(interactions) > 0 {
-		filter[deviceTypeCriteriaInteractionKey] = bson.M{"$in": interactions}
+		filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": interactions}
 	}
 	if criteria.DeviceClassId != "" {
-		filter[deviceTypeCriteriaDeviceClassIdKey] = criteria.DeviceClassId
+		filter[DeviceTypeCriteriaBson.DeviceClassId] = criteria.DeviceClassId
 	}
 	if criteria.FunctionId != "" {
-		filter[deviceTypeCriteriaFunctionIdKey] = criteria.FunctionId
+		filter[DeviceTypeCriteriaBson.FunctionId] = criteria.FunctionId
 	}
 	if criteria.AspectId != "" {
 		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
@@ -226,15 +283,66 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, devi
 			return result, err
 		}
 		if exists {
-			filter[deviceTypeCriteriaAspectIdKey] = bson.M{"$in": append(node.DescendentIds, node.Id)}
+			filter[DeviceTypeCriteriaBson.AspectId] = bson.M{"$in": append(node.DescendentIds, node.Id)}
 		} else {
 			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
 			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
-			filter[deviceTypeCriteriaAspectIdKey] = criteria.AspectId
+			filter[DeviceTypeCriteriaBson.AspectId] = criteria.AspectId
 		}
 	}
 
-	temp, err := this.deviceTypeCriteriaCollection().Distinct(ctx, deviceTypeCriteriaDeviceTypeIdKey, filter)
+	temp, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.DeviceTypeId, filter)
+	if err != nil {
+		return result, err
+	}
+	if temp != nil {
+		result = temp
+	}
+	return
+}
+
+func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria) (result []interface{}, err error) {
+	result = []interface{}{}
+	if deviceTypeIds != nil && len(deviceTypeIds) == 0 {
+		return result, nil
+	}
+	filter := bson.M{}
+	if deviceTypeIds != nil {
+		filter = bson.M{
+			DeviceTypeCriteriaBson.DeviceTypeId: bson.M{"$in": deviceTypeIds},
+		}
+	}
+	if criteria.DeviceClassId != "" {
+		filter[DeviceTypeCriteriaBson.DeviceClassId] = criteria.DeviceClassId
+	}
+	if criteria.FunctionId != "" {
+		filter[DeviceTypeCriteriaBson.FunctionId] = criteria.FunctionId
+	}
+	if criteria.Interaction != "" {
+		switch criteria.Interaction {
+		case model.REQUEST:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.REQUEST), string(model.EVENT_AND_REQUEST)}}
+		case model.EVENT:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.EVENT), string(model.EVENT_AND_REQUEST)}}
+		default:
+			filter[DeviceTypeCriteriaBson.Interaction] = string(criteria.Interaction)
+		}
+	}
+	if criteria.AspectId != "" {
+		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
+		if err != nil {
+			return result, err
+		}
+		if exists {
+			filter[DeviceTypeCriteriaBson.AspectId] = bson.M{"$in": append(node.DescendentIds, node.Id)}
+		} else {
+			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
+			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
+			filter[DeviceTypeCriteriaBson.AspectId] = criteria.AspectId
+		}
+	}
+
+	temp, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.DeviceTypeId, filter)
 	if err != nil {
 		return result, err
 	}

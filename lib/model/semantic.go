@@ -83,9 +83,10 @@ type Location struct {
 }
 
 type FilterCriteria struct {
-	FunctionId    string `json:"function_id"`
-	DeviceClassId string `json:"device_class_id"`
-	AspectId      string `json:"aspect_id"`
+	Interaction   Interaction `json:"interaction"`
+	FunctionId    string      `json:"function_id"`
+	DeviceClassId string      `json:"device_class_id"`
+	AspectId      string      `json:"aspect_id"`
 }
 
 type ConverterExtension struct {

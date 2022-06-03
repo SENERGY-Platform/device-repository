@@ -26,15 +26,9 @@ import (
 	"strings"
 )
 
-var deviceTypeCriteriaDeviceTypeIdFieldName, deviceTypeCriteriaDeviceTypeIdKey = "DeviceTypeId", ""
-var deviceTypeCriteriaServiceIdFieldName, deviceTypeCriteriaServiceIdKey = "ServiceId", ""
-var deviceTypeCriteriaContentVariableIdFieldName, deviceTypeCriteriaContentVariableIdKey = "ContentVariableId", ""
-var deviceTypeCriteriaFunctionIdFieldName, deviceTypeCriteriaFunctionIdKey = "FunctionId", ""
-var deviceTypeCriteriaDeviceClassIdFieldName, deviceTypeCriteriaDeviceClassIdKey = "DeviceClassId", ""
-var deviceTypeCriteriaAspectIdFieldName, deviceTypeCriteriaAspectIdKey = "AspectId", ""
+var DeviceTypeCriteriaBson = getBsonFieldObject[model.DeviceTypeCriteria]()
+
 var deviceTypeCriteriaIsControllingFunctionFieldName, deviceTypeCriteriaIsControllingFunctionKey = "IsControllingFunction", ""
-var deviceTypeCriteriaInteractionFieldName, deviceTypeCriteriaInteractionKey = "Interaction", ""
-var deviceTypeCriteriaCharacteristicIdFieldName, deviceTypeCriteriaCharacteristicIdKey = "CharacteristicId", ""
 var deviceTypeCriteriaIsLeafFieldName, deviceTypeCriteriaIsLeafKey = "IsLeaf", ""
 var deviceTypeCriteriaIsVoidFieldName, deviceTypeCriteriaIsVoidKey = "IsVoid", ""
 var deviceTypeCriteriaIsInputFieldName, deviceTypeCriteriaIsInputKey = "IsInput", ""
@@ -46,39 +40,8 @@ func getDeviceTypeCriteriaCollectionName(config config.Config) string {
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceTypeCriteriaDeviceTypeIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaDeviceTypeIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeCriteriaServiceIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaServiceIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeCriteriaContentVariableIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaContentVariableIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeCriteriaFunctionIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaFunctionIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeCriteriaDeviceClassIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaDeviceClassIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeCriteriaAspectIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaAspectIdFieldName)
-		if err != nil {
-			return err
-		}
+
 		deviceTypeCriteriaIsControllingFunctionKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsControllingFunctionFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeCriteriaInteractionKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaInteractionFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeCriteriaCharacteristicIdKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaCharacteristicIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -96,27 +59,27 @@ func init() {
 		}
 		collection := db.client.Database(db.config.MongoTable).Collection(getDeviceTypeCriteriaCollectionName(db.config))
 
-		err = db.ensureIndex(collection, "deviceTypeCriteriaDeviceTypeIdIndex", deviceTypeCriteriaDeviceTypeIdKey, true, false)
+		err = db.ensureIndex(collection, "deviceTypeCriteriaDeviceTypeIdIndex", DeviceTypeCriteriaBson.DeviceTypeId, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "deviceTypeCriteriaServiceIdIndex", deviceTypeCriteriaServiceIdKey, true, false)
+		err = db.ensureIndex(collection, "deviceTypeCriteriaServiceIdIndex", DeviceTypeCriteriaBson.ServiceId, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "deviceTypeCriteriaContentVariableIdIndex", deviceTypeCriteriaContentVariableIdKey, true, false)
+		err = db.ensureIndex(collection, "deviceTypeCriteriaContentVariableIdIndex", DeviceTypeCriteriaBson.ContentVariableId, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "deviceTypeCriteriaFunctionIdIndex", deviceTypeCriteriaFunctionIdKey, true, false)
+		err = db.ensureIndex(collection, "deviceTypeCriteriaFunctionIdIndex", DeviceTypeCriteriaBson.FunctionId, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "deviceTypeCriteriaDeviceClassIdIndex", deviceTypeCriteriaDeviceClassIdKey, true, false)
+		err = db.ensureIndex(collection, "deviceTypeCriteriaDeviceClassIdIndex", DeviceTypeCriteriaBson.DeviceClassId, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "deviceTypeCriteriaAspectIdIndex", deviceTypeCriteriaAspectIdKey, true, false)
+		err = db.ensureIndex(collection, "deviceTypeCriteriaAspectIdIndex", DeviceTypeCriteriaBson.AspectId, true, false)
 		if err != nil {
 			return err
 		}
@@ -141,7 +104,7 @@ func (this *Mongo) addDeviceTypeCriteria(ctx context.Context, deviceTypeCriteria
 }
 
 func (this *Mongo) removeDeviceTypeCriteriaByDeviceType(ctx context.Context, deviceTypeId string) error {
-	_, err := this.deviceTypeCriteriaCollection().DeleteMany(ctx, bson.M{deviceTypeCriteriaDeviceTypeIdKey: deviceTypeId})
+	_, err := this.deviceTypeCriteriaCollection().DeleteMany(ctx, bson.M{DeviceTypeCriteriaBson.DeviceTypeId: deviceTypeId})
 	return err
 }
 
@@ -210,13 +173,23 @@ func isControllingFunction(functionId string) bool {
 
 func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria) (result []model.DeviceTypeCriteria, err error) {
 	filter := bson.M{
-		deviceTypeCriteriaDeviceTypeIdKey: bson.M{"$in": deviceTypeIds},
+		DeviceTypeCriteriaBson.DeviceTypeId: bson.M{"$in": deviceTypeIds},
 	}
 	if criteria.DeviceClassId != "" {
-		filter[deviceTypeCriteriaDeviceClassIdKey] = criteria.DeviceClassId
+		filter[DeviceTypeCriteriaBson.DeviceClassId] = criteria.DeviceClassId
 	}
 	if criteria.FunctionId != "" {
-		filter[deviceTypeCriteriaFunctionIdKey] = criteria.FunctionId
+		filter[DeviceTypeCriteriaBson.FunctionId] = criteria.FunctionId
+	}
+	if criteria.Interaction != "" {
+		switch criteria.Interaction {
+		case model.REQUEST:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.REQUEST), string(model.EVENT_AND_REQUEST)}}
+		case model.EVENT:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.EVENT), string(model.EVENT_AND_REQUEST)}}
+		default:
+			filter[DeviceTypeCriteriaBson.Interaction] = string(criteria.Interaction)
+		}
 	}
 	if criteria.AspectId != "" {
 		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
@@ -224,11 +197,11 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 			return result, err
 		}
 		if exists {
-			filter[deviceTypeCriteriaAspectIdKey] = bson.M{"$in": append(node.DescendentIds, node.Id)}
+			filter[DeviceTypeCriteriaBson.AspectId] = bson.M{"$in": append(node.DescendentIds, node.Id)}
 		} else {
 			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
 			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
-			filter[deviceTypeCriteriaAspectIdKey] = criteria.AspectId
+			filter[DeviceTypeCriteriaBson.AspectId] = criteria.AspectId
 		}
 	}
 
@@ -250,10 +223,10 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 
 func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId string) (result []model.DeviceTypeCriteria, err error) {
 	filter := bson.M{
-		deviceTypeCriteriaServiceIdKey: serviceId,
-		deviceTypeCriteriaIsLeafKey:    true,
-		deviceTypeCriteriaIsInputKey:   true,
-		deviceTypeCriteriaIsVoidKey:    false,
+		DeviceTypeCriteriaBson.ServiceId: serviceId,
+		deviceTypeCriteriaIsLeafKey:      true,
+		deviceTypeCriteriaIsInputKey:     true,
+		deviceTypeCriteriaIsVoidKey:      false,
 	}
 	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
 	if err != nil {
@@ -273,7 +246,7 @@ func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId stri
 
 func (this *Mongo) AspectIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
-		deviceTypeCriteriaAspectIdKey: id,
+		DeviceTypeCriteriaBson.AspectId: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
@@ -290,7 +263,7 @@ func (this *Mongo) AspectIsUsed(ctx context.Context, id string) (result bool, wh
 
 func (this *Mongo) FunctionIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
-		deviceTypeCriteriaFunctionIdKey: id,
+		DeviceTypeCriteriaBson.FunctionId: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
@@ -307,7 +280,7 @@ func (this *Mongo) FunctionIsUsed(ctx context.Context, id string) (result bool, 
 
 func (this *Mongo) DeviceClassIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
-		deviceTypeCriteriaDeviceClassIdKey: id,
+		DeviceTypeCriteriaBson.DeviceClassId: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
