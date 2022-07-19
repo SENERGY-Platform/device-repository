@@ -61,6 +61,7 @@ type Characteristic struct {
 	Type               Type             `json:"type"`
 	MinValue           interface{}      `json:"min_value,omitempty"`
 	MaxValue           interface{}      `json:"max_value,omitempty"`
+	AllowedValues      []interface{}    `json:"allowed_values"`
 	Value              interface{}      `json:"value,omitempty"`
 	SubCharacteristics []Characteristic `json:"sub_characteristics"`
 }
