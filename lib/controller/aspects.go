@@ -142,6 +142,10 @@ func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descenda
 }
 
 func (this *Controller) ValidateAspect(aspect model.Aspect) (err error, code int) {
+	return this.validateAspect(aspect, false)
+}
+
+func (this *Controller) validateAspect(aspect model.Aspect, checkDelete bool) (err error, code int) {
 	if aspect.Id == "" {
 		return errors.New("missing aspect id"), http.StatusBadRequest
 	}
@@ -152,38 +156,39 @@ func (this *Controller) ValidateAspect(aspect model.Aspect) (err error, code int
 		return errors.New("missing aspect name"), http.StatusBadRequest
 	}
 	for _, sub := range aspect.SubAspects {
-		err, code = this.ValidateAspect(sub)
+		err, code = this.validateAspect(sub, false)
 		if err != nil {
 			return err, code
 		}
 	}
 
-	//check for deleted sub aspects
-	ctx, _ := getTimeoutContext()
-	old, exists, err := this.db.GetAspectNode(ctx, aspect.Id)
-	if err != nil {
-		return err, http.StatusInternalServerError
-	}
-	if !exists {
-		return nil, http.StatusOK
-	}
-	newDescendentNodesIds := getDescendentNodeIds(aspect)
-	newDescendentsSet := map[string]bool{}
-	for _, id := range newDescendentNodesIds {
-		newDescendentsSet[id] = true
-	}
-	for _, id := range old.DescendentIds {
-		if !newDescendentsSet[id] {
-			isUsed, where, err := this.db.AspectIsUsed(ctx, id)
-			if err != nil {
-				return err, http.StatusInternalServerError
-			}
-			if isUsed {
-				return errors.New("sub aspect " + id + " is still in use: " + strings.Join(where, ",")), http.StatusBadRequest
+	//check for deleted sub aspects; but only for the root aspect, to prevent errors when moving sub aspect
+	if checkDelete {
+		ctx, _ := getTimeoutContext()
+		old, exists, err := this.db.GetAspectNode(ctx, aspect.Id)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		if !exists {
+			return nil, http.StatusOK
+		}
+		newDescendentNodesIds := getDescendentNodeIds(aspect)
+		newDescendentsSet := map[string]bool{}
+		for _, id := range newDescendentNodesIds {
+			newDescendentsSet[id] = true
+		}
+		for _, id := range old.DescendentIds {
+			if !newDescendentsSet[id] {
+				isUsed, where, err := this.db.AspectIsUsed(ctx, id)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+				if isUsed {
+					return errors.New("sub aspect " + id + " is still in use: " + strings.Join(where, ",")), http.StatusBadRequest
+				}
 			}
 		}
 	}
-
 	return nil, http.StatusOK
 }
 

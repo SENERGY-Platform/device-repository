@@ -17,11 +17,14 @@
 package tests
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -30,6 +33,268 @@ import (
 	"testing"
 	"time"
 )
+
+func TestSubAspectMoveSNRGY2202(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	ctrl, err := createMongoTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	initialStr := `{
+   "id":"urn:infai:ses:aspect:60f8f6a6-c0e0-4fc3-9c11-bf2ccef1ed11",
+   "name":"HVAC",
+   "sub_aspects":[
+      {
+         "id":"urn:infai:ses:aspect:1d69d3b6-d16f-430c-bf58-f23b26cd84c4",
+         "name":"Heating",
+         "sub_aspects":[
+            {
+               "id":"urn:infai:ses:aspect:ac049c69-8e88-4306-817d-fb1fa10885e5",
+               "name":"Seat",
+               "sub_aspects":[
+                  {
+                     "id":"urn:infai:ses:aspect:5b00764e-2470-400c-ae0c-d84ac10dd32d",
+                     "name":"Driver",
+                     "sub_aspects":null
+                  },
+                  {
+                     "id":"urn:infai:ses:aspect:7186cbff-ca46-4ea0-a892-0765c0633cb1",
+                     "name":"Passenger",
+                     "sub_aspects":null
+                  }
+               ]
+            },
+            {
+               "id":"urn:infai:ses:aspect:78c065bf-3d73-461a-99c7-2be05168e6f3",
+               "name":"Wiper",
+               "sub_aspects":null
+            },
+            {
+               "id":"urn:infai:ses:aspect:97ce06b8-76cd-4b04-8f43-45cd499e923b",
+               "name":"Defroster",
+               "sub_aspects":[
+                  {
+                     "id":"urn:infai:ses:aspect:a098cb37-3759-4570-bc6b-d8b067012701",
+                     "name":"Front",
+                     "sub_aspects":null
+                  },
+                  {
+                     "id":"urn:infai:ses:aspect:b73e4438-044b-407e-9555-443474ef91d9",
+                     "name":"Back",
+                     "sub_aspects":null
+                  }
+               ]
+            },
+            {
+               "id":"urn:infai:ses:aspect:4714a814-dbb9-4132-8a2e-fa85660dccec",
+               "name":"Mirror",
+               "sub_aspects":null
+            },
+            {
+               "id":"urn:infai:ses:aspect:a83cd1a7-12c2-460f-90d2-051c1880c138",
+               "name":"Steering Wheel",
+               "sub_aspects":null
+            }
+         ]
+      },
+      {
+         "id":"urn:infai:ses:aspect:3288e184-dd53-48bb-810b-146a44088199",
+         "name":"Cooling",
+         "sub_aspects":[
+            
+         ]
+      },
+      {
+         "id":"urn:infai:ses:aspect:efabc932-ba9f-4ca1-b935-06830879053b",
+         "name":"Vent",
+         "sub_aspects":[
+            {
+               "id":"urn:infai:ses:aspect:6e7c50b0-9c46-4f8a-ad28-b0a4199585b1",
+               "name":"Driver",
+               "sub_aspects":null
+            },
+            {
+               "id":"urn:infai:ses:aspect:f4275e0f-513c-441d-9dc1-e81a3d7b5a26",
+               "name":"Passenger",
+               "sub_aspects":null
+            }
+         ]
+      }
+   ]
+}`
+	changeStr := `{
+   "id":"urn:infai:ses:aspect:60f8f6a6-c0e0-4fc3-9c11-bf2ccef1ed11",
+   "name":"HVAC",
+   "sub_aspects":[
+      {
+         "id":"urn:infai:ses:aspect:1d69d3b6-d16f-430c-bf58-f23b26cd84c4",
+         "name":"Heating",
+         "sub_aspects":[
+            {
+               "id":"urn:infai:ses:aspect:78c065bf-3d73-461a-99c7-2be05168e6f3",
+               "name":"Wiper",
+               "sub_aspects":null
+            },
+            {
+               "id":"urn:infai:ses:aspect:97ce06b8-76cd-4b04-8f43-45cd499e923b",
+               "name":"Defroster",
+               "sub_aspects":[
+                  {
+                     "id":"urn:infai:ses:aspect:a098cb37-3759-4570-bc6b-d8b067012701",
+                     "name":"Front",
+                     "sub_aspects":null
+                  },
+                  {
+                     "id":"urn:infai:ses:aspect:b73e4438-044b-407e-9555-443474ef91d9",
+                     "name":"Back",
+                     "sub_aspects":null
+                  }
+               ]
+            },
+            {
+               "id":"urn:infai:ses:aspect:4714a814-dbb9-4132-8a2e-fa85660dccec",
+               "name":"Mirror",
+               "sub_aspects":null
+            },
+            {
+               "id":"urn:infai:ses:aspect:a83cd1a7-12c2-460f-90d2-051c1880c138",
+               "name":"Steering Wheel",
+               "sub_aspects":null
+            }
+         ]
+      },
+      {
+         "id":"urn:infai:ses:aspect:3288e184-dd53-48bb-810b-146a44088199",
+         "name":"Cooling",
+         "sub_aspects":[
+            
+         ]
+      },
+      {
+         "id":"urn:infai:ses:aspect:efabc932-ba9f-4ca1-b935-06830879053b",
+         "name":"Vent",
+         "sub_aspects":[
+            {
+               "id":"urn:infai:ses:aspect:6e7c50b0-9c46-4f8a-ad28-b0a4199585b1",
+               "name":"Driver",
+               "sub_aspects":null
+            },
+            {
+               "id":"urn:infai:ses:aspect:f4275e0f-513c-441d-9dc1-e81a3d7b5a26",
+               "name":"Passenger",
+               "sub_aspects":null
+            }
+         ]
+      },
+      {
+         "id":"urn:infai:ses:aspect:ac049c69-8e88-4306-817d-fb1fa10885e5",
+         "name":"Seat",
+         "sub_aspects":[
+            {
+               "id":"urn:infai:ses:aspect:5b00764e-2470-400c-ae0c-d84ac10dd32d",
+               "name":"Driver",
+               "sub_aspects":null
+            },
+            {
+               "id":"urn:infai:ses:aspect:7186cbff-ca46-4ea0-a892-0765c0633cb1",
+               "name":"Passenger",
+               "sub_aspects":null
+            }
+         ]
+      }
+   ]
+}`
+
+	usedSubAspect := "urn:infai:ses:aspect:5b00764e-2470-400c-ae0c-d84ac10dd32d"
+
+	initialAspect := model.Aspect{}
+	err = json.Unmarshal([]byte(initialStr), &initialAspect)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = ctrl.SetAspect(initialAspect, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	dt := model.DeviceType{
+		Id:            "dt",
+		Name:          "dt",
+		ServiceGroups: nil,
+		Services: []model.Service{
+			{
+				Id:          "sid",
+				LocalId:     "s",
+				Name:        "s",
+				Interaction: model.EVENT_AND_REQUEST,
+				ProtocolId:  "pid",
+				Outputs: []model.Content{
+					{
+						ContentVariable: model.ContentVariable{
+							Id:               "vid",
+							Name:             "v",
+							CharacteristicId: "cid",
+							FunctionId:       "fid",
+							AspectId:         usedSubAspect,
+						},
+					},
+				},
+			},
+		},
+	}
+	err = ctrl.SetDeviceType(dt, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	changedAspect := model.Aspect{}
+	err = json.Unmarshal([]byte(changeStr), &changedAspect)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Run("validate", func(t *testing.T) {
+		err, _ = ctrl.ValidateAspect(changedAspect)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
+
+}
+
+func testAspectEditValidation(t *testing.T, config config.Config, aspect model.Aspect, expectedCode int) error {
+	t.Helper()
+	body := new(bytes.Buffer)
+	err := json.NewEncoder(body).Encode(aspect)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("PUT", "http://localhost:"+config.ServerPort+"/aspects/"+url.PathEscape(aspect.Id)+"?dry-run=true", body)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", userjwt)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != expectedCode {
+		temp, _ := io.ReadAll(resp.Body)
+		t.Log(string(temp))
+		return errors.New(resp.Status)
+	}
+	return nil
+}
 
 func TestSubAspectMovePartial(t *testing.T) {
 	wg := &sync.WaitGroup{}

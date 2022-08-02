@@ -25,7 +25,10 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"log"
 	"net/http"
 	"sync"
@@ -79,4 +82,60 @@ func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf 
 	}
 	time.Sleep(1 * time.Second)
 	return conf, err
+}
+
+func createMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (ctrl *controller.Controller, err error) {
+	conf, err := config.Load("../../config.json")
+	if err != nil {
+		log.Println("ERROR: unable to load config: ", err)
+		return
+	}
+	conf.FatalErrHandler = t.Fatal
+	conf.MongoReplSet = false
+	conf.Debug = true
+	conf.DisableKafkaConsumer = true
+	conf.MongoUrl, err = mocks.Mongo(ctx, wg)
+	if err != nil {
+		log.Println("ERROR: unable to create mongo mock", err)
+		return
+	}
+	ctrl, err = StartController(ctx, wg, conf)
+	if err != nil {
+		log.Println("ERROR: unable to start lib", err)
+		return
+	}
+	return
+}
+
+func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (ctrl *controller.Controller, err error) {
+	ctx, cancel := context.WithCancel(baseCtx)
+	defer func() {
+		if err != nil {
+			cancel()
+		}
+	}()
+	db, err := database.New(conf)
+	if err != nil {
+		log.Println("ERROR: unable to connect to database", err)
+		return
+	}
+	if wg != nil {
+		wg.Add(1)
+	}
+	go func() {
+		<-ctx.Done()
+		db.Disconnect()
+		if wg != nil {
+			wg.Done()
+		}
+	}()
+
+	ctrl, err = controller.New(conf, db, mocks.NewSecurity(), controller.ErrorProducer{})
+	if err != nil {
+		db.Disconnect()
+		log.Println("ERROR: unable to start control", err)
+		return
+	}
+
+	return ctrl, err
 }
