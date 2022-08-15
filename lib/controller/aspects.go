@@ -142,7 +142,7 @@ func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descenda
 }
 
 func (this *Controller) ValidateAspect(aspect model.Aspect) (err error, code int) {
-	return this.validateAspect(aspect, false)
+	return this.validateAspect(aspect, true)
 }
 
 func (this *Controller) validateAspect(aspect model.Aspect, checkDelete bool) (err error, code int) {

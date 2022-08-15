@@ -69,6 +69,7 @@ func GetKafkaWriter(broker []string, topic string, debug bool) (writer *kafka.Wr
 		MaxAttempts: 10,
 		Logger:      logger,
 		BatchSize:   1,
+		Balancer:    &kafka.Hash{},
 	}
 	return writer, err
 }
