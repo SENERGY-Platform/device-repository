@@ -38,6 +38,8 @@ func HubListenerFactory(config config.Config, control Controller) (topic string,
 			return control.SetHub(command.Hub, command.Owner)
 		case "DELETE":
 			return control.DeleteHub(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

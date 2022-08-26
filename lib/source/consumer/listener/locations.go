@@ -41,6 +41,8 @@ func LocationsListenerFactory(config config.Config, control Controller) (topic s
 			return control.SetLocation(command.Location, command.Owner)
 		case "DELETE":
 			return control.DeleteLocation(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

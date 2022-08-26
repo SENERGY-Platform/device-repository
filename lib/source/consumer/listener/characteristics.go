@@ -38,6 +38,8 @@ func CharacteristicsListenerFactory(config config.Config, control Controller) (t
 			return control.SetCharacteristic(command.Characteristic, command.Owner)
 		case "DELETE":
 			return control.DeleteCharacteristic(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

@@ -41,6 +41,8 @@ func FunctionsListenerFactory(config config.Config, control Controller) (topic s
 			return control.SetFunction(command.Function, command.Owner)
 		case "DELETE":
 			return control.DeleteFunction(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

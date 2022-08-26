@@ -38,6 +38,8 @@ func DeviceGroupListenerFactory(config config.Config, control Controller) (topic
 			return control.SetDeviceGroup(command.DeviceGroup, command.Owner)
 		case "DELETE":
 			return control.DeleteDeviceGroup(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

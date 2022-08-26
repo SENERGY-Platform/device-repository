@@ -38,6 +38,8 @@ func DeviceTypeListenerFactory(config config.Config, control Controller) (topic 
 			return control.SetDeviceType(command.DeviceType, command.Owner)
 		case "DELETE":
 			return control.DeleteDeviceType(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

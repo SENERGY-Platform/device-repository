@@ -38,6 +38,8 @@ func ProtocolListenerFactory(config config.Config, control Controller) (topic st
 			return control.SetProtocol(command.Protocol, command.Owner)
 		case "DELETE":
 			return control.DeleteProtocol(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

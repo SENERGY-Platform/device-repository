@@ -41,6 +41,8 @@ func AspectsListenerFactory(config config.Config, control Controller) (topic str
 			return control.SetAspect(command.Aspect, command.Owner)
 		case "DELETE":
 			return control.DeleteAspect(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

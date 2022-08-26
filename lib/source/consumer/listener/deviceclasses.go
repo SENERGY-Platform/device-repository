@@ -41,6 +41,8 @@ func DeviceClassesListenerFactory(config config.Config, control Controller) (top
 			return control.SetDeviceClass(command.DeviceClass, command.Owner)
 		case "DELETE":
 			return control.DeleteDeviceClass(command.Id)
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil
