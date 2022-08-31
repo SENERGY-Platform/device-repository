@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
+	"strings"
 )
 
 /////////////////////////
@@ -92,6 +93,9 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 	}
 	if device.LocalId == "" {
 		return errors.New("missing device local id"), http.StatusBadRequest
+	}
+	if strings.ContainsAny(device.LocalId, "+#/") {
+		return errors.New("device local id may not contain any +#/"), http.StatusBadRequest
 	}
 	if device.DeviceTypeId == "" {
 		return errors.New("missing device type id"), http.StatusBadRequest

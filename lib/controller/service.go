@@ -35,6 +35,9 @@ func (this *Controller) ValidateService(service model.Service) (error, int) {
 	if service.LocalId == "" {
 		return errors.New("missing service local id"), http.StatusBadRequest
 	}
+	if strings.ContainsAny(service.LocalId, "+#/") {
+		return errors.New("service local id may not contain any +#/"), http.StatusBadRequest
+	}
 	if service.ProtocolId == "" {
 		return errors.New("missing service protocol id"), http.StatusBadRequest
 	}
