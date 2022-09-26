@@ -64,6 +64,8 @@ type Config struct {
 	DisableHttpApi                bool   `json:"disable_http_api"`
 	HttpClientTimeout             string `json:"http_client_timeout"`
 	FatalErrHandler               func(v ...interface{})
+
+	DeviceServiceGroupSelectionAllowNotFound bool `json:"device_service_group_selection_allow_not_found"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {
@@ -74,7 +76,7 @@ func (this Config) HandleFatalError(v ...interface{}) {
 	}
 }
 
-//loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
+// loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
 func Load(location string) (config Config, err error) {
 	file, err := os.Open(location)
 	if err != nil {

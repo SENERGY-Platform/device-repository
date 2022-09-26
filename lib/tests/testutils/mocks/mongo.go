@@ -18,20 +18,30 @@ package mocks
 
 import (
 	"context"
-	"github.com/strikesecurity/strikememongo"
+	"errors"
+	"github.com/tryvium-travels/memongo"
+	"log"
 	"sync"
 )
 
 func Mongo(ctx context.Context, wg *sync.WaitGroup) (mongoUrl string, err error) {
-	mongoServer, err := strikememongo.StartWithOptions(&strikememongo.Options{MongoVersion: "4.2.1", ShouldUseReplica: true})
+	mongoServer, err := memongo.StartWithOptions(&memongo.Options{MongoVersion: "4.2.1", ShouldUseReplica: true})
 	if err != nil {
 		return "", err
 	}
+	if mongoServer == nil {
+		return "", errors.New("memongo.StartWithOptions() == nil")
+	}
 	wg.Add(1)
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("RECOVER:", r)
+			}
+			wg.Done()
+		}()
 		<-ctx.Done()
 		mongoServer.Stop()
-		wg.Done()
 	}()
 
 	return mongoServer.URI(), nil

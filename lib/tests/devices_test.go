@@ -24,6 +24,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	uuid "github.com/satori/go.uuid"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -164,7 +165,7 @@ func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDe
 			return
 		}
 		if resp.StatusCode != http.StatusOK {
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 			return
 		}

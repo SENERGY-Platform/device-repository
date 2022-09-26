@@ -33,12 +33,20 @@ import (
 
 func (this *Controller) ReadDeviceType(id string, token string) (result model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	deviceType, exists, err := this.db.GetDeviceType(ctx, id)
+	pureId, modifier := SplitModifier(id)
+	deviceType, exists, err := this.db.GetDeviceType(ctx, pureId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
+	}
+	deviceType.Id = id
+	if modifier != nil && len(modifier) > 0 {
+		deviceType, err, errCode = this.modifyDeviceType(deviceType, modifier)
+		if err != nil {
+			return result, err, errCode
+		}
 	}
 	return deviceType, nil, http.StatusOK
 }
