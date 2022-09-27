@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tests
+package devicetypes_test
 
 import (
 	"bytes"
@@ -23,6 +23,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	uuid "github.com/satori/go.uuid"
 	"io"
@@ -45,7 +46,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -71,7 +72,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 				},
 			},
 		},
-	}, userid)
+	}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -87,7 +88,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 				Name: "ps",
 			},
 		},
-	}, userid)
+	}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -143,7 +144,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -161,7 +162,7 @@ func TestServiceQuery(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -172,7 +173,7 @@ func TestServiceQuery(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, userid)
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -190,7 +191,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -226,7 +227,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	err = producer.PublishDeviceType(dt, userid)
+	err = producer.PublishDeviceType(dt, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -260,7 +261,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	err = producer.PublishDeviceType(dtUpdated, userid)
+	err = producer.PublishDeviceType(dtUpdated, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -289,7 +290,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	err = producer.PublishDeviceType(dtSubVarDeleted, userid)
+	err = producer.PublishDeviceType(dtSubVarDeleted, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -305,7 +306,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -317,13 +318,13 @@ func TestDeviceTypeQuery(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishDeviceType(model.DeviceType{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, userid)
+		err = producer.PublishDeviceType(model.DeviceType{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, testenv.Userid)
 		if err != nil {
 			t.Error(err)
 			return
@@ -350,7 +351,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 		testDeviceTypeListSort(t, conf)
 	})
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, userid)
+	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -368,7 +369,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -425,7 +426,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		}
 	})
 
-	err = producer.PublishDeviceType(dt, userid)
+	err = producer.PublishDeviceType(dt, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -442,7 +443,7 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -458,7 +459,7 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 
 	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}}
 
-	err = producer.PublishDeviceType(dt, userid)
+	err = producer.PublishDeviceType(dt, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -475,7 +476,7 @@ func TestServiceWithAttribute(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -508,7 +509,7 @@ func TestServiceWithAttribute(t *testing.T) {
 		},
 	}}
 
-	err = producer.PublishDeviceType(dt, userid)
+	err = producer.PublishDeviceType(dt, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -531,7 +532,7 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -561,7 +562,7 @@ func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t 
 			t.Error(err)
 			return
 		}
-		req.Header.Set("Authorization", userjwt)
+		req.Header.Set("Authorization", testenv.Userjwt)
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Error(err)
@@ -593,7 +594,7 @@ func testServiceRead(t *testing.T, conf config.Config, expected model.Service) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -622,7 +623,7 @@ func testDeviceTypeList(t *testing.T, conf config.Config) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -651,7 +652,7 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -680,7 +681,7 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -709,7 +710,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -735,7 +736,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -766,7 +767,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)
@@ -802,7 +803,7 @@ func testDeviceTypeReadNotFound(t *testing.T, conf config.Config, id string) {
 		t.Error(err)
 		return
 	}
-	req.Header.Set("Authorization", userjwt)
+	req.Header.Set("Authorization", testenv.Userjwt)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Error(err)

@@ -66,6 +66,7 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 					deprecated: use interactions field in filter (model.FilterCriteria.Interaction)
 					if set: returns only device-types with at least one matching interaction on criteria matching services
 					ignored if empty
+			- include_id_modified: bool; add service-group modified device-types to result
 	*/
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		var err error
@@ -94,6 +95,16 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 			sort = "name.asc"
 		}
 
+		includeModifiedStr := request.URL.Query().Get("include_id_modified")
+		includeModified := false
+		if includeModifiedStr != "" {
+			includeModified, err = strconv.ParseBool(includeModifiedStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
 		filter := request.URL.Query().Get("filter")
 		deviceTypesFilter := []model.FilterCriteria{}
 		if filter != "" {
@@ -111,9 +122,9 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 			for _, interaction := range strings.Split(interactionsFilterStr, ",") {
 				interactionsFilter = append(interactionsFilter, strings.TrimSpace(interaction))
 			}
-			result, err, errCode = control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, interactionsFilter)
+			result, err, errCode = control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, interactionsFilter, includeModified)
 		} else {
-			result, err, errCode = control.ListDeviceTypesV2(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter)
+			result, err, errCode = control.ListDeviceTypesV2(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, includeModified)
 		}
 
 		if err != nil {

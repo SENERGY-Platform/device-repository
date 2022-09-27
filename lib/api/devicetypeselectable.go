@@ -23,6 +23,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -48,7 +49,16 @@ func DeviceTypeSelectableEndpoints(config config.Config, control Controller, rou
 				interactionsFilter = append(interactionsFilter, strings.TrimSpace(interaction))
 			}
 		}
-		result, err, errCode := control.GetDeviceTypeSelectables(query, pathPrefix, interactionsFilter)
+		includeModifiedStr := request.URL.Query().Get("include_id_modified")
+		includeModified := false
+		if includeModifiedStr != "" {
+			includeModified, err = strconv.ParseBool(includeModifiedStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		result, err, errCode := control.GetDeviceTypeSelectables(query, pathPrefix, interactionsFilter, includeModified)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -69,7 +79,16 @@ func DeviceTypeSelectableEndpoints(config config.Config, control Controller, rou
 			return
 		}
 		pathPrefix := request.URL.Query().Get("path-prefix")
-		result, err, errCode := control.GetDeviceTypeSelectablesV2(query, pathPrefix)
+		includeModifiedStr := request.URL.Query().Get("include_id_modified")
+		includeModified := false
+		if includeModifiedStr != "" {
+			includeModified, err = strconv.ParseBool(includeModifiedStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		result, err, errCode := control.GetDeviceTypeSelectablesV2(query, pathPrefix, includeModified)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

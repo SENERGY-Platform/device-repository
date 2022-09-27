@@ -18,38 +18,11 @@ package controller
 
 import (
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"log"
 	"net/http"
-	"net/url"
 	"strings"
 )
-
-const Seperator = "$"
-
-func DecodeModifierParameter(parameter string) (result map[string][]string, err error) {
-	return url.ParseQuery(parameter)
-}
-
-func EncodeModifierParameter(parameter map[string][]string) (result string) {
-	return url.Values(parameter).Encode()
-}
-
-func SplitModifier(id string) (pureId string, modifier map[string][]string) {
-	parts := strings.SplitN(id, Seperator, 2)
-	pureId = parts[0]
-	if len(parts) < 2 {
-		return
-	}
-	var err error
-	modifier, err = DecodeModifierParameter(parts[1])
-	if err != nil {
-		log.Println("WARNING: unable to parse modifier parts as Modifier --> ignore modifiers")
-		modifier = nil
-		return
-	}
-	return
-}
 
 func (this *Controller) modifyDevice(device model.Device, modifier map[string][]string) (result model.Device, err error, code int) {
 	code = http.StatusOK
@@ -97,12 +70,12 @@ func (this *Controller) modifyDeviceServiceGroupSelection(device model.Device, p
 	if !exists {
 		return result, errors.New("unable to use " + ServiceGroupSelectionIdModifier + " modifier: device-type not found"), http.StatusInternalServerError
 	}
-	if !strings.Contains(result.DeviceTypeId, Seperator) {
-		result.DeviceTypeId = result.DeviceTypeId + Seperator
+	if !strings.Contains(result.DeviceTypeId, idmodifier.Seperator) {
+		result.DeviceTypeId = result.DeviceTypeId + idmodifier.Seperator
 	} else {
 		result.DeviceTypeId = result.DeviceTypeId + "&"
 	}
-	result.DeviceTypeId = result.DeviceTypeId + EncodeModifierParameter(map[string][]string{ServiceGroupSelectionIdModifier: params})
+	result.DeviceTypeId = result.DeviceTypeId + idmodifier.EncodeModifierParameter(map[string][]string{ServiceGroupSelectionIdModifier: params})
 	serviceGroupList := []model.ServiceGroup{}
 	if this.config.DeviceServiceGroupSelectionAllowNotFound {
 		serviceGroupList = append(dt.ServiceGroups, model.ServiceGroup{

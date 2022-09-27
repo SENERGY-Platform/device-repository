@@ -37,13 +37,13 @@ type Database interface {
 	GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType model.DeviceType) error
 	RemoveDeviceType(ctx context.Context, id string) error
-	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string) (result []model.DeviceType, err error)
-	ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error)
+	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []model.DeviceType, err error)
+	ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool) (result []model.DeviceType, err error)
 	GetDeviceTypesByServiceId(ctx context.Context, serviceId string) ([]model.DeviceType, error)
 
-	GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria) (result []model.DeviceTypeCriteria, err error)
-	GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria, interactionsFilter []string) (result []interface{}, err error)
-	GetDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, criteria []model.FilterCriteria) (result []interface{}, err error)
+	GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, includeModified bool) (result []model.DeviceTypeCriteria, err error)
+	GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []interface{}, err error)
+	GetDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, criteria []model.FilterCriteria, includeModified bool) (result []interface{}, err error)
 	GetConfigurableCandidates(ctx context.Context, serviceId string) (result []model.DeviceTypeCriteria, err error)
 
 	GetDeviceGroup(ctx context.Context, id string) (deviceGroup model.DeviceGroup, exists bool, err error)

@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -32,6 +33,7 @@ var deviceTypeCriteriaIsControllingFunctionFieldName, deviceTypeCriteriaIsContro
 var deviceTypeCriteriaIsLeafFieldName, deviceTypeCriteriaIsLeafKey = "IsLeaf", ""
 var deviceTypeCriteriaIsVoidFieldName, deviceTypeCriteriaIsVoidKey = "IsVoid", ""
 var deviceTypeCriteriaIsInputFieldName, deviceTypeCriteriaIsInputKey = "IsInput", ""
+var deviceTypeCriteriaIsIdModifiedFieldName, deviceTypeCriteriaIsIdModifiedKey = "IsIdModified", ""
 
 func getDeviceTypeCriteriaCollectionName(config config.Config) string {
 	return config.MongoDeviceTypeCollection + "_criteria"
@@ -54,6 +56,10 @@ func init() {
 			return err
 		}
 		deviceTypeCriteriaIsInputKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsInputFieldName)
+		if err != nil {
+			return err
+		}
+		deviceTypeCriteriaIsIdModifiedKey, err = getBsonFieldName(model.DeviceTypeCriteria{}, deviceTypeCriteriaIsIdModifiedFieldName)
 		if err != nil {
 			return err
 		}
@@ -104,7 +110,7 @@ func (this *Mongo) addDeviceTypeCriteria(ctx context.Context, deviceTypeCriteria
 }
 
 func (this *Mongo) removeDeviceTypeCriteriaByDeviceType(ctx context.Context, deviceTypeId string) error {
-	_, err := this.deviceTypeCriteriaCollection().DeleteMany(ctx, bson.M{DeviceTypeCriteriaBson.DeviceTypeId: deviceTypeId})
+	_, err := this.deviceTypeCriteriaCollection().DeleteMany(ctx, bson.M{DeviceTypeCriteriaBson.PureDeviceTypeId: deviceTypeId})
 	return err
 }
 
@@ -118,22 +124,38 @@ func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt model.DeviceTyp
 
 func createCriteriaListFromDeviceType(dt model.DeviceType) (result []model.DeviceTypeCriteria) {
 	for _, s := range dt.Services {
-		result = append(result, createCriteriaFromService(dt.Id, dt.DeviceClassId, s)...)
+		result = append(result, createCriteriaFromService(dt.Id, dt.Id, dt.DeviceClassId, s)...)
+	}
+	servicesByServiceGroup := map[string][]model.Service{}
+	unassignedServices := []model.Service{}
+	for _, s := range dt.Services {
+		if s.ServiceGroupKey == "" {
+			unassignedServices = append(unassignedServices, s)
+		} else {
+			servicesByServiceGroup[s.ServiceGroupKey] = append(servicesByServiceGroup[s.ServiceGroupKey], s)
+		}
+	}
+	for key, sg := range servicesByServiceGroup {
+		modifiedId := dt.Id + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {key}})
+		services := append(sg, unassignedServices...)
+		for _, s := range services {
+			result = append(result, createCriteriaFromService(dt.Id, modifiedId, dt.DeviceClassId, s)...)
+		}
 	}
 	return result
 }
 
-func createCriteriaFromService(deviceTypeId string, deviceClassId string, service model.Service) (result []model.DeviceTypeCriteria) {
+func createCriteriaFromService(pureDeviceTypeId string, deviceTypeId string, deviceClassId string, service model.Service) (result []model.DeviceTypeCriteria) {
 	for _, content := range service.Inputs {
-		result = append(result, createCriteriaFromContentVariables(deviceTypeId, deviceClassId, service.Id, service.Interaction, content.ContentVariable, true, []string{})...)
+		result = append(result, createCriteriaFromContentVariables(pureDeviceTypeId, deviceTypeId, deviceClassId, service.Id, service.Interaction, content.ContentVariable, true, []string{})...)
 	}
 	for _, content := range service.Outputs {
-		result = append(result, createCriteriaFromContentVariables(deviceTypeId, deviceClassId, service.Id, service.Interaction, content.ContentVariable, false, []string{})...)
+		result = append(result, createCriteriaFromContentVariables(pureDeviceTypeId, deviceTypeId, deviceClassId, service.Id, service.Interaction, content.ContentVariable, false, []string{})...)
 	}
 	return result
 }
 
-func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId string, serviceId string, interaction model.Interaction, variable model.ContentVariable, isInput bool, pathParts []string) (result []model.DeviceTypeCriteria) {
+func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId string, deviceClassId string, serviceId string, interaction model.Interaction, variable model.ContentVariable, isInput bool, pathParts []string) (result []model.DeviceTypeCriteria) {
 	currentPath := append(pathParts, variable.Name)
 	isLeaf := len(variable.SubContentVariables) == 0
 	isCtrlFun := isControllingFunction(variable.FunctionId)
@@ -141,6 +163,8 @@ func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId strin
 	isConfigurableCandidate := isLeaf && isInput
 	if isInputControllingFunction || isConfigurableCandidate {
 		result = append(result, model.DeviceTypeCriteria{
+			IsIdModified:          pureDeviceTypeId != deviceTypeId,
+			PureDeviceTypeId:      pureDeviceTypeId,
 			DeviceTypeId:          deviceTypeId,
 			ServiceId:             serviceId,
 			ContentVariableId:     variable.Id,
@@ -159,7 +183,7 @@ func createCriteriaFromContentVariables(deviceTypeId string, deviceClassId strin
 		})
 	}
 	for _, sub := range variable.SubContentVariables {
-		result = append(result, createCriteriaFromContentVariables(deviceTypeId, deviceClassId, serviceId, interaction, sub, isInput, currentPath)...)
+		result = append(result, createCriteriaFromContentVariables(pureDeviceTypeId, deviceTypeId, deviceClassId, serviceId, interaction, sub, isInput, currentPath)...)
 	}
 	return
 }
@@ -171,7 +195,7 @@ func isControllingFunction(functionId string) bool {
 	return false
 }
 
-func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria) (result []model.DeviceTypeCriteria, err error) {
+func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
 	filter := bson.M{
 		DeviceTypeCriteriaBson.DeviceTypeId: bson.M{"$in": deviceTypeIds},
 	}
@@ -190,6 +214,9 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 		default:
 			filter[DeviceTypeCriteriaBson.Interaction] = string(criteria.Interaction)
 		}
+	}
+	if !includeModified {
+		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
 	}
 	if criteria.AspectId != "" {
 		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
@@ -223,10 +250,11 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 
 func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId string) (result []model.DeviceTypeCriteria, err error) {
 	filter := bson.M{
-		DeviceTypeCriteriaBson.ServiceId: serviceId,
-		deviceTypeCriteriaIsLeafKey:      true,
-		deviceTypeCriteriaIsInputKey:     true,
-		deviceTypeCriteriaIsVoidKey:      false,
+		DeviceTypeCriteriaBson.ServiceId:  serviceId,
+		deviceTypeCriteriaIsLeafKey:       true,
+		deviceTypeCriteriaIsInputKey:      true,
+		deviceTypeCriteriaIsVoidKey:       false,
+		deviceTypeCriteriaIsIdModifiedKey: bson.M{"$ne": true},
 	}
 	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
 	if err != nil {

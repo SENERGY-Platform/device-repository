@@ -23,15 +23,25 @@ package tests
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"github.com/ory/dockertest/v3"
+	uuid "github.com/satori/go.uuid"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"runtime/debug"
+	"sort"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -39,6 +49,11 @@ import (
 
 const userjwt = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzaUtabW9aUHpsMmRtQnBJdS1vSkY4ZVVUZHh4OUFIckVOcG5CcHM5SjYwIn0.eyJqdGkiOiJiOGUyNGZkNy1jNjJlLTRhNWQtOTQ4ZC1mZGI2ZWVkM2JmYzYiLCJleHAiOjE1MzA1MzIwMzIsIm5iZiI6MCwiaWF0IjoxNTMwNTI4NDMyLCJpc3MiOiJodHRwczovL2F1dGguc2VwbC5pbmZhaS5vcmcvYXV0aC9yZWFsbXMvbWFzdGVyIiwiYXVkIjoiZnJvbnRlbmQiLCJzdWIiOiJkZDY5ZWEwZC1mNTUzLTQzMzYtODBmMy03ZjQ1NjdmODVjN2IiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJmcm9udGVuZCIsIm5vbmNlIjoiMjJlMGVjZjgtZjhhMS00NDQ1LWFmMjctNGQ1M2JmNWQxOGI5IiwiYXV0aF90aW1lIjoxNTMwNTI4NDIzLCJzZXNzaW9uX3N0YXRlIjoiMWQ3NWE5ODQtNzM1OS00MWJlLTgxYjktNzMyZDgyNzRjMjNlIiwiYWNyIjoiMCIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJhZG1pbiIsImRldmVsb3BlciIsInVtYV9hdXRob3JpemF0aW9uIiwidXNlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7Im1hc3Rlci1yZWFsbSI6eyJyb2xlcyI6WyJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsInZpZXctcmVhbG0iLCJtYW5hZ2UtaWRlbnRpdHktcHJvdmlkZXJzIiwiaW1wZXJzb25hdGlvbiIsImNyZWF0ZS1jbGllbnQiLCJtYW5hZ2UtdXNlcnMiLCJxdWVyeS1yZWFsbXMiLCJ2aWV3LWF1dGhvcml6YXRpb24iLCJxdWVyeS1jbGllbnRzIiwicXVlcnktdXNlcnMiLCJtYW5hZ2UtZXZlbnRzIiwibWFuYWdlLXJlYWxtIiwidmlldy1ldmVudHMiLCJ2aWV3LXVzZXJzIiwidmlldy1jbGllbnRzIiwibWFuYWdlLWF1dGhvcml6YXRpb24iLCJtYW5hZ2UtY2xpZW50cyIsInF1ZXJ5LWdyb3VwcyJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwicm9sZXMiOlsidW1hX2F1dGhvcml6YXRpb24iLCJhZG1pbiIsImNyZWF0ZS1yZWFsbSIsImRldmVsb3BlciIsInVzZXIiLCJvZmZsaW5lX2FjY2VzcyJdLCJuYW1lIjoiZGYgZGZmZmYiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzZXBsIiwiZ2l2ZW5fbmFtZSI6ImRmIiwiZmFtaWx5X25hbWUiOiJkZmZmZiIsImVtYWlsIjoic2VwbEBzZXBsLmRlIn0.eOwKV7vwRrWr8GlfCPFSq5WwR_p-_rSJURXCV1K7ClBY5jqKQkCsRL2V4YhkP1uS6ECeSxF7NNOLmElVLeFyAkvgSNOUkiuIWQpMTakNKynyRfH0SrdnPSTwK2V1s1i4VjoYdyZWXKNjeT2tUUX9eCyI5qOf_Dzcai5FhGCSUeKpV0ScUj5lKrn56aamlW9IdmbFJ4VwpQg2Y843Vc0TqpjK9n_uKwuRcQd9jkKHkbwWQ-wyJEbFWXHjQ6LnM84H0CQ2fgBqPPfpQDKjGSUNaCS-jtBcbsBAWQSICwol95BuOAqVFMucx56Wm-OyQOuoQ1jaLt2t-Uxtr-C9wKJWHQ"
 const userid = "dd69ea0d-f553-4336-80f3-7f4567f85c7b"
+
+var devicetype1id = "urn:infai:ses:device-type:2cc43032-207e-494e-8de4-94784cd4961d"
+var devicetype1name = uuid.NewV4().String()
+var devicetype2id = uuid.NewV4().String()
+var devicetype2name = uuid.NewV4().String()
 
 func jwtdelete(token string, url string) (resp *http.Response, err error) {
 	req, err := http.NewRequest("DELETE", url, nil)
@@ -150,4 +165,146 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 	}
 
 	return ctrl, err
+}
+
+func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []model.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	payload := new(bytes.Buffer)
+	err = json.NewEncoder(payload).Encode(descriptions)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	interactionsQuery := ""
+	if interactionsFilter != nil {
+		interactions := []string{}
+		for _, v := range interactionsFilter {
+			interactions = append(interactions, string(v))
+		}
+		interactionsQuery = "&interactions-filter=" + url.QueryEscape(strings.Join(interactions, ","))
+	}
+	req, err := http.NewRequest(
+		"POST",
+		"http://localhost:"+config.ServerPort+"/query/device-type-selectables?path-prefix="+url.QueryEscape(prefix)+interactionsQuery,
+		payload,
+	)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	req.Header.Set("Authorization", token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		debug.PrintStack()
+		temp, _ := io.ReadAll(resp.Body)
+		log.Println("ERROR: GetDeviceTypeSelectables():", resp.StatusCode, string(temp))
+		return result, errors.New("unexpected statuscode")
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+
+	return result, err
+}
+
+func GetDeviceTypeSelectablesV2(config config.Config, token string, prefix string, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	payload := new(bytes.Buffer)
+	err = json.NewEncoder(payload).Encode(descriptions)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	req, err := http.NewRequest(
+		"POST",
+		"http://localhost:"+config.ServerPort+"/v2/query/device-type-selectables?path-prefix="+url.QueryEscape(prefix),
+		payload,
+	)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	req.Header.Set("Authorization", token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		debug.PrintStack()
+		temp, _ := io.ReadAll(resp.Body)
+		log.Println("ERROR: GetDeviceTypeSelectables():", resp.StatusCode, string(temp))
+		return result, errors.New("unexpected statuscode")
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		debug.PrintStack()
+		return result, err
+	}
+
+	return result, err
+}
+
+func sortServices(list []model.DeviceTypeSelectable) (result []model.DeviceTypeSelectable) {
+	result = []model.DeviceTypeSelectable{}
+	for _, e := range list {
+		sort.Slice(e.Services, func(i, j int) bool {
+			return e.Services[i].Id < e.Services[j].Id
+		})
+		result = append(result, e)
+	}
+	return
+}
+
+func normalize(expected interface{}) (result interface{}) {
+	temp, _ := json.Marshal(expected)
+	json.Unmarshal(temp, &result)
+	return
+}
+
+func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.DeviceType) {
+	expected := model.DeviceType{Id: devicetype1id, Name: devicetype1name}
+	if len(expectedDt) > 0 {
+		expected = expectedDt[0]
+	}
+	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	req.Header.Set("Authorization", testenv.Userjwt)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
+		return
+	}
+	result := model.DeviceType{}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		t.Error(err)
+	}
+	if result.Name != expected.Name {
+		t.Error("unexpected result", result)
+		return
+	}
 }

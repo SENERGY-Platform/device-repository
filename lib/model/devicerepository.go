@@ -27,6 +27,8 @@ type AspectNode struct {
 }
 
 type DeviceTypeCriteria struct {
+	IsIdModified          bool        `json:"is_id_modified"`
+	PureDeviceTypeId      string      `json:"pure_device_type_id"`
 	DeviceTypeId          string      `json:"device_type_id"`
 	ServiceId             string      `json:"service_id"`
 	ContentVariableId     string      `json:"content_variable_id"`

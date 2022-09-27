@@ -18,6 +18,7 @@ package controller
 
 import (
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"net/http"
 	"strings"
@@ -29,7 +30,7 @@ import (
 
 func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result model.Device, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	pureId, modifier := SplitModifier(id)
+	pureId, modifier := idmodifier.SplitModifier(id)
 	device, exists, err := this.db.GetDevice(ctx, pureId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError

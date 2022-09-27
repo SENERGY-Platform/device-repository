@@ -19,6 +19,7 @@ package tests
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"sync"
@@ -115,11 +116,11 @@ func TestModifiedDevice(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	idModifier := controller.Seperator + controller.EncodeModifierParameter(map[string][]string{"service_group_selection": {sgKey}})
+	idModifier := idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {sgKey}})
 	modifiedNameSuffix := " sg1"
 	sgKeyUnknown := sgKey + "unknown"
 	modifiedNameSuffixUnknown := " " + sgKeyUnknown
-	idModifierUnknown := controller.Seperator + controller.EncodeModifierParameter(map[string][]string{"service_group_selection": {sgKeyUnknown}})
+	idModifierUnknown := idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {sgKeyUnknown}})
 
 	d1Modified := model.Device{
 		Id:           device1id + idModifier,

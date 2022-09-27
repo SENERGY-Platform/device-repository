@@ -18,12 +18,14 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
 	"log"
+	"runtime/debug"
 	"strings"
 )
 
@@ -97,7 +99,7 @@ func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType mod
 	return deviceType, true, err
 }
 
-func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, interactionsFilter []string) (result []model.DeviceType, err error) {
+func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []model.DeviceType, err error) {
 	result = []model.DeviceType{}
 	opt := options.Find()
 	opt.SetLimit(limit)
@@ -120,8 +122,9 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
 
 	filter := bson.M{}
+	var deviceTypeIds []interface{}
 	if len(filterCriteria) > 0 {
-		deviceTypeIds, err := this.GetDeviceTypeIdsByFilterCriteria(ctx, filterCriteria, interactionsFilter)
+		deviceTypeIds, err = this.GetDeviceTypeIdsByFilterCriteria(ctx, filterCriteria, interactionsFilter, includeModified)
 		if err != nil {
 			return nil, err
 		}
@@ -141,10 +144,16 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 		result = append(result, deviceType)
 	}
 	err = cursor.Err()
+	if err != nil {
+		return result, err
+	}
+	if includeModified {
+		result = addModifiedElements(result, deviceTypeIds)
+	}
 	return
 }
 
-func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria) (result []model.DeviceType, err error) {
+func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, includeModified bool) (result []model.DeviceType, err error) {
 	result = []model.DeviceType{}
 	opt := options.Find()
 	opt.SetLimit(limit)
@@ -167,8 +176,9 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 	opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
 
 	filter := bson.M{}
+	var deviceTypeIds []interface{}
 	if len(filterCriteria) > 0 {
-		deviceTypeIds, err := this.GetDeviceTypeIdsByFilterCriteriaV2(ctx, filterCriteria)
+		deviceTypeIds, err = this.GetDeviceTypeIdsByFilterCriteriaV2(ctx, filterCriteria, includeModified)
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +198,40 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 		result = append(result, deviceType)
 	}
 	err = cursor.Err()
+	if err != nil {
+		return result, err
+	}
+	if includeModified {
+		result = addModifiedElements(result, deviceTypeIds)
+	}
 	return
+}
+
+func addModifiedElements(deviceTypes []model.DeviceType, ids []interface{}) (result []model.DeviceType) {
+	modifiedIndex := map[string][]string{}
+	for _, idInterface := range ids {
+		id, ok := idInterface.(string)
+		if !ok {
+			debug.PrintStack()
+			continue
+		}
+		pure, _ := idmodifier.SplitModifier(id)
+		if id != pure {
+			modifiedIndex[pure] = append(modifiedIndex[pure], id)
+		}
+	}
+	for _, dt := range deviceTypes {
+		result = append(result, dt)
+		modifiedIds := modifiedIndex[dt.Id]
+		if len(modifiedIds) > 0 {
+			for _, modifiedId := range modifiedIds {
+				temp := dt
+				temp.Id = modifiedId
+				result = append(result, temp)
+			}
+		}
+	}
+	return result
 }
 
 func (this *Mongo) SetDeviceType(ctx context.Context, deviceType model.DeviceType) error {
@@ -236,10 +279,10 @@ func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId stri
 	return
 }
 
-//all criteria must match; if interactionsFilter is used (len > 0), at least one must match
-func (this *Mongo) GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria, interactionsFilter []string) (result []interface{}, err error) {
+// all criteria must match; if interactionsFilter is used (len > 0), at least one must match
+func (this *Mongo) GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []interface{}, err error) {
 	for _, c := range criteria {
-		result, err = this.filterDeviceTypeIdsByFilterCriteria(ctx, result, c, interactionsFilter)
+		result, err = this.filterDeviceTypeIdsByFilterCriteria(ctx, result, c, interactionsFilter, includeModified)
 		if err != nil {
 			return result, err
 		}
@@ -247,9 +290,9 @@ func (this *Mongo) GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteri
 	return
 }
 
-func (this *Mongo) GetDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, criteria []model.FilterCriteria) (result []interface{}, err error) {
+func (this *Mongo) GetDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, criteria []model.FilterCriteria, includeModified bool) (result []interface{}, err error) {
 	for _, c := range criteria {
-		result, err = this.filterDeviceTypeIdsByFilterCriteriaV2(ctx, result, c)
+		result, err = this.filterDeviceTypeIdsByFilterCriteriaV2(ctx, result, c, includeModified)
 		if err != nil {
 			return result, err
 		}
@@ -257,7 +300,7 @@ func (this *Mongo) GetDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, crite
 	return
 }
 
-func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, interactions []string) (result []interface{}, err error) {
+func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, interactions []string, includeModified bool) (result []interface{}, err error) {
 	result = []interface{}{}
 	if deviceTypeIds != nil && len(deviceTypeIds) == 0 {
 		return result, nil
@@ -267,6 +310,9 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, devi
 		filter = bson.M{
 			DeviceTypeCriteriaBson.DeviceTypeId: bson.M{"$in": deviceTypeIds},
 		}
+	}
+	if !includeModified {
+		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
 	}
 	if len(interactions) > 0 {
 		filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": interactions}
@@ -301,7 +347,7 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, devi
 	return
 }
 
-func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria) (result []interface{}, err error) {
+func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, includeModified bool) (result []interface{}, err error) {
 	result = []interface{}{}
 	if deviceTypeIds != nil && len(deviceTypeIds) == 0 {
 		return result, nil
@@ -311,6 +357,9 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, de
 		filter = bson.M{
 			DeviceTypeCriteriaBson.DeviceTypeId: bson.M{"$in": deviceTypeIds},
 		}
+	}
+	if !includeModified {
+		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
 	}
 	if criteria.DeviceClassId != "" {
 		filter[DeviceTypeCriteriaBson.DeviceClassId] = criteria.DeviceClassId

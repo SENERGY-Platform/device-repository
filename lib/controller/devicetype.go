@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"net/http"
@@ -32,8 +33,12 @@ import (
 /////////////////////////
 
 func (this *Controller) ReadDeviceType(id string, token string) (result model.DeviceType, err error, errCode int) {
+	return this.readDeviceType(id)
+}
+
+func (this *Controller) readDeviceType(id string) (result model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	pureId, modifier := SplitModifier(id)
+	pureId, modifier := idmodifier.SplitModifier(id)
 	deviceType, exists, err := this.db.GetDeviceType(ctx, pureId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -51,15 +56,47 @@ func (this *Controller) ReadDeviceType(id string, token string) (result model.De
 	return deviceType, nil, http.StatusOK
 }
 
-func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string) (result []model.DeviceType, err error, errCode int) {
+func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort, filter, interactionsFilter)
+	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort, filter, interactionsFilter, includeModified)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if includeModified {
+		for i, dt := range result {
+			pureId, modifier := idmodifier.SplitModifier(dt.Id)
+			if pureId != dt.Id && len(modifier) > 0 {
+				dt, err, errCode = this.modifyDeviceType(dt, modifier)
+				if err != nil {
+					return result, err, errCode
+				}
+				result[i] = dt
+			}
+		}
+
+	}
 	return
 }
 
-func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []model.DeviceType, err error, errCode int) {
+func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool) (result []model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListDeviceTypesV2(ctx, limit, offset, sort, filter)
+	result, err = this.db.ListDeviceTypesV2(ctx, limit, offset, sort, filter, includeModified)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if includeModified {
+		for i, dt := range result {
+			pureId, modifier := idmodifier.SplitModifier(dt.Id)
+			if pureId != dt.Id && len(modifier) > 0 {
+				dt, err, errCode = this.modifyDeviceType(dt, modifier)
+				if err != nil {
+					return result, err, errCode
+				}
+				result[i] = dt
+			}
+		}
+
+	}
 	return
 }
 
@@ -116,27 +153,27 @@ func ValidateServiceGroups(groups []model.ServiceGroup, services []model.Service
 	return nil
 }
 
-func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error, code int) {
+func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
-	result, err = this.getDeviceTypeSelectables(ctx, query, pathPrefix, interactionsFilter)
+	result, err = this.getDeviceTypeSelectables(ctx, query, pathPrefix, interactionsFilter, includeModified)
 	if err != nil {
 		code = http.StatusInternalServerError
 	}
 	return
 }
 
-func (this *Controller) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error, code int) {
+func (this *Controller) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
-	result, err = this.getDeviceTypeSelectablesV2(ctx, query, pathPrefix)
+	result, err = this.getDeviceTypeSelectablesV2(ctx, query, pathPrefix, includeModified)
 	if err != nil {
 		code = http.StatusInternalServerError
 	}
 	return
 }
 
-func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string) (result []model.DeviceTypeSelectable, err error) {
+func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error) {
 	result = []model.DeviceTypeSelectable{}
 
 	//EVENT|REQUEST should also find EVENT_AND_REQUEST
@@ -144,13 +181,13 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 		interactionsFilter = append(interactionsFilter, string(model.EVENT_AND_REQUEST))
 	}
 
-	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteria(ctx, query, interactionsFilter)
+	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteria(ctx, query, interactionsFilter, includeModified)
 	if err != nil {
 		return result, err
 	}
 	groupByDeviceType := map[string][]model.DeviceTypeCriteria{}
 	for _, criteria := range query {
-		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria)
+		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria, includeModified)
 		if err != nil {
 			return result, err
 		}
@@ -160,7 +197,7 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 	}
 	aspectCache := &map[string]model.AspectNode{}
 	for dtId, dtCriteria := range groupByDeviceType {
-		dt, _, err := this.db.GetDeviceType(ctx, dtId)
+		dt, err, _ := this.readDeviceType(dtId)
 		if err != nil {
 			return result, err
 		}
@@ -215,16 +252,16 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 	return result, nil
 }
 
-func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string) (result []model.DeviceTypeSelectable, err error) {
+func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool) (result []model.DeviceTypeSelectable, err error) {
 	result = []model.DeviceTypeSelectable{}
 
-	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteriaV2(ctx, query)
+	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteriaV2(ctx, query, includeModified)
 	if err != nil {
 		return result, err
 	}
 	groupByDeviceType := map[string][]model.DeviceTypeCriteria{}
 	for _, criteria := range query {
-		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria)
+		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria, includeModified)
 		if err != nil {
 			return result, err
 		}
@@ -234,7 +271,7 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 	}
 	aspectCache := &map[string]model.AspectNode{}
 	for dtId, dtCriteria := range groupByDeviceType {
-		dt, _, err := this.db.GetDeviceType(ctx, dtId)
+		dt, err, _ := this.readDeviceType(dtId)
 		if err != nil {
 			return result, err
 		}

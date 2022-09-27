@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tests
+package devicetypeselectables_test
 
 import (
 	"bytes"
@@ -23,6 +23,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"io"
 	"log"
@@ -42,7 +43,7 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -95,7 +96,7 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -160,7 +161,7 @@ func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -225,7 +226,7 @@ func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -291,7 +292,7 @@ func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -363,12 +364,11 @@ func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions
 }
 
 func TestDeviceTypeMeasuringSelectables(t *testing.T) {
-	//t.Skip("not implemented") //TODO
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -1152,7 +1152,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -2115,7 +2115,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 
 func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []model.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err := GetDeviceTypeSelectables(config, userjwt, pathPrefix, interactionsFilter, criteria)
+		result, err := GetDeviceTypeSelectables(config, testenv.Userjwt, pathPrefix, interactionsFilter, criteria)
 		if err != nil {
 			t.Error(err)
 			return
@@ -2134,7 +2134,7 @@ func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteri
 
 func testDeviceTypeSelectablesWithoutConfigurablesV2(config config.Config, criteria []model.FilterCriteria, pathPrefix string, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err := GetDeviceTypeSelectablesV2(config, userjwt, pathPrefix, criteria)
+		result, err := GetDeviceTypeSelectablesV2(config, testenv.Userjwt, pathPrefix, criteria)
 		if err != nil {
 			t.Error(err)
 			return
@@ -2182,6 +2182,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 	return func(t *testing.T) {
 		aspects := []model.Aspect{
 			{
+				Id: "plug",
+			},
+			{
 				Id: "air",
 				SubAspects: []model.Aspect{
 					{Id: "inside_air"},
@@ -2222,6 +2225,8 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			},
 		}
 		functions := []model.Function{
+			{Id: model.MEASURING_FUNCTION_PREFIX + "getPlugState"},
+			{Id: model.MEASURING_FUNCTION_PREFIX + "getPlugStates"},
 			{Id: model.MEASURING_FUNCTION_PREFIX + "getTemperature"},
 			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature"},
 			{Id: model.MEASURING_FUNCTION_PREFIX + "getVolume"},
@@ -2231,6 +2236,60 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{Id: model.CONTROLLING_FUNCTION_PREFIX + "toggle"},
 		}
 		devicetypes := []model.DeviceType{
+			{
+				Id:            "plug-strip",
+				DeviceClassId: "toggle",
+				ServiceGroups: []model.ServiceGroup{{Key: "sg1", Name: "sg1"}, {Key: "sg2", Name: "sg2"}},
+				Services: []model.Service{
+					{
+						Id:              "plug1",
+						ServiceGroupKey: "sg1",
+						Interaction:     interaction,
+						Outputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:               "state1",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
+							},
+						},
+					},
+					{
+						Id:              "plug2",
+						ServiceGroupKey: "sg2",
+						Interaction:     interaction,
+						Outputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:               "state2",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
+							},
+						},
+					},
+					{
+						Id:          "plugs",
+						Interaction: interaction,
+						Outputs: []model.Content{
+							{
+								ContentVariable: model.ContentVariable{
+									Id:               "states",
+									Name:             "states",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugStates",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-list-characteristic",
+								},
+							},
+						},
+					},
+				},
+			},
 			{
 				Id:            "toggle",
 				DeviceClassId: "toggle",
@@ -2626,7 +2685,7 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 		}
 
 		for _, aspect := range aspects {
-			err = producer.PublishAspect(aspect, userid)
+			err = producer.PublishAspect(aspect, testenv.Userid)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2634,7 +2693,7 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 		}
 
 		for _, function := range functions {
-			err = producer.PublishFunction(function, userid)
+			err = producer.PublishFunction(function, testenv.Userid)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2642,7 +2701,7 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 		}
 
 		for _, dt := range devicetypes {
-			err = producer.PublishDeviceType(dt, userid)
+			err = producer.PublishDeviceType(dt, testenv.Userid)
 			if err != nil {
 				t.Error(err)
 				return
