@@ -72,7 +72,10 @@ type Protocol struct {
 	Name             string            `json:"name"`
 	Handler          string            `json:"handler"`
 	ProtocolSegments []ProtocolSegment `json:"protocol_segments"`
+	Constraints      []string          `json:"constraints"`
 }
+
+const SenergyConnectorLocalIdConstraint = "senergy_connector_local_id"
 
 type ProtocolSegment struct {
 	Id   string `json:"id"`

@@ -103,21 +103,42 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 	if device.LocalId == "" {
 		return errors.New("missing device local id"), http.StatusBadRequest
 	}
-	if strings.ContainsAny(device.LocalId, "+#/") {
-		return errors.New("device local id may not contain any +#/"), http.StatusBadRequest
-	}
 	if device.DeviceTypeId == "" {
 		return errors.New("missing device type id"), http.StatusBadRequest
 	}
 
 	//device-type exists
 	ctx, _ := getTimeoutContext()
-	_, ok, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
+	dt, ok, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if !ok {
 		return errors.New("unknown device type id"), http.StatusBadRequest
+	}
+
+	protocolConstraints := map[string][]string{}
+	for _, service := range dt.Services {
+		if _, ok = protocolConstraints[service.ProtocolId]; !ok {
+			p, exists, err := this.db.GetProtocol(ctx, service.ProtocolId)
+			if err != nil {
+				return err, http.StatusInternalServerError
+			}
+			if exists {
+				protocolConstraints[p.Id] = p.Constraints
+			}
+		}
+	}
+
+	constraints := []string{}
+	for _, pc := range protocolConstraints {
+		constraints = append(constraints, pc...)
+	}
+
+	if contains(constraints, model.SenergyConnectorLocalIdConstraint) {
+		if strings.ContainsAny(device.LocalId, "+#/") {
+			return errors.New("device local id may not contain any +#/"), http.StatusBadRequest
+		}
 	}
 
 	//local ids are globally unique

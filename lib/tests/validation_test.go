@@ -31,6 +31,158 @@ import (
 	"time"
 )
 
+func TestProtocolConstraintInValidation(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishProtocol(model.Protocol{
+		Id:      "p1",
+		Name:    "p1",
+		Handler: "p1",
+		ProtocolSegments: []model.ProtocolSegment{{
+			Id:   "segment",
+			Name: "segment",
+		}},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishProtocol(model.Protocol{
+		Id:      "p2",
+		Name:    "p2",
+		Handler: "p2",
+		ProtocolSegments: []model.ProtocolSegment{{
+			Id:   "segment",
+			Name: "segment",
+		}},
+		Constraints: []string{model.SenergyConnectorLocalIdConstraint},
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishDeviceType(model.DeviceType{
+		Id:          "dt1",
+		Name:        "dt1",
+		Description: "",
+		Services: []model.Service{{
+			Id:          "dt1s1",
+			LocalId:     "dt1s1",
+			Name:        "dt1s1",
+			Description: "",
+			Interaction: model.REQUEST,
+			ProtocolId:  "p1",
+		}},
+		DeviceClassId: "dc1",
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishDeviceType(model.DeviceType{
+		Id:          "dt2",
+		Name:        "dt2",
+		Description: "",
+		Services: []model.Service{{
+			Id:          "dt2s1",
+			LocalId:     "dt2s1",
+			Name:        "dt2s1",
+			Description: "",
+			Interaction: model.REQUEST,
+			ProtocolId:  "p2",
+		}},
+		DeviceClassId: "dc1",
+	}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(10 * time.Second)
+
+	t.Run("device-type unconstrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", model.DeviceType{
+		Id:          "dt",
+		Name:        "dt",
+		Description: "",
+		Services: []model.Service{{
+			Id:          "dts1",
+			LocalId:     "foo/bar",
+			Name:        "dts1",
+			Description: "",
+			Interaction: model.REQUEST,
+			ProtocolId:  "p1",
+		}},
+		DeviceClassId: "dc1",
+	}, http.StatusOK, nil))
+
+	t.Run("device-type constrained error", testRequest(conf, "PUT", "/device-types?dry-run=true", model.DeviceType{
+		Id:          "dt",
+		Name:        "dt",
+		Description: "",
+		Services: []model.Service{{
+			Id:          "dts1",
+			LocalId:     "foo/bar",
+			Name:        "dts1",
+			Description: "",
+			Interaction: model.REQUEST,
+			ProtocolId:  "p2",
+		}},
+		DeviceClassId: "dc1",
+	}, http.StatusBadRequest, nil))
+
+	t.Run("device-type constrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", model.DeviceType{
+		Id:          "dt",
+		Name:        "dt",
+		Description: "",
+		Services: []model.Service{{
+			Id:          "dts1",
+			LocalId:     "foobar",
+			Name:        "dts1",
+			Description: "",
+			Interaction: model.REQUEST,
+			ProtocolId:  "p2",
+		}},
+		DeviceClassId: "dc1",
+	}, http.StatusOK, nil))
+
+	t.Run("device unconstrained ok", testRequest(conf, "PUT", "/devices?dry-run=true", model.Device{
+		Id:           "d",
+		Name:         "d",
+		LocalId:      "foo/bar",
+		DeviceTypeId: "dt1",
+	}, http.StatusOK, nil))
+
+	t.Run("device constrained error", testRequest(conf, "PUT", "/devices?dry-run=true", model.Device{
+		Id:           "d",
+		Name:         "d",
+		LocalId:      "foo/bar",
+		DeviceTypeId: "dt2",
+	}, http.StatusBadRequest, nil))
+
+	t.Run("device constrained ok", testRequest(conf, "PUT", "/devices?dry-run=true", model.Device{
+		Id:           "d",
+		Name:         "d",
+		LocalId:      "foobar",
+		DeviceTypeId: "dt2",
+	}, http.StatusOK, nil))
+}
+
 func TestDeleteValidations(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()

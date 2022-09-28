@@ -25,7 +25,7 @@ import (
 	"time"
 )
 
-func (this *Controller) ValidateService(service model.Service) (error, int) {
+func (this *Controller) ValidateService(service model.Service, protocolCache *map[string]model.Protocol) (error, int) {
 	if service.Id == "" {
 		return errors.New("missing service id"), http.StatusBadRequest
 	}
@@ -35,12 +35,31 @@ func (this *Controller) ValidateService(service model.Service) (error, int) {
 	if service.LocalId == "" {
 		return errors.New("missing service local id"), http.StatusBadRequest
 	}
-	if strings.ContainsAny(service.LocalId, "+#/") {
-		return errors.New("service local id may not contain any +#/"), http.StatusBadRequest
-	}
 	if service.ProtocolId == "" {
 		return errors.New("missing service protocol id"), http.StatusBadRequest
 	}
+
+	var protocol model.Protocol
+	var ok bool
+	var err error
+	if protocol, ok = (*protocolCache)[service.ProtocolId]; !ok {
+		ctx, _ := getTimeoutContext()
+		protocol, ok, err = this.db.GetProtocol(ctx, service.ProtocolId)
+		if err != nil {
+			return err, http.StatusBadRequest
+		}
+		if !ok {
+			return errors.New("unknown protocol"), http.StatusBadRequest
+		}
+		(*protocolCache)[service.ProtocolId] = protocol
+	}
+
+	if contains(protocol.Constraints, model.SenergyConnectorLocalIdConstraint) {
+		if strings.ContainsAny(service.LocalId, "+#/") {
+			return errors.New("service local id may not contain any +#/"), http.StatusBadRequest
+		}
+	}
+
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	protocol, exists, err := this.db.GetProtocol(ctx, service.ProtocolId)
 	if err != nil {

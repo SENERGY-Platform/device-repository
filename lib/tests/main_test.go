@@ -39,6 +39,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"reflect"
 	"runtime/debug"
 	"sort"
 	"strings"
@@ -306,5 +307,71 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 	if result.Name != expected.Name {
 		t.Error("unexpected result", result)
 		return
+	}
+}
+
+func testRequest(config config.Config, method string, path string, body interface{}, expectedStatusCode int, expected interface{}) func(t *testing.T) {
+	return testRequestWithToken(config, userjwt, method, path, body, expectedStatusCode, expected)
+}
+
+func testRequestWithToken(config config.Config, token string, method string, path string, body interface{}, expectedStatusCode int, expected interface{}) func(t *testing.T) {
+	return func(t *testing.T) {
+		var requestBody io.Reader
+		if body != nil {
+			temp := new(bytes.Buffer)
+			err := json.NewEncoder(temp).Encode(body)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			requestBody = temp
+		}
+
+		req, err := http.NewRequest(method, "http://localhost:"+config.ServerPort+path, requestBody)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		req.Header.Set("Authorization", token)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		defer resp.Body.Close()
+		defer io.ReadAll(resp.Body) // ensure reuse of connection
+		if resp.StatusCode != expectedStatusCode {
+			temp, _ := io.ReadAll(resp.Body)
+			t.Error(resp.StatusCode, string(temp))
+			return
+		}
+
+		if expected != nil {
+			temp, err := json.Marshal(expected)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			var normalizedExpected interface{}
+			err = json.Unmarshal(temp, &normalizedExpected)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			var actual interface{}
+			err = json.NewDecoder(resp.Body).Decode(&actual)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			if !reflect.DeepEqual(actual, normalizedExpected) {
+				a, _ := json.Marshal(actual)
+				e, _ := json.Marshal(normalizedExpected)
+				t.Error("\n", string(a), "\n", string(e))
+				return
+			}
+		}
 	}
 }

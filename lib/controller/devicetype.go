@@ -110,6 +110,7 @@ func (this *Controller) ValidateDeviceType(dt model.DeviceType) (err error, code
 	if len(dt.Services) == 0 {
 		return errors.New("expect at least one service"), http.StatusBadRequest
 	}
+	protocolCache := &map[string]model.Protocol{}
 	for _, service := range dt.Services {
 		ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 		deviceTypes, err := this.db.GetDeviceTypesByServiceId(ctx, service.Id)
@@ -122,7 +123,7 @@ func (this *Controller) ValidateDeviceType(dt model.DeviceType) (err error, code
 		if len(deviceTypes) == 1 && deviceTypes[0].Id != dt.Id {
 			return errors.New("reused service id"), http.StatusBadRequest
 		}
-		err, code = this.ValidateService(service)
+		err, code = this.ValidateService(service, protocolCache)
 		if err != nil {
 			return err, code
 		}
