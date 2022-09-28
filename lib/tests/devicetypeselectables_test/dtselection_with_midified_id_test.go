@@ -441,6 +441,7 @@ func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
 
 	dt := model.DeviceType{
 		Id:            "plug-strip",
+		Name:          "dt",
 		DeviceClassId: "toggle",
 		ServiceGroups: []model.ServiceGroup{{Key: "sg1", Name: "sg1"}, {Key: "sg2", Name: "sg2"}},
 		Services: []model.Service{
@@ -496,6 +497,7 @@ func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
 	dtSg1 := model.DeviceType{
 		Id:            "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg1"}}),
 		DeviceClassId: "toggle",
+		Name:          "dt sg1",
 		ServiceGroups: []model.ServiceGroup{{Key: "sg1", Name: "sg1"}, {Key: "sg2", Name: "sg2"}},
 		Services: []model.Service{
 			{
@@ -534,6 +536,7 @@ func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
 	dtSg2 := model.DeviceType{
 		Id:            "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg2"}}),
 		DeviceClassId: "toggle",
+		Name:          "dt sg2",
 		ServiceGroups: []model.ServiceGroup{{Key: "sg1", Name: "sg1"}, {Key: "sg2", Name: "sg2"}},
 		Services: []model.Service{
 			{

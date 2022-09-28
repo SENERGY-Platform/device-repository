@@ -2239,6 +2239,7 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "plug-strip",
 				DeviceClassId: "toggle",
+				Name:          "dt",
 				ServiceGroups: []model.ServiceGroup{{Key: "sg1", Name: "sg1"}, {Key: "sg2", Name: "sg2"}},
 				Services: []model.Service{
 					{

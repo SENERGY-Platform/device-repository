@@ -163,7 +163,7 @@ func TestModifiedDevice(t *testing.T) {
 
 	dtModified := model.DeviceType{
 		Id:   devicetype1id + idModifier,
-		Name: devicetype1name,
+		Name: devicetype1name + modifiedNameSuffix,
 		ServiceGroups: []model.ServiceGroup{
 			{
 				Key:         sgKey,

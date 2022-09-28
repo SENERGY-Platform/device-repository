@@ -118,6 +118,13 @@ func (this *Controller) modifyDeviceTypeServiceGroupSelection(dt model.DeviceTyp
 		}
 	}
 
+	for _, sg := range dt.ServiceGroups {
+		if sg.Key == sgKey {
+			result.Name = result.Name + " " + sg.Name
+			break
+		}
+	}
+
 	result.Services = newServiceList
 	return result, nil, http.StatusOK
 }
