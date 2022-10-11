@@ -587,6 +587,8 @@ func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
 	t.Run("with modify", testGetRequest(testenv.Userjwt, conf, "/device-types?interactions-filter=request&include_id_modified=true&filter="+url.QueryEscape(string(criteriaJson)), []model.DeviceType{dt, dtSg1, dtSg2}))
 	t.Run("with modify v2", testGetRequest(testenv.Userjwt, conf, "/device-types?include_id_modified=true&filter="+url.QueryEscape(string(criteriaJson)), []model.DeviceType{dt, dtSg1, dtSg2}))
 
+	t.Run("modified only", testGetRequest(testenv.Userjwt, conf, "/device-types?include_id_modified=true&include_id_unmodified=false&filter="+url.QueryEscape(string(criteriaJson)), []model.DeviceType{dtSg1, dtSg2}))
+	t.Run("unfiltered modified only", testGetRequest(testenv.Userjwt, conf, "/device-types?include_id_modified=true&include_id_unmodified=false", []model.DeviceType{dtSg1, dtSg2}))
 }
 
 func GetDeviceTypeSelectablesIncludeModified(config config.Config, token string, prefix string, interactionsFilter []model.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {

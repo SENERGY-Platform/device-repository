@@ -183,6 +183,11 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 			return nil, err
 		}
 		filter = bson.M{deviceTypeIdKey: bson.M{"$in": deviceTypeIds}}
+	} else if includeModified {
+		deviceTypeIds, err = this.filterDeviceTypeIdsByFilterCriteriaV2(ctx, nil, model.FilterCriteria{}, includeModified)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cursor, err := this.deviceTypeCollection().Find(ctx, filter, opt)

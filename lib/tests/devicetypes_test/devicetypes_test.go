@@ -27,7 +27,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	uuid "github.com/satori/go.uuid"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -151,7 +150,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -569,7 +568,7 @@ func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t 
 			return
 		}
 		if resp.StatusCode != http.StatusOK {
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 			return
 		}
@@ -601,7 +600,7 @@ func testServiceRead(t *testing.T, conf config.Config, expected model.Service) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -630,7 +629,7 @@ func testDeviceTypeList(t *testing.T, conf config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -659,7 +658,7 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -688,7 +687,7 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -717,7 +716,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -743,7 +742,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -774,7 +773,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
@@ -810,7 +809,7 @@ func testDeviceTypeReadNotFound(t *testing.T, conf config.Config, id string) {
 		return
 	}
 	if resp.StatusCode != http.StatusNotFound {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
