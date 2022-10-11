@@ -56,46 +56,50 @@ func (this *Controller) readDeviceType(id string) (result model.DeviceType, err 
 	return deviceType, nil, http.StatusOK
 }
 
-func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []model.DeviceType, err error, errCode int) {
+func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListDeviceTypes(ctx, limit, offset, sort, filter, interactionsFilter, includeModified)
+	temp, err := this.db.ListDeviceTypes(ctx, limit, offset, sort, filter, interactionsFilter, includeModified)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	if includeModified {
-		for i, dt := range result {
-			pureId, modifier := idmodifier.SplitModifier(dt.Id)
-			if pureId != dt.Id && len(modifier) > 0 {
-				dt, err, errCode = this.modifyDeviceType(dt, modifier)
-				if err != nil {
-					return result, err, errCode
-				}
-				result[i] = dt
-			}
+	result = []model.DeviceType{}
+	for _, dt := range temp {
+		pureId, modifier := idmodifier.SplitModifier(dt.Id)
+		isModified := pureId != dt.Id && len(modifier) > 0
+		if !isModified && includeUnmodified {
+			result = append(result, dt)
 		}
-
+		if isModified && includeModified {
+			dt, err, errCode = this.modifyDeviceType(dt, modifier)
+			if err != nil {
+				return result, err, errCode
+			}
+			result = append(result, dt)
+		}
 	}
 	return
 }
 
-func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool) (result []model.DeviceType, err error, errCode int) {
+func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []model.DeviceType, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.ListDeviceTypesV2(ctx, limit, offset, sort, filter, includeModified)
+	temp, err := this.db.ListDeviceTypesV2(ctx, limit, offset, sort, filter, includeModified)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	if includeModified {
-		for i, dt := range result {
-			pureId, modifier := idmodifier.SplitModifier(dt.Id)
-			if pureId != dt.Id && len(modifier) > 0 {
-				dt, err, errCode = this.modifyDeviceType(dt, modifier)
-				if err != nil {
-					return result, err, errCode
-				}
-				result[i] = dt
-			}
+	result = []model.DeviceType{}
+	for _, dt := range temp {
+		pureId, modifier := idmodifier.SplitModifier(dt.Id)
+		isModified := pureId != dt.Id && len(modifier) > 0
+		if !isModified && includeUnmodified {
+			result = append(result, dt)
 		}
-
+		if isModified && includeModified {
+			dt, err, errCode = this.modifyDeviceType(dt, modifier)
+			if err != nil {
+				return result, err, errCode
+			}
+			result = append(result, dt)
+		}
 	}
 	return
 }

@@ -105,6 +105,16 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 			}
 		}
 
+		includeUnmodifiedStr := request.URL.Query().Get("include_id_unmodified")
+		includeUnmodified := true
+		if includeUnmodifiedStr != "" {
+			includeUnmodified, err = strconv.ParseBool(includeUnmodifiedStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
 		filter := request.URL.Query().Get("filter")
 		deviceTypesFilter := []model.FilterCriteria{}
 		if filter != "" {
@@ -122,9 +132,9 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 			for _, interaction := range strings.Split(interactionsFilterStr, ",") {
 				interactionsFilter = append(interactionsFilter, strings.TrimSpace(interaction))
 			}
-			result, err, errCode = control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, interactionsFilter, includeModified)
+			result, err, errCode = control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, interactionsFilter, includeModified, includeUnmodified)
 		} else {
-			result, err, errCode = control.ListDeviceTypesV2(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, includeModified)
+			result, err, errCode = control.ListDeviceTypesV2(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, includeModified, includeUnmodified)
 		}
 
 		if err != nil {
