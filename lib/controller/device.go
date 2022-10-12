@@ -29,6 +29,21 @@ import (
 /////////////////////////
 
 func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result model.Device, err error, errCode int) {
+	result, err, errCode = this.readDevice(id)
+	if err != nil {
+		return result, err, errCode
+	}
+	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, id, action)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) readDevice(id string) (result model.Device, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	pureId, modifier := idmodifier.SplitModifier(id)
 	device, exists, err := this.db.GetDevice(ctx, pureId)
@@ -37,13 +52,6 @@ func (this *Controller) ReadDevice(id string, token string, action model.AuthAct
 	}
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
-	}
-	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, pureId, action)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
-	}
-	if !ok {
-		return result, errors.New("access denied"), http.StatusForbidden
 	}
 	device.Id = id
 	if modifier != nil && len(modifier) > 0 {

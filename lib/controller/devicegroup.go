@@ -18,6 +18,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"net/http"
@@ -75,9 +76,9 @@ func (this *Controller) FilterDevicesOfGroupByAccess(token string, group model.D
 	return result, nil, http.StatusOK
 }
 
-//only the first element of group.Devices is checked.
-//this should be enough because every used device should be referenced in each element of group.Devices
-//use ValidateDeviceGroup() to ensure that this constraint is adhered to
+// only the first element of group.Devices is checked.
+// this should be enough because every used device should be referenced in each element of group.Devices
+// use ValidateDeviceGroup() to ensure that this constraint is adhered to
 func (this *Controller) CheckAccessToDevicesOfGroup(token string, group model.DeviceGroup) (err error, code int) {
 	if len(group.DeviceIds) == 0 {
 		return nil, http.StatusOK
@@ -148,24 +149,18 @@ func (this *Controller) selectionMatchesCriteria(
 
 	device, ok := (*dcache)[deviceId]
 	if !ok {
-		device, exists, err = this.db.GetDevice(ctx, deviceId)
+		device, err, code = this.readDevice(deviceId)
 		if err != nil {
-			return err, http.StatusInternalServerError
-		}
-		if !exists {
-			return errors.New("unknown device-id: " + deviceId), http.StatusBadRequest
+			return fmt.Errorf("unable to read device %v: %w", deviceId, err), code
 		}
 		(*dcache)[deviceId] = device
 	}
 
 	deviceType, ok := (*dtcache)[device.DeviceTypeId]
 	if !ok {
-		deviceType, exists, err = this.db.GetDeviceType(ctx, device.DeviceTypeId)
+		deviceType, err, code = this.readDeviceType(device.DeviceTypeId)
 		if err != nil {
-			return err, http.StatusInternalServerError
-		}
-		if !exists {
-			return errors.New("unknown device-type-id: " + device.DeviceTypeId), http.StatusBadRequest
+			return fmt.Errorf("unable to read device-type %v: %w", device.DeviceTypeId, err), code
 		}
 		(*dtcache)[device.DeviceTypeId] = deviceType
 	}
