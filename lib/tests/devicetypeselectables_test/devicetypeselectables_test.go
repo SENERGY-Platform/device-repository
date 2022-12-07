@@ -154,6 +154,21 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
 	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT, model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
 	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
+	t.Run("event+request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
+		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+		AspectId:    "water",
+		Interaction: model.EVENT_AND_REQUEST,
+	}}, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{}))
+	t.Run("event in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
+		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+		AspectId:    "water",
+		Interaction: model.EVENT_AND_REQUEST,
+	}}, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{}))
+	t.Run("request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
+		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+		AspectId:    "water",
+		Interaction: model.REQUEST,
+	}}, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
 }
 
 func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
