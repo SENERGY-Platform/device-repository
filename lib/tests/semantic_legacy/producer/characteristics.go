@@ -18,13 +18,13 @@ package producer
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"runtime/debug"
 )
 
-func (this *Producer) PublishCharacteristic(characteristic model.Characteristic, userId string) (err error) {
+func (this *Producer) PublishCharacteristic(characteristic models.Characteristic, userId string) (err error) {
 	cmd := listener.CharacteristicCommand{Command: "PUT", Id: characteristic.Id, Characteristic: characteristic, Owner: userId}
 	return this.PublishCharacteristicCommand(cmd)
 }

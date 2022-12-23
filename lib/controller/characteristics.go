@@ -18,12 +18,12 @@ package controller
 
 import (
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) SetCharacteristic(characteristic model.Characteristic, owner string) error {
+func (this *Controller) SetCharacteristic(characteristic models.Characteristic, owner string) error {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetCharacteristic(ctx, characteristic)
 }
@@ -33,7 +33,7 @@ func (this *Controller) DeleteCharacteristic(id string) error {
 	return this.db.RemoveCharacteristic(ctx, id)
 }
 
-func (this *Controller) GetLeafCharacteristics() (result []model.Characteristic, err error, code int) {
+func (this *Controller) GetLeafCharacteristics() (result []models.Characteristic, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	temp, err := this.db.ListAllCharacteristics(ctx)
 	if err != nil {
@@ -43,7 +43,7 @@ func (this *Controller) GetLeafCharacteristics() (result []model.Characteristic,
 	return result, nil, http.StatusOK
 }
 
-func getLeafCharacteristics(list []model.Characteristic) (result []model.Characteristic) {
+func getLeafCharacteristics(list []models.Characteristic) (result []models.Characteristic) {
 	for _, element := range list {
 		if len(element.SubCharacteristics) == 0 {
 			result = append(result, element)
@@ -54,7 +54,7 @@ func getLeafCharacteristics(list []model.Characteristic) (result []model.Charact
 	return result
 }
 
-func (this *Controller) GetCharacteristic(id string) (result model.Characteristic, err error, errCode int) {
+func (this *Controller) GetCharacteristic(id string) (result models.Characteristic, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetCharacteristic(ctx, id)
 	if err != nil {
@@ -66,7 +66,7 @@ func (this *Controller) GetCharacteristic(id string) (result model.Characteristi
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateCharacteristics(characteristic model.Characteristic) (err error, code int) {
+func (this *Controller) ValidateCharacteristics(characteristic models.Characteristic) (err error, code int) {
 	if characteristic.Id == "" {
 		return errors.New("missing characteristic id"), http.StatusBadRequest
 	}
@@ -74,12 +74,12 @@ func (this *Controller) ValidateCharacteristics(characteristic model.Characteris
 		return errors.New("missing characteristic name"), http.StatusBadRequest
 	}
 
-	if characteristic.Type != model.String &&
-		characteristic.Type != model.Integer &&
-		characteristic.Type != model.Float &&
-		characteristic.Type != model.Boolean &&
-		characteristic.Type != model.List &&
-		characteristic.Type != model.Structure {
+	if characteristic.Type != models.String &&
+		characteristic.Type != models.Integer &&
+		characteristic.Type != models.Float &&
+		characteristic.Type != models.Boolean &&
+		characteristic.Type != models.List &&
+		characteristic.Type != models.Structure {
 		return errors.New("wrong characteristic type"), http.StatusBadRequest
 	}
 
@@ -91,7 +91,7 @@ func (this *Controller) ValidateCharacteristics(characteristic model.Characteris
 	return nil, http.StatusOK
 }
 
-func (this *Controller) validateSubCharacteristics(characteristics []model.Characteristic) (error, int) {
+func (this *Controller) validateSubCharacteristics(characteristics []models.Characteristic) (error, int) {
 	knownName := map[string]bool{}
 	for _, characteristic := range characteristics {
 		if knownName[characteristic.Name] {

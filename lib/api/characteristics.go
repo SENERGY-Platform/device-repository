@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -81,7 +81,7 @@ func Characteristics(config config.Config, control Controller, router *httproute
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		characteristic := model.Characteristic{}
+		characteristic := models.Characteristic{}
 		err = json.NewDecoder(request.Body).Decode(&characteristic)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

@@ -20,8 +20,8 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
 	"time"
@@ -45,7 +45,7 @@ func TestModifiedDevice(t *testing.T) {
 
 	sgKey := "a8ee3b1c-4cda-4f0d-9f55-4ef4882ce0af"
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []model.ServiceGroup{
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
 		{
 			Key:         sgKey,
 			Name:        "sg1",
@@ -56,7 +56,7 @@ func TestModifiedDevice(t *testing.T) {
 			Name:        "sg2",
 			Description: "",
 		},
-	}, Services: []model.Service{
+	}, Services: []models.Service{
 		{
 			Id:              "service1",
 			LocalId:         "service1",
@@ -82,7 +82,7 @@ func TestModifiedDevice(t *testing.T) {
 	}
 	time.Sleep(10 * time.Second)
 
-	d1 := model.Device{
+	d1 := models.Device{
 		Id:           device1id,
 		LocalId:      device1lid,
 		Name:         device1name,
@@ -95,11 +95,11 @@ func TestModifiedDevice(t *testing.T) {
 		return
 	}
 
-	d2 := model.Device{
+	d2 := models.Device{
 		Id:      device3id,
 		LocalId: device3lid,
 		Name:    device3name,
-		Attributes: []model.Attribute{
+		Attributes: []models.Attribute{
 			{
 				Key:   controller.DisplayNameAttributeName,
 				Value: "foo",
@@ -122,18 +122,18 @@ func TestModifiedDevice(t *testing.T) {
 	modifiedNameSuffixUnknown := " " + sgKeyUnknown
 	idModifierUnknown := idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {sgKeyUnknown}})
 
-	d1Modified := model.Device{
+	d1Modified := models.Device{
 		Id:           device1id + idModifier,
 		LocalId:      device1lid,
 		Name:         device1name + modifiedNameSuffix,
 		DeviceTypeId: devicetype1id + idModifier,
 	}
 
-	d2Modified := model.Device{
+	d2Modified := models.Device{
 		Id:      device3id + idModifier,
 		LocalId: device3lid,
 		Name:    device3name + modifiedNameSuffix,
-		Attributes: []model.Attribute{
+		Attributes: []models.Attribute{
 			{
 				Key:   controller.DisplayNameAttributeName,
 				Value: "foo" + modifiedNameSuffix,
@@ -142,17 +142,17 @@ func TestModifiedDevice(t *testing.T) {
 		DeviceTypeId: devicetype1id + idModifier,
 	}
 
-	d1ModifiedUnknown := model.Device{
+	d1ModifiedUnknown := models.Device{
 		Id:           device1id + idModifierUnknown,
 		LocalId:      device1lid,
 		Name:         device1name + modifiedNameSuffixUnknown,
 		DeviceTypeId: devicetype1id + idModifierUnknown,
 	}
-	d2ModifiedUnknown := model.Device{
+	d2ModifiedUnknown := models.Device{
 		Id:      device3id + idModifierUnknown,
 		LocalId: device3lid,
 		Name:    device3name + modifiedNameSuffixUnknown,
-		Attributes: []model.Attribute{
+		Attributes: []models.Attribute{
 			{
 				Key:   controller.DisplayNameAttributeName,
 				Value: "foo" + modifiedNameSuffixUnknown,
@@ -161,10 +161,10 @@ func TestModifiedDevice(t *testing.T) {
 		DeviceTypeId: devicetype1id + idModifierUnknown,
 	}
 
-	dtModified := model.DeviceType{
+	dtModified := models.DeviceType{
 		Id:   devicetype1id + idModifier,
 		Name: devicetype1name + modifiedNameSuffix,
-		ServiceGroups: []model.ServiceGroup{
+		ServiceGroups: []models.ServiceGroup{
 			{
 				Key:         sgKey,
 				Name:        "sg1",
@@ -176,7 +176,7 @@ func TestModifiedDevice(t *testing.T) {
 				Description: "",
 			},
 		},
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:              "service1",
 				LocalId:         "service1",
@@ -192,10 +192,10 @@ func TestModifiedDevice(t *testing.T) {
 		},
 	}
 
-	dtModifiedUnknown := model.DeviceType{
+	dtModifiedUnknown := models.DeviceType{
 		Id:   devicetype1id + idModifierUnknown,
 		Name: devicetype1name,
-		ServiceGroups: []model.ServiceGroup{
+		ServiceGroups: []models.ServiceGroup{
 			{
 				Key:         sgKey,
 				Name:        "sg1",
@@ -207,7 +207,7 @@ func TestModifiedDevice(t *testing.T) {
 				Description: "",
 			},
 		},
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:              "service1",
 				LocalId:         "service1",

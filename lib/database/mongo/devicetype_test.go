@@ -19,7 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/ory/dockertest/v3"
 	"testing"
 	"time"
@@ -65,24 +65,24 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetDeviceType(ctx, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id: "s1",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval1",
 						},
 					},
 				},
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval2",
-							SubContentVariables: []model.ContentVariable{
+							SubContentVariables: []models.ContentVariable{
 								{
 									Id:               "sub1",
 									Name:             "sub1_name",
@@ -106,15 +106,15 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetDeviceType(ctx, models.DeviceType{
 		Id:   "foobar2",
 		Name: "foo2",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id: "s2",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval1",
 						},
 					},
@@ -147,22 +147,22 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetDeviceType(ctx, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1changed",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id: "s1",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval1",
 						},
 					},
 				},
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval2",
 						},
 					},
@@ -263,22 +263,22 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetDeviceType(ctx, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id: "s1",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval1",
 						},
 					},
 				},
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval2",
 						},
 					},
@@ -292,15 +292,15 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetDeviceType(ctx, models.DeviceType{
 		Id:   "foobar2",
 		Name: "foo2",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id: "s2",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval1",
 						},
 					},
@@ -313,22 +313,22 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		return
 	}
 
-	err = m.SetDeviceType(ctx, model.DeviceType{
+	err = m.SetDeviceType(ctx, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1changed",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id: "s1",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval1",
 						},
 					},
 				},
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id: "fooval2",
 						},
 					},

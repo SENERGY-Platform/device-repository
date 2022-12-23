@@ -22,7 +22,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -65,7 +65,7 @@ func AspectNodesEndpoints(config config.Config, control Controller, router *http
 	})
 
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		var result []model.AspectNode
+		var result []models.AspectNode
 		var err error
 		var errCode int
 

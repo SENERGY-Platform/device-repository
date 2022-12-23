@@ -19,7 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/ory/dockertest/v3"
 	"testing"
 	"time"
@@ -65,10 +65,10 @@ func TestMongoProtocol(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetProtocol(ctx, model.Protocol{
+	err = m.SetProtocol(ctx, models.Protocol{
 		Id:   "foobar1",
 		Name: "foo1",
-		ProtocolSegments: []model.ProtocolSegment{
+		ProtocolSegments: []models.ProtocolSegment{
 			{
 				Id:   "segment1",
 				Name: "s1name",
@@ -85,10 +85,10 @@ func TestMongoProtocol(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetProtocol(ctx, model.Protocol{
+	err = m.SetProtocol(ctx, models.Protocol{
 		Id:   "foobar2",
 		Name: "foo2",
-		ProtocolSegments: []model.ProtocolSegment{
+		ProtocolSegments: []models.ProtocolSegment{
 			{
 				Id:   "segment3",
 				Name: "s3name",
@@ -116,10 +116,10 @@ func TestMongoProtocol(t *testing.T) {
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetProtocol(ctx, model.Protocol{
+	err = m.SetProtocol(ctx, models.Protocol{
 		Id:   "foobar1",
 		Name: "foo1changed",
-		ProtocolSegments: []model.ProtocolSegment{
+		ProtocolSegments: []models.ProtocolSegment{
 			{
 				Id:   "segment1",
 				Name: "s1name",

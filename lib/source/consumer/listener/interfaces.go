@@ -16,30 +16,30 @@
 
 package listener
 
-import "github.com/SENERGY-Platform/device-repository/lib/model"
+import "github.com/SENERGY-Platform/models/go/models"
 
 type Controller interface {
-	SetDevice(device model.Device, owner string) error
+	SetDevice(device models.Device, owner string) error
 	DeleteDevice(id string) error
-	SetHub(hub model.Hub, owner string) error
+	SetHub(hub models.Hub, owner string) error
 	DeleteHub(id string) error
-	SetDeviceType(deviceType model.DeviceType, owner string) error
+	SetDeviceType(deviceType models.DeviceType, owner string) error
 	DeleteDeviceType(id string) error
-	SetDeviceGroup(deviceGroup model.DeviceGroup, owner string) error
+	SetDeviceGroup(deviceGroup models.DeviceGroup, owner string) error
 	DeleteDeviceGroup(id string) error
-	SetProtocol(protocol model.Protocol, owner string) error
+	SetProtocol(protocol models.Protocol, owner string) error
 	DeleteProtocol(id string) error
 
-	SetAspect(aspect model.Aspect, owner string) error
+	SetAspect(aspect models.Aspect, owner string) error
 	DeleteAspect(id string) error
-	SetCharacteristic(characteristic model.Characteristic, owner string) error
+	SetCharacteristic(characteristic models.Characteristic, owner string) error
 	DeleteCharacteristic(id string) error
-	SetConcept(concept model.Concept, owner string) error
+	SetConcept(concept models.Concept, owner string) error
 	DeleteConcept(id string) error
-	SetDeviceClass(class model.DeviceClass, owner string) error
+	SetDeviceClass(class models.DeviceClass, owner string) error
 	DeleteDeviceClass(id string) error
-	SetFunction(function model.Function, owner string) error
+	SetFunction(function models.Function, owner string) error
 	DeleteFunction(id string) error
-	SetLocation(location model.Location, owner string) error
+	SetLocation(location models.Location, owner string) error
 	DeleteLocation(id string) error
 }

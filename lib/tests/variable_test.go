@@ -21,8 +21,8 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/ory/dockertest/v3"
 	"log"
 	"sync"
@@ -83,7 +83,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	err = ctrl.SetConcept(model.Concept{
+	err = ctrl.SetConcept(models.Concept{
 		Id:                   "concept",
 		Name:                 "concept",
 		CharacteristicIds:    []string{"c1", "c2"},
@@ -94,7 +94,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	err = ctrl.SetFunction(model.Function{
+	err = ctrl.SetFunction(models.Function{
 		Id:        "f1",
 		Name:      "f1",
 		ConceptId: "",
@@ -104,7 +104,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	err = ctrl.SetFunction(model.Function{
+	err = ctrl.SetFunction(models.Function{
 		Id:        "f2",
 		Name:      "f2",
 		ConceptId: "concept",
@@ -114,87 +114,87 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	t.Run("simple no characteristic & no function", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("simple no characteristic & no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "",
 		FunctionId:          "",
 	}))
 
-	t.Run("simple no characteristic with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("simple no characteristic with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "",
 		FunctionId:          "f1",
 	}))
 
-	t.Run("simple with unknown characteristic with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("simple with unknown characteristic with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "foo",
 		FunctionId:          "f1",
 	}))
 
-	t.Run("simple with characteristic c1 with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("simple with characteristic c1 with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "c1",
 		FunctionId:          "f1",
 	}))
 
-	t.Run("simple with characteristic c1 with function f2", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("simple with characteristic c1 with function f2", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "c1",
 		FunctionId:          "f2",
 	}))
 
-	t.Run("simple no characteristic with function f2", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("simple no characteristic with function f2", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "",
 		FunctionId:          "f2",
 	}))
 
-	t.Run("simple no function", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("simple no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "foo",
 		FunctionId:          "",
 	}))
 
-	t.Run("simple with unknown characteristic with function f2", testValidateVariable(ctrl, true, model.ContentVariable{
+	t.Run("simple with unknown characteristic with function f2", testValidateVariable(ctrl, true, models.ContentVariable{
 		Id:                  "v",
 		Name:                "v",
-		Type:                model.String,
+		Type:                models.String,
 		SubContentVariables: nil,
 		CharacteristicId:    "foo",
 		FunctionId:          "f2",
 	}))
 
-	t.Run("struct no characteristic & no function", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("struct no characteristic & no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:               "v",
 				Name:             "v",
-				Type:             model.String,
+				Type:             models.String,
 				CharacteristicId: "",
 				FunctionId:       "",
 			},
@@ -203,15 +203,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct no characteristic with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("struct no characteristic with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "v",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "",
 				FunctionId:          "f1",
@@ -221,15 +221,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct with unknown characteristic with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("struct with unknown characteristic with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "v",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "foo",
 				FunctionId:          "f1",
@@ -239,15 +239,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct with characteristic c1 with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("struct with characteristic c1 with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "v",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "c1",
 				FunctionId:          "f1",
@@ -257,15 +257,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct with characteristic c1 with function f2", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("struct with characteristic c1 with function f2", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "v",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "c1",
 				FunctionId:          "f2",
@@ -275,15 +275,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct no characteristic with function f2", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("struct no characteristic with function f2", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "v",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "",
 				FunctionId:          "f2",
@@ -293,15 +293,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct no function", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("struct no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "v",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "foo",
 				FunctionId:          "",
@@ -311,15 +311,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct with unknown characteristic with function f2", testValidateVariable(ctrl, true, model.ContentVariable{
+	t.Run("struct with unknown characteristic with function f2", testValidateVariable(ctrl, true, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "v",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "foo",
 				FunctionId:          "f2",
@@ -329,15 +329,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list no characteristic & no function", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("list no characteristic & no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:               "v",
 				Name:             "0",
-				Type:             model.String,
+				Type:             models.String,
 				CharacteristicId: "",
 				FunctionId:       "",
 			},
@@ -346,15 +346,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list no characteristic with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("list no characteristic with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "0",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "",
 				FunctionId:          "f1",
@@ -364,15 +364,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list with unknown characteristic with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("list with unknown characteristic with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "0",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "foo",
 				FunctionId:          "f1",
@@ -382,15 +382,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list with characteristic c1 with function f1", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("list with characteristic c1 with function f1", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "0",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "c1",
 				FunctionId:          "f1",
@@ -400,15 +400,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list with characteristic c1 with function f2", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("list with characteristic c1 with function f2", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "0",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "c1",
 				FunctionId:          "f2",
@@ -418,15 +418,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list no characteristic with function f2", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("list no characteristic with function f2", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "0",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "",
 				FunctionId:          "f2",
@@ -436,15 +436,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list no function", testValidateVariable(ctrl, false, model.ContentVariable{
+	t.Run("list no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "0",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "foo",
 				FunctionId:          "",
@@ -454,15 +454,15 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("list with unknown characteristic with function f2", testValidateVariable(ctrl, true, model.ContentVariable{
+	t.Run("list with unknown characteristic with function f2", testValidateVariable(ctrl, true, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:                  "v",
 				Name:                "0",
-				Type:                model.String,
+				Type:                models.String,
 				SubContentVariables: nil,
 				CharacteristicId:    "foo",
 				FunctionId:          "f2",
@@ -472,44 +472,44 @@ func TestVariableValidation(t *testing.T) {
 		FunctionId:       "",
 	}))
 
-	t.Run("struct duplicate sub variable name", testValidateVariable(ctrl, true, model.ContentVariable{
+	t.Run("struct duplicate sub variable name", testValidateVariable(ctrl, true, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:   "v",
 				Name: "v",
-				Type: model.String,
+				Type: models.String,
 			},
 			{
 				Id:   "v2",
 				Name: "v",
-				Type: model.Integer,
+				Type: models.Integer,
 			},
 		},
 	}))
 
-	t.Run("list duplicate sub variable name", testValidateVariable(ctrl, true, model.ContentVariable{
+	t.Run("list duplicate sub variable name", testValidateVariable(ctrl, true, models.ContentVariable{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubContentVariables: []model.ContentVariable{
+		Type: models.List,
+		SubContentVariables: []models.ContentVariable{
 			{
 				Id:   "v",
 				Name: "0",
-				Type: model.String,
+				Type: models.String,
 			},
 			{
 				Id:   "v2",
 				Name: "0",
-				Type: model.String,
+				Type: models.String,
 			},
 		},
 	}))
 }
 
-func testValidateVariable(ctrl *controller.Controller, expectError bool, variable model.ContentVariable) func(t *testing.T) {
+func testValidateVariable(ctrl *controller.Controller, expectError bool, variable models.ContentVariable) func(t *testing.T) {
 	return func(t *testing.T) {
 		err, _ := ctrl.ValidateVariable(variable, "json")
 		if (err != nil) != expectError {

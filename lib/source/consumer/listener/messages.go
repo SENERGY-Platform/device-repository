@@ -16,81 +16,81 @@
 
 package listener
 
-import "github.com/SENERGY-Platform/device-repository/lib/model"
+import "github.com/SENERGY-Platform/models/go/models"
 
 type DeviceCommand struct {
-	Command string       `json:"command"`
-	Id      string       `json:"id"`
-	Owner   string       `json:"owner"`
-	Device  model.Device `json:"device"`
-}
-
-type HubCommand struct {
-	Command string    `json:"command"`
-	Id      string    `json:"id"`
-	Owner   string    `json:"owner"`
-	Hub     model.Hub `json:"hub"`
-}
-
-type DeviceTypeCommand struct {
-	Command    string           `json:"command"`
-	Id         string           `json:"id"`
-	Owner      string           `json:"owner"`
-	DeviceType model.DeviceType `json:"device_type"`
-}
-
-type ProtocolCommand struct {
-	Command  string         `json:"command"`
-	Id       string         `json:"id"`
-	Owner    string         `json:"owner"`
-	Protocol model.Protocol `json:"protocol"`
-}
-
-type DeviceGroupCommand struct {
-	Command     string            `json:"command"`
-	Id          string            `json:"id"`
-	Owner       string            `json:"owner"`
-	DeviceGroup model.DeviceGroup `json:"device_group"`
-}
-
-type ConceptCommand struct {
 	Command string        `json:"command"`
 	Id      string        `json:"id"`
 	Owner   string        `json:"owner"`
-	Concept model.Concept `json:"concept"`
+	Device  models.Device `json:"device"`
+}
+
+type HubCommand struct {
+	Command string     `json:"command"`
+	Id      string     `json:"id"`
+	Owner   string     `json:"owner"`
+	Hub     models.Hub `json:"hub"`
+}
+
+type DeviceTypeCommand struct {
+	Command    string            `json:"command"`
+	Id         string            `json:"id"`
+	Owner      string            `json:"owner"`
+	DeviceType models.DeviceType `json:"device_type"`
+}
+
+type ProtocolCommand struct {
+	Command  string          `json:"command"`
+	Id       string          `json:"id"`
+	Owner    string          `json:"owner"`
+	Protocol models.Protocol `json:"protocol"`
+}
+
+type DeviceGroupCommand struct {
+	Command     string             `json:"command"`
+	Id          string             `json:"id"`
+	Owner       string             `json:"owner"`
+	DeviceGroup models.DeviceGroup `json:"device_group"`
+}
+
+type ConceptCommand struct {
+	Command string         `json:"command"`
+	Id      string         `json:"id"`
+	Owner   string         `json:"owner"`
+	Concept models.Concept `json:"concept"`
 }
 
 type CharacteristicCommand struct {
-	Command        string               `json:"command"`
-	Id             string               `json:"id"`
-	Owner          string               `json:"owner"`
-	Characteristic model.Characteristic `json:"characteristic"`
+	Command        string                `json:"command"`
+	Id             string                `json:"id"`
+	Owner          string                `json:"owner"`
+	Characteristic models.Characteristic `json:"characteristic"`
 }
 
 type DeviceClassCommand struct {
-	Command     string            `json:"command"`
-	Id          string            `json:"id"`
-	Owner       string            `json:"owner"`
-	DeviceClass model.DeviceClass `json:"device_class"`
+	Command     string             `json:"command"`
+	Id          string             `json:"id"`
+	Owner       string             `json:"owner"`
+	DeviceClass models.DeviceClass `json:"device_class"`
 }
 
 type AspectCommand struct {
-	Command string       `json:"command"`
-	Id      string       `json:"id"`
-	Owner   string       `json:"owner"`
-	Aspect  model.Aspect `json:"aspect"`
+	Command string        `json:"command"`
+	Id      string        `json:"id"`
+	Owner   string        `json:"owner"`
+	Aspect  models.Aspect `json:"aspect"`
 }
 
 type FunctionCommand struct {
-	Command  string         `json:"command"`
-	Id       string         `json:"id"`
-	Owner    string         `json:"owner"`
-	Function model.Function `json:"function"`
+	Command  string          `json:"command"`
+	Id       string          `json:"id"`
+	Owner    string          `json:"owner"`
+	Function models.Function `json:"function"`
 }
 
 type LocationCommand struct {
-	Command  string         `json:"command"`
-	Id       string         `json:"id"`
-	Owner    string         `json:"owner"`
-	Location model.Location `json:"location"`
+	Command  string          `json:"command"`
+	Id       string          `json:"id"`
+	Owner    string          `json:"owner"`
+	Location models.Location `json:"location"`
 }

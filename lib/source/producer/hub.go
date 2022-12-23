@@ -19,7 +19,7 @@ package producer
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/segmentio/kafka-go"
 	"log"
 	"runtime/debug"
@@ -27,13 +27,13 @@ import (
 )
 
 type HubCommand struct {
-	Command string    `json:"command"`
-	Id      string    `json:"id"`
-	Owner   string    `json:"owner"`
-	Hub     model.Hub `json:"hub"`
+	Command string     `json:"command"`
+	Id      string     `json:"id"`
+	Owner   string     `json:"owner"`
+	Hub     models.Hub `json:"hub"`
 }
 
-func (this *Producer) PublishHub(hub model.Hub) (err error) {
+func (this *Producer) PublishHub(hub models.Hub) (err error) {
 	cmd := HubCommand{Command: "PUT", Id: hub.Id, Hub: hub}
 	return this.PublishHubCommand(cmd)
 }

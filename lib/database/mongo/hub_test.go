@@ -19,7 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/ory/dockertest/v3"
 	"testing"
 	"time"
@@ -53,13 +53,13 @@ func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = m.SetHub(ctx, model.Hub{Id: "hid1", Name: "h1", DeviceLocalIds: []string{"a", "b"}})
+	err = m.SetHub(ctx, models.Hub{Id: "hid1", Name: "h1", DeviceLocalIds: []string{"a", "b"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	err = m.SetHub(ctx, model.Hub{Id: "hid2", Name: "h2", DeviceLocalIds: []string{"b", "c"}})
+	err = m.SetHub(ctx, models.Hub{Id: "hid2", Name: "h2", DeviceLocalIds: []string{"b", "c"}})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,11 +33,11 @@ var deviceLocalIdKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceIdKey, err = getBsonFieldName(model.Device{}, deviceIdFieldName)
+		deviceIdKey, err = getBsonFieldName(models.Device{}, deviceIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceLocalIdKey, err = getBsonFieldName(model.Device{}, deviceLocalIdFieldName)
+		deviceLocalIdKey, err = getBsonFieldName(models.Device{}, deviceLocalIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func (this *Mongo) deviceCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceCollection)
 }
 
-func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.Device, exists bool, err error) {
+func (this *Mongo) GetDevice(ctx context.Context, id string) (device models.Device, exists bool, err error) {
 	result := this.deviceCollection().FindOne(ctx, bson.M{deviceIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -74,7 +74,7 @@ func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.Devic
 	return device, true, err
 }
 
-func (this *Mongo) SetDevice(ctx context.Context, device model.Device) error {
+func (this *Mongo) SetDevice(ctx context.Context, device models.Device) error {
 	_, err := this.deviceCollection().ReplaceOne(ctx, bson.M{deviceIdKey: device.Id}, device, options.Replace().SetUpsert(true))
 	return err
 }
@@ -84,7 +84,7 @@ func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) GetDeviceByLocalId(ctx context.Context, localId string) (device model.Device, exists bool, err error) {
+func (this *Mongo) GetDeviceByLocalId(ctx context.Context, localId string) (device models.Device, exists bool, err error) {
 	result := this.deviceCollection().FindOne(ctx, bson.M{deviceLocalIdKey: localId})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {

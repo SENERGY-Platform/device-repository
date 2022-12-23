@@ -22,9 +22,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -212,7 +212,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 
 	usedSubAspect := "urn:infai:ses:aspect:5b00764e-2470-400c-ae0c-d84ac10dd32d"
 
-	initialAspect := model.Aspect{}
+	initialAspect := models.Aspect{}
 	err = json.Unmarshal([]byte(initialStr), &initialAspect)
 	if err != nil {
 		t.Error(err)
@@ -225,20 +225,20 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{
+	dt := models.DeviceType{
 		Id:            "dt",
 		Name:          "dt",
 		ServiceGroups: nil,
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "sid",
 				LocalId:     "s",
 				Name:        "s",
-				Interaction: model.EVENT_AND_REQUEST,
+				Interaction: models.EVENT_AND_REQUEST,
 				ProtocolId:  "pid",
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "vid",
 							Name:             "v",
 							CharacteristicId: "cid",
@@ -256,7 +256,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 		return
 	}
 
-	changedAspect := model.Aspect{}
+	changedAspect := models.Aspect{}
 	err = json.Unmarshal([]byte(changeStr), &changedAspect)
 	if err != nil {
 		t.Error(err)
@@ -273,7 +273,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 
 }
 
-func testAspectEditValidation(t *testing.T, config config.Config, aspect model.Aspect, expectedCode int) error {
+func testAspectEditValidation(t *testing.T, config config.Config, aspect models.Aspect, expectedCode int) error {
 	t.Helper()
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(aspect)
@@ -313,14 +313,14 @@ func TestSubAspectMovePartial(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   "a1",
 		Name: "a1",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "a1.1",
 				Name: "a1.1",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "a1.1.1",
 						Name: "a1.1.1",
@@ -334,14 +334,14 @@ func TestSubAspectMovePartial(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   "a2",
 		Name: "a2",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "a2.1",
 				Name: "a2.1",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "a2.1.1",
 						Name: "a2.1.1",
@@ -357,7 +357,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	t.Run("aspect-nodes before move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []model.AspectNode{
+	t.Run("aspect-nodes before move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
 			Id:            "a1",
 			Name:          "a1",
@@ -414,14 +414,14 @@ func TestSubAspectMovePartial(t *testing.T) {
 	}))
 
 	t.Run("aspect-nodes move", func(t *testing.T) {
-		err = producer.PublishAspect(model.Aspect{
+		err = producer.PublishAspect(models.Aspect{
 			Id:   "a1",
 			Name: "a1",
-			SubAspects: []model.Aspect{
+			SubAspects: []models.Aspect{
 				{
 					Id:   "a1.1",
 					Name: "a1.1",
-					SubAspects: []model.Aspect{
+					SubAspects: []models.Aspect{
 						{
 							Id:   "a1.1.1",
 							Name: "a1.1.1",
@@ -431,7 +431,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 				{
 					Id:   "a2.1",
 					Name: "a2.1",
-					SubAspects: []model.Aspect{
+					SubAspects: []models.Aspect{
 						{
 							Id:   "a2.1.1",
 							Name: "a2.1.1",
@@ -448,7 +448,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	t.Run("aspect-nodes after move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []model.AspectNode{
+	t.Run("aspect-nodes after move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
 			Id:            "a1",
 			Name:          "a1",
@@ -521,14 +521,14 @@ func TestSubAspectMoveRoot(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   "a1",
 		Name: "a1",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "a1.1",
 				Name: "a1.1",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "a1.1.1",
 						Name: "a1.1.1",
@@ -542,14 +542,14 @@ func TestSubAspectMoveRoot(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   "a2",
 		Name: "a2",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "a2.1",
 				Name: "a2.1",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "a2.1.1",
 						Name: "a2.1.1",
@@ -565,7 +565,7 @@ func TestSubAspectMoveRoot(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	t.Run("aspect-nodes before move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []model.AspectNode{
+	t.Run("aspect-nodes before move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
 			Id:            "a1",
 			Name:          "a1",
@@ -622,14 +622,14 @@ func TestSubAspectMoveRoot(t *testing.T) {
 	}))
 
 	t.Run("aspect-nodes move", func(t *testing.T) {
-		err = producer.PublishAspect(model.Aspect{
+		err = producer.PublishAspect(models.Aspect{
 			Id:   "a1",
 			Name: "a1",
-			SubAspects: []model.Aspect{
+			SubAspects: []models.Aspect{
 				{
 					Id:   "a1.1",
 					Name: "a1.1",
-					SubAspects: []model.Aspect{
+					SubAspects: []models.Aspect{
 						{
 							Id:   "a1.1.1",
 							Name: "a1.1.1",
@@ -639,11 +639,11 @@ func TestSubAspectMoveRoot(t *testing.T) {
 				{
 					Id:   "a2",
 					Name: "a2",
-					SubAspects: []model.Aspect{
+					SubAspects: []models.Aspect{
 						{
 							Id:   "a2.1",
 							Name: "a2.1",
-							SubAspects: []model.Aspect{
+							SubAspects: []models.Aspect{
 								{
 									Id:   "a2.1.1",
 									Name: "a2.1.1",
@@ -662,7 +662,7 @@ func TestSubAspectMoveRoot(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	t.Run("aspect-nodes after move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []model.AspectNode{
+	t.Run("aspect-nodes after move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
 			Id:            "a1",
 			Name:          "a1",
@@ -736,7 +736,7 @@ func TestAspectFunctions(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishFunction(model.Function{
+	err = producer.PublishFunction(models.Function{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
@@ -746,7 +746,7 @@ func TestAspectFunctions(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishFunction(model.Function{
+	err = producer.PublishFunction(models.Function{
 		Id:        "fid_2",
 		Name:      "fid_2",
 		ConceptId: "concept_2",
@@ -756,14 +756,14 @@ func TestAspectFunctions(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   "parent_2",
 		Name: "parent_2",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "aid_2",
 				Name: "aid_2",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "child_2",
 						Name: "child_2",
@@ -777,14 +777,14 @@ func TestAspectFunctions(t *testing.T) {
 		return
 	}
 
-	aspect := model.Aspect{
+	aspect := models.Aspect{
 		Id:   "parent",
 		Name: "parent",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "aid",
 				Name: "aid",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "child",
 						Name: "child",
@@ -799,20 +799,20 @@ func TestAspectFunctions(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{
+	dt := models.DeviceType{
 		Id:            "dt",
 		Name:          "dt",
 		ServiceGroups: nil,
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "sid",
 				LocalId:     "s",
 				Name:        "s",
-				Interaction: model.EVENT_AND_REQUEST,
+				Interaction: models.EVENT_AND_REQUEST,
 				ProtocolId:  "pid",
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "vid",
 							Name:             "v",
 							CharacteristicId: "cid",
@@ -833,20 +833,20 @@ func TestAspectFunctions(t *testing.T) {
 	time.Sleep(3 * time.Second)
 
 	//defaults to ancestors=false&descendants=true
-	t.Run("aspects", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function", []model.Aspect{aspect}))
+	t.Run("aspects", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function", []models.Aspect{aspect}))
 
 	//find only exact match
-	t.Run("aspects_ff", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=false&descendants=false", []model.Aspect{}))
+	t.Run("aspects_ff", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=false&descendants=false", []models.Aspect{}))
 
 	//find aid either as
 	//	descendent of parent --> returns parent as root
 	//	or as ancestor of child --> returns parent as root
-	t.Run("aspects_ft", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=false&descendants=true", []model.Aspect{aspect}))
-	t.Run("aspects_tf", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=true&descendants=false", []model.Aspect{aspect}))
-	t.Run("aspects_tt", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=true&descendants=true", []model.Aspect{aspect}))
+	t.Run("aspects_ft", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=false&descendants=true", []models.Aspect{aspect}))
+	t.Run("aspects_tf", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=true&descendants=false", []models.Aspect{aspect}))
+	t.Run("aspects_tt", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function&ancestors=true&descendants=true", []models.Aspect{aspect}))
 
 	//defaults to ancestors=false&descendants=true
-	t.Run("aspect-nodes", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function", []model.AspectNode{
+	t.Run("aspect-nodes", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function", []models.AspectNode{
 		{
 			Id:            "aid",
 			Name:          "aid",
@@ -867,7 +867,7 @@ func TestAspectFunctions(t *testing.T) {
 		},
 	}))
 	//find only exact match
-	t.Run("aspect-nodes_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=false&descendants=false", []model.AspectNode{
+	t.Run("aspect-nodes_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=false&descendants=false", []models.AspectNode{
 		{
 			Id:            "aid",
 			Name:          "aid",
@@ -879,7 +879,7 @@ func TestAspectFunctions(t *testing.T) {
 		},
 	}))
 
-	t.Run("aspect-nodes_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=false&descendants=true", []model.AspectNode{
+	t.Run("aspect-nodes_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=false&descendants=true", []models.AspectNode{
 		{
 			Id:            "aid",
 			Name:          "aid",
@@ -900,7 +900,7 @@ func TestAspectFunctions(t *testing.T) {
 		},
 	}))
 
-	t.Run("aspect-nodes_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=true&descendants=false", []model.AspectNode{
+	t.Run("aspect-nodes_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=true&descendants=false", []models.AspectNode{
 		{
 			Id:            "aid",
 			Name:          "aid",
@@ -921,7 +921,7 @@ func TestAspectFunctions(t *testing.T) {
 		},
 	}))
 
-	t.Run("aspect-nodes_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=true&descendants=true", []model.AspectNode{
+	t.Run("aspect-nodes_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes?function=measuring-function&ancestors=true&descendants=true", []models.AspectNode{
 		{
 			Id:            "aid",
 			Name:          "aid",
@@ -951,59 +951,59 @@ func TestAspectFunctions(t *testing.T) {
 		},
 	}))
 
-	t.Run("aspect-nodes_measuring-functions_aid", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions", []model.Function{{
+	t.Run("aspect-nodes_measuring-functions_aid", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions", []models.Function{{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
 	}}))
-	t.Run("aspect-nodes_measuring-functions_aid_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=false&descendants=false", []model.Function{{
+	t.Run("aspect-nodes_measuring-functions_aid_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=false&descendants=false", []models.Function{{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
 	}}))
-	t.Run("aspect-nodes_measuring-functions_aid_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=false&descendants=true", []model.Function{{
+	t.Run("aspect-nodes_measuring-functions_aid_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=false&descendants=true", []models.Function{{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
 	}}))
-	t.Run("aspect-nodes_measuring-functions_aid_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=true&descendants=false", []model.Function{{
+	t.Run("aspect-nodes_measuring-functions_aid_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=true&descendants=false", []models.Function{{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
 	}}))
-	t.Run("aspect-nodes_measuring-functions_aid_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=true&descendants=true", []model.Function{{
-		Id:        "fid",
-		Name:      "fid",
-		ConceptId: "concept_1",
-	}}))
-
-	t.Run("aspect-nodes_measuring-functions_parent", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions", []model.Function{{
-		Id:        "fid",
-		Name:      "fid",
-		ConceptId: "concept_1",
-	}}))
-	t.Run("aspect-nodes_measuring-functions_parent_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=false&descendants=false", []model.Function{}))
-	t.Run("aspect-nodes_measuring-functions_parent_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=false&descendants=true", []model.Function{{
-		Id:        "fid",
-		Name:      "fid",
-		ConceptId: "concept_1",
-	}}))
-	t.Run("aspect-nodes_measuring-functions_parent_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=true&descendants=false", []model.Function{}))
-	t.Run("aspect-nodes_measuring-functions_parent_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=true&descendants=true", []model.Function{{
+	t.Run("aspect-nodes_measuring-functions_aid_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/aid/measuring-functions?ancestors=true&descendants=true", []models.Function{{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
 	}}))
 
-	t.Run("aspect-nodes_measuring-functions_child", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions", []model.Function{}))
-	t.Run("aspect-nodes_measuring-functions_child_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=false&descendants=false", []model.Function{}))
-	t.Run("aspect-nodes_measuring-functions_child_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=false&descendants=true", []model.Function{}))
-	t.Run("aspect-nodes_measuring-functions_child_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=true&descendants=false", []model.Function{{
+	t.Run("aspect-nodes_measuring-functions_parent", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions", []models.Function{{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
 	}}))
-	t.Run("aspect-nodes_measuring-functions_child_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=true&descendants=true", []model.Function{{
+	t.Run("aspect-nodes_measuring-functions_parent_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=false&descendants=false", []models.Function{}))
+	t.Run("aspect-nodes_measuring-functions_parent_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=false&descendants=true", []models.Function{{
+		Id:        "fid",
+		Name:      "fid",
+		ConceptId: "concept_1",
+	}}))
+	t.Run("aspect-nodes_measuring-functions_parent_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=true&descendants=false", []models.Function{}))
+	t.Run("aspect-nodes_measuring-functions_parent_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/parent/measuring-functions?ancestors=true&descendants=true", []models.Function{{
+		Id:        "fid",
+		Name:      "fid",
+		ConceptId: "concept_1",
+	}}))
+
+	t.Run("aspect-nodes_measuring-functions_child", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions", []models.Function{}))
+	t.Run("aspect-nodes_measuring-functions_child_ff", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=false&descendants=false", []models.Function{}))
+	t.Run("aspect-nodes_measuring-functions_child_ft", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=false&descendants=true", []models.Function{}))
+	t.Run("aspect-nodes_measuring-functions_child_tf", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=true&descendants=false", []models.Function{{
+		Id:        "fid",
+		Name:      "fid",
+		ConceptId: "concept_1",
+	}}))
+	t.Run("aspect-nodes_measuring-functions_child_tt", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes/child/measuring-functions?ancestors=true&descendants=true", []models.Function{{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
@@ -1027,14 +1027,14 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   "parent",
 		Name: "parent",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "aid",
 				Name: "aid",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "child",
 						Name: "child",
@@ -1048,20 +1048,20 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{
+	dt := models.DeviceType{
 		Id:            "dt",
 		Name:          "dt",
 		ServiceGroups: nil,
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "sid",
 				LocalId:     "s",
 				Name:        "s",
-				Interaction: model.EVENT_AND_REQUEST,
+				Interaction: models.EVENT_AND_REQUEST,
 				ProtocolId:  "pid",
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "vid",
 							Name:             "v",
 							CharacteristicId: "cid",
@@ -1081,9 +1081,9 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 
 	time.Sleep(3 * time.Second)
 
-	t.Run("matching", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []model.DeviceType{dt}))
-	t.Run("parent", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []model.DeviceType{dt}))
-	t.Run("child", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"child"}]`), []model.DeviceType{}))
+	t.Run("matching", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{dt}))
+	t.Run("parent", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{dt}))
+	t.Run("child", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"child"}]`), []models.DeviceType{}))
 }
 
 func testGetRequest(token string, conf config.Config, path string, expected interface{}) func(t *testing.T) {

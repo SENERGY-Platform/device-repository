@@ -25,6 +25,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
 	"time"
@@ -56,7 +57,7 @@ func TestFunction(t *testing.T) {
 
 func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		confunction1 := model.Function{}
+		confunction1 := models.Function{}
 		confunction1.Id = "urn:infai:ses:controlling-function:333"
 		confunction1.Name = "setOnFunction"
 		confunction1.DisplayName = "foo"
@@ -67,7 +68,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		confunction2 := model.Function{}
+		confunction2 := models.Function{}
 		confunction2.Id = "urn:infai:ses:controlling-function:2222"
 		confunction2.Name = "setOffFunction"
 		confunction2.DisplayName = "off-function"
@@ -78,7 +79,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		confunction3 := model.Function{}
+		confunction3 := models.Function{}
 		confunction3.Id = "urn:infai:ses:controlling-function:5467567"
 		confunction3.Name = "setColorFunction"
 		confunction3.DisplayName = "ctrl display name"
@@ -89,7 +90,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		measfunction1 := model.Function{}
+		measfunction1 := models.Function{}
 		measfunction1.Id = "urn:infai:ses:measuring-function:23"
 		measfunction1.Name = "getOnOffFunction"
 		measfunction1.DisplayName = "bar"
@@ -99,7 +100,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		measfunction2 := model.Function{}
+		measfunction2 := models.Function{}
 		measfunction2.Id = "urn:infai:ses:measuring-function:321"
 		measfunction2.Name = "getTemperatureFunction"
 		measfunction2.ConceptId = "urn:infai:ses:concept:efffsdfd-aaaa-bbbb-ccc-0000"
@@ -110,7 +111,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		measfunction3 := model.Function{}
+		measfunction3 := models.Function{}
 		measfunction3.Id = "urn:infai:ses:measuring-function:467"
 		measfunction3.Name = "getHumidityFunction"
 		measfunction3.DisplayName = "hum_display"
@@ -124,7 +125,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 
 func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		confunction1 := model.Function{}
+		confunction1 := models.Function{}
 		confunction1.Id = "urn:infai:ses:controlling-function:333"
 		confunction1.Name = "setOnFunction"
 		confunction1.DisplayName = "foo 2"
@@ -135,7 +136,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 			t.Fatal(err)
 		}
 
-		confunction2 := model.Function{}
+		confunction2 := models.Function{}
 		confunction2.Id = "urn:infai:ses:controlling-function:2222"
 		confunction2.Name = "setOffFunction"
 		confunction2.DisplayName = "off-function 2"
@@ -146,7 +147,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 			t.Fatal(err)
 		}
 
-		confunction3 := model.Function{}
+		confunction3 := models.Function{}
 		confunction3.Id = "urn:infai:ses:controlling-function:5467567"
 		confunction3.Name = "setColorFunction"
 		confunction3.DisplayName = "ctrl display name 2"
@@ -157,7 +158,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 			t.Fatal(err)
 		}
 
-		measfunction1 := model.Function{}
+		measfunction1 := models.Function{}
 		measfunction1.Id = "urn:infai:ses:measuring-function:23"
 		measfunction1.Name = "getOnOffFunction"
 		measfunction1.DisplayName = "bar 2"
@@ -167,7 +168,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 			t.Fatal(err)
 		}
 
-		measfunction2 := model.Function{}
+		measfunction2 := models.Function{}
 		measfunction2.Id = "urn:infai:ses:measuring-function:321"
 		measfunction2.Name = "getTemperatureFunction"
 		measfunction2.ConceptId = "urn:infai:ses:concept:efffsdfd-aaaa-bbbb-ccc-0000"
@@ -178,7 +179,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 			t.Fatal(err)
 		}
 
-		measfunction3 := model.Function{}
+		measfunction3 := models.Function{}
 		measfunction3.Id = "urn:infai:ses:measuring-function:467"
 		measfunction3.Name = "getHumidityFunction"
 		measfunction3.DisplayName = "hum_display 2"

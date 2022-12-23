@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -32,7 +32,7 @@ var aspectIdKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		aspectIdKey, err = getBsonFieldName(model.Aspect{}, aspectIdFieldName)
+		aspectIdKey, err = getBsonFieldName(models.Aspect{}, aspectIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -49,7 +49,7 @@ func (this *Mongo) aspectCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoAspectCollection)
 }
 
-func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect model.Aspect, exists bool, err error) {
+func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect models.Aspect, exists bool, err error) {
 	result := this.aspectCollection().FindOne(ctx, bson.M{aspectIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -65,7 +65,7 @@ func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect model.Aspec
 	return aspect, true, err
 }
 
-func (this *Mongo) SetAspect(ctx context.Context, aspect model.Aspect) error {
+func (this *Mongo) SetAspect(ctx context.Context, aspect models.Aspect) error {
 	_, err := this.aspectCollection().ReplaceOne(ctx, bson.M{aspectIdKey: aspect.Id}, aspect, options.Replace().SetUpsert(true))
 	return err
 }
@@ -75,14 +75,14 @@ func (this *Mongo) RemoveAspect(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListAllAspects(ctx context.Context) (result []model.Aspect, err error) {
+func (this *Mongo) ListAllAspects(ctx context.Context) (result []models.Aspect, err error) {
 	cursor, err := this.aspectCollection().Find(ctx, bson.D{}, options.Find().SetSort(bsonx.Doc{{aspectIdKey, bsonx.Int32(1)}}))
 	if err != nil {
 		return nil, err
 	}
-	result = []model.Aspect{}
+	result = []models.Aspect{}
 	for cursor.Next(context.Background()) {
-		aspect := model.Aspect{}
+		aspect := models.Aspect{}
 		err = cursor.Decode(&aspect)
 		if err != nil {
 			return nil, err
@@ -93,8 +93,8 @@ func (this *Mongo) ListAllAspects(ctx context.Context) (result []model.Aspect, e
 	return
 }
 
-//returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
-func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []model.Aspect, err error) {
+// returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.Aspect, err error) {
 	aspectIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.AspectId, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
 		DeviceTypeCriteriaBson.AspectId:            bson.M{"$exists": true, "$ne": ""},
@@ -127,9 +127,9 @@ func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancesto
 			return nil, err
 		}
 	}
-	result = []model.Aspect{}
+	result = []models.Aspect{}
 	for cursor.Next(context.Background()) {
-		aspect := model.Aspect{}
+		aspect := models.Aspect{}
 		err = cursor.Decode(&aspect)
 		if err != nil {
 			return nil, err

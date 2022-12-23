@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -36,15 +36,15 @@ var functionConceptKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		functionIdKey, err = getBsonFieldName(model.Function{}, functionIdFieldName)
+		functionIdKey, err = getBsonFieldName(models.Function{}, functionIdFieldName)
 		if err != nil {
 			return err
 		}
-		functionRdfTypeKey, err = getBsonFieldName(model.Function{}, functionRdfTypeFieldName)
+		functionRdfTypeKey, err = getBsonFieldName(models.Function{}, functionRdfTypeFieldName)
 		if err != nil {
 			return err
 		}
-		functionConceptKey, err = getBsonFieldName(model.Function{}, functionConceptFieldName)
+		functionConceptKey, err = getBsonFieldName(models.Function{}, functionConceptFieldName)
 		if err != nil {
 			return err
 		}
@@ -69,7 +69,7 @@ func (this *Mongo) functionCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoFunctionCollection)
 }
 
-func (this *Mongo) GetFunction(ctx context.Context, id string) (function model.Function, exists bool, err error) {
+func (this *Mongo) GetFunction(ctx context.Context, id string) (function models.Function, exists bool, err error) {
 	result := this.functionCollection().FindOne(ctx, bson.M{functionIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -85,7 +85,7 @@ func (this *Mongo) GetFunction(ctx context.Context, id string) (function model.F
 	return function, true, err
 }
 
-func (this *Mongo) SetFunction(ctx context.Context, function model.Function) error {
+func (this *Mongo) SetFunction(ctx context.Context, function models.Function) error {
 	_, err := this.functionCollection().ReplaceOne(ctx, bson.M{functionIdKey: function.Id}, function, options.Replace().SetUpsert(true))
 	return err
 }
@@ -95,14 +95,14 @@ func (this *Mongo) RemoveFunction(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (result []model.Function, err error) {
+func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (result []models.Function, err error) {
 	cursor, err := this.functionCollection().Find(ctx, bson.M{functionRdfTypeKey: rdfType}, options.Find().SetSort(bsonx.Doc{{functionIdKey, bsonx.Int32(1)}}))
 	if err != nil {
 		return nil, err
 	}
-	result = []model.Function{}
+	result = []models.Function{}
 	for cursor.Next(context.Background()) {
-		function := model.Function{}
+		function := models.Function{}
 		err = cursor.Decode(&function)
 		if err != nil {
 			return nil, err
@@ -113,8 +113,8 @@ func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (
 	return
 }
 
-//returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
-func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []model.Function, err error) {
+// returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []models.Function, err error) {
 	var aspectFilter interface{}
 	if ancestors || descendants {
 		relatedIds := []string{aspect}
@@ -146,9 +146,9 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	if err != nil {
 		return nil, err
 	}
-	result = []model.Function{}
+	result = []models.Function{}
 	for cursor.Next(context.Background()) {
-		function := model.Function{}
+		function := models.Function{}
 		err = cursor.Decode(&function)
 		if err != nil {
 			return nil, err
@@ -159,7 +159,7 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	return
 }
 
-func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class string) (result []model.Function, err error) {
+func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class string) (result []models.Function, err error) {
 	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.FunctionId, bson.M{
 		DeviceTypeCriteriaBson.DeviceClassId: class,
 		DeviceTypeCriteriaBson.FunctionId:    bson.M{"$exists": true, "$ne": ""},
@@ -171,9 +171,9 @@ func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class stri
 	if err != nil {
 		return nil, err
 	}
-	result = []model.Function{}
+	result = []models.Function{}
 	for cursor.Next(context.Background()) {
-		function := model.Function{}
+		function := models.Function{}
 		err = cursor.Decode(&function)
 		if err != nil {
 			return nil, err
@@ -184,7 +184,7 @@ func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class stri
 	return
 }
 
-func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) (result []model.Function, err error) {
+func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) (result []models.Function, err error) {
 	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.FunctionId, bson.M{
 		DeviceTypeCriteriaBson.DeviceClassId:       class,
 		deviceTypeCriteriaIsControllingFunctionKey: true,
@@ -197,9 +197,9 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	result = []model.Function{}
+	result = []models.Function{}
 	for cursor.Next(context.Background()) {
-		function := model.Function{}
+		function := models.Function{}
 		err = cursor.Decode(&function)
 		if err != nil {
 			return nil, err
@@ -222,7 +222,7 @@ func (this *Mongo) ConceptIsUsed(ctx context.Context, id string) (result bool, w
 	if err != nil {
 		return result, nil, err
 	}
-	function := model.Function{}
+	function := models.Function{}
 	_ = temp.Decode(&function)
 	return true, []string{function.Id}, nil
 }

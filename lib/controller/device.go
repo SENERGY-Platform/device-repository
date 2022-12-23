@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
@@ -28,7 +29,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result model.Device, err error, errCode int) {
+func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	result, err, errCode = this.readDevice(id)
 	if err != nil {
 		return result, err, errCode
@@ -43,7 +44,7 @@ func (this *Controller) ReadDevice(id string, token string, action model.AuthAct
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) readDevice(id string) (result model.Device, err error, errCode int) {
+func (this *Controller) readDevice(id string) (result models.Device, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	pureId, modifier := idmodifier.SplitModifier(id)
 	device, exists, err := this.db.GetDevice(ctx, pureId)
@@ -63,7 +64,7 @@ func (this *Controller) readDevice(id string) (result model.Device, err error, e
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result model.Device, err error, errCode int) {
+func (this *Controller) ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	device, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
 	if err != nil {
@@ -84,7 +85,7 @@ func (this *Controller) ReadDeviceByLocalId(localId string, token string, action
 
 const DisplayNameAttributeName = "shared/nickname"
 
-func ValidateDeviceName(device model.Device) (err error) {
+func ValidateDeviceName(device models.Device) (err error) {
 	if device.Name == "" {
 		hasDisplayNameAttribute := false
 		for _, attr := range device.Attributes {
@@ -100,7 +101,7 @@ func ValidateDeviceName(device model.Device) (err error) {
 	return nil
 }
 
-func (this *Controller) ValidateDevice(device model.Device) (err error, code int) {
+func (this *Controller) ValidateDevice(device models.Device) (err error, code int) {
 	if device.Id == "" {
 		return errors.New("missing device id"), http.StatusBadRequest
 	}
@@ -166,7 +167,7 @@ func (this *Controller) ValidateDevice(device model.Device) (err error, code int
 //		source
 /////////////////////////
 
-func (this *Controller) SetDevice(device model.Device, owner string) (err error) {
+func (this *Controller) SetDevice(device models.Device, owner string) (err error) {
 	//prevent collision of local ids
 	//this if branch should be rarely needed if 2 devices are created at the same time with the same local_id (when the second device is validated before the creation of the first is finished)
 	ctx, _ := getTimeoutContext()
@@ -225,7 +226,7 @@ func (this *Controller) PublishDeviceDelete(id string, owner string) error {
 	return this.producer.PublishDeviceDelete(id, owner)
 }
 
-func (this *Controller) resetHubsForDeviceUpdate(old model.Device) error {
+func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 	ctx, _ := getTimeoutContext()
 	hubs, err := this.db.GetHubsByDeviceLocalId(ctx, old.LocalId)
 	if err != nil {

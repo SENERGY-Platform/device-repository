@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,11 +33,11 @@ var conceptCharacteristicsKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		conceptIdKey, err = getBsonFieldName(model.Concept{}, conceptIdFieldName)
+		conceptIdKey, err = getBsonFieldName(models.Concept{}, conceptIdFieldName)
 		if err != nil {
 			return err
 		}
-		conceptCharacteristicsKey, err = getBsonFieldName(model.Concept{}, conceptCharacteristicFieldName)
+		conceptCharacteristicsKey, err = getBsonFieldName(models.Concept{}, conceptCharacteristicFieldName)
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func (this *Mongo) conceptCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoConceptCollection)
 }
 
-func (this *Mongo) SetConcept(ctx context.Context, concept model.Concept) error {
+func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept) error {
 	_, err := this.conceptCollection().ReplaceOne(ctx, bson.M{conceptIdKey: concept.Id}, concept, options.Replace().SetUpsert(true))
 	return err
 }
@@ -68,7 +68,7 @@ func (this *Mongo) RemoveConcept(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) GetConceptWithCharacteristics(ctx context.Context, id string) (concept model.ConceptWithCharacteristics, exists bool, err error) {
+func (this *Mongo) GetConceptWithCharacteristics(ctx context.Context, id string) (concept models.ConceptWithCharacteristics, exists bool, err error) {
 	temp, exists, err := this.GetConceptWithoutCharacteristics(ctx, id)
 	if err != nil {
 		return concept, exists, err
@@ -84,7 +84,7 @@ func (this *Mongo) GetConceptWithCharacteristics(ctx context.Context, id string)
 	return concept, exists, err
 }
 
-func (this *Mongo) GetConceptWithoutCharacteristics(ctx context.Context, id string) (concept model.Concept, exists bool, err error) {
+func (this *Mongo) GetConceptWithoutCharacteristics(ctx context.Context, id string) (concept models.Concept, exists bool, err error) {
 	result := this.conceptCollection().FindOne(ctx, bson.M{conceptIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {

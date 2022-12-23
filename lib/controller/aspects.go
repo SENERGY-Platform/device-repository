@@ -19,11 +19,12 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) SetAspect(aspect model.Aspect, owner string) error {
+func (this *Controller) SetAspect(aspect models.Aspect, owner string) error {
 	ctx, _ := getTimeoutContext()
 	err := this.db.SetAspect(ctx, aspect)
 	if err != nil {
@@ -37,7 +38,7 @@ func (this *Controller) SetAspect(aspect model.Aspect, owner string) error {
 	return this.setAspectNodes(aspect)
 }
 
-func getDescendentNodeIds(aspect model.Aspect) (result []string) {
+func getDescendentNodeIds(aspect models.Aspect) (result []string) {
 	result = []string{aspect.Id}
 	for _, sub := range aspect.SubAspects {
 		result = append(result, getDescendentNodeIds(sub)...)
@@ -45,7 +46,7 @@ func getDescendentNodeIds(aspect model.Aspect) (result []string) {
 	return result
 }
 
-func (this *Controller) handleMovedSubAspects(aspect model.Aspect, descendentNodesIds []string, owner string) error {
+func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNodesIds []string, owner string) error {
 	ctx, _ := getTimeoutContext()
 	nodes, err := this.db.ListAspectNodesByIdList(ctx, descendentNodesIds)
 	if err != nil {
@@ -85,12 +86,12 @@ func (this *Controller) handleMovedSubAspects(aspect model.Aspect, descendentNod
 	return nil
 }
 
-func filterSubAspects(aspect model.Aspect, ids []string) model.Aspect {
+func filterSubAspects(aspect models.Aspect, ids []string) models.Aspect {
 	filterSubAspect := map[string]bool{}
 	for _, id := range ids {
 		filterSubAspect[id] = true
 	}
-	subAspects := []model.Aspect{}
+	subAspects := []models.Aspect{}
 	for _, sub := range aspect.SubAspects {
 		if !filterSubAspect[sub.Id] {
 			subAspects = append(subAspects, filterSubAspects(sub, ids))
@@ -109,7 +110,7 @@ func (this *Controller) DeleteAspect(id string) error {
 	return this.db.RemoveAspect(ctx, id)
 }
 
-func (this *Controller) GetAspects() (result []model.Aspect, err error, code int) {
+func (this *Controller) GetAspects() (result []models.Aspect, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllAspects(ctx)
@@ -119,7 +120,7 @@ func (this *Controller) GetAspects() (result []model.Aspect, err error, code int
 	return
 }
 
-func (this *Controller) GetAspect(id string) (result model.Aspect, err error, code int) {
+func (this *Controller) GetAspect(id string) (result models.Aspect, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetAspect(ctx, id)
 	if err != nil {
@@ -131,7 +132,7 @@ func (this *Controller) GetAspect(id string) (result model.Aspect, err error, co
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) (result []model.Aspect, err error, code int) {
+func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) (result []models.Aspect, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAspectsWithMeasuringFunction(ctx, ancestors, descendants)
@@ -141,11 +142,11 @@ func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descenda
 	return
 }
 
-func (this *Controller) ValidateAspect(aspect model.Aspect) (err error, code int) {
+func (this *Controller) ValidateAspect(aspect models.Aspect) (err error, code int) {
 	return this.validateAspect(aspect, true)
 }
 
-func (this *Controller) validateAspect(aspect model.Aspect, checkDelete bool) (err error, code int) {
+func (this *Controller) validateAspect(aspect models.Aspect, checkDelete bool) (err error, code int) {
 	if aspect.Id == "" {
 		return errors.New("missing aspect id"), http.StatusBadRequest
 	}

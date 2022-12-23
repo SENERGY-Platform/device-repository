@@ -20,12 +20,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func (this *Controller) SetLocation(location model.Location, owner string) error {
+func (this *Controller) SetLocation(location models.Location, owner string) error {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetLocation(ctx, location)
 }
@@ -35,7 +36,7 @@ func (this *Controller) DeleteLocation(id string) error {
 	return this.db.RemoveLocation(ctx, id)
 }
 
-func (this *Controller) GetLocation(id string, token string) (result model.Location, err error, code int) {
+func (this *Controller) GetLocation(id string, token string) (result models.Location, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetLocation(ctx, id)
 	if err != nil {
@@ -47,7 +48,7 @@ func (this *Controller) GetLocation(id string, token string) (result model.Locat
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateLocation(location model.Location) (err error, code int) {
+func (this *Controller) ValidateLocation(location models.Location) (err error, code int) {
 	if location.Id == "" {
 		return errors.New("missing device class id"), http.StatusBadRequest
 	}

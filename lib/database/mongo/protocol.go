@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -35,11 +35,11 @@ var protocolNameKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		protocolIdKey, err = getBsonFieldName(model.Protocol{}, protocolIdFieldName)
+		protocolIdKey, err = getBsonFieldName(models.Protocol{}, protocolIdFieldName)
 		if err != nil {
 			return err
 		}
-		protocolNameKey, err = getBsonFieldName(model.Protocol{}, protocolNameFieldName)
+		protocolNameKey, err = getBsonFieldName(models.Protocol{}, protocolNameFieldName)
 		if err != nil {
 			return err
 		}
@@ -60,7 +60,7 @@ func (this *Mongo) protocolCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoProtocolCollection)
 }
 
-func (this *Mongo) GetProtocol(ctx context.Context, id string) (protocol model.Protocol, exists bool, err error) {
+func (this *Mongo) GetProtocol(ctx context.Context, id string) (protocol models.Protocol, exists bool, err error) {
 	result := this.protocolCollection().FindOne(ctx, bson.M{protocolIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -76,7 +76,7 @@ func (this *Mongo) GetProtocol(ctx context.Context, id string) (protocol model.P
 	return protocol, true, err
 }
 
-func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64, sort string) (result []model.Protocol, err error) {
+func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64, sort string) (result []models.Protocol, err error) {
 	opt := options.Find()
 	opt.SetLimit(limit)
 	opt.SetSkip(offset)
@@ -102,7 +102,7 @@ func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64,
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		protocol := model.Protocol{}
+		protocol := models.Protocol{}
 		err = cursor.Decode(&protocol)
 		if err != nil {
 			return nil, err
@@ -113,7 +113,7 @@ func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64,
 	return
 }
 
-func (this *Mongo) SetProtocol(ctx context.Context, protocol model.Protocol) error {
+func (this *Mongo) SetProtocol(ctx context.Context, protocol models.Protocol) error {
 	_, err := this.protocolCollection().ReplaceOne(ctx, bson.M{protocolIdKey: protocol.Id}, protocol, options.Replace().SetUpsert(true))
 	return err
 }

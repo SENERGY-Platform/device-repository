@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -31,7 +31,7 @@ var locationIdKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		locationIdKey, err = getBsonFieldName(model.Location{}, locationIdFieldName)
+		locationIdKey, err = getBsonFieldName(models.Location{}, locationIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -48,7 +48,7 @@ func (this *Mongo) locationCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoLocationCollection)
 }
 
-func (this *Mongo) GetLocation(ctx context.Context, id string) (location model.Location, exists bool, err error) {
+func (this *Mongo) GetLocation(ctx context.Context, id string) (location models.Location, exists bool, err error) {
 	result := this.locationCollection().FindOne(ctx, bson.M{locationIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -64,7 +64,7 @@ func (this *Mongo) GetLocation(ctx context.Context, id string) (location model.L
 	return location, true, err
 }
 
-func (this *Mongo) SetLocation(ctx context.Context, location model.Location) error {
+func (this *Mongo) SetLocation(ctx context.Context, location models.Location) error {
 	_, err := this.locationCollection().ReplaceOne(ctx, bson.M{locationIdKey: location.Id}, location, options.Replace().SetUpsert(true))
 	return err
 }

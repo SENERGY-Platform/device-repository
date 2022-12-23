@@ -33,6 +33,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/ory/dockertest/v3"
 	uuid "github.com/satori/go.uuid"
 	"io"
@@ -168,7 +169,7 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 	return ctrl, err
 }
 
-func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []model.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -277,8 +278,8 @@ func normalize(expected interface{}) (result interface{}) {
 	return
 }
 
-func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.DeviceType) {
-	expected := model.DeviceType{Id: devicetype1id, Name: devicetype1name}
+func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...models.DeviceType) {
+	expected := models.DeviceType{Id: devicetype1id, Name: devicetype1name}
 	if len(expectedDt) > 0 {
 		expected = expectedDt[0]
 	}
@@ -299,7 +300,7 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := model.DeviceType{}
+	result := models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)

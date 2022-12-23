@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,11 +33,11 @@ var hubDeviceLocalIdKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		hubIdKey, err = getBsonFieldName(model.Hub{}, hubIdFieldName)
+		hubIdKey, err = getBsonFieldName(models.Hub{}, hubIdFieldName)
 		if err != nil {
 			return err
 		}
-		hubDeviceLocalIdKey, err = getBsonFieldName(model.Hub{}, hubDeviceLocalIdFieldName)
+		hubDeviceLocalIdKey, err = getBsonFieldName(models.Hub{}, hubDeviceLocalIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func (this *Mongo) hubCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoHubCollection)
 }
 
-func (this *Mongo) GetHub(ctx context.Context, id string) (hub model.Hub, exists bool, err error) {
+func (this *Mongo) GetHub(ctx context.Context, id string) (hub models.Hub, exists bool, err error) {
 	result := this.hubCollection().FindOne(ctx, bson.M{hubIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -74,7 +74,7 @@ func (this *Mongo) GetHub(ctx context.Context, id string) (hub model.Hub, exists
 	return hub, true, err
 }
 
-func (this *Mongo) SetHub(ctx context.Context, hub model.Hub) error {
+func (this *Mongo) SetHub(ctx context.Context, hub models.Hub) error {
 	_, err := this.hubCollection().ReplaceOne(ctx, bson.M{hubIdKey: hub.Id}, hub, options.Replace().SetUpsert(true))
 	return err
 }
@@ -84,13 +84,13 @@ func (this *Mongo) RemoveHub(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []model.Hub, err error) {
+func (this *Mongo) GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []models.Hub, err error) {
 	cursor, err := this.hubCollection().Find(ctx, bson.M{hubDeviceLocalIdKey: localId})
 	if err != nil {
 		return nil, err
 	}
 	for cursor.Next(ctx) {
-		hub := model.Hub{}
+		hub := models.Hub{}
 		err = cursor.Decode(&hub)
 		if err != nil {
 			return nil, err

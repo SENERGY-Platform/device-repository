@@ -21,6 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
@@ -114,7 +115,7 @@ func (this *Mongo) removeDeviceTypeCriteriaByDeviceType(ctx context.Context, dev
 	return err
 }
 
-func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt model.DeviceType) error {
+func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt models.DeviceType) error {
 	err := this.removeDeviceTypeCriteriaByDeviceType(ctx, dt.Id)
 	if err != nil {
 		return err
@@ -122,12 +123,12 @@ func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt model.DeviceTyp
 	return this.addDeviceTypeCriteria(ctx, createCriteriaListFromDeviceType(dt))
 }
 
-func createCriteriaListFromDeviceType(dt model.DeviceType) (result []model.DeviceTypeCriteria) {
+func createCriteriaListFromDeviceType(dt models.DeviceType) (result []model.DeviceTypeCriteria) {
 	for _, s := range dt.Services {
 		result = append(result, createCriteriaFromService(dt.Id, dt.Id, dt.DeviceClassId, s)...)
 	}
-	servicesByServiceGroup := map[string][]model.Service{}
-	unassignedServices := []model.Service{}
+	servicesByServiceGroup := map[string][]models.Service{}
+	unassignedServices := []models.Service{}
 	for _, s := range dt.Services {
 		if s.ServiceGroupKey == "" {
 			unassignedServices = append(unassignedServices, s)
@@ -145,7 +146,7 @@ func createCriteriaListFromDeviceType(dt model.DeviceType) (result []model.Devic
 	return result
 }
 
-func createCriteriaFromService(pureDeviceTypeId string, deviceTypeId string, deviceClassId string, service model.Service) (result []model.DeviceTypeCriteria) {
+func createCriteriaFromService(pureDeviceTypeId string, deviceTypeId string, deviceClassId string, service models.Service) (result []model.DeviceTypeCriteria) {
 	for _, content := range service.Inputs {
 		result = append(result, createCriteriaFromContentVariables(pureDeviceTypeId, deviceTypeId, deviceClassId, service.Id, service.Interaction, content.ContentVariable, true, []string{})...)
 	}
@@ -155,7 +156,7 @@ func createCriteriaFromService(pureDeviceTypeId string, deviceTypeId string, dev
 	return result
 }
 
-func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId string, deviceClassId string, serviceId string, interaction model.Interaction, variable model.ContentVariable, isInput bool, pathParts []string) (result []model.DeviceTypeCriteria) {
+func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId string, deviceClassId string, serviceId string, interaction models.Interaction, variable models.ContentVariable, isInput bool, pathParts []string) (result []model.DeviceTypeCriteria) {
 	currentPath := append(pathParts, variable.Name)
 	isLeaf := len(variable.SubContentVariables) == 0
 	isCtrlFun := isControllingFunction(variable.FunctionId)
@@ -207,10 +208,10 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 	}
 	if criteria.Interaction != "" {
 		switch criteria.Interaction {
-		case model.REQUEST:
-			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.REQUEST), string(model.EVENT_AND_REQUEST)}}
-		case model.EVENT:
-			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.EVENT), string(model.EVENT_AND_REQUEST)}}
+		case models.REQUEST:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(models.REQUEST), string(models.EVENT_AND_REQUEST)}}
+		case models.EVENT:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(models.EVENT), string(models.EVENT_AND_REQUEST)}}
 		default:
 			filter[DeviceTypeCriteriaBson.Interaction] = string(criteria.Interaction)
 		}

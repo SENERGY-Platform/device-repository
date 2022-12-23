@@ -19,7 +19,7 @@ package producer
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/segmentio/kafka-go"
 	"log"
 	"runtime/debug"
@@ -27,10 +27,10 @@ import (
 )
 
 type AspectCommand struct {
-	Command string       `json:"command"`
-	Id      string       `json:"id"`
-	Owner   string       `json:"owner"`
-	Aspect  model.Aspect `json:"aspect"`
+	Command string        `json:"command"`
+	Id      string        `json:"id"`
+	Owner   string        `json:"owner"`
+	Aspect  models.Aspect `json:"aspect"`
 }
 
 func (this *Producer) PublishAspectDelete(id string, userId string) error {
@@ -38,7 +38,7 @@ func (this *Producer) PublishAspectDelete(id string, userId string) error {
 	return this.PublishAspectCommand(cmd)
 }
 
-func (this *Producer) PublishAspectUpdate(aspect model.Aspect, userId string) error {
+func (this *Producer) PublishAspectUpdate(aspect models.Aspect, userId string) error {
 	cmd := AspectCommand{Command: "PUT", Id: aspect.Id, Aspect: aspect, Owner: userId}
 	return this.PublishAspectCommand(cmd)
 }

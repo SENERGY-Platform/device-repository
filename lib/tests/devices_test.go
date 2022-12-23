@@ -21,8 +21,8 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"io/ioutil"
@@ -45,18 +45,18 @@ var device3lid = "lid3"
 var device3name = uuid.NewV4().String()
 
 func TestDeviceNameValidation(t *testing.T) {
-	err := controller.ValidateDeviceName(model.Device{Name: "foo"})
+	err := controller.ValidateDeviceName(models.Device{Name: "foo"})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = controller.ValidateDeviceName(model.Device{Name: "", Attributes: []model.Attribute{{Key: "shared/nickname", Origin: "shared", Value: "bar"}}})
+	err = controller.ValidateDeviceName(models.Device{Name: "", Attributes: []models.Attribute{{Key: "shared/nickname", Origin: "shared", Value: "bar"}}})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = controller.ValidateDeviceName(model.Device{})
+	err = controller.ValidateDeviceName(models.Device{})
 	if err == nil {
 		t.Error("missing error")
 		return
@@ -79,14 +79,14 @@ func TestDeviceQuery(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	time.Sleep(10 * time.Second)
 
-	d1 := model.Device{
+	d1 := models.Device{
 		Id:           device1id,
 		LocalId:      device1lid,
 		Name:         device1name,
@@ -99,7 +99,7 @@ func TestDeviceQuery(t *testing.T) {
 		return
 	}
 
-	d2 := model.Device{
+	d2 := models.Device{
 		Id:           device2id,
 		LocalId:      device2lid,
 		Name:         device2name,
@@ -112,11 +112,11 @@ func TestDeviceQuery(t *testing.T) {
 		return
 	}
 
-	d3 := model.Device{
+	d3 := models.Device{
 		Id:      device3id,
 		LocalId: device3lid,
 		Name:    device3name,
-		Attributes: []model.Attribute{
+		Attributes: []models.Attribute{
 			{Key: "foo", Value: "bar"},
 			{Key: "bar", Value: "batz"},
 		},
@@ -145,7 +145,7 @@ func TestDeviceQuery(t *testing.T) {
 	})
 }
 
-func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDevices ...model.Device) {
+func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDevices ...models.Device) {
 	for _, expected := range expectedDevices {
 		endpoint := "http://localhost:" + conf.ServerPort + "/devices/"
 		if asLocalId {
@@ -170,7 +170,7 @@ func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDe
 			return
 		}
 
-		result := model.Device{}
+		result := models.Device{}
 		err = json.NewDecoder(resp.Body).Decode(&result)
 		if err != nil {
 			t.Error(err)

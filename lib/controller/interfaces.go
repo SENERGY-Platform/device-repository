@@ -19,6 +19,7 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 )
 
@@ -29,9 +30,9 @@ type Security interface {
 
 type Producer interface {
 	PublishDeviceDelete(id string, owner string) error
-	PublishHub(hub model.Hub) (err error)
+	PublishHub(hub models.Hub) (err error)
 	PublishAspectDelete(id string, owner string) error
-	PublishAspectUpdate(aspect model.Aspect, owner string) error
+	PublishAspectUpdate(aspect models.Aspect, owner string) error
 }
 
 type ErrorProducer struct{}
@@ -42,7 +43,7 @@ func (this ErrorProducer) PublishAspectDelete(id string, owner string) (err erro
 	return err
 }
 
-func (this ErrorProducer) PublishAspectUpdate(aspect model.Aspect, owner string) (err error) {
+func (this ErrorProducer) PublishAspectUpdate(aspect models.Aspect, owner string) (err error) {
 	err = errors.New("no producer usage expected")
 	log.Println("ERROR:", err)
 	return err
@@ -54,7 +55,7 @@ func (this ErrorProducer) PublishDeviceDelete(id string, owner string) (err erro
 	return err
 }
 
-func (this ErrorProducer) PublishHub(hub model.Hub) (err error) {
+func (this ErrorProducer) PublishHub(hub models.Hub) (err error) {
 	err = errors.New("no producer usage expected")
 	log.Println("ERROR:", err)
 	return err

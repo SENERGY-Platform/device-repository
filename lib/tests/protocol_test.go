@@ -20,8 +20,8 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
@@ -61,13 +61,13 @@ func TestProtocolQuery(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishProtocol(model.Protocol{Id: protocol1id, Name: protocol1name}, userid)
+	err = producer.PublishProtocol(models.Protocol{Id: protocol1id, Name: protocol1name}, userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishProtocol(model.Protocol{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, userid)
+		err = producer.PublishProtocol(models.Protocol{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, userid)
 		if err != nil {
 			t.Error(err)
 			return
@@ -95,8 +95,8 @@ func TestProtocolQuery(t *testing.T) {
 	})
 }
 
-func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...model.Protocol) {
-	expected := model.Protocol{Id: protocol1id, Name: protocol1name}
+func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...models.Protocol) {
+	expected := models.Protocol{Id: protocol1id, Name: protocol1name}
 	if len(expectedDt) > 0 {
 		expected = expectedDt[0]
 	}
@@ -117,7 +117,7 @@ func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...model.Prot
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := model.Protocol{}
+	result := models.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -146,7 +146,7 @@ func testProtocolList(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.Protocol{}
+	result := []models.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -175,7 +175,7 @@ func testProtocolListLimit10(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.Protocol{}
+	result := []models.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -204,7 +204,7 @@ func testProtocolListLimit10Offset20(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.Protocol{}
+	result := []models.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -233,7 +233,7 @@ func testProtocolListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	defaultresult := []model.Protocol{}
+	defaultresult := []models.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&defaultresult)
 	if err != nil {
 		t.Error(err)
@@ -259,7 +259,7 @@ func testProtocolListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	ascresult := []model.Protocol{}
+	ascresult := []models.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&ascresult)
 	if err != nil {
 		t.Error(err)
@@ -290,7 +290,7 @@ func testProtocolListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	descresult := []model.Protocol{}
+	descresult := []models.Protocol{}
 	err = json.NewDecoder(resp.Body).Decode(&descresult)
 	if err != nil {
 		t.Error(err)

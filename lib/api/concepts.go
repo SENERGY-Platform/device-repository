@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -36,8 +36,8 @@ func Concepts(config config.Config, control Controller, router *httprouter.Route
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
 		subClass, err := strconv.ParseBool(request.URL.Query().Get("sub-class"))
-		resultConceptWithCharacteristics := model.ConceptWithCharacteristics{}
-		resultConcept := model.Concept{}
+		resultConceptWithCharacteristics := models.ConceptWithCharacteristics{}
+		resultConcept := models.Concept{}
 		errCode := 0
 		if subClass {
 			resultConceptWithCharacteristics, err, errCode = control.GetConceptWithCharacteristics(id)
@@ -70,7 +70,7 @@ func Concepts(config config.Config, control Controller, router *httprouter.Route
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		concept := model.Concept{}
+		concept := models.Concept{}
 		err = json.NewDecoder(request.Body).Decode(&concept)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

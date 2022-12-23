@@ -17,8 +17,9 @@
 package model
 
 import "strings"
+import "github.com/SENERGY-Platform/models/go/models"
 
-func SetFunctionRdfType(function *Function) {
+func SetFunctionRdfType(function *models.Function) {
 	if strings.HasPrefix(function.Id, URN_PREFIX+"controlling-function:") {
 		function.RdfType = SES_ONTOLOGY_CONTROLLING_FUNCTION
 	}

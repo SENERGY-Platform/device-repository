@@ -22,10 +22,10 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
+	"github.com/SENERGY-Platform/models/go/models"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -67,14 +67,14 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetAspect(model.Aspect{
+	err = ctrl.SetAspect(models.Aspect{
 		Id:   "parent",
 		Name: "parent",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "aid",
 				Name: "aid",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "child",
 						Name: "child",
@@ -87,15 +87,15 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetDeviceType(model.DeviceType{
+	err = ctrl.SetDeviceType(models.DeviceType{
 		Id:            "dt1",
 		DeviceClassId: "dcid",
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:          "s1id",
-			Interaction: model.REQUEST,
-			Outputs: []model.Content{
+			Interaction: models.REQUEST,
+			Outputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
+					ContentVariable: models.ContentVariable{
 						FunctionId: "fid",
 						AspectId:   "aid",
 					},
@@ -107,7 +107,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetDevice(model.Device{
+	err = ctrl.SetDevice(models.Device{
 		Id:           "did",
 		DeviceTypeId: "dt1",
 	}, "")
@@ -115,145 +115,145 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	t.Run("minimal ok", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("minimal ok", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
 	}, http.StatusOK, false))
 
-	t.Run("ok with image", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("ok with image", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:    "id",
 		Name:  "name",
 		Image: "imageUrl",
 	}, http.StatusOK, false))
 
-	t.Run("missing id", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("missing id", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Name: "name",
 	}, http.StatusBadRequest, true))
 
-	t.Run("missing name", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("missing name", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Name: "id",
 	}, http.StatusBadRequest, true))
 
-	t.Run("ok with one dc criteria and no device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("ok with one dc criteria and no device", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "dcid",
-			Interaction:   model.REQUEST,
+			Interaction:   models.REQUEST,
 		}},
 	}, http.StatusOK, false))
 
-	t.Run("ok with one dc criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("ok with one dc criteria and one device", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "dcid",
-			Interaction:   model.REQUEST,
+			Interaction:   models.REQUEST,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusOK, false))
 
-	t.Run("ok with one aspect criteria and no device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("ok with one aspect criteria and no device", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid",
 			AspectId:    "aid",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 		}},
 	}, http.StatusOK, false))
 
-	t.Run("ok with one parent aspect criteria and no device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("ok with one parent aspect criteria and no device", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid",
 			AspectId:    "parent",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 		}},
 	}, http.StatusOK, false))
 
-	t.Run("ok with one aspect criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("ok with one aspect criteria and one device", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid",
 			AspectId:    "aid",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusOK, false))
 
-	t.Run("ok with one parent aspect criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("ok with one parent aspect criteria and one device", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid",
 			AspectId:    "parent",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusOK, false))
 
-	t.Run("not ok with one child aspect criteria and one device", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("not ok with one child aspect criteria and one device", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid",
 			AspectId:    "child",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 
-	t.Run("device uses blocked interaction", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("device uses blocked interaction", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid",
 			AspectId:    "aid",
-			Interaction: model.EVENT,
+			Interaction: models.EVENT,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 
-	t.Run("wrong aspect", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("wrong aspect", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid",
 			AspectId:    "aid_unknown",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 
-	t.Run("wrong function", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("wrong function", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:  "fid_unknown",
 			AspectId:    "aid",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 
-	t.Run("wrong device-class", testDeviceGroupValidation(ctrl, model.DeviceGroup{
+	t.Run("wrong device-class", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "unknown",
-			Interaction:   model.REQUEST,
+			Interaction:   models.REQUEST,
 		}},
 		DeviceIds: []string{"did"},
 	}, http.StatusBadRequest, true))
 }
 
-func testDeviceGroupValidation(ctrl *controller.Controller, group model.DeviceGroup, expectedStatusCode int, expectError bool) func(t *testing.T) {
+func testDeviceGroupValidation(ctrl *controller.Controller, group models.DeviceGroup, expectedStatusCode int, expectError bool) func(t *testing.T) {
 	return func(t *testing.T) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -285,77 +285,77 @@ func TestDeviceGroupsDeviceFilter(t *testing.T) {
 	sec.Set(conf.DeviceTopic, "d2", true)
 	sec.Set(conf.DeviceTopic, "d3", true)
 
-	t.Run("empty", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+	t.Run("empty", testDeviceGroupsDeviceFilter(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "unknown",
 		}},
-	}, model.DeviceGroup{
+	}, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
-			FunctionId:    "fid",
-			DeviceClassId: "unknown",
-		}},
-	}))
-
-	t.Run("empty 2", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
-		Id:   "id",
-		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
-			FunctionId:    "fid",
-			DeviceClassId: "unknown",
-		}},
-	}, model.DeviceGroup{
-		Id:   "id",
-		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "unknown",
 		}},
 	}))
 
-	t.Run("empty 3", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+	t.Run("empty 2", testDeviceGroupsDeviceFilter(ctrl, models.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Criteria: []models.DeviceGroupFilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
+		}},
+	}, models.DeviceGroup{
+		Id:   "id",
+		Name: "name",
+		Criteria: []models.DeviceGroupFilterCriteria{{
+			FunctionId:    "fid",
+			DeviceClassId: "unknown",
+		}},
+	}))
+
+	t.Run("empty 3", testDeviceGroupsDeviceFilter(ctrl, models.DeviceGroup{
 		Id:       "id",
 		Name:     "name",
-		Criteria: []model.DeviceGroupFilterCriteria{},
-	}, model.DeviceGroup{
+		Criteria: []models.DeviceGroupFilterCriteria{},
+	}, models.DeviceGroup{
 		Id:       "id",
 		Name:     "name",
-		Criteria: []model.DeviceGroupFilterCriteria{},
+		Criteria: []models.DeviceGroupFilterCriteria{},
 	}))
 
-	t.Run("full access", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+	t.Run("full access", testDeviceGroupsDeviceFilter(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "unknown",
 		}},
 		DeviceIds: []string{"d1", "d2", "d3"},
-	}, model.DeviceGroup{
+	}, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "unknown",
 		}},
 		DeviceIds: []string{"d1", "d2", "d3"},
 	}))
-	t.Run("one access missing", testDeviceGroupsDeviceFilter(ctrl, model.DeviceGroup{
+	t.Run("one access missing", testDeviceGroupsDeviceFilter(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "unknown",
 		}},
 		DeviceIds: []string{"d1", "d2", "unknown", "d3"},
-	}, model.DeviceGroup{
+	}, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "unknown",
 		}},
@@ -363,7 +363,7 @@ func TestDeviceGroupsDeviceFilter(t *testing.T) {
 	}))
 }
 
-func testDeviceGroupsDeviceFilter(ctrl *controller.Controller, group model.DeviceGroup, expectedResult model.DeviceGroup) func(t *testing.T) {
+func testDeviceGroupsDeviceFilter(ctrl *controller.Controller, group models.DeviceGroup, expectedResult models.DeviceGroup) func(t *testing.T) {
 	return func(t *testing.T) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -405,15 +405,15 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{
+	err = producer.PublishDeviceType(models.DeviceType{
 		Id:            devicetype1id,
 		Name:          devicetype1name,
 		DeviceClassId: "dcid",
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:          "s1id",
-			Interaction: model.REQUEST,
-			Outputs: []model.Content{
-				{ContentVariable: model.ContentVariable{
+			Interaction: models.REQUEST,
+			Outputs: []models.Content{
+				{ContentVariable: models.ContentVariable{
 					FunctionId: "fid",
 					AspectId:   "aid",
 				}},
@@ -425,7 +425,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		return
 	}
 
-	d1 := model.Device{
+	d1 := models.Device{
 		Id:           device1id,
 		LocalId:      device1lid,
 		Name:         devicetype1name,
@@ -438,13 +438,13 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		return
 	}
 
-	dg1 := model.DeviceGroup{
+	dg1 := models.DeviceGroup{
 		Id:   devicegroup1id,
 		Name: devicegroup1name,
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "dcid",
-			Interaction:   model.REQUEST,
+			Interaction:   models.REQUEST,
 		}},
 		DeviceIds: []string{device1id},
 	}
@@ -481,15 +481,15 @@ func TestDeviceGroupsAttributes(t *testing.T) {
 		return
 	}
 
-	dg1 := model.DeviceGroup{
+	dg1 := models.DeviceGroup{
 		Id:   devicegroup1id,
 		Name: devicegroup1name,
-		Criteria: []model.DeviceGroupFilterCriteria{{
+		Criteria: []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "fid",
 			DeviceClassId: "dcid",
-			Interaction:   model.REQUEST,
+			Interaction:   models.REQUEST,
 		}},
-		Attributes: []model.Attribute{
+		Attributes: []models.Attribute{
 			{
 				Key:    "a1",
 				Value:  "v1",
@@ -538,7 +538,7 @@ func testDeviceGroupReadNotFound(t *testing.T, conf config.Config, id string) {
 	}
 }
 
-func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss ...model.DeviceGroup) {
+func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss ...models.DeviceGroup) {
 	for _, expected := range expectedDeviceGroupss {
 		endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(expected.Id)
 		req, err := http.NewRequest("GET", endpoint, nil)
@@ -558,7 +558,7 @@ func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss
 			return
 		}
 
-		result := model.DeviceGroup{}
+		result := models.DeviceGroup{}
 		err = json.NewDecoder(resp.Body).Decode(&result)
 		if err != nil {
 			t.Error(err)

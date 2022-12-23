@@ -21,6 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -45,7 +46,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 		if permission == "" {
 			permission = model.READ
 		}
-		var result model.Device
+		var result models.Device
 		var err error
 		var errCode int
 		if as == "local_id" {
@@ -75,7 +76,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		device := model.Device{}
+		device := models.Device{}
 		err = json.NewDecoder(request.Body).Decode(&device)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

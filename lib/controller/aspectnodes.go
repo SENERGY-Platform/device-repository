@@ -19,11 +19,11 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )
 
-func (this *Controller) setAspectNodes(aspect model.Aspect) (err error) {
+func (this *Controller) setAspectNodes(aspect models.Aspect) (err error) {
 	ctx, _ := getTimeoutContext()
 	err = this.db.RemoveAspectNodesByRootId(ctx, aspect.Id)
 	if err != nil {
@@ -33,7 +33,7 @@ func (this *Controller) setAspectNodes(aspect model.Aspect) (err error) {
 	return err
 }
 
-func CreateAspectNodes(db database.Database, aspect model.Aspect, rootId string, parentId string, ancestors []string) (descendents []string, err error) {
+func CreateAspectNodes(db database.Database, aspect models.Aspect, rootId string, parentId string, ancestors []string) (descendents []string, err error) {
 	descendents = []string{}
 	children := []string{}
 	for _, sub := range aspect.SubAspects {
@@ -45,7 +45,7 @@ func CreateAspectNodes(db database.Database, aspect model.Aspect, rootId string,
 		descendents = append(descendents, temp...)
 	}
 	ctx, _ := getTimeoutContext()
-	err = db.SetAspectNode(ctx, model.AspectNode{
+	err = db.SetAspectNode(ctx, models.AspectNode{
 		Id:            aspect.Id,
 		Name:          aspect.Name,
 		RootId:        rootId,
@@ -57,7 +57,7 @@ func CreateAspectNodes(db database.Database, aspect model.Aspect, rootId string,
 	return append(descendents, aspect.Id), err
 }
 
-func (this *Controller) GetAspectNode(id string) (result model.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNode(id string) (result models.AspectNode, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetAspectNode(ctx, id)
 	if err != nil {
@@ -69,7 +69,7 @@ func (this *Controller) GetAspectNode(id string) (result model.AspectNode, err e
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspectNodes() (result []model.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNodes() (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllAspectNodes(ctx)
@@ -79,7 +79,7 @@ func (this *Controller) GetAspectNodes() (result []model.AspectNode, err error, 
 	return
 }
 
-func (this *Controller) GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) (result []model.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAspectNodesWithMeasuringFunction(ctx, ancestors, descendants)
@@ -89,7 +89,7 @@ func (this *Controller) GetAspectNodesWithMeasuringFunction(ancestors bool, desc
 	return
 }
 
-func (this *Controller) GetAspectNodesByIdList(ids []string) (result []model.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNodesByIdList(ids []string) (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAspectNodesByIdList(ctx, ids)

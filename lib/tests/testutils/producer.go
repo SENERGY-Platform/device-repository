@@ -21,9 +21,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/source/util"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/segmentio/kafka-go"
 	"log"
 	"runtime/debug"
@@ -97,27 +97,27 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 }
 
 type DeviceTypeCommand struct {
-	Command    string           `json:"command"`
-	Id         string           `json:"id"`
-	Owner      string           `json:"owner"`
-	DeviceType model.DeviceType `json:"device_type"`
+	Command    string            `json:"command"`
+	Id         string            `json:"id"`
+	Owner      string            `json:"owner"`
+	DeviceType models.DeviceType `json:"device_type"`
 }
 
 type DeviceGroupCommand struct {
-	Command     string            `json:"command"`
-	Id          string            `json:"id"`
-	Owner       string            `json:"owner"`
-	DeviceGroup model.DeviceGroup `json:"device_group"`
+	Command     string             `json:"command"`
+	Id          string             `json:"id"`
+	Owner       string             `json:"owner"`
+	DeviceGroup models.DeviceGroup `json:"device_group"`
 }
 
 type DeviceCommand struct {
-	Command string       `json:"command"`
-	Id      string       `json:"id"`
-	Owner   string       `json:"owner"`
-	Device  model.Device `json:"device"`
+	Command string        `json:"command"`
+	Id      string        `json:"id"`
+	Owner   string        `json:"owner"`
+	Device  models.Device `json:"device"`
 }
 
-func (this *Publisher) PublishDeviceGroup(dg model.DeviceGroup, userId string) (err error) {
+func (this *Publisher) PublishDeviceGroup(dg models.DeviceGroup, userId string) (err error) {
 	cmd := DeviceGroupCommand{Command: "PUT", Id: dg.Id, DeviceGroup: dg, Owner: userId}
 	return this.PublishDeviceGroupCommand(cmd)
 }
@@ -145,7 +145,7 @@ func (this *Publisher) PublishDeviceGroupCommand(cmd DeviceGroupCommand) error {
 	return err
 }
 
-func (this *Publisher) PublishDeviceType(device model.DeviceType, userId string) (err error) {
+func (this *Publisher) PublishDeviceType(device models.DeviceType, userId string) (err error) {
 	cmd := DeviceTypeCommand{Command: "PUT", Id: device.Id, DeviceType: device, Owner: userId}
 	return this.PublishDeviceTypeCommand(cmd)
 }
@@ -178,7 +178,7 @@ func (this *Publisher) PublishDeviceTypeCommand(cmd DeviceTypeCommand) error {
 	return err
 }
 
-func (this *Publisher) PublishDevice(device model.Device, userId string) (err error) {
+func (this *Publisher) PublishDevice(device models.Device, userId string) (err error) {
 	cmd := DeviceCommand{Command: "PUT", Id: device.Id, Device: device, Owner: userId}
 	return this.PublishDeviceCommand(cmd)
 }
@@ -207,13 +207,13 @@ func (this *Publisher) PublishDeviceCommand(cmd DeviceCommand) error {
 }
 
 type ProtocolCommand struct {
-	Command  string         `json:"command"`
-	Id       string         `json:"id"`
-	Owner    string         `json:"owner"`
-	Protocol model.Protocol `json:"protocol"`
+	Command  string          `json:"command"`
+	Id       string          `json:"id"`
+	Owner    string          `json:"owner"`
+	Protocol models.Protocol `json:"protocol"`
 }
 
-func (this *Publisher) PublishProtocol(device model.Protocol, userId string) (err error) {
+func (this *Publisher) PublishProtocol(device models.Protocol, userId string) (err error) {
 	cmd := ProtocolCommand{Command: "PUT", Id: device.Id, Protocol: device, Owner: userId}
 	return this.PublishProtocolCommand(cmd)
 }
@@ -247,13 +247,13 @@ func (this *Publisher) PublishProtocolCommand(cmd ProtocolCommand) error {
 }
 
 type HubCommand struct {
-	Command string    `json:"command"`
-	Id      string    `json:"id"`
-	Owner   string    `json:"owner"`
-	Hub     model.Hub `json:"hub"`
+	Command string     `json:"command"`
+	Id      string     `json:"id"`
+	Owner   string     `json:"owner"`
+	Hub     models.Hub `json:"hub"`
 }
 
-func (this *Publisher) PublishHub(hub model.Hub, userId string) (err error) {
+func (this *Publisher) PublishHub(hub models.Hub, userId string) (err error) {
 	cmd := HubCommand{Command: "PUT", Id: hub.Id, Hub: hub, Owner: userId}
 	return this.PublishHubCommand(cmd)
 }
@@ -286,7 +286,7 @@ func (this *Publisher) PublishHubCommand(cmd HubCommand) error {
 	return err
 }
 
-func (this *Publisher) PublishAspect(aspect model.Aspect, userid string) error {
+func (this *Publisher) PublishAspect(aspect models.Aspect, userid string) error {
 	cmd := AspectCommand{Command: "PUT", Id: aspect.Id, Aspect: aspect, Owner: userid}
 	return this.PublishAspectCommand(cmd)
 }
@@ -315,13 +315,13 @@ func (this *Publisher) PublishAspectCommand(cmd AspectCommand) error {
 }
 
 type AspectCommand struct {
-	Command string       `json:"command"`
-	Id      string       `json:"id"`
-	Owner   string       `json:"owner"`
-	Aspect  model.Aspect `json:"aspect"`
+	Command string        `json:"command"`
+	Id      string        `json:"id"`
+	Owner   string        `json:"owner"`
+	Aspect  models.Aspect `json:"aspect"`
 }
 
-func (this *Publisher) PublishFunction(function model.Function, userid string) error {
+func (this *Publisher) PublishFunction(function models.Function, userid string) error {
 	cmd := FunctionCommand{Command: "PUT", Id: function.Id, Function: function, Owner: userid}
 	return this.PublishFunctionCommand(cmd)
 }
@@ -350,13 +350,13 @@ func (this *Publisher) PublishFunctionCommand(cmd FunctionCommand) error {
 }
 
 type FunctionCommand struct {
-	Command  string         `json:"command"`
-	Id       string         `json:"id"`
-	Owner    string         `json:"owner"`
-	Function model.Function `json:"function"`
+	Command  string          `json:"command"`
+	Id       string          `json:"id"`
+	Owner    string          `json:"owner"`
+	Function models.Function `json:"function"`
 }
 
-func (this *Publisher) PublishDeviceClass(deviceClass model.DeviceClass, userid string) error {
+func (this *Publisher) PublishDeviceClass(deviceClass models.DeviceClass, userid string) error {
 	cmd := DeviceClassCommand{Command: "PUT", Id: deviceClass.Id, DeviceClass: deviceClass, Owner: userid}
 	return this.PublishDeviceClassCommand(cmd)
 }
@@ -385,13 +385,13 @@ func (this *Publisher) PublishDeviceClassCommand(cmd DeviceClassCommand) error {
 }
 
 type DeviceClassCommand struct {
-	Command     string            `json:"command"`
-	Id          string            `json:"id"`
-	Owner       string            `json:"owner"`
-	DeviceClass model.DeviceClass `json:"device_class"`
+	Command     string             `json:"command"`
+	Id          string             `json:"id"`
+	Owner       string             `json:"owner"`
+	DeviceClass models.DeviceClass `json:"device_class"`
 }
 
-func (this *Publisher) PublishCharacteristic(characteristic model.Characteristic, userid string) error {
+func (this *Publisher) PublishCharacteristic(characteristic models.Characteristic, userid string) error {
 	cmd := CharacteristicCommand{Command: "PUT", Id: characteristic.Id, Characteristic: characteristic, Owner: userid}
 	return this.PublishCharacteristicCommand(cmd)
 }
@@ -420,13 +420,13 @@ func (this *Publisher) PublishCharacteristicCommand(cmd CharacteristicCommand) e
 }
 
 type CharacteristicCommand struct {
-	Command        string               `json:"command"`
-	Id             string               `json:"id"`
-	Owner          string               `json:"owner"`
-	Characteristic model.Characteristic `json:"characteristic"`
+	Command        string                `json:"command"`
+	Id             string                `json:"id"`
+	Owner          string                `json:"owner"`
+	Characteristic models.Characteristic `json:"characteristic"`
 }
 
-func (this *Publisher) PublishConcept(concept model.Concept, userid string) error {
+func (this *Publisher) PublishConcept(concept models.Concept, userid string) error {
 	cmd := ConceptCommand{Command: "PUT", Id: concept.Id, Concept: concept, Owner: userid}
 	return this.PublishConceptCommand(cmd)
 }
@@ -455,8 +455,8 @@ func (this *Publisher) PublishConceptCommand(cmd ConceptCommand) error {
 }
 
 type ConceptCommand struct {
-	Command string        `json:"command"`
-	Id      string        `json:"id"`
-	Owner   string        `json:"owner"`
-	Concept model.Concept `json:"concept"`
+	Command string         `json:"command"`
+	Id      string         `json:"id"`
+	Owner   string         `json:"owner"`
+	Concept models.Concept `json:"concept"`
 }

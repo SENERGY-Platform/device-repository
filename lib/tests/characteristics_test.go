@@ -19,7 +19,7 @@ package tests
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"testing"
 )
@@ -32,44 +32,44 @@ func TestCharacteristicValidation(t *testing.T) {
 		return
 	}
 
-	t.Run("struct duplicate sub characteristic name", testValidateCharacteristic(ctrl, true, model.Characteristic{
+	t.Run("struct duplicate sub characteristic name", testValidateCharacteristic(ctrl, true, models.Characteristic{
 		Id:   "root",
 		Name: "root",
-		Type: model.Structure,
-		SubCharacteristics: []model.Characteristic{
+		Type: models.Structure,
+		SubCharacteristics: []models.Characteristic{
 			{
 				Id:   "v",
 				Name: "v",
-				Type: model.String,
+				Type: models.String,
 			},
 			{
 				Id:   "v2",
 				Name: "v",
-				Type: model.Integer,
+				Type: models.Integer,
 			},
 		},
 	}))
 
-	t.Run("list duplicate sub characteristic name", testValidateCharacteristic(ctrl, true, model.Characteristic{
+	t.Run("list duplicate sub characteristic name", testValidateCharacteristic(ctrl, true, models.Characteristic{
 		Id:   "root",
 		Name: "root",
-		Type: model.List,
-		SubCharacteristics: []model.Characteristic{
+		Type: models.List,
+		SubCharacteristics: []models.Characteristic{
 			{
 				Id:   "v",
 				Name: "0",
-				Type: model.String,
+				Type: models.String,
 			},
 			{
 				Id:   "v2",
 				Name: "0",
-				Type: model.String,
+				Type: models.String,
 			},
 		},
 	}))
 }
 
-func testValidateCharacteristic(ctrl *controller.Controller, expectError bool, characteristic model.Characteristic) func(t *testing.T) {
+func testValidateCharacteristic(ctrl *controller.Controller, expectError bool, characteristic models.Characteristic) func(t *testing.T) {
 	return func(t *testing.T) {
 		err, _ := ctrl.ValidateCharacteristics(characteristic)
 		if (err != nil) != expectError {

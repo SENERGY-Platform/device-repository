@@ -25,6 +25,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"log"
 	"net/http"
@@ -49,7 +50,7 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 		return
 	}
 
-	t.Run("init metadata", createTestMetadata(conf, model.REQUEST))
+	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
 
 	toggleCriteria := []model.FilterCriteria{{
 		FunctionId:    model.CONTROLLING_FUNCTION_PREFIX + "toggle",
@@ -58,13 +59,13 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 
 	toggleSelectable := model.DeviceTypeSelectable{
 		DeviceTypeId: "toggle",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "triggerToggle",
-				Interaction: model.REQUEST,
-				Inputs: []model.Content{
+				Interaction: models.REQUEST,
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:         "void",
 							IsVoid:     true,
 							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "toggle",
@@ -79,7 +80,7 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 					ServiceId:             "triggerToggle",
 					Path:                  "prefix.",
 					CharacteristicId:      "",
-					AspectNode:            model.AspectNode{},
+					AspectNode:            models.AspectNode{},
 					FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "toggle",
 					IsControllingFunction: true,
 					IsVoid:                true,
@@ -102,7 +103,7 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 		return
 	}
 
-	t.Run("init metadata", createTestMetadata(conf, model.REQUEST))
+	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
 
 	waterProbeCriteria := []model.FilterCriteria{{
 		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -110,13 +111,13 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 	}}
 	waterprobeSelectable := model.DeviceTypeSelectable{
 		DeviceTypeId: "water-probe",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "getTemperature",
-				Interaction: model.REQUEST,
-				Outputs: []model.Content{
+				Interaction: models.REQUEST,
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "temperature",
 							Name:             "temperature",
 							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -133,7 +134,7 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 					ServiceId:        "getTemperature",
 					Path:             "prefix.temperature",
 					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: model.AspectNode{
+					AspectNode: models.AspectNode{
 						Id:            "water",
 						Name:          "",
 						RootId:        "water",
@@ -149,26 +150,26 @@ func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
 	}
 
 	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT}, []model.DeviceTypeSelectable{}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT, model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
+	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
 	t.Run("event+request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
 		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
 		AspectId:    "water",
-		Interaction: model.EVENT_AND_REQUEST,
-	}}, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{}))
+		Interaction: models.EVENT_AND_REQUEST,
+	}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{}))
 	t.Run("event in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
 		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
 		AspectId:    "water",
-		Interaction: model.EVENT_AND_REQUEST,
-	}}, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{}))
+		Interaction: models.EVENT_AND_REQUEST,
+	}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{}))
 	t.Run("request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
 		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
 		AspectId:    "water",
-		Interaction: model.REQUEST,
-	}}, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		Interaction: models.REQUEST,
+	}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
 }
 
 func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
@@ -182,7 +183,7 @@ func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
 		return
 	}
 
-	t.Run("init metadata", createTestMetadata(conf, model.EVENT_AND_REQUEST))
+	t.Run("init metadata", createTestMetadata(conf, models.EVENT_AND_REQUEST))
 
 	waterProbeCriteria := []model.FilterCriteria{{
 		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -190,13 +191,13 @@ func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
 	}}
 	waterprobeSelectable := model.DeviceTypeSelectable{
 		DeviceTypeId: "water-probe",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "getTemperature",
-				Interaction: model.EVENT_AND_REQUEST,
-				Outputs: []model.Content{
+				Interaction: models.EVENT_AND_REQUEST,
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "temperature",
 							Name:             "temperature",
 							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -213,7 +214,7 @@ func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
 					ServiceId:        "getTemperature",
 					Path:             "prefix.temperature",
 					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: model.AspectNode{
+					AspectNode: models.AspectNode{
 						Id:            "water",
 						Name:          "",
 						RootId:        "water",
@@ -229,11 +230,11 @@ func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
 	}
 
 	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT, model.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []model.Interaction{model.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
 }
 
 func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
@@ -247,7 +248,7 @@ func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
 		return
 	}
 
-	t.Run("init metadata", createTestMetadata(conf, model.REQUEST))
+	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
 
 	waterProbeCriteria := []model.FilterCriteria{{
 		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -255,13 +256,13 @@ func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
 	}}
 	waterprobeSelectable := model.DeviceTypeSelectable{
 		DeviceTypeId: "water-probe",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "getTemperature",
-				Interaction: model.REQUEST,
-				Outputs: []model.Content{
+				Interaction: models.REQUEST,
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "temperature",
 							Name:             "temperature",
 							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -278,7 +279,7 @@ func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
 					ServiceId:        "getTemperature",
 					Path:             "prefix.temperature",
 					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: model.AspectNode{
+					AspectNode: models.AspectNode{
 						Id:            "water",
 						Name:          "",
 						RootId:        "water",
@@ -288,7 +289,7 @@ func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
 						DescendentIds: []string{},
 					},
 					FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					Interaction: model.REQUEST,
+					Interaction: models.REQUEST,
 				},
 			},
 		},
@@ -296,10 +297,10 @@ func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
 
 	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
 	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT, model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
 }
 
 func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
@@ -313,7 +314,7 @@ func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
 		return
 	}
 
-	t.Run("init metadata", createTestMetadata(conf, model.EVENT_AND_REQUEST))
+	t.Run("init metadata", createTestMetadata(conf, models.EVENT_AND_REQUEST))
 
 	waterProbeCriteria := []model.FilterCriteria{{
 		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -321,13 +322,13 @@ func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
 	}}
 	waterprobeSelectable := model.DeviceTypeSelectable{
 		DeviceTypeId: "water-probe",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "getTemperature",
-				Interaction: model.EVENT_AND_REQUEST,
-				Outputs: []model.Content{
+				Interaction: models.EVENT_AND_REQUEST,
+				Outputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "temperature",
 							Name:             "temperature",
 							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -344,7 +345,7 @@ func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
 					ServiceId:        "getTemperature",
 					Path:             "prefix.temperature",
 					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: model.AspectNode{
+					AspectNode: models.AspectNode{
 						Id:            "water",
 						Name:          "",
 						RootId:        "water",
@@ -354,7 +355,7 @@ func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
 						DescendentIds: []string{},
 					},
 					FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					Interaction: model.EVENT_AND_REQUEST,
+					Interaction: models.EVENT_AND_REQUEST,
 				},
 			},
 		},
@@ -362,13 +363,13 @@ func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
 
 	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
 	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT, model.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []model.Interaction{model.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
 }
 
-func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions []model.Interaction) (result []model.FilterCriteria) {
+func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions []models.Interaction) (result []model.FilterCriteria) {
 	for _, interaction := range interactions {
 		for _, c := range criteria {
 			c.Interaction = interaction
@@ -389,7 +390,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		return
 	}
 
-	interaction := model.EVENT_AND_REQUEST
+	interaction := models.EVENT_AND_REQUEST
 
 	t.Run("init metadata", createTestMetadata(conf, interaction))
 
@@ -399,13 +400,13 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "thermometer",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getInsideTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -417,9 +418,9 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 				{
 					Id:          "getOutsideTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -435,7 +436,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getInsideTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -451,7 +452,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getOutsideTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "outside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -471,13 +472,13 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "thermometer",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getInsideTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -493,7 +494,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getInsideTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -508,13 +509,13 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getTargetTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -530,7 +531,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -550,13 +551,13 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "simple_thermometer",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -572,7 +573,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "air",
 							RootId:        "air",
 							ParentId:      "",
@@ -587,13 +588,13 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermometer",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getInsideTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -605,9 +606,9 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 				{
 					Id:          "getOutsideTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -623,7 +624,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getInsideTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -639,7 +640,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getOutsideTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "outside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -654,13 +655,13 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getTargetTemperature",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -676,7 +677,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -696,16 +697,16 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getTemperatures",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "temperatures",
 								Name: "temperatures",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu",
 										Name:       "cpu",
@@ -736,7 +737,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "temperatures.case",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case",
 							RootId:        "device",
 							ParentId:      "device",
@@ -750,7 +751,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "temperatures.cpu",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu",
 							RootId:        "device",
 							ParentId:      "device",
@@ -764,7 +765,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "temperatures.gpu",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "gpu",
 							RootId:        "device",
 							ParentId:      "device",
@@ -784,16 +785,16 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getTemperatures",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "temperatures",
 								Name: "temperatures",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu",
 										Name:       "cpu",
@@ -824,7 +825,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "temperatures.cpu",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu",
 							RootId:        "device",
 							ParentId:      "device",
@@ -844,16 +845,16 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getFanSpeeds",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "speeds",
 								Name: "speeds",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu_fan",
 										Name:       "cpu_fan",
@@ -890,7 +891,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.case_fan_1",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -904,7 +905,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.case_fan_2",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_2",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -918,7 +919,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.cpu_fan",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu_fan",
 							RootId:        "fan",
 							ParentId:      "fan",
@@ -932,7 +933,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.gpu_fan",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "gpu_fan",
 							RootId:        "fan",
 							ParentId:      "fan",
@@ -952,16 +953,16 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getFanSpeeds",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "speeds",
 								Name: "speeds",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu_fan",
 										Name:       "cpu_fan",
@@ -998,7 +999,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.cpu_fan",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu_fan",
 							RootId:        "fan",
 							ParentId:      "fan",
@@ -1018,16 +1019,16 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getFanSpeeds",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "speeds",
 								Name: "speeds",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu_fan",
 										Name:       "cpu_fan",
@@ -1064,7 +1065,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.case_fan_1",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -1078,7 +1079,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.case_fan_2",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_2",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -1098,16 +1099,16 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getFanSpeeds",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "speeds",
 								Name: "speeds",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu_fan",
 										Name:       "cpu_fan",
@@ -1144,7 +1145,7 @@ func TestDeviceTypeMeasuringSelectables(t *testing.T) {
 						ServiceId:        "getFanSpeeds",
 						Path:             "speeds.case_fan_1",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -1173,7 +1174,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		return
 	}
 
-	interaction := model.EVENT_AND_REQUEST
+	interaction := models.EVENT_AND_REQUEST
 
 	t.Run("init metadata", createTestMetadata(conf, interaction))
 
@@ -1182,12 +1183,12 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "thermostat",
-			Services: []model.Service{{
+			Services: []models.Service{{
 				Id:          "setTargetTemperature",
 				Interaction: interaction,
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:         "temperature",
 							Name:       "temperature",
 							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1202,7 +1203,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1218,13 +1219,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1239,7 +1240,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 					{
 						ServiceId: "setTargetTemperature",
 						Path:      "temperature",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1255,13 +1256,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_base",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1277,7 +1278,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "air",
 							RootId:        "air",
 							ParentId:      "",
@@ -1293,13 +1294,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_multiservice",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setInsideTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1311,9 +1312,9 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 				{
 					Id:          "setOutsideTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1329,7 +1330,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setInsideTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1346,7 +1347,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setOutsideTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "outside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1362,16 +1363,16 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_multivalue",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "temperature",
 								Name: "temperature",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "inside",
 										Name:       "inside",
@@ -1396,7 +1397,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature.inside",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1411,7 +1412,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature.outside",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "outside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1427,13 +1428,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_without_aspect",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1449,7 +1450,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:             "setTargetTemperature",
 						Path:                  "temperature",
 						CharacteristicId:      "",
-						AspectNode:            model.AspectNode{},
+						AspectNode:            models.AspectNode{},
 						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
 						IsControllingFunction: true,
 					},
@@ -1463,12 +1464,12 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "thermostat",
-			Services: []model.Service{{
+			Services: []models.Service{{
 				Id:          "setTargetTemperature",
 				Interaction: interaction,
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:         "temperature",
 							Name:       "temperature",
 							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1483,7 +1484,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1499,13 +1500,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1520,7 +1521,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 					{
 						ServiceId: "setTargetTemperature",
 						Path:      "temperature",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1536,13 +1537,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_base",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1558,7 +1559,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "air",
 							RootId:        "air",
 							ParentId:      "",
@@ -1574,13 +1575,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_multiservice",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setInsideTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1592,9 +1593,9 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 				{
 					Id:          "setOutsideTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1610,7 +1611,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setInsideTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1627,7 +1628,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setOutsideTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "outside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1643,16 +1644,16 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_multivalue",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "temperature",
 								Name: "temperature",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "inside",
 										Name:       "inside",
@@ -1677,7 +1678,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature.inside",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1692,7 +1693,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature.outside",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "outside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1713,12 +1714,12 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "thermostat",
-			Services: []model.Service{{
+			Services: []models.Service{{
 				Id:          "setTargetTemperature",
 				Interaction: interaction,
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:         "temperature",
 							Name:       "temperature",
 							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1733,7 +1734,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1749,13 +1750,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1770,7 +1771,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 					{
 						ServiceId: "setTargetTemperature",
 						Path:      "temperature",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1786,13 +1787,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_multiservice",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setInsideTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "temperature",
 								Name:       "temperature",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -1808,7 +1809,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setInsideTargetTemperature",
 						Path:             "temperature",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1824,16 +1825,16 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 		},
 		{
 			DeviceTypeId: "thermostat_without_get_multivalue",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setTargetTemperature",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "temperature",
 								Name: "temperature",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "inside",
 										Name:       "inside",
@@ -1858,7 +1859,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setTargetTemperature",
 						Path:             "temperature.inside",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "inside_air",
 							RootId:        "air",
 							ParentId:      "air",
@@ -1879,13 +1880,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setCaseFan1Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -1897,9 +1898,9 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 				{
 					Id:          "setCaseFan2Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -1911,9 +1912,9 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 				{
 					Id:          "setCpuSpeed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -1925,9 +1926,9 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 				{
 					Id:          "setGpuSpeed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -1943,7 +1944,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setCaseFan1Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -1960,7 +1961,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setCaseFan2Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_2",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -1977,7 +1978,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setCpuSpeed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu_fan",
 							RootId:        "fan",
 							ParentId:      "fan",
@@ -1994,7 +1995,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setGpuSpeed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "gpu_fan",
 							RootId:        "fan",
 							ParentId:      "fan",
@@ -2015,13 +2016,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setCaseFan1Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -2033,9 +2034,9 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 				{
 					Id:          "setCaseFan2Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -2051,7 +2052,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setCaseFan1Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -2068,7 +2069,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setCaseFan2Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_2",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -2089,13 +2090,13 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setCaseFan1Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -2111,7 +2112,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 						ServiceId:        "setCaseFan1Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -2128,7 +2129,7 @@ func TestDeviceTypeControllingSelectables(t *testing.T) {
 	}))
 }
 
-func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []model.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectables(config, testenv.Userjwt, pathPrefix, interactionsFilter, criteria)
 		if err != nil {
@@ -2193,18 +2194,18 @@ func sortServices(list []model.DeviceTypeSelectable) (result []model.DeviceTypeS
 	return
 }
 
-func createTestMetadata(config config.Config, interaction model.Interaction) func(t *testing.T) {
+func createTestMetadata(config config.Config, interaction models.Interaction) func(t *testing.T) {
 	return func(t *testing.T) {
-		aspects := []model.Aspect{
+		aspects := []models.Aspect{
 			{
 				Id: "plug",
 			},
 			{
 				Id: "air",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{Id: "inside_air"},
 					{Id: "outside_air",
-						SubAspects: []model.Aspect{
+						SubAspects: []models.Aspect{
 							{Id: "morning_outside_air"},
 							{Id: "evening_outside_air"},
 						},
@@ -2216,7 +2217,7 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			},
 			{
 				Id: "device",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{Id: "cpu"},
 					{Id: "gpu"},
 					{Id: "case"},
@@ -2224,11 +2225,11 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			},
 			{
 				Id: "fan",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{Id: "cpu_fan"},
 					{Id: "gpu_fan"},
 					{Id: "case_fan",
-						SubAspects: []model.Aspect{
+						SubAspects: []models.Aspect{
 							{Id: "case_fan_1"},
 							{Id: "case_fan_2"},
 							{Id: "case_fan_3"},
@@ -2239,7 +2240,7 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 				},
 			},
 		}
-		functions := []model.Function{
+		functions := []models.Function{
 			{Id: model.MEASURING_FUNCTION_PREFIX + "getPlugState"},
 			{Id: model.MEASURING_FUNCTION_PREFIX + "getPlugStates"},
 			{Id: model.MEASURING_FUNCTION_PREFIX + "getTemperature"},
@@ -2250,20 +2251,20 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed"},
 			{Id: model.CONTROLLING_FUNCTION_PREFIX + "toggle"},
 		}
-		devicetypes := []model.DeviceType{
+		devicetypes := []models.DeviceType{
 			{
 				Id:            "plug-strip",
 				DeviceClassId: "toggle",
 				Name:          "dt",
-				ServiceGroups: []model.ServiceGroup{{Key: "sg1", Name: "sg1"}, {Key: "sg2", Name: "sg2"}},
-				Services: []model.Service{
+				ServiceGroups: []models.ServiceGroup{{Key: "sg1", Name: "sg1"}, {Key: "sg2", Name: "sg2"}},
+				Services: []models.Service{
 					{
 						Id:              "plug1",
 						ServiceGroupKey: "sg1",
 						Interaction:     interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "state1",
 									Name:             "state",
 									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
@@ -2277,9 +2278,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 						Id:              "plug2",
 						ServiceGroupKey: "sg2",
 						Interaction:     interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "state2",
 									Name:             "state",
 									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
@@ -2292,9 +2293,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "plugs",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "states",
 									Name:             "states",
 									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugStates",
@@ -2309,13 +2310,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "toggle",
 				DeviceClassId: "toggle",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "triggerToggle",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "void",
 									IsVoid:     true,
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "toggle",
@@ -2328,13 +2329,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "thermostat_without_get",
 				DeviceClassId: "thermostat",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "setTargetTemperature",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -2348,13 +2349,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "thermostat_without_get_base",
 				DeviceClassId: "thermostat",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "setTargetTemperature",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -2368,13 +2369,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "thermostat_without_get_without_aspect",
 				DeviceClassId: "thermostat",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "setTargetTemperature",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -2388,16 +2389,16 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "thermostat_without_get_multivalue",
 				DeviceClassId: "thermostat",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "setTargetTemperature",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:   "temperature",
 									Name: "temperature",
-									SubContentVariables: []model.ContentVariable{
+									SubContentVariables: []models.ContentVariable{
 										{
 											Id:         "inside",
 											Name:       "inside",
@@ -2420,13 +2421,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "thermostat_without_get_multiservice",
 				DeviceClassId: "thermostat",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "setInsideTargetTemperature",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -2438,9 +2439,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "setOutsideTargetTemperature",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -2454,13 +2455,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "thermostat",
 				DeviceClassId: "thermostat",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "setTargetTemperature",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
@@ -2472,9 +2473,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "getTargetTemperature",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -2488,13 +2489,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "thermometer",
 				DeviceClassId: "thermometer",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "getInsideTemperature",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -2506,9 +2507,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "getOutsideTemperature",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -2522,13 +2523,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "simple_thermometer",
 				DeviceClassId: "thermometer",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "getTemperature",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "temperature",
 									Name:       "temperature",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -2542,13 +2543,13 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "water-probe",
 				DeviceClassId: "thermometer",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "getTemperature",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "temperature",
 									Name:             "temperature",
 									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
@@ -2563,16 +2564,16 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 			{
 				Id:            "pc_cooling_controller",
 				DeviceClassId: "pc_cooling_controller",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "getTemperatures",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:   "temperatures",
 									Name: "temperatures",
-									SubContentVariables: []model.ContentVariable{
+									SubContentVariables: []models.ContentVariable{
 										{
 											Id:         "cpu",
 											Name:       "cpu",
@@ -2599,12 +2600,12 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "getFanSpeeds",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:   "speeds",
 									Name: "speeds",
-									SubContentVariables: []model.ContentVariable{
+									SubContentVariables: []models.ContentVariable{
 										{
 											Id:         "cpu_fan",
 											Name:       "cpu_fan",
@@ -2637,9 +2638,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "setCaseFan1Speed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -2651,9 +2652,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "setCaseFan2Speed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -2665,9 +2666,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "setCpuSpeed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -2679,9 +2680,9 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 					{
 						Id:          "setGpuSpeed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -2728,7 +2729,7 @@ func createTestMetadata(config config.Config, interaction model.Interaction) fun
 	}
 }
 
-func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []model.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}

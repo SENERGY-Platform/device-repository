@@ -22,8 +22,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -53,14 +53,14 @@ func TestHubs(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	time.Sleep(10 * time.Second)
 
-	d1 := model.Device{
+	d1 := models.Device{
 		Id:           device1id,
 		LocalId:      device1lid,
 		Name:         devicetype1name,
@@ -73,7 +73,7 @@ func TestHubs(t *testing.T) {
 		return
 	}
 
-	d2 := model.Device{
+	d2 := models.Device{
 		Id:           device2id,
 		LocalId:      device2lid,
 		Name:         devicetype2name,
@@ -88,7 +88,7 @@ func TestHubs(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	h1 := model.Hub{
+	h1 := models.Hub{
 		Id:             hub1id,
 		Name:           hub1name,
 		Hash:           "hash1",
@@ -133,7 +133,7 @@ func testHubReadNotFound(t *testing.T, conf config.Config, id string) {
 	}
 }
 
-func testHubRead(t *testing.T, conf config.Config, expectedHubs ...model.Hub) {
+func testHubRead(t *testing.T, conf config.Config, expectedHubs ...models.Hub) {
 	for _, expected := range expectedHubs {
 		endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(expected.Id)
 		req, err := http.NewRequest("GET", endpoint, nil)
@@ -153,7 +153,7 @@ func testHubRead(t *testing.T, conf config.Config, expectedHubs ...model.Hub) {
 			return
 		}
 
-		result := model.Hub{}
+		result := models.Hub{}
 		err = json.NewDecoder(resp.Body).Decode(&result)
 		if err != nil {
 			t.Error(err)
@@ -165,7 +165,7 @@ func testHubRead(t *testing.T, conf config.Config, expectedHubs ...model.Hub) {
 	}
 }
 
-func testHubDeviceRead(t *testing.T, conf config.Config, hub model.Hub, expectedDevices ...model.Device) {
+func testHubDeviceRead(t *testing.T, conf config.Config, hub models.Hub, expectedDevices ...models.Device) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(hub.Id) + "/devices"
 	call := func(endpoint string) ([]string, error) {
 		var result []string

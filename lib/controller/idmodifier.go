@@ -19,12 +19,12 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) modifyDevice(device model.Device, modifier map[string][]string) (result model.Device, err error, code int) {
+func (this *Controller) modifyDevice(device models.Device, modifier map[string][]string) (result models.Device, err error, code int) {
 	code = http.StatusOK
 	result = device
 	for key, params := range modifier {
@@ -39,7 +39,7 @@ func (this *Controller) modifyDevice(device model.Device, modifier map[string][]
 	return result, err, code
 }
 
-func (this *Controller) modifyDeviceType(dt model.DeviceType, modifier map[string][]string) (result model.DeviceType, err error, code int) {
+func (this *Controller) modifyDeviceType(dt models.DeviceType, modifier map[string][]string) (result models.DeviceType, err error, code int) {
 	code = http.StatusOK
 	result = dt
 	for key, params := range modifier {
@@ -56,7 +56,7 @@ func (this *Controller) modifyDeviceType(dt model.DeviceType, modifier map[strin
 
 const ServiceGroupSelectionIdModifier = "service_group_selection"
 
-func (this *Controller) modifyDeviceServiceGroupSelection(device model.Device, params []string) (result model.Device, err error, ode int) {
+func (this *Controller) modifyDeviceServiceGroupSelection(device models.Device, params []string) (result models.Device, err error, ode int) {
 	if len(params) == 0 {
 		return result, errors.New("missing service-group-key in " + ServiceGroupSelectionIdModifier + " id parameter"), http.StatusBadRequest
 	}
@@ -76,9 +76,9 @@ func (this *Controller) modifyDeviceServiceGroupSelection(device model.Device, p
 		result.DeviceTypeId = result.DeviceTypeId + "&"
 	}
 	result.DeviceTypeId = result.DeviceTypeId + idmodifier.EncodeModifierParameter(map[string][]string{ServiceGroupSelectionIdModifier: params})
-	serviceGroupList := []model.ServiceGroup{}
+	serviceGroupList := []models.ServiceGroup{}
 	if this.config.DeviceServiceGroupSelectionAllowNotFound {
-		serviceGroupList = append(dt.ServiceGroups, model.ServiceGroup{
+		serviceGroupList = append(dt.ServiceGroups, models.ServiceGroup{
 			Key:  sgKey,
 			Name: sgKey,
 		})
@@ -103,14 +103,14 @@ func (this *Controller) modifyDeviceServiceGroupSelection(device model.Device, p
 	return result, errors.New("no matching service-group-key found for " + ServiceGroupSelectionIdModifier + " id parameter"), http.StatusOK
 }
 
-func (this *Controller) modifyDeviceTypeServiceGroupSelection(dt model.DeviceType, params []string) (result model.DeviceType, err error, ode int) {
+func (this *Controller) modifyDeviceTypeServiceGroupSelection(dt models.DeviceType, params []string) (result models.DeviceType, err error, ode int) {
 	if len(params) == 0 {
 		return result, errors.New("missing service-group-key in " + ServiceGroupSelectionIdModifier + " id parameter"), http.StatusBadRequest
 	}
 	result = dt
 	sgKey := params[0]
 
-	newServiceList := []model.Service{}
+	newServiceList := []models.Service{}
 
 	for _, service := range dt.Services {
 		if service.ServiceGroupKey == sgKey || service.ServiceGroupKey == "" {

@@ -19,12 +19,12 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) SetConcept(concept model.Concept, owner string) error {
+func (this *Controller) SetConcept(concept models.Concept, owner string) error {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetConcept(ctx, concept)
 }
@@ -34,7 +34,7 @@ func (this *Controller) DeleteConcept(id string) error {
 	return this.db.RemoveConcept(ctx, id)
 }
 
-func (this *Controller) ValidateConcept(concept model.Concept) (err error, code int) {
+func (this *Controller) ValidateConcept(concept models.Concept) (err error, code int) {
 	if concept.Id == "" {
 		return errors.New("missing concept id"), http.StatusBadRequest
 	}
@@ -83,7 +83,7 @@ func (this *Controller) ValidateConcept(concept model.Concept) (err error, code 
 	return nil, http.StatusOK
 }
 
-func (this *Controller) GetConceptWithCharacteristics(id string) (result model.ConceptWithCharacteristics, err error, code int) {
+func (this *Controller) GetConceptWithCharacteristics(id string) (result models.ConceptWithCharacteristics, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetConceptWithCharacteristics(ctx, id)
 	if err != nil {
@@ -95,7 +95,7 @@ func (this *Controller) GetConceptWithCharacteristics(id string) (result model.C
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) GetConceptWithoutCharacteristics(id string) (result model.Concept, err error, code int) {
+func (this *Controller) GetConceptWithoutCharacteristics(id string) (result models.Concept, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetConceptWithoutCharacteristics(ctx, id)
 	if err != nil {

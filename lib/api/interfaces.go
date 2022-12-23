@@ -18,70 +18,71 @@ package api
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 type Controller interface {
-	ReadDevice(id string, token string, action model.AuthAction) (result model.Device, err error, errCode int)
-	ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result model.Device, err error, errCode int)
-	ValidateDevice(device model.Device) (err error, code int)
+	ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
+	ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
+	ValidateDevice(device models.Device) (err error, code int)
 
-	ReadHub(id string, token string, action model.AuthAction) (result model.Hub, err error, errCode int)
+	ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int)
 	ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
-	ValidateHub(hub model.Hub) (err error, code int)
+	ValidateHub(hub models.Hub) (err error, code int)
 
-	ReadDeviceType(id string, token string) (result model.DeviceType, err error, errCode int)
-	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []model.DeviceType, err error, errCode int)
-	ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []model.DeviceType, err error, errCode int)
-	ValidateDeviceType(deviceType model.DeviceType) (err error, code int)
+	ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int)
+	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)
+	ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)
+	ValidateDeviceType(deviceType models.DeviceType) (err error, code int)
 
 	GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
 	GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
 
-	ReadDeviceGroup(id string, token string) (result model.DeviceGroup, err error, errCode int)
-	ValidateDeviceGroup(deviceGroup model.DeviceGroup) (err error, code int)
-	CheckAccessToDevicesOfGroup(token string, group model.DeviceGroup) (err error, code int)
+	ReadDeviceGroup(id string, token string) (result models.DeviceGroup, err error, errCode int)
+	ValidateDeviceGroup(deviceGroup models.DeviceGroup) (err error, code int)
+	CheckAccessToDevicesOfGroup(token string, group models.DeviceGroup) (err error, code int)
 
-	ReadProtocol(id string, token string) (result model.Protocol, err error, errCode int)
-	ListProtocols(token string, limit int64, offset int64, sort string) (result []model.Protocol, err error, errCode int)
-	ValidateProtocol(protocol model.Protocol) (err error, code int)
+	ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int)
+	ListProtocols(token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int)
+	ValidateProtocol(protocol models.Protocol) (err error, code int)
 
-	GetService(id string) (result model.Service, err error, code int)
+	GetService(id string) (result models.Service, err error, code int)
 
-	GetAspects() ([]model.Aspect, error, int)
-	GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]model.Aspect, error, int) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
-	GetAspect(id string) (model.Aspect, error, int)
-	ValidateAspect(aspect model.Aspect) (err error, code int)
+	GetAspects() ([]models.Aspect, error, int)
+	GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	GetAspect(id string) (models.Aspect, error, int)
+	ValidateAspect(aspect models.Aspect) (err error, code int)
 	ValidateAspectDelete(id string) (err error, code int)
 
-	GetAspectNode(id string) (model.AspectNode, error, int)
-	GetAspectNodes() ([]model.AspectNode, error, int)
-	GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []model.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
-	GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]model.AspectNode, error, int)                          //returns all aspect-nodes used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
-	GetAspectNodesByIdList(strings []string) ([]model.AspectNode, error, int)
+	GetAspectNode(id string) (models.AspectNode, error, int)
+	GetAspectNodes() ([]models.AspectNode, error, int)
+	GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+	GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int)                          //returns all aspect-nodes used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	GetAspectNodesByIdList(strings []string) ([]models.AspectNode, error, int)
 
-	GetLeafCharacteristics() (result []model.Characteristic, err error, errCode int)
-	GetCharacteristic(id string) (result model.Characteristic, err error, errCode int)
-	ValidateCharacteristics(characteristic model.Characteristic) (err error, code int)
+	GetLeafCharacteristics() (result []models.Characteristic, err error, errCode int)
+	GetCharacteristic(id string) (result models.Characteristic, err error, errCode int)
+	ValidateCharacteristics(characteristic models.Characteristic) (err error, code int)
 	ValidateCharacteristicDelete(id string) (err error, code int)
 
-	GetConceptWithCharacteristics(id string) (model.ConceptWithCharacteristics, error, int)
-	GetConceptWithoutCharacteristics(id string) (model.Concept, error, int)
-	ValidateConcept(concept model.Concept) (err error, code int)
+	GetConceptWithCharacteristics(id string) (models.ConceptWithCharacteristics, error, int)
+	GetConceptWithoutCharacteristics(id string) (models.Concept, error, int)
+	ValidateConcept(concept models.Concept) (err error, code int)
 	ValidateConceptDelete(id string) (err error, code int)
 
-	GetDeviceClasses() ([]model.DeviceClass, error, int)
-	GetDeviceClassesWithControllingFunctions() ([]model.DeviceClass, error, int)                      //returns all device-classes used in combination with controlling functions
-	GetDeviceClassesFunctions(id string) (result []model.Function, err error, errCode int)            //returns all functions used in combination with given device-class
-	GetDeviceClassesControllingFunctions(id string) (result []model.Function, err error, errCode int) //returns all controlling functions used in combination with given device-class
-	GetDeviceClass(id string) (result model.DeviceClass, err error, errCode int)
-	ValidateDeviceClass(deviceclass model.DeviceClass) (err error, code int)
+	GetDeviceClasses() ([]models.DeviceClass, error, int)
+	GetDeviceClassesWithControllingFunctions() ([]models.DeviceClass, error, int)                      //returns all device-classes used in combination with controlling functions
+	GetDeviceClassesFunctions(id string) (result []models.Function, err error, errCode int)            //returns all functions used in combination with given device-class
+	GetDeviceClassesControllingFunctions(id string) (result []models.Function, err error, errCode int) //returns all controlling functions used in combination with given device-class
+	GetDeviceClass(id string) (result models.DeviceClass, err error, errCode int)
+	ValidateDeviceClass(deviceclass models.DeviceClass) (err error, code int)
 	ValidateDeviceClassDelete(id string) (err error, code int)
 
-	GetFunctionsByType(rdfType string) (result []model.Function, err error, errCode int)
-	GetFunction(id string) (result model.Function, err error, errCode int)
-	ValidateFunction(function model.Function) (err error, code int)
+	GetFunctionsByType(rdfType string) (result []models.Function, err error, errCode int)
+	GetFunction(id string) (result models.Function, err error, errCode int)
+	ValidateFunction(function models.Function) (err error, code int)
 	ValidateFunctionDelete(id string) (err error, code int)
 
-	GetLocation(id string, token string) (location model.Location, err error, errCode int)
-	ValidateLocation(location model.Location) (err error, code int)
+	GetLocation(id string, token string) (location models.Location, err error, errCode int)
+	ValidateLocation(location models.Location) (err error, code int)
 }

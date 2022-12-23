@@ -23,6 +23,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
 	"time"
@@ -56,24 +57,24 @@ func TestDeviceType(t *testing.T) {
 
 func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		devicetype := model.DeviceType{}
+		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:device-type:eb4a3337-01a1-4434-9dcc-064b3955eeef"
 		devicetype.Name = "Philips-Extended-Color-Light"
 		devicetype.DeviceClassId = "urn:infai:ses:device-class:14e56881-16f9-4120-bb41-270a43070c86"
 		devicetype.Description = "Philips Hue Extended Color Light"
-		devicetype.Services = []model.Service{}
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = []models.Service{}
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:1b0ef253-16f7-4b65-8a15-fe79fccf7e70",
 			LocalId:    "setColor",
 			Name:       "setColorService",
 			ProtocolId: "urn:infai:ses:protocol:f3a63aeb-187e-4dd9-9ef5-d97a6eb6292b",
-			Inputs: []model.Content{
+			Inputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
+					ContentVariable: models.ContentVariable{
 						AspectId:   "urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6",
 						FunctionId: "urn:infai:ses:controlling-function:c54e2a89-1fb8-4ecb-8993-a7b40b355599",
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
@@ -88,48 +89,48 @@ func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T)
 		/// DANFOSS THERMOSTAT       ///
 		////////////////////////////////
 
-		devicetype = model.DeviceType{}
+		devicetype = models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:device-type:662d9c9f-949d-4577-9485-9cb7255f547f"
 		devicetype.Name = "Danfoss Radiator Thermostat"
 		devicetype.DeviceClassId = "urn:infai:ses:device-class:997937d6-c5f3-4486-b67c-114675038393"
 		devicetype.Description = ""
-		devicetype.Services = []model.Service{}
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = []models.Service{}
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:de9252b9-5492-4fe5-8c9c-b4b8460f65f6",
 			LocalId:    "exact:67-1",
 			Name:       "setTemperatureService",
 			ProtocolId: "urn:infai:ses:protocol:f3a63aeb-187e-4dd9-9ef5-d97a6eb6292b",
-			Inputs: []model.Content{
+			Inputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
 								FunctionId: "urn:infai:ses:controlling-function:99240d90-02dd-4d4f-a47c-069cfe77629c",
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
 		})
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:f306de41-a55b-45ed-afc9-039bbe53db1b",
 			LocalId:    "exact:67-1",
 			Name:       "setTemperatureService",
 			ProtocolId: "urn:infai:ses:protocol:f3a63aeb-187e-4dd9-9ef5-d97a6eb6292b",
-			Outputs: []model.Content{
+			Outputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
 								FunctionId: "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b",
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
@@ -143,28 +144,28 @@ func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T)
 		/// CYRUS MULTISENSOR        ///
 		////////////////////////////////
 
-		devicetype = model.DeviceType{}
+		devicetype = models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:device-type:3cc09a10-1feb-4f8b-9390-8d08bf3ba22d"
 		devicetype.Name = "Cyrus 4-in-1 Multisensor"
 		devicetype.DeviceClassId = "urn:infai:ses:device-class:ff64280a-58e6-4cf9-9a44-e70d3831a79d"
 		devicetype.Description = ""
-		devicetype.Services = []model.Service{}
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = []models.Service{}
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:d3dba284-ef6d-4f12-81df-ed11506702b2",
 			LocalId:    "get_level:49-1",
 			Name:       "getTemperatureService",
 			ProtocolId: "urn:infai:ses:protocol:f3a63aeb-187e-4dd9-9ef5-d97a6eb6292b",
-			Outputs: []model.Content{
+			Outputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
 								FunctionId: "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b",
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
@@ -178,48 +179,48 @@ func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T)
 		/// BLEBOX                   ///
 		////////////////////////////////
 
-		devicetype = model.DeviceType{}
+		devicetype = models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:device-type:a8cbd322-9d8c-4f4c-afec-ae4b7986b6ed"
 		devicetype.Name = "Blebox-Air-Sensor"
 		devicetype.DeviceClassId = "urn:infai:ses:device-class:8bd38ea2-1835-4a1e-ac02-6b3169513fd3"
 		devicetype.Description = ""
-		devicetype.Services = []model.Service{}
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = []models.Service{}
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:422fd899-a2cc-4e43-8d81-4e330a7ca8ab",
 			LocalId:    "reading_pm10",
 			Name:       "getParticleAmountPM10Service",
 			ProtocolId: "urn:infai:ses:protocol:f3a63aeb-187e-4dd9-9ef5-d97a6eb6292b",
-			Outputs: []model.Content{
+			Outputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
 								FunctionId: "urn:infai:ses:measuring-function:f2c1a22f-a49e-4549-9833-62f0994afec0",
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
 		})
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:1d20a68b-7136-456c-ace5-c3adb66866bf",
 			LocalId:    "reading_pm1",
 			Name:       "getParticleAmountPM1Service",
 			ProtocolId: "urn:infai:ses:protocol:f3a63aeb-187e-4dd9-9ef5-d97a6eb6292b",
-			Outputs: []model.Content{
+			Outputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
 								FunctionId: "urn:infai:ses:measuring-function:0e19d094-70c6-402c-8523-3aaff2ce6dd9",
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},

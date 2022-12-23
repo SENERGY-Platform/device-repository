@@ -22,7 +22,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -37,7 +37,7 @@ func DeviceClassEndpoints(config config.Config, control Controller, router *http
 	resource := "/device-classes"
 
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		var result []model.DeviceClass
+		var result []models.DeviceClass
 		var err error
 		var errCode int
 
@@ -122,7 +122,7 @@ func DeviceClassEndpoints(config config.Config, control Controller, router *http
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		deviceclass := model.DeviceClass{}
+		deviceclass := models.DeviceClass{}
 		err = json.NewDecoder(request.Body).Decode(&deviceclass)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

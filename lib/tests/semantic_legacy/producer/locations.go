@@ -21,13 +21,13 @@ package producer
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"runtime/debug"
 )
 
-func (this *Producer) PublishLocation(location model.Location, userId string) (err error) {
+func (this *Producer) PublishLocation(location models.Location, userId string) (err error) {
 	cmd := listener.LocationCommand{Command: "PUT", Location: location, Owner: userId}
 	return this.PublishLocationCommand(cmd)
 }

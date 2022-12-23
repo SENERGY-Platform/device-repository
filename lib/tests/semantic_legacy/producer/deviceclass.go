@@ -21,13 +21,13 @@ package producer
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"runtime/debug"
 )
 
-func (this *Producer) PublishDeviceClass(deviceclass model.DeviceClass, userId string) (err error) {
+func (this *Producer) PublishDeviceClass(deviceclass models.DeviceClass, userId string) (err error) {
 	cmd := listener.DeviceClassCommand{Command: "PUT", DeviceClass: deviceclass, Owner: userId}
 	return this.PublishDeviceClassCommand(cmd)
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/ory/dockertest/v3"
 	"log"
 	"strconv"
@@ -99,7 +100,7 @@ func (v VoidProducerMock) PublishAspectDelete(id string, owner string) error {
 	panic("implement me")
 }
 
-func (v VoidProducerMock) PublishAspectUpdate(aspect model.Aspect, owner string) error {
+func (v VoidProducerMock) PublishAspectUpdate(aspect models.Aspect, owner string) error {
 	//TODO implement me
 	panic("implement me")
 }
@@ -109,7 +110,7 @@ func (v VoidProducerMock) PublishDeviceDelete(id string, owner string) error {
 	panic("implement me")
 }
 
-func (v VoidProducerMock) PublishHub(hub model.Hub) (err error) {
+func (v VoidProducerMock) PublishHub(hub models.Hub) (err error) {
 	//TODO implement me
 	panic("implement me")
 }

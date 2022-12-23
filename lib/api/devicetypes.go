@@ -21,6 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -124,7 +125,7 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 				return
 			}
 		}
-		var result []model.DeviceType
+		var result []models.DeviceType
 		var errCode int
 		interactionsFilterStr := request.URL.Query().Get("interactions-filter")
 		if interactionsFilterStr != "" {
@@ -159,7 +160,7 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		dt := model.DeviceType{}
+		dt := models.DeviceType{}
 		err = json.NewDecoder(request.Body).Decode(&dt)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

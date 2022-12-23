@@ -19,8 +19,8 @@ package producer
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 )
 
@@ -34,7 +34,7 @@ func (this *Producer) PublishDeviceDelete(id string, owner string) error {
 	panic("implement me")
 }
 
-func (this *Producer) PublishHub(hub model.Hub) (err error) {
+func (this *Producer) PublishHub(hub models.Hub) (err error) {
 	//TODO implement me
 	panic("implement me")
 }

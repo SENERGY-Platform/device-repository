@@ -20,12 +20,13 @@ import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 	"time"
 )
 
-func (this *Controller) ValidateService(service model.Service, protocolCache *map[string]model.Protocol) (error, int) {
+func (this *Controller) ValidateService(service models.Service, protocolCache *map[string]models.Protocol) (error, int) {
 	if service.Id == "" {
 		return errors.New("missing service id"), http.StatusBadRequest
 	}
@@ -39,7 +40,7 @@ func (this *Controller) ValidateService(service model.Service, protocolCache *ma
 		return errors.New("missing service protocol id"), http.StatusBadRequest
 	}
 
-	var protocol model.Protocol
+	var protocol models.Protocol
 	var ok bool
 	var err error
 	if protocol, ok = (*protocolCache)[service.ProtocolId]; !ok {
@@ -109,7 +110,7 @@ func (this *Controller) ValidateService(service model.Service, protocolCache *ma
 	return nil, http.StatusOK
 }
 
-func validateFunctionTypeUse(variable model.ContentVariable, isInput bool) (err error) {
+func validateFunctionTypeUse(variable models.ContentVariable, isInput bool) (err error) {
 	if variable.FunctionId != "" && strings.HasPrefix(variable.FunctionId, model.URN_PREFIX) {
 		isCtrlFun := isControllingFunction(variable.FunctionId)
 		if isCtrlFun != isInput {
@@ -130,7 +131,7 @@ func isControllingFunction(functionId string) bool {
 	return false
 }
 
-func (this *Controller) GetService(id string) (result model.Service, err error, code int) {
+func (this *Controller) GetService(id string) (result models.Service, err error, code int) {
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	dts, err := this.db.GetDeviceTypesByServiceId(ctx, id)
 	if err != nil {

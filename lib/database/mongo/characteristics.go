@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -31,7 +32,7 @@ var characteristicIdKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		characteristicIdKey, err = getBsonFieldName(model.Characteristic{}, characteristicIdFieldName)
+		characteristicIdKey, err = getBsonFieldName(models.Characteristic{}, characteristicIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -48,7 +49,7 @@ func (this *Mongo) characteristicCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoCharacteristicCollection)
 }
 
-func (this *Mongo) GetCharacteristic(ctx context.Context, id string) (characteristic model.Characteristic, exists bool, err error) {
+func (this *Mongo) GetCharacteristic(ctx context.Context, id string) (characteristic models.Characteristic, exists bool, err error) {
 	result := this.characteristicCollection().FindOne(ctx, bson.M{characteristicIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -64,7 +65,7 @@ func (this *Mongo) GetCharacteristic(ctx context.Context, id string) (characteri
 	return characteristic, true, err
 }
 
-func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic model.Characteristic) error {
+func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic models.Characteristic) error {
 	_, err := this.characteristicCollection().ReplaceOne(ctx, bson.M{characteristicIdKey: characteristic.Id}, characteristic, options.Replace().SetUpsert(true))
 	return err
 }
@@ -74,13 +75,13 @@ func (this *Mongo) RemoveCharacteristic(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListAllCharacteristics(ctx context.Context) (result []model.Characteristic, err error) {
+func (this *Mongo) ListAllCharacteristics(ctx context.Context) (result []models.Characteristic, err error) {
 	cursor, err := this.characteristicCollection().Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		characteristic := model.Characteristic{}
+		characteristic := models.Characteristic{}
 		err = cursor.Decode(&characteristic)
 		if err != nil {
 			return nil, err
@@ -91,16 +92,16 @@ func (this *Mongo) ListAllCharacteristics(ctx context.Context) (result []model.C
 	return
 }
 
-func (this *Mongo) getCharacteristicsByIds(ctx context.Context, ids []string) (result []model.Characteristic, err error) {
+func (this *Mongo) getCharacteristicsByIds(ctx context.Context, ids []string) (result []models.Characteristic, err error) {
 	if len(ids) == 0 {
-		return []model.Characteristic{}, nil
+		return []models.Characteristic{}, nil
 	}
 	cursor, err := this.characteristicCollection().Find(ctx, bson.M{characteristicIdKey: bson.M{"$in": ids}})
 	if err != nil {
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		characteristic := model.Characteristic{}
+		characteristic := models.Characteristic{}
 		err = cursor.Decode(&characteristic)
 		if err != nil {
 			return nil, err
@@ -136,7 +137,7 @@ func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result 
 		return result, nil, err
 	}
 	if err == nil {
-		concept := model.Concept{}
+		concept := models.Concept{}
 		_ = temp.Decode(&concept)
 		return true, []string{concept.Id, concept.Name}, nil
 	}

@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -31,7 +31,7 @@ var deviceClassIdKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceClassIdKey, err = getBsonFieldName(model.DeviceClass{}, deviceClassIdFieldName)
+		deviceClassIdKey, err = getBsonFieldName(models.DeviceClass{}, deviceClassIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -48,7 +48,7 @@ func (this *Mongo) deviceClassCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceClassCollection)
 }
 
-func (this *Mongo) GetDeviceClass(ctx context.Context, id string) (deviceClass model.DeviceClass, exists bool, err error) {
+func (this *Mongo) GetDeviceClass(ctx context.Context, id string) (deviceClass models.DeviceClass, exists bool, err error) {
 	result := this.deviceClassCollection().FindOne(ctx, bson.M{deviceClassIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -64,7 +64,7 @@ func (this *Mongo) GetDeviceClass(ctx context.Context, id string) (deviceClass m
 	return deviceClass, true, err
 }
 
-func (this *Mongo) SetDeviceClass(ctx context.Context, deviceClass model.DeviceClass) error {
+func (this *Mongo) SetDeviceClass(ctx context.Context, deviceClass models.DeviceClass) error {
 	_, err := this.deviceClassCollection().ReplaceOne(ctx, bson.M{deviceClassIdKey: deviceClass.Id}, deviceClass, options.Replace().SetUpsert(true))
 	return err
 }
@@ -74,13 +74,13 @@ func (this *Mongo) RemoveDeviceClass(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) ListAllDeviceClasses(ctx context.Context) (result []model.DeviceClass, err error) {
+func (this *Mongo) ListAllDeviceClasses(ctx context.Context) (result []models.DeviceClass, err error) {
 	cursor, err := this.deviceClassCollection().Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		deviceClass := model.DeviceClass{}
+		deviceClass := models.DeviceClass{}
 		err = cursor.Decode(&deviceClass)
 		if err != nil {
 			return nil, err
@@ -91,7 +91,7 @@ func (this *Mongo) ListAllDeviceClasses(ctx context.Context) (result []model.Dev
 	return
 }
 
-func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.Context) (result []model.DeviceClass, err error) {
+func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.Context) (result []models.DeviceClass, err error) {
 	deviceClassIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.DeviceClassId, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: true,
 		DeviceTypeCriteriaBson.DeviceClassId:       bson.M{"$exists": true, "$ne": ""},
@@ -104,7 +104,7 @@ func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		deviceClass := model.DeviceClass{}
+		deviceClass := models.DeviceClass{}
 		err = cursor.Decode(&deviceClass)
 		if err != nil {
 			return nil, err

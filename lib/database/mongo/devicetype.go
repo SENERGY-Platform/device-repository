@@ -20,6 +20,7 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -44,19 +45,19 @@ var deviceTypeByServicePath string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceTypeIdKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeIdFieldName)
+		deviceTypeIdKey, err = getBsonFieldName(models.DeviceType{}, deviceTypeIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeNameKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeNameFieldName)
+		deviceTypeNameKey, err = getBsonFieldName(models.DeviceType{}, deviceTypeNameFieldName)
 		if err != nil {
 			return err
 		}
-		serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
+		serviceIdKey, err = getBsonFieldName(models.Service{}, serviceIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceTypeServicesKey, err = getBsonFieldName(model.DeviceType{}, deviceTypeServiceFieldName)
+		deviceTypeServicesKey, err = getBsonFieldName(models.DeviceType{}, deviceTypeServiceFieldName)
 		if err != nil {
 			return err
 		}
@@ -83,7 +84,7 @@ func (this *Mongo) deviceTypeCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceTypeCollection)
 }
 
-func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType model.DeviceType, exists bool, err error) {
+func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error) {
 	result := this.deviceTypeCollection().FindOne(ctx, bson.M{deviceTypeIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -99,8 +100,8 @@ func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType mod
 	return deviceType, true, err
 }
 
-func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []model.DeviceType, err error) {
-	result = []model.DeviceType{}
+func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []models.DeviceType, err error) {
+	result = []models.DeviceType{}
 	opt := options.Find()
 	opt.SetLimit(limit)
 	opt.SetSkip(offset)
@@ -136,7 +137,7 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		deviceType := model.DeviceType{}
+		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)
 		if err != nil {
 			return nil, err
@@ -153,8 +154,8 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	return
 }
 
-func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, includeModified bool) (result []model.DeviceType, err error) {
-	result = []model.DeviceType{}
+func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, includeModified bool) (result []models.DeviceType, err error) {
+	result = []models.DeviceType{}
 	opt := options.Find()
 	opt.SetLimit(limit)
 	opt.SetSkip(offset)
@@ -195,7 +196,7 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		deviceType := model.DeviceType{}
+		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)
 		if err != nil {
 			return nil, err
@@ -212,7 +213,7 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 	return
 }
 
-func addModifiedElements(deviceTypes []model.DeviceType, ids []interface{}) (result []model.DeviceType) {
+func addModifiedElements(deviceTypes []models.DeviceType, ids []interface{}) (result []models.DeviceType) {
 	modifiedIndex := map[string][]string{}
 	for _, idInterface := range ids {
 		id, ok := idInterface.(string)
@@ -239,7 +240,7 @@ func addModifiedElements(deviceTypes []model.DeviceType, ids []interface{}) (res
 	return result
 }
 
-func (this *Mongo) SetDeviceType(ctx context.Context, deviceType model.DeviceType) error {
+func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceType) error {
 	_, err := this.deviceTypeCollection().ReplaceOne(ctx, bson.M{deviceTypeIdKey: deviceType.Id}, deviceType, options.Replace().SetUpsert(true))
 	if err != nil {
 		return err
@@ -263,7 +264,7 @@ func (this *Mongo) RemoveDeviceType(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId string) (result []model.DeviceType, err error) {
+func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId string) (result []models.DeviceType, err error) {
 	opt := options.Find()
 	opt.SetLimit(2)
 	opt.SetSkip(0)
@@ -273,7 +274,7 @@ func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId stri
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		deviceType := model.DeviceType{}
+		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)
 		if err != nil {
 			return nil, err
@@ -374,10 +375,10 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, de
 	}
 	if criteria.Interaction != "" {
 		switch criteria.Interaction {
-		case model.REQUEST:
-			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.REQUEST), string(model.EVENT_AND_REQUEST)}}
-		case model.EVENT:
-			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(model.EVENT), string(model.EVENT_AND_REQUEST)}}
+		case models.REQUEST:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(models.REQUEST), string(models.EVENT_AND_REQUEST)}}
+		case models.EVENT:
+			filter[DeviceTypeCriteriaBson.Interaction] = bson.M{"$in": []string{string(models.EVENT), string(models.EVENT_AND_REQUEST)}}
 		default:
 			filter[DeviceTypeCriteriaBson.Interaction] = string(criteria.Interaction)
 		}

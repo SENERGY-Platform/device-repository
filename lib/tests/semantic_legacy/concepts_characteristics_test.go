@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sort"
 	"sync"
@@ -27,21 +27,21 @@ func TestConceptCharacteristic(t *testing.T) {
 		return
 	}
 
-	concept := model.Concept{
+	concept := models.Concept{
 		Id:                "urn:ses:infai:concept:c",
 		Name:              "cn",
 		CharacteristicIds: []string{"urn:ses:infai:characteristicch1", "urn:ses:infai:characteristicch2"},
 	}
 
-	characterisitc1 := model.Characteristic{
+	characterisitc1 := models.Characteristic{
 		Id:   "urn:ses:infai:characteristicch1",
 		Name: "chn",
-		Type: model.Boolean,
+		Type: models.Boolean,
 	}
-	characterisitc2 := model.Characteristic{
+	characterisitc2 := models.Characteristic{
 		Id:   "urn:ses:infai:characteristicch2",
 		Name: "chn",
-		Type: model.Boolean,
+		Type: models.Boolean,
 	}
 
 	err = ctrl.SetConcept(concept, "owner")
@@ -77,7 +77,7 @@ func TestConceptCharacteristic(t *testing.T) {
 	t.Run("check after reset characteristic", checkConcept(ctrl, "urn:ses:infai:concept:c", concept))
 }
 
-func checkConcept(ctrl *controller.Controller, id string, expected model.Concept) func(t *testing.T) {
+func checkConcept(ctrl *controller.Controller, id string, expected models.Concept) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err, _ := ctrl.GetConceptWithoutCharacteristics(id)
 		if err != nil {

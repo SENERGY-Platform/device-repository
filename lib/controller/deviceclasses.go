@@ -19,11 +19,12 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) SetDeviceClass(class model.DeviceClass, owner string) error {
+func (this *Controller) SetDeviceClass(class models.DeviceClass, owner string) error {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetDeviceClass(ctx, class)
 }
@@ -33,7 +34,7 @@ func (this *Controller) DeleteDeviceClass(id string) error {
 	return this.db.RemoveDeviceClass(ctx, id)
 }
 
-func (this *Controller) GetDeviceClasses() (result []model.DeviceClass, err error, code int) {
+func (this *Controller) GetDeviceClasses() (result []models.DeviceClass, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllDeviceClasses(ctx)
@@ -43,7 +44,7 @@ func (this *Controller) GetDeviceClasses() (result []model.DeviceClass, err erro
 	return
 }
 
-func (this *Controller) GetDeviceClass(id string) (result model.DeviceClass, err error, errCode int) {
+func (this *Controller) GetDeviceClass(id string) (result models.DeviceClass, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetDeviceClass(ctx, id)
 	if err != nil {
@@ -55,7 +56,7 @@ func (this *Controller) GetDeviceClass(id string) (result model.DeviceClass, err
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateDeviceClass(deviceClass model.DeviceClass) (err error, code int) {
+func (this *Controller) ValidateDeviceClass(deviceClass models.DeviceClass) (err error, code int) {
 	if deviceClass.Id == "" {
 		return errors.New("missing device class id"), http.StatusBadRequest
 	}
@@ -68,7 +69,7 @@ func (this *Controller) ValidateDeviceClass(deviceClass model.DeviceClass) (err 
 	return nil, http.StatusOK
 }
 
-func (this *Controller) GetDeviceClassesWithControllingFunctions() (result []model.DeviceClass, err error, code int) {
+func (this *Controller) GetDeviceClassesWithControllingFunctions() (result []models.DeviceClass, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllDeviceClassesUsedWithControllingFunctions(ctx)

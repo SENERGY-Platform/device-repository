@@ -24,6 +24,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"sync"
@@ -47,11 +48,11 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishProtocol(model.Protocol{
+	err = producer.PublishProtocol(models.Protocol{
 		Id:      "p1",
 		Name:    "p1",
 		Handler: "p1",
-		ProtocolSegments: []model.ProtocolSegment{{
+		ProtocolSegments: []models.ProtocolSegment{{
 			Id:   "segment",
 			Name: "segment",
 		}},
@@ -61,11 +62,11 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishProtocol(model.Protocol{
+	err = producer.PublishProtocol(models.Protocol{
 		Id:      "p2",
 		Name:    "p2",
 		Handler: "p2",
-		ProtocolSegments: []model.ProtocolSegment{{
+		ProtocolSegments: []models.ProtocolSegment{{
 			Id:   "segment",
 			Name: "segment",
 		}},
@@ -76,16 +77,16 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{
+	err = producer.PublishDeviceType(models.DeviceType{
 		Id:          "dt1",
 		Name:        "dt1",
 		Description: "",
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:          "dt1s1",
 			LocalId:     "dt1s1",
 			Name:        "dt1s1",
 			Description: "",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 			ProtocolId:  "p1",
 		}},
 		DeviceClassId: "dc1",
@@ -95,16 +96,16 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{
+	err = producer.PublishDeviceType(models.DeviceType{
 		Id:          "dt2",
 		Name:        "dt2",
 		Description: "",
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:          "dt2s1",
 			LocalId:     "dt2s1",
 			Name:        "dt2s1",
 			Description: "",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 			ProtocolId:  "p2",
 		}},
 		DeviceClassId: "dc1",
@@ -116,66 +117,66 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	t.Run("device-type unconstrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", model.DeviceType{
+	t.Run("device-type unconstrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", models.DeviceType{
 		Id:          "dt",
 		Name:        "dt",
 		Description: "",
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:          "dts1",
 			LocalId:     "foo/bar",
 			Name:        "dts1",
 			Description: "",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 			ProtocolId:  "p1",
 		}},
 		DeviceClassId: "dc1",
 	}, http.StatusOK, nil))
 
-	t.Run("device-type constrained error", testRequest(conf, "PUT", "/device-types?dry-run=true", model.DeviceType{
+	t.Run("device-type constrained error", testRequest(conf, "PUT", "/device-types?dry-run=true", models.DeviceType{
 		Id:          "dt",
 		Name:        "dt",
 		Description: "",
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:          "dts1",
 			LocalId:     "foo/bar",
 			Name:        "dts1",
 			Description: "",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 			ProtocolId:  "p2",
 		}},
 		DeviceClassId: "dc1",
 	}, http.StatusBadRequest, nil))
 
-	t.Run("device-type constrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", model.DeviceType{
+	t.Run("device-type constrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", models.DeviceType{
 		Id:          "dt",
 		Name:        "dt",
 		Description: "",
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:          "dts1",
 			LocalId:     "foobar",
 			Name:        "dts1",
 			Description: "",
-			Interaction: model.REQUEST,
+			Interaction: models.REQUEST,
 			ProtocolId:  "p2",
 		}},
 		DeviceClassId: "dc1",
 	}, http.StatusOK, nil))
 
-	t.Run("device unconstrained ok", testRequest(conf, "PUT", "/devices?dry-run=true", model.Device{
+	t.Run("device unconstrained ok", testRequest(conf, "PUT", "/devices?dry-run=true", models.Device{
 		Id:           "d",
 		Name:         "d",
 		LocalId:      "foo/bar",
 		DeviceTypeId: "dt1",
 	}, http.StatusOK, nil))
 
-	t.Run("device constrained error", testRequest(conf, "PUT", "/devices?dry-run=true", model.Device{
+	t.Run("device constrained error", testRequest(conf, "PUT", "/devices?dry-run=true", models.Device{
 		Id:           "d",
 		Name:         "d",
 		LocalId:      "foo/bar",
 		DeviceTypeId: "dt2",
 	}, http.StatusBadRequest, nil))
 
-	t.Run("device constrained ok", testRequest(conf, "PUT", "/devices?dry-run=true", model.Device{
+	t.Run("device constrained ok", testRequest(conf, "PUT", "/devices?dry-run=true", models.Device{
 		Id:           "d",
 		Name:         "d",
 		LocalId:      "foobar",
@@ -199,7 +200,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceClass(model.DeviceClass{
+	err = producer.PublishDeviceClass(models.DeviceClass{
 		Id:   "used_device_class",
 		Name: "used_device_class",
 	}, userid)
@@ -207,7 +208,7 @@ func TestDeleteValidations(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = producer.PublishDeviceClass(model.DeviceClass{
+	err = producer.PublishDeviceClass(models.DeviceClass{
 		Id:   "unused_device_class",
 		Name: "unused_device_class",
 	}, userid)
@@ -216,7 +217,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishCharacteristic(model.Characteristic{
+	err = producer.PublishCharacteristic(models.Characteristic{
 		Id:   "used_characteristic",
 		Name: "used_characteristic",
 	}, userid)
@@ -225,7 +226,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishCharacteristic(model.Characteristic{
+	err = producer.PublishCharacteristic(models.Characteristic{
 		Id:   "used_characteristic_2",
 		Name: "used_characteristic_2",
 	}, userid)
@@ -234,7 +235,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishCharacteristic(model.Characteristic{
+	err = producer.PublishCharacteristic(models.Characteristic{
 		Id:   "unused_characteristic",
 		Name: "unused_characteristic",
 	}, userid)
@@ -243,7 +244,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishFunction(model.Function{
+	err = producer.PublishFunction(models.Function{
 		Id:        model.CONTROLLING_FUNCTION_PREFIX + "used_function",
 		Name:      "used_function",
 		ConceptId: "used_concept",
@@ -253,7 +254,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishFunction(model.Function{
+	err = producer.PublishFunction(models.Function{
 		Id:        model.MEASURING_FUNCTION_PREFIX + "used_function_2",
 		Name:      "used_function_2",
 		ConceptId: "used_concept",
@@ -263,7 +264,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishFunction(model.Function{
+	err = producer.PublishFunction(models.Function{
 		Id:        model.MEASURING_FUNCTION_PREFIX + "unused_function_2",
 		Name:      "unused_function_2",
 		ConceptId: "used_concept_2",
@@ -273,7 +274,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishFunction(model.Function{
+	err = producer.PublishFunction(models.Function{
 		Id:        model.CONTROLLING_FUNCTION_PREFIX + "unused_function",
 		Name:      "unused_function",
 		ConceptId: "used_concept_2",
@@ -283,7 +284,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishConcept(model.Concept{
+	err = producer.PublishConcept(models.Concept{
 		Id:   "used_concept",
 		Name: "used_concept",
 	}, userid)
@@ -292,7 +293,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishConcept(model.Concept{
+	err = producer.PublishConcept(models.Concept{
 		Id:   "used_concept_2",
 		Name: "used_concept_2",
 	}, userid)
@@ -301,7 +302,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishConcept(model.Concept{
+	err = producer.PublishConcept(models.Concept{
 		Id:   "unused_concept",
 		Name: "unused_concept",
 	}, userid)
@@ -310,10 +311,10 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   model.URN_PREFIX + "used_root_aspect",
 		Name: "used_root_aspect",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   model.URN_PREFIX + "sub1",
 				Name: "sub1",
@@ -325,10 +326,10 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   model.URN_PREFIX + "root_aspect",
 		Name: "root_aspect",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   model.URN_PREFIX + "used_aspect",
 				Name: "used_aspect",
@@ -340,10 +341,10 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   model.URN_PREFIX + "unused_root_aspect",
 		Name: "unused_root_aspect",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   model.URN_PREFIX + "unused_used_aspect",
 				Name: "unused_used_aspect",
@@ -355,19 +356,19 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name,
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name,
 		DeviceClassId: "used_device_class",
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "s1",
 				LocalId:     "s1",
 				Name:        "s1",
-				Interaction: model.EVENT_AND_REQUEST,
+				Interaction: models.EVENT_AND_REQUEST,
 				ProtocolId:  "pid",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
 						Id: "input",
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "c1",
 							Name:             "c1",
 							Type:             "string",
@@ -379,10 +380,10 @@ func TestDeleteValidations(t *testing.T) {
 						ProtocolSegmentId: "s",
 					},
 				},
-				Outputs: []model.Content{
+				Outputs: []models.Content{
 					{
 						Id: "output",
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:               "c2",
 							Name:             "c2",
 							Type:             "string",
@@ -601,7 +602,7 @@ func TestDeleteValidations(t *testing.T) {
 		err = testAspectValidation(
 			t,
 			conf,
-			model.Aspect{
+			models.Aspect{
 				Id:   model.URN_PREFIX + "used_root_aspect",
 				Name: "used_root_aspect",
 			},
@@ -616,7 +617,7 @@ func TestDeleteValidations(t *testing.T) {
 		err = testAspectValidation(
 			t,
 			conf,
-			model.Aspect{
+			models.Aspect{
 				Id:   model.URN_PREFIX + "root_aspect",
 				Name: "root_aspect",
 			},
@@ -631,7 +632,7 @@ func TestDeleteValidations(t *testing.T) {
 		err = testAspectValidation(
 			t,
 			conf,
-			model.Aspect{
+			models.Aspect{
 				Id:   model.URN_PREFIX + "unused_root_aspect",
 				Name: "unused_root_aspect",
 			},
@@ -662,7 +663,7 @@ func testDeleteValidation(t *testing.T, config config.Config, resource string, i
 	return nil
 }
 
-func testAspectValidation(t *testing.T, config config.Config, aspect model.Aspect, expectedCode int) error {
+func testAspectValidation(t *testing.T, config config.Config, aspect models.Aspect, expectedCode int) error {
 	t.Helper()
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(aspect)

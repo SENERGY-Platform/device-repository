@@ -20,14 +20,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"regexp"
 	"strconv"
 	"time"
 )
 
-func (this *Controller) ValidateVariable(variable model.ContentVariable, serialization model.Serialization) (err error, code int) {
+func (this *Controller) ValidateVariable(variable models.ContentVariable, serialization models.Serialization) (err error, code int) {
 	if variable.Id == "" {
 		return errors.New("missing content variable id"), http.StatusBadRequest
 	}
@@ -46,28 +46,28 @@ func (this *Controller) ValidateVariable(variable model.ContentVariable, seriali
 		}
 
 		switch variable.Type {
-		case model.String:
+		case models.String:
 			if len(variable.SubContentVariables) > 0 {
 				return errors.New("strings can not have sub content variables for " + variable.Name), http.StatusBadRequest
 			}
-		case model.Integer:
+		case models.Integer:
 			if len(variable.SubContentVariables) > 0 {
 				return errors.New("integers can not have sub content variables for " + variable.Name), http.StatusBadRequest
 			}
-		case model.Float:
+		case models.Float:
 			if len(variable.SubContentVariables) > 0 {
 				return errors.New("floats can not have sub content variables for " + variable.Name), http.StatusBadRequest
 			}
-		case model.Boolean:
+		case models.Boolean:
 			if len(variable.SubContentVariables) > 0 {
 				return errors.New("booleans can not have sub content variables for " + variable.Name), http.StatusBadRequest
 			}
-		case model.List:
+		case models.List:
 			err, code = this.ValidateListSubVariables(variable.SubContentVariables, serialization)
 			if err != nil {
 				return err, code
 			}
-		case model.Structure:
+		case models.Structure:
 			err, code = this.ValidateStructureSubVariables(variable.SubContentVariables, serialization)
 			if err != nil {
 				return err, code
@@ -135,7 +135,7 @@ func ValidateVariableName(name string) (err error, code int) {
 	return ValidateName(name)
 }
 
-func (this *Controller) ValidateListSubVariables(variables []model.ContentVariable, serialization model.Serialization) (err error, code int) {
+func (this *Controller) ValidateListSubVariables(variables []models.ContentVariable, serialization models.Serialization) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("lists expect sub content variables"), http.StatusBadRequest
 	}
@@ -165,7 +165,7 @@ func (this *Controller) ValidateListSubVariables(variables []model.ContentVariab
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateStructureSubVariables(variables []model.ContentVariable, serialization model.Serialization) (err error, code int) {
+func (this *Controller) ValidateStructureSubVariables(variables []models.ContentVariable, serialization models.Serialization) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("structures expect sub content variables"), http.StatusBadRequest
 	}

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"net/http"
 )
@@ -30,7 +31,7 @@ import (
 
 const FilterDevicesOfGroupByAccess = true
 
-func (this *Controller) ReadDeviceGroup(id string, token string) (result model.DeviceGroup, err error, errCode int) {
+func (this *Controller) ReadDeviceGroup(id string, token string) (result models.DeviceGroup, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetDeviceGroup(ctx, id)
 	if err != nil {
@@ -41,11 +42,11 @@ func (this *Controller) ReadDeviceGroup(id string, token string) (result model.D
 	}
 	ok, err := this.security.CheckBool(token, this.config.DeviceGroupTopic, id, model.READ)
 	if err != nil {
-		result = model.DeviceGroup{}
+		result = models.DeviceGroup{}
 		return result, err, http.StatusInternalServerError
 	}
 	if !ok {
-		result = model.DeviceGroup{}
+		result = models.DeviceGroup{}
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
 	if FilterDevicesOfGroupByAccess {
@@ -55,7 +56,7 @@ func (this *Controller) ReadDeviceGroup(id string, token string) (result model.D
 	}
 }
 
-func (this *Controller) FilterDevicesOfGroupByAccess(token string, group model.DeviceGroup) (result model.DeviceGroup, err error, code int) {
+func (this *Controller) FilterDevicesOfGroupByAccess(token string, group models.DeviceGroup) (result models.DeviceGroup, err error, code int) {
 	if len(group.DeviceIds) == 0 {
 		return group, nil, http.StatusOK
 	}
@@ -79,7 +80,7 @@ func (this *Controller) FilterDevicesOfGroupByAccess(token string, group model.D
 // only the first element of group.Devices is checked.
 // this should be enough because every used device should be referenced in each element of group.Devices
 // use ValidateDeviceGroup() to ensure that this constraint is adhered to
-func (this *Controller) CheckAccessToDevicesOfGroup(token string, group model.DeviceGroup) (err error, code int) {
+func (this *Controller) CheckAccessToDevicesOfGroup(token string, group models.DeviceGroup) (err error, code int) {
 	if len(group.DeviceIds) == 0 {
 		return nil, http.StatusOK
 	}
@@ -96,7 +97,7 @@ func (this *Controller) CheckAccessToDevicesOfGroup(token string, group model.De
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateDeviceGroup(group model.DeviceGroup) (err error, code int) {
+func (this *Controller) ValidateDeviceGroup(group models.DeviceGroup) (err error, code int) {
 	if group.Id == "" {
 		return errors.New("missing device-group id"), http.StatusBadRequest
 	}
@@ -106,9 +107,9 @@ func (this *Controller) ValidateDeviceGroup(group model.DeviceGroup) (err error,
 	return this.ValidateDeviceGroupSelection(group.Criteria, group.DeviceIds)
 }
 
-func (this *Controller) ValidateDeviceGroupSelection(criteria []model.DeviceGroupFilterCriteria, devices []string) (error, int) {
-	deviceCache := map[string]model.Device{}
-	deviceTypeCache := map[string]model.DeviceType{}
+func (this *Controller) ValidateDeviceGroupSelection(criteria []models.DeviceGroupFilterCriteria, devices []string) (error, int) {
+	deviceCache := map[string]models.Device{}
+	deviceTypeCache := map[string]models.DeviceType{}
 	deviceUsageCount := map[string]int{}
 	for _, c := range criteria {
 		deviceUsedInMapping := map[string]bool{}
@@ -128,15 +129,15 @@ func (this *Controller) ValidateDeviceGroupSelection(criteria []model.DeviceGrou
 }
 
 func (this *Controller) selectionMatchesCriteria(
-	dcache *map[string]model.Device,
-	dtcache *map[string]model.DeviceType,
-	criteria model.DeviceGroupFilterCriteria,
+	dcache *map[string]models.Device,
+	dtcache *map[string]models.DeviceType,
+	criteria models.DeviceGroupFilterCriteria,
 	deviceId string) (err error, code int) {
 
 	ctx, _ := getTimeoutContext()
 	var exists bool
 
-	var aspectNode model.AspectNode
+	var aspectNode models.AspectNode
 	if criteria.AspectId != "" {
 		aspectNode, exists, err = this.db.GetAspectNode(ctx, criteria.AspectId)
 		if err != nil {
@@ -173,7 +174,7 @@ func (this *Controller) selectionMatchesCriteria(
 	serviceMatches := false
 	for _, service := range deviceType.Services {
 		interactionMatches := service.Interaction == criteria.Interaction
-		if service.Interaction == model.EVENT_AND_REQUEST {
+		if service.Interaction == models.EVENT_AND_REQUEST {
 			interactionMatches = true
 		}
 		contentMatches := false
@@ -200,7 +201,7 @@ func (this *Controller) selectionMatchesCriteria(
 	return nil, http.StatusOK
 }
 
-func contentVariableContainsCriteria(variable model.ContentVariable, criteria model.DeviceGroupFilterCriteria, aspectNode model.AspectNode) bool {
+func contentVariableContainsCriteria(variable models.ContentVariable, criteria models.DeviceGroupFilterCriteria, aspectNode models.AspectNode) bool {
 	if variable.FunctionId == criteria.FunctionId &&
 		(criteria.AspectId == "" ||
 			variable.AspectId == criteria.AspectId ||
@@ -228,7 +229,7 @@ func listContains(list []string, search string) bool {
 //		source
 /////////////////////////
 
-func (this *Controller) SetDeviceGroup(deviceGroup model.DeviceGroup, owner string) (err error) {
+func (this *Controller) SetDeviceGroup(deviceGroup models.DeviceGroup, owner string) (err error) {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetDeviceGroup(ctx, deviceGroup)
 }

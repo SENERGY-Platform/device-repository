@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sort"
 	"sync"
@@ -29,8 +29,8 @@ func TestLocation(t *testing.T) {
 		return
 	}
 
-	bath := model.Location{Id: "urn:infai:ses:location:bath", Name: "Bath", Description: "bath description", Image: "https://i.imgur.com/YHc7cbe.png", DeviceIds: []string{"urn:infai:ses:device:d1", "urn:infai:ses:device:d2"}}
-	floor := model.Location{Id: "urn:infai:ses:location:floor", Name: "Floor", Description: "floor description", Image: "https://i.imgur.com/YHc7cbe.png", DeviceGroupIds: []string{"urn:infai:ses:device-group:dg1", "urn:infai:ses:device-group:dg2"}}
+	bath := models.Location{Id: "urn:infai:ses:location:bath", Name: "Bath", Description: "bath description", Image: "https://i.imgur.com/YHc7cbe.png", DeviceIds: []string{"urn:infai:ses:device:d1", "urn:infai:ses:device:d2"}}
+	floor := models.Location{Id: "urn:infai:ses:location:floor", Name: "Floor", Description: "floor description", Image: "https://i.imgur.com/YHc7cbe.png", DeviceGroupIds: []string{"urn:infai:ses:device-group:dg1", "urn:infai:ses:device-group:dg2"}}
 
 	t.Run("testProduceLocation bath", testProduceLocation(prod, bath))
 	t.Run("testProduceLocation floor", testProduceLocation(prod, floor))
@@ -42,7 +42,7 @@ func TestLocation(t *testing.T) {
 	t.Run("testLocationRead floor after delete", testLocationRead(ctrl, floor.Id, &floor))
 }
 
-func testProduceLocation(producer *producer.Producer, location model.Location) func(t *testing.T) {
+func testProduceLocation(producer *producer.Producer, location models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
 		err := producer.PublishLocation(location, "sdfdsfsf")
 		if err != nil {
@@ -52,7 +52,7 @@ func testProduceLocation(producer *producer.Producer, location model.Location) f
 	}
 }
 
-func testLocationRead(con *controller.Controller, id string, expectedLocation *model.Location) func(t *testing.T) {
+func testLocationRead(con *controller.Controller, id string, expectedLocation *models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err, code := con.GetLocation(id, "")
 		if err != nil {

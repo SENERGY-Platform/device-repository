@@ -21,8 +21,8 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/ory/dockertest/v3"
 	"log"
 	"sync"
@@ -83,7 +83,7 @@ func TestConceptValidation(t *testing.T) {
 		return
 	}
 
-	err = ctrl.SetCharacteristic(model.Characteristic{
+	err = ctrl.SetCharacteristic(models.Characteristic{
 		Id:   "c",
 		Name: "c",
 	}, "")
@@ -92,35 +92,35 @@ func TestConceptValidation(t *testing.T) {
 		return
 	}
 
-	t.Run("no characteristic", testValidateConcept(ctrl, false, model.Concept{
+	t.Run("no characteristic", testValidateConcept(ctrl, false, models.Concept{
 		Id:                   "v",
 		Name:                 "v",
 		CharacteristicIds:    nil,
 		BaseCharacteristicId: "",
 	}))
 
-	t.Run("missing base characteristic", testValidateConcept(ctrl, true, model.Concept{
+	t.Run("missing base characteristic", testValidateConcept(ctrl, true, models.Concept{
 		Id:                   "v",
 		Name:                 "v",
 		CharacteristicIds:    []string{"c"},
 		BaseCharacteristicId: "",
 	}))
 
-	t.Run("with base characteristic", testValidateConcept(ctrl, false, model.Concept{
+	t.Run("with base characteristic", testValidateConcept(ctrl, false, models.Concept{
 		Id:                   "v",
 		Name:                 "v",
 		CharacteristicIds:    []string{"c"},
 		BaseCharacteristicId: "c",
 	}))
 
-	t.Run("unknown characteristic", testValidateConcept(ctrl, true, model.Concept{
+	t.Run("unknown characteristic", testValidateConcept(ctrl, true, models.Concept{
 		Id:                   "v",
 		Name:                 "v",
 		CharacteristicIds:    []string{"c", "unknown"},
 		BaseCharacteristicId: "c",
 	}))
 
-	t.Run("base characteristic not in list", testValidateConcept(ctrl, true, model.Concept{
+	t.Run("base characteristic not in list", testValidateConcept(ctrl, true, models.Concept{
 		Id:                   "v",
 		Name:                 "v",
 		CharacteristicIds:    []string{"c"},
@@ -128,7 +128,7 @@ func TestConceptValidation(t *testing.T) {
 	}))
 }
 
-func testValidateConcept(ctrl *controller.Controller, expectError bool, concept model.Concept) func(t *testing.T) {
+func testValidateConcept(ctrl *controller.Controller, expectError bool, concept models.Concept) func(t *testing.T) {
 	return func(t *testing.T) {
 		err, _ := ctrl.ValidateConcept(concept)
 		if (err != nil) != expectError {

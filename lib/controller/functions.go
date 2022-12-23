@@ -19,11 +19,12 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) SetFunction(function model.Function, owner string) error {
+func (this *Controller) SetFunction(function models.Function, owner string) error {
 	model.SetFunctionRdfType(&function)
 	ctx, _ := getTimeoutContext()
 	return this.db.SetFunction(ctx, function)
@@ -34,7 +35,7 @@ func (this *Controller) DeleteFunction(id string) error {
 	return this.db.RemoveFunction(ctx, id)
 }
 
-func (this *Controller) GetFunctionsByType(rdfType string) (result []model.Function, err error, code int) {
+func (this *Controller) GetFunctionsByType(rdfType string) (result []models.Function, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllFunctionsByType(ctx, rdfType)
@@ -44,8 +45,8 @@ func (this *Controller) GetFunctionsByType(rdfType string) (result []model.Funct
 	return
 }
 
-//returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
-func (this *Controller) GetAspectNodesMeasuringFunctions(aspect string, ancestors bool, descendants bool) (result []model.Function, err error, code int) {
+// returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+func (this *Controller) GetAspectNodesMeasuringFunctions(aspect string, ancestors bool, descendants bool) (result []models.Function, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllMeasuringFunctionsByAspect(ctx, aspect, ancestors, descendants)
@@ -55,7 +56,7 @@ func (this *Controller) GetAspectNodesMeasuringFunctions(aspect string, ancestor
 	return
 }
 
-func (this *Controller) GetDeviceClassesFunctions(deviceClass string) (result []model.Function, err error, code int) {
+func (this *Controller) GetDeviceClassesFunctions(deviceClass string) (result []models.Function, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllFunctionsByDeviceClass(ctx, deviceClass)
@@ -65,7 +66,7 @@ func (this *Controller) GetDeviceClassesFunctions(deviceClass string) (result []
 	return
 }
 
-func (this *Controller) GetDeviceClassesControllingFunctions(deviceClass string) (result []model.Function, err error, code int) {
+func (this *Controller) GetDeviceClassesControllingFunctions(deviceClass string) (result []models.Function, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListAllControllingFunctionsByDeviceClass(ctx, deviceClass)
@@ -75,7 +76,7 @@ func (this *Controller) GetDeviceClassesControllingFunctions(deviceClass string)
 	return
 }
 
-func (this *Controller) GetFunction(id string) (result model.Function, err error, code int) {
+func (this *Controller) GetFunction(id string) (result models.Function, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetFunction(ctx, id)
 	if err != nil {
@@ -87,7 +88,7 @@ func (this *Controller) GetFunction(id string) (result model.Function, err error
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateFunction(function model.Function) (err error, code int) {
+func (this *Controller) ValidateFunction(function models.Function) (err error, code int) {
 	if function.Id == "" {
 		return errors.New("missing function id"), http.StatusBadRequest
 	}

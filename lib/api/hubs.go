@@ -21,6 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -121,7 +122,7 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		hub := model.Hub{}
+		hub := models.Hub{}
 		err = json.NewDecoder(request.Body).Decode(&hub)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

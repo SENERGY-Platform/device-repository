@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -91,7 +92,7 @@ func FunctionsEndpoints(config config.Config, control Controller, router *httpro
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		function := model.Function{}
+		function := models.Function{}
 		err = json.NewDecoder(request.Body).Decode(&function)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

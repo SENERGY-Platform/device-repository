@@ -22,9 +22,9 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"net/http"
@@ -56,14 +56,14 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishAspect(model.Aspect{
+	err = producer.PublishAspect(models.Aspect{
 		Id:   "parent_2",
 		Name: "parent_2",
-		SubAspects: []model.Aspect{
+		SubAspects: []models.Aspect{
 			{
 				Id:   "aid_2",
 				Name: "aid_2",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{
 						Id:   "child_2",
 						Name: "child_2",
@@ -77,11 +77,11 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishProtocol(model.Protocol{
+	err = producer.PublishProtocol(models.Protocol{
 		Id:      "p",
 		Name:    "p",
 		Handler: "p",
-		ProtocolSegments: []model.ProtocolSegment{
+		ProtocolSegments: []models.ProtocolSegment{
 			{
 				Id:   "ps",
 				Name: "ps",
@@ -95,27 +95,27 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 
 	time.Sleep(5 * time.Second)
 
-	body, err := json.Marshal(model.DeviceType{
+	body, err := json.Marshal(models.DeviceType{
 		Id:            "dt",
 		Name:          "test",
 		Description:   "",
 		ServiceGroups: nil,
-		Services: []model.Service{
+		Services: []models.Service{
 			{
 				Id:          "s",
 				LocalId:     "sid",
 				Name:        "s",
 				Description: "",
-				Interaction: model.REQUEST,
+				Interaction: models.REQUEST,
 				ProtocolId:  "p",
-				Inputs: []model.Content{
+				Inputs: []models.Content{
 					{
 						Id: "i",
-						ContentVariable: model.ContentVariable{
+						ContentVariable: models.ContentVariable{
 							Id:                   "v",
 							Name:                 "val",
 							IsVoid:               false,
-							Type:                 model.String,
+							Type:                 models.String,
 							SubContentVariables:  nil,
 							CharacteristicId:     "",
 							Value:                nil,
@@ -172,7 +172,7 @@ func TestServiceQuery(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -181,7 +181,7 @@ func TestServiceQuery(t *testing.T) {
 	time.Sleep(3 * time.Second)
 
 	t.Run("testServiceRead", func(t *testing.T) {
-		testServiceRead(t, conf, model.Service{Id: "service_42", Name: "foo"})
+		testServiceRead(t, conf, models.Service{Id: "service_42", Name: "foo"})
 	})
 }
 
@@ -202,22 +202,22 @@ func TestSubContentVarUpdate(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{
+	dt := models.DeviceType{
 		Id:   devicetype1id,
 		Name: devicetype1name,
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:   "service1",
 			Name: "serviceName",
-			Outputs: []model.Content{{
+			Outputs: []models.Content{{
 				Id: "content",
-				ContentVariable: model.ContentVariable{
+				ContentVariable: models.ContentVariable{
 					Id:   "main",
 					Name: "main",
-					Type: model.Structure,
-					SubContentVariables: []model.ContentVariable{{
+					Type: models.Structure,
+					SubContentVariables: []models.ContentVariable{{
 						Id:   "sub",
 						Name: "sub",
-						Type: model.String,
+						Type: models.String,
 					}},
 				},
 				Serialization:     "json",
@@ -236,22 +236,22 @@ func TestSubContentVarUpdate(t *testing.T) {
 
 	t.Run("after create", testDeviceTypeReadV2(conf, dt))
 
-	dtUpdated := model.DeviceType{
+	dtUpdated := models.DeviceType{
 		Id:   devicetype1id,
 		Name: devicetype1name,
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:   "service1",
 			Name: "serviceName",
-			Outputs: []model.Content{{
+			Outputs: []models.Content{{
 				Id: "content",
-				ContentVariable: model.ContentVariable{
+				ContentVariable: models.ContentVariable{
 					Id:   "main",
 					Name: "main",
-					Type: model.Structure,
-					SubContentVariables: []model.ContentVariable{{
+					Type: models.Structure,
+					SubContentVariables: []models.ContentVariable{{
 						Id:   "sub2",
 						Name: "sub2",
-						Type: model.Integer,
+						Type: models.Integer,
 					}},
 				},
 				Serialization:     "json",
@@ -270,18 +270,18 @@ func TestSubContentVarUpdate(t *testing.T) {
 
 	t.Run("after update", testDeviceTypeReadV2(conf, dtUpdated))
 
-	dtSubVarDeleted := model.DeviceType{
+	dtSubVarDeleted := models.DeviceType{
 		Id:   devicetype1id,
 		Name: devicetype1name,
-		Services: []model.Service{{
+		Services: []models.Service{{
 			Id:   "service1",
 			Name: "serviceName",
-			Outputs: []model.Content{{
+			Outputs: []models.Content{{
 				Id: "content",
-				ContentVariable: model.ContentVariable{
+				ContentVariable: models.ContentVariable{
 					Id:   "main",
 					Name: "main",
-					Type: model.Structure,
+					Type: models.Structure,
 				},
 				Serialization:     "json",
 				ProtocolSegmentId: "payload",
@@ -317,13 +317,13 @@ func TestDeviceTypeQuery(t *testing.T) {
 		return
 	}
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name}, testenv.Userid)
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishDeviceType(model.DeviceType{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, testenv.Userid)
+		err = producer.PublishDeviceType(models.DeviceType{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, testenv.Userid)
 		if err != nil {
 			t.Error(err)
 			return
@@ -350,7 +350,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 		testDeviceTypeListSort(t, conf)
 	})
 
-	err = producer.PublishDeviceType(model.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []model.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -359,7 +359,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 	time.Sleep(3 * time.Second)
 
 	t.Run("testServiceRead", func(t *testing.T) {
-		testServiceRead(t, conf, model.Service{Id: "service_42", Name: "foo"})
+		testServiceRead(t, conf, models.Service{Id: "service_42", Name: "foo"})
 	})
 }
 
@@ -380,22 +380,22 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []model.ServiceGroup{
+	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
 		{
 			Key:         "test",
 			Name:        "test group",
 			Description: "foo",
 		},
-	}, Services: []model.Service{
+	}, Services: []models.Service{
 		{
 			Id:              "s1",
 			LocalId:         "s1",
 			Name:            "n1",
-			Interaction:     model.REQUEST,
+			Interaction:     models.REQUEST,
 			ProtocolId:      "p1",
 			ServiceGroupKey: "test",
-			Outputs: []model.Content{{
-				ContentVariable: model.ContentVariable{
+			Outputs: []models.Content{{
+				ContentVariable: models.ContentVariable{
 					FunctionId: "f1",
 					AspectId:   "a1",
 				},
@@ -405,11 +405,11 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 			Id:              "s2",
 			LocalId:         "s2",
 			Name:            "n2",
-			Interaction:     model.REQUEST,
+			Interaction:     models.REQUEST,
 			ProtocolId:      "p1",
 			ServiceGroupKey: "",
-			Outputs: []model.Content{{
-				ContentVariable: model.ContentVariable{
+			Outputs: []models.Content{{
+				ContentVariable: models.ContentVariable{
 					FunctionId: "f1",
 					AspectId:   "a1",
 				},
@@ -456,7 +456,7 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}}
+	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}}
 
 	err = producer.PublishDeviceType(dt, testenv.Userid)
 	if err != nil {
@@ -489,18 +489,18 @@ func TestServiceWithAttribute(t *testing.T) {
 		return
 	}
 
-	dt := model.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []model.Attribute{{Key: "foo", Value: "bar"}}, Services: []model.Service{
+	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}, Services: []models.Service{
 		{
 			Id:          "sid1",
 			LocalId:     "lsid1",
 			Name:        "s",
 			Description: "s",
-			Interaction: model.EVENT,
+			Interaction: models.EVENT,
 			ProtocolId:  "pid1",
 			Inputs:      nil,
-			Attributes:  []model.Attribute{{Key: "batz", Value: "blub"}},
-			Outputs: []model.Content{{
-				ContentVariable: model.ContentVariable{
+			Attributes:  []models.Attribute{{Key: "batz", Value: "blub"}},
+			Outputs: []models.Content{{
+				ContentVariable: models.ContentVariable{
 					FunctionId: "fid1",
 					AspectId:   "aid1",
 				},
@@ -520,8 +520,8 @@ func TestServiceWithAttribute(t *testing.T) {
 
 }
 
-func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.DeviceType) {
-	expected := model.DeviceType{Id: devicetype1id, Name: devicetype1name}
+func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...models.DeviceType) {
+	expected := models.DeviceType{Id: devicetype1id, Name: devicetype1name}
 	if len(expectedDt) > 0 {
 		expected = expectedDt[0]
 	}
@@ -542,7 +542,7 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := model.DeviceType{}
+	result := models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -553,7 +553,7 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...model.De
 	}
 }
 
-func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t *testing.T) {
+func testDeviceTypeReadV2(conf config.Config, expected models.DeviceType) func(t *testing.T) {
 	return func(t *testing.T) {
 		endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
 		req, err := http.NewRequest("GET", endpoint, nil)
@@ -572,7 +572,7 @@ func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t 
 			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 			return
 		}
-		result := model.DeviceType{}
+		result := models.DeviceType{}
 		err = json.NewDecoder(resp.Body).Decode(&result)
 		if err != nil {
 			t.Error(err)
@@ -586,7 +586,7 @@ func testDeviceTypeReadV2(conf config.Config, expected model.DeviceType) func(t 
 	}
 }
 
-func testServiceRead(t *testing.T, conf config.Config, expected model.Service) {
+func testServiceRead(t *testing.T, conf config.Config, expected models.Service) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/services/" + url.PathEscape(expected.Id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -604,7 +604,7 @@ func testServiceRead(t *testing.T, conf config.Config, expected model.Service) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := model.Service{}
+	result := models.Service{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -633,7 +633,7 @@ func testDeviceTypeList(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceType{}
+	result := []models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -662,7 +662,7 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceType{}
+	result := []models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -691,7 +691,7 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	result := []model.DeviceType{}
+	result := []models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		t.Error(err)
@@ -720,7 +720,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", defaultendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	defaultresult := []model.DeviceType{}
+	defaultresult := []models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&defaultresult)
 	if err != nil {
 		t.Error(err)
@@ -746,7 +746,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", ascendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	ascresult := []model.DeviceType{}
+	ascresult := []models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&ascresult)
 	if err != nil {
 		t.Error(err)
@@ -777,7 +777,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 		t.Error("unexpected response", descendpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
-	descresult := []model.DeviceType{}
+	descresult := []models.DeviceType{}
 	err = json.NewDecoder(resp.Body).Decode(&descresult)
 	if err != nil {
 		t.Error(err)

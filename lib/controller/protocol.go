@@ -18,7 +18,7 @@ package controller
 
 import (
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )
 
@@ -26,7 +26,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ReadProtocol(id string, token string) (result model.Protocol, err error, errCode int) {
+func (this *Controller) ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	protocol, exists, err := this.db.GetProtocol(ctx, id)
 	if err != nil {
@@ -38,13 +38,13 @@ func (this *Controller) ReadProtocol(id string, token string) (result model.Prot
 	return protocol, nil, http.StatusOK
 }
 
-func (this *Controller) ListProtocols(token string, limit int64, offset int64, sort string) (result []model.Protocol, err error, errCode int) {
+func (this *Controller) ListProtocols(token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	result, err = this.db.ListProtocols(ctx, limit, offset, sort)
 	return
 }
 
-func (this *Controller) ValidateProtocol(protocol model.Protocol) (err error, code int) {
+func (this *Controller) ValidateProtocol(protocol models.Protocol) (err error, code int) {
 	if protocol.Id == "" {
 		return errors.New("missing protocol id"), http.StatusBadRequest
 	}
@@ -77,7 +77,7 @@ func (this *Controller) ValidateProtocol(protocol model.Protocol) (err error, co
 //		source
 /////////////////////////
 
-func (this *Controller) SetProtocol(protocol model.Protocol, owner string) (err error) {
+func (this *Controller) SetProtocol(protocol models.Protocol, owner string) (err error) {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetProtocol(ctx, protocol)
 }

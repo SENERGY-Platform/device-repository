@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -59,7 +59,7 @@ func DeviceGroupEndpoints(config config.Config, control Controller, router *http
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		group := model.DeviceGroup{}
+		group := models.DeviceGroup{}
 		err = json.NewDecoder(request.Body).Decode(&group)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

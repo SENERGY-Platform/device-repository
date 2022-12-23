@@ -18,18 +18,18 @@ package controller
 
 import (
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )
 
-func (this *Controller) ValidateContent(content model.Content, protocol model.Protocol) (err error, code int) {
+func (this *Controller) ValidateContent(content models.Content, protocol models.Protocol) (err error, code int) {
 	if content.Id == "" {
 		return errors.New("missing content id"), http.StatusBadRequest
 	}
 	if !content.Serialization.Valid() {
 		return errors.New("unknown serialization " + string(content.Serialization)), http.StatusBadRequest
 	}
-	if content.Serialization == model.PlainText && content.ContentVariable.Type != model.String {
+	if content.Serialization == models.PlainText && content.ContentVariable.Type != models.String {
 		return errors.New("plain-text serialization only for string content"), http.StatusBadRequest
 	}
 	if content.ProtocolSegmentId == "" {
@@ -45,7 +45,7 @@ func (this *Controller) ValidateContent(content model.Content, protocol model.Pr
 	return nil, http.StatusOK
 }
 
-func protocolContainsSegment(protocol model.Protocol, segmentId string) bool {
+func protocolContainsSegment(protocol models.Protocol, segmentId string) bool {
 	for _, segment := range protocol.ProtocolSegments {
 		if segment.Id == segmentId {
 			return true

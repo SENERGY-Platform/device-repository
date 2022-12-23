@@ -21,13 +21,13 @@ package producer
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"runtime/debug"
 )
 
-func (this *Producer) PublishAspect(aspect model.Aspect, userId string) (err error) {
+func (this *Producer) PublishAspect(aspect models.Aspect, userId string) (err error) {
 	cmd := listener.AspectCommand{Command: "PUT", Aspect: aspect, Owner: userId}
 	return this.PublishAspectCommand(cmd)
 }

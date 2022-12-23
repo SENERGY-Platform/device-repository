@@ -18,13 +18,13 @@ package producer
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"runtime/debug"
 )
 
-func (this *Producer) PublishConcept(concept model.Concept, userId string) (err error) {
+func (this *Producer) PublishConcept(concept models.Concept, userId string) (err error) {
 	cmd := listener.ConceptCommand{Command: "PUT", Id: concept.Id, Concept: concept, Owner: userId}
 	return this.PublishConceptCommand(cmd)
 }

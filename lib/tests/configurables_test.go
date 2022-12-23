@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sync"
 	"testing"
@@ -39,7 +40,7 @@ func TestConfigurables(t *testing.T) {
 		return
 	}
 
-	interaction := model.EVENT_AND_REQUEST
+	interaction := models.EVENT_AND_REQUEST
 
 	t.Run("init metadata", createTestConfigurableMetadata(conf))
 
@@ -47,18 +48,18 @@ func TestConfigurables(t *testing.T) {
 		{
 			Path:             "duration.sec",
 			CharacteristicId: "",
-			AspectNode:       model.AspectNode{},
+			AspectNode:       models.AspectNode{},
 			FunctionId:       "",
 			Value:            30.0,
-			Type:             model.Integer,
+			Type:             models.Integer,
 		},
 		{
 			Path:             "duration.ms",
 			CharacteristicId: "ms",
-			AspectNode:       model.AspectNode{},
+			AspectNode:       models.AspectNode{},
 			FunctionId:       "",
 			Value:            32.0,
-			Type:             model.Integer,
+			Type:             models.Integer,
 		},
 	}
 
@@ -67,28 +68,28 @@ func TestConfigurables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getTemperatures",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "duration",
 								Name: "duration",
-								Type: model.Structure,
-								SubContentVariables: []model.ContentVariable{
+								Type: models.Structure,
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:               "sec",
 										Name:             "sec",
-										Type:             model.Integer,
+										Type:             models.Integer,
 										CharacteristicId: "",
 										Value:            30.0,
 									},
 									{
 										Id:               "ms",
 										Name:             "ms",
-										Type:             model.Integer,
+										Type:             models.Integer,
 										CharacteristicId: "ms",
 										Value:            32.0,
 									},
@@ -96,12 +97,12 @@ func TestConfigurables(t *testing.T) {
 							},
 						},
 					},
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "avg_temperatures",
 								Name: "avg_temperatures",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu",
 										Name:       "cpu",
@@ -132,7 +133,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "avg_temperatures.case",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case",
 							RootId:        "device",
 							ParentId:      "device",
@@ -147,7 +148,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "avg_temperatures.cpu",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu",
 							RootId:        "device",
 							ParentId:      "device",
@@ -162,7 +163,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "avg_temperatures.gpu",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "gpu",
 							RootId:        "device",
 							ParentId:      "device",
@@ -183,28 +184,28 @@ func TestConfigurables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getTemperatures",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "duration",
 								Name: "duration",
-								Type: model.Structure,
-								SubContentVariables: []model.ContentVariable{
+								Type: models.Structure,
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:               "sec",
 										Name:             "sec",
-										Type:             model.Integer,
+										Type:             models.Integer,
 										CharacteristicId: "",
 										Value:            30.0,
 									},
 									{
 										Id:               "ms",
 										Name:             "ms",
-										Type:             model.Integer,
+										Type:             models.Integer,
 										CharacteristicId: "ms",
 										Value:            32.0,
 									},
@@ -212,12 +213,12 @@ func TestConfigurables(t *testing.T) {
 							},
 						},
 					},
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "avg_temperatures",
 								Name: "avg_temperatures",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "cpu",
 										Name:       "cpu",
@@ -248,7 +249,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getTemperatures",
 						Path:             "avg_temperatures.cpu",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu",
 							RootId:        "device",
 							ParentId:      "device",
@@ -269,13 +270,13 @@ func TestConfigurables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "getCaseFan1Speed",
 					Interaction: interaction,
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -287,20 +288,20 @@ func TestConfigurables(t *testing.T) {
 				{
 					Id:          "getCaseFan2Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:               "sec",
 								Name:             "sec",
-								Type:             model.Integer,
+								Type:             models.Integer,
 								CharacteristicId: "",
 								Value:            24.0,
 							},
 						},
 					},
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -312,20 +313,20 @@ func TestConfigurables(t *testing.T) {
 				{
 					Id:          "getCpuSpeed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:               "sec",
 								Name:             "sec",
-								Type:             model.Integer,
+								Type:             models.Integer,
 								CharacteristicId: "sec",
 								Value:            24.0,
 							},
 						},
 					},
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -337,21 +338,21 @@ func TestConfigurables(t *testing.T) {
 				{
 					Id:          "getGpuSpeed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:               "sec",
 								Name:             "sec",
-								Type:             model.Integer,
+								Type:             models.Integer,
 								CharacteristicId: "sec",
 								FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime",
 								Value:            24.0,
 							},
 						},
 					},
-					Outputs: []model.Content{
+					Outputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -367,7 +368,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getCaseFan1Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -384,7 +385,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getCaseFan2Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_2",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -397,10 +398,10 @@ func TestConfigurables(t *testing.T) {
 							{
 								Path:             "sec",
 								CharacteristicId: "",
-								AspectNode:       model.AspectNode{},
+								AspectNode:       models.AspectNode{},
 								FunctionId:       "",
 								Value:            24.0,
-								Type:             model.Integer,
+								Type:             models.Integer,
 							},
 						},
 					},
@@ -410,7 +411,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getCpuSpeed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "cpu_fan",
 							RootId:        "fan",
 							ParentId:      "fan",
@@ -423,10 +424,10 @@ func TestConfigurables(t *testing.T) {
 							{
 								Path:             "sec",
 								CharacteristicId: "sec",
-								AspectNode:       model.AspectNode{},
+								AspectNode:       models.AspectNode{},
 								FunctionId:       "",
 								Value:            24.0,
-								Type:             model.Integer,
+								Type:             models.Integer,
 							},
 						},
 					},
@@ -436,7 +437,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "getGpuSpeed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "gpu_fan",
 							RootId:        "fan",
 							ParentId:      "fan",
@@ -449,10 +450,10 @@ func TestConfigurables(t *testing.T) {
 							{
 								Path:             "sec",
 								CharacteristicId: "sec",
-								AspectNode:       model.AspectNode{},
+								AspectNode:       models.AspectNode{},
 								FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime",
 								Value:            24.0,
-								Type:             model.Integer,
+								Type:             models.Integer,
 							},
 						},
 					},
@@ -466,16 +467,16 @@ func TestConfigurables(t *testing.T) {
 	}, "", nil, []model.DeviceTypeSelectable{
 		{
 			DeviceTypeId: "pc_cooling_controller",
-			Services: []model.Service{
+			Services: []models.Service{
 				{
 					Id:          "setCaseFanSpeed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:   "speed",
 								Name: "speed",
-								SubContentVariables: []model.ContentVariable{
+								SubContentVariables: []models.ContentVariable{
 									{
 										Id:         "1",
 										Name:       "1",
@@ -498,9 +499,9 @@ func TestConfigurables(t *testing.T) {
 				{
 					Id:          "setCaseFan1Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:         "speed",
 								Name:       "speed",
 								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -512,17 +513,17 @@ func TestConfigurables(t *testing.T) {
 				{
 					Id:          "setCaseFan2Speed",
 					Interaction: interaction,
-					Inputs: []model.Content{
+					Inputs: []models.Content{
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:    "header",
 								Name:  "header",
-								Type:  model.String,
+								Type:  models.String,
 								Value: "auth",
 							},
 						},
 						{
-							ContentVariable: model.ContentVariable{
+							ContentVariable: models.ContentVariable{
 								Id:               "speed",
 								Name:             "speed",
 								CharacteristicId: "foo",
@@ -539,7 +540,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "setCaseFanSpeed",
 						Path:             "speed.1",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -554,7 +555,7 @@ func TestConfigurables(t *testing.T) {
 							{
 								Path:             "speed.2",
 								CharacteristicId: "",
-								AspectNode: model.AspectNode{
+								AspectNode: models.AspectNode{
 									Id:            "case_fan_2",
 									RootId:        "fan",
 									ParentId:      "case_fan",
@@ -571,7 +572,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "setCaseFanSpeed",
 						Path:             "speed.2",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_2",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -586,7 +587,7 @@ func TestConfigurables(t *testing.T) {
 							{
 								Path:             "speed.1",
 								CharacteristicId: "",
-								AspectNode: model.AspectNode{
+								AspectNode: models.AspectNode{
 									Id:            "case_fan_1",
 									RootId:        "fan",
 									ParentId:      "case_fan",
@@ -605,7 +606,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "setCaseFan1Speed",
 						Path:             "speed",
 						CharacteristicId: "",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_1",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -624,7 +625,7 @@ func TestConfigurables(t *testing.T) {
 						ServiceId:        "setCaseFan2Speed",
 						Path:             "speed",
 						CharacteristicId: "foo",
-						AspectNode: model.AspectNode{
+						AspectNode: models.AspectNode{
 							Id:            "case_fan_2",
 							RootId:        "fan",
 							ParentId:      "case_fan",
@@ -638,10 +639,10 @@ func TestConfigurables(t *testing.T) {
 							{
 								Path:             "header",
 								CharacteristicId: "",
-								AspectNode:       model.AspectNode{},
+								AspectNode:       models.AspectNode{},
 								FunctionId:       "",
 								Value:            "auth",
-								Type:             model.String,
+								Type:             models.String,
 							},
 						},
 						Type: "",
@@ -652,7 +653,7 @@ func TestConfigurables(t *testing.T) {
 	}))
 }
 
-func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []model.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectables(config, userjwt, pathPrefix, interactionsFilter, criteria)
 		if err != nil {
@@ -671,14 +672,14 @@ func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCrit
 
 func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		interaction := model.EVENT_AND_REQUEST
-		aspects := []model.Aspect{
+		interaction := models.EVENT_AND_REQUEST
+		aspects := []models.Aspect{
 			{
 				Id: "air",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{Id: "inside_air"},
 					{Id: "outside_air",
-						SubAspects: []model.Aspect{
+						SubAspects: []models.Aspect{
 							{Id: "morning_outside_air"},
 							{Id: "evening_outside_air"},
 						},
@@ -690,7 +691,7 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 			},
 			{
 				Id: "device",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{Id: "cpu"},
 					{Id: "gpu"},
 					{Id: "case"},
@@ -698,11 +699,11 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 			},
 			{
 				Id: "fan",
-				SubAspects: []model.Aspect{
+				SubAspects: []models.Aspect{
 					{Id: "cpu_fan"},
 					{Id: "gpu_fan"},
 					{Id: "case_fan",
-						SubAspects: []model.Aspect{
+						SubAspects: []models.Aspect{
 							{Id: "case_fan_1"},
 							{Id: "case_fan_2"},
 							{Id: "case_fan_3"},
@@ -713,7 +714,7 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 				},
 			},
 		}
-		functions := []model.Function{
+		functions := []models.Function{
 			{Id: model.MEASURING_FUNCTION_PREFIX + "getTemperature"},
 			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature"},
 			{Id: model.MEASURING_FUNCTION_PREFIX + "getVolume"},
@@ -723,32 +724,32 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 			{Id: model.CONTROLLING_FUNCTION_PREFIX + "toggle"},
 			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime"},
 		}
-		devicetypes := []model.DeviceType{
+		devicetypes := []models.DeviceType{
 			{
 				Id:            "pc_cooling_controller",
 				DeviceClassId: "pc_cooling_controller",
-				Services: []model.Service{
+				Services: []models.Service{
 					{
 						Id:          "getTemperatures",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:   "duration",
 									Name: "duration",
-									Type: model.Structure,
-									SubContentVariables: []model.ContentVariable{
+									Type: models.Structure,
+									SubContentVariables: []models.ContentVariable{
 										{
 											Id:               "sec",
 											Name:             "sec",
-											Type:             model.Integer,
+											Type:             models.Integer,
 											CharacteristicId: "",
 											Value:            30,
 										},
 										{
 											Id:               "ms",
 											Name:             "ms",
-											Type:             model.Integer,
+											Type:             models.Integer,
 											CharacteristicId: "ms",
 											Value:            32,
 										},
@@ -756,12 +757,12 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 								},
 							},
 						},
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:   "avg_temperatures",
 									Name: "avg_temperatures",
-									SubContentVariables: []model.ContentVariable{
+									SubContentVariables: []models.ContentVariable{
 										{
 											Id:         "cpu",
 											Name:       "cpu",
@@ -789,9 +790,9 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 					{
 						Id:          "getCaseFan1Speed",
 						Interaction: interaction,
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -803,20 +804,20 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 					{
 						Id:          "getCaseFan2Speed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "sec",
 									Name:             "sec",
-									Type:             model.Integer,
+									Type:             models.Integer,
 									CharacteristicId: "",
 									Value:            24,
 								},
 							},
 						},
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -828,20 +829,20 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 					{
 						Id:          "getCpuSpeed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "sec",
 									Name:             "sec",
-									Type:             model.Integer,
+									Type:             models.Integer,
 									CharacteristicId: "sec",
 									Value:            24,
 								},
 							},
 						},
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -853,21 +854,21 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 					{
 						Id:          "getGpuSpeed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "sec",
 									Name:             "sec",
-									Type:             model.Integer,
+									Type:             models.Integer,
 									CharacteristicId: "sec",
 									FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime",
 									Value:            24,
 								},
 							},
 						},
-						Outputs: []model.Content{
+						Outputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
@@ -880,12 +881,12 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 					{
 						Id:          "setCaseFanSpeed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:   "speed",
 									Name: "speed",
-									SubContentVariables: []model.ContentVariable{
+									SubContentVariables: []models.ContentVariable{
 										{
 											Id:         "1",
 											Name:       "1",
@@ -908,9 +909,9 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 					{
 						Id:          "setCaseFan1Speed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:         "speed",
 									Name:       "speed",
 									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
@@ -922,17 +923,17 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 					{
 						Id:          "setCaseFan2Speed",
 						Interaction: interaction,
-						Inputs: []model.Content{
+						Inputs: []models.Content{
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:    "header",
 									Name:  "header",
-									Type:  model.String,
+									Type:  models.String,
 									Value: "auth",
 								},
 							},
 							{
-								ContentVariable: model.ContentVariable{
+								ContentVariable: models.ContentVariable{
 									Id:               "speed",
 									Name:             "speed",
 									FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",

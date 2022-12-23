@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -35,15 +35,15 @@ var deviceGroupNameKey string
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceGroupIdKey, err = getBsonFieldName(model.DeviceGroup{}, deviceGroupIdFieldName)
+		deviceGroupIdKey, err = getBsonFieldName(models.DeviceGroup{}, deviceGroupIdFieldName)
 		if err != nil {
 			return err
 		}
-		deviceGroupNameKey, err = getBsonFieldName(model.DeviceGroup{}, deviceGroupNameFieldName)
+		deviceGroupNameKey, err = getBsonFieldName(models.DeviceGroup{}, deviceGroupNameFieldName)
 		if err != nil {
 			return err
 		}
-		serviceIdKey, err = getBsonFieldName(model.Service{}, serviceIdFieldName)
+		serviceIdKey, err = getBsonFieldName(models.Service{}, serviceIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -60,7 +60,7 @@ func (this *Mongo) deviceGroupCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceGroupCollection)
 }
 
-func (this *Mongo) GetDeviceGroup(ctx context.Context, id string) (deviceGroup model.DeviceGroup, exists bool, err error) {
+func (this *Mongo) GetDeviceGroup(ctx context.Context, id string) (deviceGroup models.DeviceGroup, exists bool, err error) {
 	result := this.deviceGroupCollection().FindOne(ctx, bson.M{deviceGroupIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -76,7 +76,7 @@ func (this *Mongo) GetDeviceGroup(ctx context.Context, id string) (deviceGroup m
 	return deviceGroup, true, err
 }
 
-func (this *Mongo) ListDeviceGroups(ctx context.Context, limit int64, offset int64, sort string) (result []model.DeviceGroup, err error) {
+func (this *Mongo) ListDeviceGroups(ctx context.Context, limit int64, offset int64, sort string) (result []models.DeviceGroup, err error) {
 	opt := options.Find()
 	opt.SetLimit(limit)
 	opt.SetSkip(offset)
@@ -102,7 +102,7 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, limit int64, offset int
 		return nil, err
 	}
 	for cursor.Next(context.Background()) {
-		deviceGroup := model.DeviceGroup{}
+		deviceGroup := models.DeviceGroup{}
 		err = cursor.Decode(&deviceGroup)
 		if err != nil {
 			return nil, err
@@ -113,7 +113,7 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, limit int64, offset int
 	return
 }
 
-func (this *Mongo) SetDeviceGroup(ctx context.Context, deviceGroup model.DeviceGroup) error {
+func (this *Mongo) SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup) error {
 	_, err := this.deviceGroupCollection().ReplaceOne(ctx, bson.M{deviceGroupIdKey: deviceGroup.Id}, deviceGroup, options.Replace().SetUpsert(true))
 	return err
 }

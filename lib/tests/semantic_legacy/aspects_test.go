@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
 	"time"
@@ -71,7 +72,7 @@ func TestAspects2(t *testing.T) {
 
 func testProduceAspect(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		aspect := model.Aspect{}
+		aspect := models.Aspect{}
 		aspect.Id = "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf"
 		aspect.Name = "Air"
 		err := producer.PublishAspect(aspect, "sdfdsfsf")
@@ -110,21 +111,21 @@ func testAspectDelete(producer *producer.Producer) func(t *testing.T) {
 
 func testProduceDeviceTypeForAspectTest(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		devicetype := model.DeviceType{}
+		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:devicetype:1e1e-AspectTest"
 		devicetype.Name = "Philips Hue Color"
 		devicetype.DeviceClassId = "urn:infai:ses:deviceclass:2e2e-AspectTest"
 		devicetype.Description = "description"
-		devicetype.Services = []model.Service{}
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = []models.Service{}
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:3e3e-AspectTest",
 			LocalId:    "localId",
 			Name:       "setBrightness",
 			ProtocolId: "urn:infai:ses:protocol:asdasda",
-			Inputs: []model.Content{
+			Inputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:4e4e-AspectTest",
 								FunctionId: "urn:infai:ses:controlling-function:5e5e1-AspectTest",
@@ -135,20 +136,20 @@ func testProduceDeviceTypeForAspectTest(producer *producer.Producer) func(t *tes
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
 		})
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:3f3f-AspectTest",
 			LocalId:    "localId",
 			Name:       "getBrightness",
 			ProtocolId: "urn:infai:ses:protocol:asdasda",
-			Outputs: []model.Content{
+			Outputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:4e4e-AspectTest",
 								FunctionId: "urn:infai:ses:measuring-function:5e5e3-AspectTest",
@@ -159,7 +160,7 @@ func testProduceDeviceTypeForAspectTest(producer *producer.Producer) func(t *tes
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
@@ -169,23 +170,23 @@ func testProduceDeviceTypeForAspectTest(producer *producer.Producer) func(t *tes
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishAspect(model.Aspect{Id: "urn:infai:ses:aspect:4e4e-AspectTest", Name: "Lighting"}, "sdfsdfdsds")
+		err = producer.PublishAspect(models.Aspect{Id: "urn:infai:ses:aspect:4e4e-AspectTest", Name: "Lighting"}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:controlling-function:5e5e1-AspectTest", Name: "brightnessAdjustment1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:5e5e1-AspectTest", Name: "brightnessAdjustment1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:controlling-function:5e5e2-AspectTest", Name: "brightnessAdjustment2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:5e5e2-AspectTest", Name: "brightnessAdjustment2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:measuring-function:5e5e3-AspectTest", Name: "brightnessFunction4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:5e5e3-AspectTest", Name: "brightnessFunction4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:measuring-function:5e5e4-AspectTest", Name: "brightnessFunction2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:5e5e4-AspectTest", Name: "brightnessFunction2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -233,22 +234,22 @@ func testReadAspectMeasuringFunctions(con *controller.Controller) func(t *testin
 
 func test_2_ProduceDeviceTypeforAspectTest(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		devicetype := model.DeviceType{}
+		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:devicetype:08-01-20"
 		devicetype.Name = "Philips Hue Color"
 		devicetype.DeviceClassId = "urn:infai:ses:deviceclass:08-01-20"
 		devicetype.Description = "description"
-		devicetype.Services = []model.Service{}
+		devicetype.Services = []models.Service{}
 
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:08-01-20_1",
 			LocalId:    "localId",
 			Name:       "setBrightness",
 			ProtocolId: "urn:infai:ses:protocol:asdasda",
-			Inputs: []model.Content{
+			Inputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:08-01-20_1",
 								FunctionId: "urn:infai:ses:controlling-function:08-01-20_1",
@@ -259,20 +260,20 @@ func test_2_ProduceDeviceTypeforAspectTest(producer *producer.Producer) func(t *
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
 		})
-		devicetype.Services = append(devicetype.Services, model.Service{
+		devicetype.Services = append(devicetype.Services, models.Service{
 			Id:         "urn:infai:ses:service:08-01-20_2",
 			LocalId:    "localId",
 			Name:       "setBrightness",
 			ProtocolId: "urn:infai:ses:protocol:asdasda",
-			Outputs: []model.Content{
+			Outputs: []models.Content{
 				{
-					ContentVariable: model.ContentVariable{
-						SubContentVariables: []model.ContentVariable{
+					ContentVariable: models.ContentVariable{
+						SubContentVariables: []models.ContentVariable{
 							{
 								AspectId:   "urn:infai:ses:aspect:08-01-20_2",
 								FunctionId: "urn:infai:ses:measuring-function:08-01-20_3",
@@ -283,7 +284,7 @@ func test_2_ProduceDeviceTypeforAspectTest(producer *producer.Producer) func(t *
 							},
 						},
 					},
-					Serialization:     model.JSON,
+					Serialization:     models.JSON,
 					ProtocolSegmentId: "",
 				},
 			},
@@ -294,27 +295,27 @@ func test_2_ProduceDeviceTypeforAspectTest(producer *producer.Producer) func(t *
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishAspect(model.Aspect{Id: "urn:infai:ses:aspect:08-01-20_1", Name: "aspect1"}, "sdfsdfdsds")
+		err = producer.PublishAspect(models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_1", Name: "aspect1"}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishAspect(model.Aspect{Id: "urn:infai:ses:aspect:08-01-20_2", Name: "aspect2"}, "sdfsdfdsds")
+		err = producer.PublishAspect(models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_2", Name: "aspect2"}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:controlling-function:08-01-20_1", Name: "func1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_1", Name: "func1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:controlling-function:08-01-20_2", Name: "func2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_2", Name: "func2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:measuring-function:08-01-20_3", Name: "func3", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_3", Name: "func3", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(model.Function{Id: "urn:infai:ses:measuring-function:08-01-20_4", Name: "func4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_4", Name: "func4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
 		if err != nil {
 			t.Fatal(err)
 		}

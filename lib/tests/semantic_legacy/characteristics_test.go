@@ -20,8 +20,8 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
 	"time"
@@ -70,17 +70,17 @@ func TestSpecialCaseCharacteristics(t *testing.T) {
 
 func testProduceValidCharacteristic1(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristic := model.Characteristic{}
+		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:1d1e1f"
 		characteristic.Name = "struct1"
 		characteristic.DisplayUnit = "°C"
-		characteristic.Type = model.Structure
-		characteristic.SubCharacteristics = []model.Characteristic{{
+		characteristic.Type = models.Structure
+		characteristic.SubCharacteristics = []models.Characteristic{{
 			Id:                 "urn:infai:ses:characteristic:2r2r2r",
 			MinValue:           -2,
 			MaxValue:           3,
 			Value:              2.2,
-			Type:               model.Float,
+			Type:               models.Float,
 			Name:               "charFloat",
 			SubCharacteristics: nil,
 		}, {
@@ -88,15 +88,15 @@ func testProduceValidCharacteristic1(producer *producer.Producer) func(t *testin
 			MinValue: nil,
 			MaxValue: nil,
 			Value:    nil,
-			Type:     model.Structure,
+			Type:     models.Structure,
 			Name:     "charInnerStructure1",
-			SubCharacteristics: []model.Characteristic{
+			SubCharacteristics: []models.Characteristic{
 				{
 					Id:                 "urn:infai:ses:characteristic:4z4z4z",
 					MinValue:           nil,
 					MaxValue:           nil,
 					Value:              true,
-					Type:               model.Boolean,
+					Type:               models.Boolean,
 					Name:               "charBoolean",
 					SubCharacteristics: nil}},
 		}}
@@ -109,11 +109,11 @@ func testProduceValidCharacteristic1(producer *producer.Producer) func(t *testin
 
 func testProduceValidCharacteristic2(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristic := model.Characteristic{}
+		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:4711111-20.03.2020"
 		characteristic.Name = "bool"
 		characteristic.DisplayUnit = "°F"
-		characteristic.Type = model.Boolean
+		characteristic.Type = models.Boolean
 		err := producer.PublishCharacteristic(characteristic, "sdfdsfsf")
 		if err != nil {
 			t.Fatal(err)
@@ -123,10 +123,10 @@ func testProduceValidCharacteristic2(producer *producer.Producer) func(t *testin
 
 func testProduceValidCharacteristic3(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristic := model.Characteristic{}
+		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:1111111-30.03.2021"
 		characteristic.Name = "µg/m³"
-		characteristic.Type = model.Boolean
+		characteristic.Type = models.Boolean
 		err := producer.PublishCharacteristic(characteristic, "sdfdsfsf")
 		if err != nil {
 			t.Fatal(err)
@@ -148,7 +148,7 @@ func testReadCharacteristic1(con *controller.Controller) func(t *testing.T) {
 			if characteristic.DisplayUnit != "°C" {
 				t.Fatal("wrong display unit:", characteristic.DisplayUnit)
 			}
-			if characteristic.Type != model.Structure {
+			if characteristic.Type != models.Structure {
 				t.Fatal("wrong Type")
 			}
 			if characteristic.Value != nil {
@@ -167,7 +167,7 @@ func testReadCharacteristic1(con *controller.Controller) func(t *testing.T) {
 			if characteristic.SubCharacteristics[0].Name != "charFloat" {
 				t.Fatal("wrong id")
 			}
-			if characteristic.SubCharacteristics[0].Type != model.Float {
+			if characteristic.SubCharacteristics[0].Type != models.Float {
 				t.Fatal("wrong id")
 			}
 			if characteristic.SubCharacteristics[0].Value != 2.2 {
@@ -189,7 +189,7 @@ func testReadCharacteristic1(con *controller.Controller) func(t *testing.T) {
 			if characteristic.SubCharacteristics[1].Name != "charInnerStructure1" {
 				t.Fatal("wrong id")
 			}
-			if characteristic.SubCharacteristics[1].Type != model.Structure {
+			if characteristic.SubCharacteristics[1].Type != models.Structure {
 				t.Fatal("wrong id")
 			}
 			if characteristic.SubCharacteristics[1].Value != nil {
@@ -208,7 +208,7 @@ func testReadCharacteristic1(con *controller.Controller) func(t *testing.T) {
 			if characteristic.SubCharacteristics[1].SubCharacteristics[0].Name != "charBoolean" {
 				t.Fatal("wrong id")
 			}
-			if characteristic.SubCharacteristics[1].SubCharacteristics[0].Type != model.Boolean {
+			if characteristic.SubCharacteristics[1].SubCharacteristics[0].Type != models.Boolean {
 				t.Fatal("wrong id")
 			}
 			if characteristic.SubCharacteristics[1].SubCharacteristics[0].Value != true {

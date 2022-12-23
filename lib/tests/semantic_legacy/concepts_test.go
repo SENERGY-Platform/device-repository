@@ -20,8 +20,8 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
 	"time"
@@ -54,7 +54,7 @@ func TestConcepts(t *testing.T) {
 
 func testProduceValidConcept1withCharIdAndBaseCharId(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		concept := model.Concept{}
+		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a1-28-11-2019"
 		concept.Name = "color1"
 		concept.BaseCharacteristicId = "urn:ses:infai:characteristic:544433333"
@@ -68,7 +68,7 @@ func testProduceValidConcept1withCharIdAndBaseCharId(producer *producer.Producer
 
 func testProduceValidConcept1withNoCharId(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		concept := model.Concept{}
+		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a"
 		concept.Name = "color1"
 		concept.CharacteristicIds = nil
@@ -81,7 +81,7 @@ func testProduceValidConcept1withNoCharId(producer *producer.Producer) func(t *t
 
 func testProduceValidConcept1withCharId(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		concept := model.Concept{}
+		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a"
 		concept.Name = "color1"
 		concept.CharacteristicIds = []string{"urn:ses:infai:characteristic:544433333"}
@@ -95,16 +95,16 @@ func testProduceValidConcept1withCharId(producer *producer.Producer) func(t *tes
 
 func testProduceValidCharacteristicDependencie(producer *producer.Producer) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristic := model.Characteristic{}
+		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:544433333"
 		characteristic.Name = "struct1"
-		characteristic.Type = model.Structure
-		characteristic.SubCharacteristics = []model.Characteristic{{
+		characteristic.Type = models.Structure
+		characteristic.SubCharacteristics = []models.Characteristic{{
 			Id:                 "urn:infai:ses:characteristic:123456789999",
 			MinValue:           -2,
 			MaxValue:           3,
 			Value:              2.2,
-			Type:               model.Float,
+			Type:               models.Float,
 			Name:               "charFloat",
 			SubCharacteristics: nil,
 		}}

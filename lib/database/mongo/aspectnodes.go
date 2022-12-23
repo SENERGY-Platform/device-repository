@@ -19,7 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -35,19 +35,19 @@ var aspectNodeAncestorIdsFieldName, aspectNodeAncestorIdsKey = "AncestorIds", ""
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		aspectNodeIdKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeIdFieldName)
+		aspectNodeIdKey, err = getBsonFieldName(models.AspectNode{}, aspectNodeIdFieldName)
 		if err != nil {
 			return err
 		}
-		aspectNodeRootIdKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeRootIdFieldName)
+		aspectNodeRootIdKey, err = getBsonFieldName(models.AspectNode{}, aspectNodeRootIdFieldName)
 		if err != nil {
 			return err
 		}
-		aspectNodeDescendentIdsKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeDescendentIdsFieldName)
+		aspectNodeDescendentIdsKey, err = getBsonFieldName(models.AspectNode{}, aspectNodeDescendentIdsFieldName)
 		if err != nil {
 			return err
 		}
-		aspectNodeAncestorIdsKey, err = getBsonFieldName(model.AspectNode{}, aspectNodeAncestorIdsFieldName)
+		aspectNodeAncestorIdsKey, err = getBsonFieldName(models.AspectNode{}, aspectNodeAncestorIdsFieldName)
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func (this *Mongo) aspectNodeCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(getAspectNodeCollectionName(this.config))
 }
 
-func (this *Mongo) GetAspectNode(ctx context.Context, id string) (aspectNode model.AspectNode, exists bool, err error) {
+func (this *Mongo) GetAspectNode(ctx context.Context, id string) (aspectNode models.AspectNode, exists bool, err error) {
 	result := this.aspectNodeCollection().FindOne(ctx, bson.M{aspectNodeIdKey: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
@@ -97,7 +97,7 @@ func (this *Mongo) GetAspectNode(ctx context.Context, id string) (aspectNode mod
 	return aspectNode, true, err
 }
 
-func (this *Mongo) SetAspectNode(ctx context.Context, aspectNode model.AspectNode) error {
+func (this *Mongo) SetAspectNode(ctx context.Context, aspectNode models.AspectNode) error {
 	//_, err := this.aspectNodeCollection().InsertOne(ctx, aspectNode)
 	_, err := this.aspectNodeCollection().ReplaceOne(ctx, bson.M{aspectNodeIdKey: aspectNode.Id}, aspectNode, options.Replace().SetUpsert(true))
 	return err
@@ -108,14 +108,14 @@ func (this *Mongo) RemoveAspectNodesByRootId(ctx context.Context, id string) err
 	return err
 }
 
-func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []model.AspectNode, err error) {
+func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []models.AspectNode, err error) {
 	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
 	if err != nil {
 		return nil, err
 	}
-	result = []model.AspectNode{}
+	result = []models.AspectNode{}
 	for cursor.Next(context.Background()) {
-		aspectNode := model.AspectNode{}
+		aspectNode := models.AspectNode{}
 		err = cursor.Decode(&aspectNode)
 		if err != nil {
 			return nil, err
@@ -127,8 +127,8 @@ func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []model.Aspec
 	return
 }
 
-//returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
-func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []model.AspectNode, err error) {
+// returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.AspectNode, err error) {
 	aspectNodeIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.AspectId, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
 		DeviceTypeCriteriaBson.AspectId:            bson.M{"$exists": true, "$ne": ""},
@@ -149,9 +149,9 @@ func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, anc
 	if err != nil {
 		return nil, err
 	}
-	result = []model.AspectNode{}
+	result = []models.AspectNode{}
 	for cursor.Next(context.Background()) {
-		aspectNode := model.AspectNode{}
+		aspectNode := models.AspectNode{}
 		err = cursor.Decode(&aspectNode)
 		if err != nil {
 			return nil, err
@@ -163,20 +163,20 @@ func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, anc
 	return
 }
 
-func sortSubIds(a *model.AspectNode) {
+func sortSubIds(a *models.AspectNode) {
 	sort.Strings(a.DescendentIds)
 	sort.Strings(a.AncestorIds)
 	sort.Strings(a.ChildIds)
 }
 
-func (this *Mongo) ListAspectNodesByIdList(ctx context.Context, ids []string) (result []model.AspectNode, err error) {
+func (this *Mongo) ListAspectNodesByIdList(ctx context.Context, ids []string) (result []models.AspectNode, err error) {
 	cursor, err := this.aspectNodeCollection().Find(ctx, bson.M{aspectNodeIdKey: bson.M{"$in": ids}}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
 	if err != nil {
 		return nil, err
 	}
-	result = []model.AspectNode{}
+	result = []models.AspectNode{}
 	for cursor.Next(context.Background()) {
-		aspectNode := model.AspectNode{}
+		aspectNode := models.AspectNode{}
 		err = cursor.Decode(&aspectNode)
 		if err != nil {
 			return nil, err

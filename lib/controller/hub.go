@@ -19,6 +19,7 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -28,7 +29,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ReadHub(id string, token string, action model.AuthAction) (result model.Hub, err error, errCode int) {
+func (this *Controller) ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	hub, exists, err := this.db.GetHub(ctx, id)
 	if err != nil {
@@ -78,7 +79,7 @@ func (this *Controller) ListHubDeviceIds(id string, token string, action model.A
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateHub(hub model.Hub) (err error, code int) {
+func (this *Controller) ValidateHub(hub models.Hub) (err error, code int) {
 	if hub.Id == "" {
 		return errors.New("missing hub id"), http.StatusBadRequest
 	}
@@ -105,7 +106,7 @@ func (this *Controller) ValidateHub(hub model.Hub) (err error, code int) {
 //		source
 /////////////////////////
 
-func (this *Controller) SetHub(hub model.Hub, owner string) (err error) {
+func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 	if hub.Id == "" {
 		log.Println("ERROR: received hub without id")
 		return nil
@@ -120,7 +121,7 @@ func (this *Controller) SetHub(hub model.Hub, owner string) (err error) {
 		hub.Hash = ""
 		return this.producer.PublishHub(hub)
 	}
-	hubIndex := map[string]model.Hub{}
+	hubIndex := map[string]models.Hub{}
 	for _, lid := range hub.DeviceLocalIds {
 		ctx, _ := getTimeoutContext()
 		hubs, err := this.db.GetHubsByDeviceLocalId(ctx, lid)

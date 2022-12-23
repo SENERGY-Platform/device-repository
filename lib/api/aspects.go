@@ -22,7 +22,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
@@ -37,7 +37,7 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 	resource := "/aspects"
 
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		var result []model.Aspect
+		var result []models.Aspect
 		var err error
 		var errCode int
 
@@ -110,7 +110,7 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		aspect := model.Aspect{}
+		aspect := models.Aspect{}
 		err = json.NewDecoder(request.Body).Decode(&aspect)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
