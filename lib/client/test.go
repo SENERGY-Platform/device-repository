@@ -17,7 +17,6 @@
 package client
 
 import (
-	"flag"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
@@ -26,18 +25,31 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 )
 
-func NewTestClient() (ctrl Interface, db database.Database, err error) {
-	configLocation := flag.String("config", "../../config.json", "configuration file")
-	flag.Parse()
-
-	conf, err := config.Load(*configLocation)
-	if err != nil {
-		return nil, nil, err
-	}
+func NewTestClient() (ctrl Interface, db database.Database, sec *mocks.Security, err error) {
 	db = testdb.NewTestDB()
-	ctrl, err = controller.New(conf, db, mocks.NewSecurity(), semantic_legacy.VoidProducerMock{})
+	sec = mocks.NewSecurity()
+	ctrl, err = controller.New(config.Config{
+		ServerPort:                               "8080",
+		DeviceTopic:                              "devices",
+		DeviceTypeTopic:                          "device-types",
+		DeviceGroupTopic:                         "device-groups",
+		HubTopic:                                 "hubs",
+		ProtocolTopic:                            "protocols",
+		ConceptTopic:                             "concepts",
+		CharacteristicTopic:                      "characteristics",
+		AspectTopic:                              "aspects",
+		FunctionTopic:                            "functions",
+		DeviceClassTopic:                         "device-classes",
+		LocationTopic:                            "locations",
+		Debug:                                    true,
+		DisableKafkaConsumer:                     false,
+		DisableHttpApi:                           false,
+		HttpClientTimeout:                        "30s",
+		FatalErrHandler:                          nil,
+		DeviceServiceGroupSelectionAllowNotFound: true,
+	}, db, sec, semantic_legacy.VoidProducerMock{})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return ctrl, db, nil
+	return ctrl, db, sec, nil
 }
