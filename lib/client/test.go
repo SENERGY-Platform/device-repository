@@ -18,7 +18,6 @@ package client
 
 import (
 	"flag"
-	"github.com/SENERGY-Platform/device-repository/lib/api"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
@@ -27,7 +26,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 )
 
-func NewTestClient() (ctrl api.Controller, db database.Database, err error) {
+func NewTestClient() (ctrl Interface, db database.Database, err error) {
 	configLocation := flag.String("config", "../../config.json", "configuration file")
 	flag.Parse()
 

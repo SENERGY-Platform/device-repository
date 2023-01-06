@@ -19,16 +19,19 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
+	"io"
 	"net/http"
 )
+
+type Interface = api.Controller
 
 type Client struct {
 	baseUrl string
 }
 
-func NewClient(baseUrl string) api.Controller {
+func NewClient(baseUrl string) Interface {
 	return &Client{baseUrl: baseUrl}
 }
 
@@ -37,11 +40,14 @@ func do[T any](req *http.Request) (result T, err error, code int) {
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode > 299 {
-		return result, errors.New("unexpected statuscode"), resp.StatusCode
+		temp, _ := io.ReadAll(resp.Body) //read error response end ensure that resp.Body is read to EOF
+		return result, fmt.Errorf("unexpected statuscode %v: %v", resp.StatusCode, string(temp)), resp.StatusCode
 	}
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
+		_, _ = io.ReadAll(resp.Body) //ensure resp.Body is read to EOF
 		return result, err, http.StatusInternalServerError
 	}
 	return
