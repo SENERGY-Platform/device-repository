@@ -16,7 +16,12 @@
 
 package model
 
+// Constraints
+
+const SenergyConnectorLocalIdConstraint = "senergy_connector_local_id"
+
 // Classes
+
 const SES_ONTOLOGY_CONTROLLING_FUNCTION = "https://senergy.infai.org/ontology/ControllingFunction"
 const SES_ONTOLOGY_MEASURING_FUNCTION = "https://senergy.infai.org/ontology/MeasuringFunction"
 const SES_ONTOLOGY_DEVICE_CLASS = "https://senergy.infai.org/ontology/DeviceClass"
@@ -29,6 +34,7 @@ const SES_ONTOLOGY_COUNT = "https://senergy.infai.org/ontology/Count"
 const SES_ONTOLOGY_LOCATION = "https://senergy.infai.org/ontology/Location"
 
 // Properties
+
 const SES_ONTOLOGY_HAS_CONCEPT = "https://senergy.infai.org/ontology/hasConcept"
 const SES_ONTOLOGY_HAS_CHARACTERISTIC = "https://senergy.infai.org/ontology/hasCharacteristic"
 const SES_ONTOLOGY_HAS_BASE_CHARACTERISTIC = "https://senergy.infai.org/ontology/hasBaseCharacteristic"

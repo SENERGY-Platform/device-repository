@@ -16,8 +16,10 @@
 
 package model
 
-import "strings"
-import "github.com/SENERGY-Platform/models/go/models"
+import (
+	"github.com/SENERGY-Platform/models/go/models"
+	"strings"
+)
 
 func SetFunctionRdfType(function *models.Function) {
 	if strings.HasPrefix(function.Id, URN_PREFIX+"controlling-function:") {

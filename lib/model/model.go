@@ -66,3 +66,19 @@ type Configurable struct {
 	Value            interface{}       `json:"value,omitempty"`
 	Type             models.Type       `json:"type,omitempty"`
 }
+
+type FunctionList struct {
+	Functions  []models.Function `json:"functions"`
+	TotalCount int               `json:"total_count"`
+}
+
+type TotalCount struct {
+	TotalCount int `json:"total_count"`
+}
+
+type FilterCriteria struct {
+	Interaction   models.Interaction `json:"interaction"`
+	FunctionId    string             `json:"function_id"`
+	DeviceClassId string             `json:"device_class_id"`
+	AspectId      string             `json:"aspect_id"`
+}
