@@ -266,15 +266,28 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 		return result, err
 	}
 	groupByDeviceType := map[string][]model.DeviceTypeCriteria{}
+	serviceCriteriaCount := map[string]int{}
 	for _, criteria := range query {
 		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria, includeModified)
 		if err != nil {
 			return result, err
 		}
+		serviceIndex := map[string]bool{}
 		for _, element := range dtCriteria {
 			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], element)
+			serviceIndex[element.ServiceId] = true
+		}
+		for sid, _ := range serviceIndex {
+			serviceCriteriaCount[sid] = serviceCriteriaCount[sid] + 1
 		}
 	}
+	validService := map[string]bool{}
+	for sid, count := range serviceCriteriaCount {
+		if count == len(query) {
+			validService[sid] = true
+		}
+	}
+
 	aspectCache := &map[string]models.AspectNode{}
 	for dtId, dtCriteria := range groupByDeviceType {
 		dt, err, _ := this.readDeviceType(dtId)
@@ -288,27 +301,29 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 		}
 		usedPaths := map[string]map[string]bool{}
 		for _, criteria := range dtCriteria {
-			aspectNode, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, criteria.AspectId)
-			if err != nil {
-				return result, err
-			}
-			if _, ok := usedPaths[criteria.ServiceId]; !ok {
-				usedPaths[criteria.ServiceId] = map[string]bool{}
-			}
-			if !usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] {
-				usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] = true
-				element.ServicePathOptions[criteria.ServiceId] = append(element.ServicePathOptions[criteria.ServiceId], model.ServicePathOption{
-					ServiceId:             criteria.ServiceId,
-					Path:                  pathPrefix + criteria.ContentVariablePath,
-					CharacteristicId:      criteria.CharacteristicId,
-					AspectNode:            aspectNode,
-					FunctionId:            criteria.FunctionId,
-					IsVoid:                criteria.IsVoid,
-					Value:                 criteria.Value,
-					Type:                  criteria.Type,
-					IsControllingFunction: criteria.IsControllingFunction,
-					Interaction:           models.Interaction(criteria.Interaction),
-				})
+			if validService[criteria.ServiceId] {
+				aspectNode, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, criteria.AspectId)
+				if err != nil {
+					return result, err
+				}
+				if _, ok := usedPaths[criteria.ServiceId]; !ok {
+					usedPaths[criteria.ServiceId] = map[string]bool{}
+				}
+				if !usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] {
+					usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] = true
+					element.ServicePathOptions[criteria.ServiceId] = append(element.ServicePathOptions[criteria.ServiceId], model.ServicePathOption{
+						ServiceId:             criteria.ServiceId,
+						Path:                  pathPrefix + criteria.ContentVariablePath,
+						CharacteristicId:      criteria.CharacteristicId,
+						AspectNode:            aspectNode,
+						FunctionId:            criteria.FunctionId,
+						IsVoid:                criteria.IsVoid,
+						Value:                 criteria.Value,
+						Type:                  criteria.Type,
+						IsControllingFunction: criteria.IsControllingFunction,
+						Interaction:           models.Interaction(criteria.Interaction),
+					})
+				}
 			}
 		}
 		for sid, options := range element.ServicePathOptions {
