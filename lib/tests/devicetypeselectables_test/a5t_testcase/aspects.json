@@ -1,0 +1,375 @@
+[
+    {
+        "id": "urn:infai:ses:aspect:1273e874-355b-48af-9e82-1aa5f8a52307",
+        "name": "Cleaning",
+        "sub_aspects": [
+            {
+                "id": "urn:infai:ses:aspect:113c86a1-6292-4d6e-a7ad-d58f12b2211c",
+                "name": "Zone Cleaning",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:4f6b9747-1d30-4db1-bbf8-c5904db32771",
+                "name": "Segment Cleaning",
+                "sub_aspects": null
+            }
+        ]
+    },
+    {
+        "id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+        "name": "Electricity",
+        "sub_aspects": [
+            {
+                "id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "name": "Consumption",
+                "sub_aspects": [
+                    {
+                        "id": "urn:infai:ses:aspect:4e110c6a-6cdd-4a25-9eb9-dbeec5e3c22c",
+                        "name": "Phase 1",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:e878a59a-248f-440e-b631-ccf1af8210f2",
+                        "name": "Phase 2",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:d0385a96-d9e7-45e0-8c0d-df6e97a8da05",
+                        "name": "Phase 3",
+                        "sub_aspects": []
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:b58c91a8-0db3-44df-a66e-94d438dea97e",
+                        "name": "Gross",
+                        "sub_aspects": []
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:34fdb3f7-5366-4746-82a1-89b0ca90263f",
+                        "name": "Net",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba",
+                        "name": "Today",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:fdc999eb-d366-44e8-9d24-bfd48d5fece1",
+                        "name": "Total",
+                        "sub_aspects": null
+                    }
+                ]
+            },
+            {
+                "id": "urn:infai:ses:aspect:fa09fdeb-3dbe-42ca-9404-1ee9380bce2f",
+                "name": "Generation",
+                "sub_aspects": [
+                    {
+                        "id": "urn:infai:ses:aspect:57270d1f-0e86-4d5b-9173-b9d9a56fe919",
+                        "name": "Gross",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:9f2c8ddf-47e9-42a0-9278-68ca21668abd",
+                        "name": "Net",
+                        "sub_aspects": null
+                    }
+                ]
+            },
+            {
+                "id": "urn:infai:ses:aspect:1d9b500c-3d24-4374-a9a5-bb0d400c4233",
+                "name": "Delta",
+                "sub_aspects": null
+            }
+        ]
+    },
+    {
+        "id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+        "name": "Button",
+        "sub_aspects": null
+    },
+    {
+        "id": "urn:infai:ses:aspect:60f8f6a6-c0e0-4fc3-9c11-bf2ccef1ed11",
+        "name": "HVAC",
+        "sub_aspects": [
+            {
+                "id": "urn:infai:ses:aspect:1d69d3b6-d16f-430c-bf58-f23b26cd84c4",
+                "name": "Heating",
+                "sub_aspects": [
+                    {
+                        "id": "urn:infai:ses:aspect:78c065bf-3d73-461a-99c7-2be05168e6f3",
+                        "name": "Wiper",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:97ce06b8-76cd-4b04-8f43-45cd499e923b",
+                        "name": "Defroster",
+                        "sub_aspects": [
+                            {
+                                "id": "urn:infai:ses:aspect:a098cb37-3759-4570-bc6b-d8b067012701",
+                                "name": "Front",
+                                "sub_aspects": null
+                            },
+                            {
+                                "id": "urn:infai:ses:aspect:b73e4438-044b-407e-9555-443474ef91d9",
+                                "name": "Back",
+                                "sub_aspects": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:4714a814-dbb9-4132-8a2e-fa85660dccec",
+                        "name": "Mirror",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:a83cd1a7-12c2-460f-90d2-051c1880c138",
+                        "name": "Steering Wheel",
+                        "sub_aspects": null
+                    }
+                ]
+            },
+            {
+                "id": "urn:infai:ses:aspect:3288e184-dd53-48bb-810b-146a44088199",
+                "name": "Cooling",
+                "sub_aspects": []
+            },
+            {
+                "id": "urn:infai:ses:aspect:efabc932-ba9f-4ca1-b935-06830879053b",
+                "name": "Vent",
+                "sub_aspects": [
+                    {
+                        "id": "urn:infai:ses:aspect:6e7c50b0-9c46-4f8a-ad28-b0a4199585b1",
+                        "name": "Driver",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:f4275e0f-513c-441d-9dc1-e81a3d7b5a26",
+                        "name": "Passenger",
+                        "sub_aspects": null
+                    }
+                ]
+            },
+            {
+                "id": "urn:infai:ses:aspect:ac049c69-8e88-4306-817d-fb1fa10885e5",
+                "name": "Seat",
+                "sub_aspects": [
+                    {
+                        "id": "urn:infai:ses:aspect:5b00764e-2470-400c-ae0c-d84ac10dd32d",
+                        "name": "Driver",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:7186cbff-ca46-4ea0-a892-0765c0633cb1",
+                        "name": "Passenger",
+                        "sub_aspects": null
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "urn:infai:ses:aspect:6e392b35-8781-4e62-ba49-45f11ef9b3cb",
+        "name": "Soil",
+        "sub_aspects": null
+    },
+    {
+        "id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+        "name": "Device",
+        "sub_aspects": [
+            {
+                "id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "name": "Components",
+                "sub_aspects": [
+                    {
+                        "id": "urn:infai:ses:aspect:502ebd61-81b8-44d0-840e-d30cf35adec9",
+                        "name": "Consumables",
+                        "sub_aspects": [
+                            {
+                                "id": "urn:infai:ses:aspect:5ca16f66-4c24-4e1a-86f8-858ae068b8f5",
+                                "name": "Brush",
+                                "sub_aspects": [
+                                    {
+                                        "id": "urn:infai:ses:aspect:5fe2556e-a994-4e92-ade2-67f3a8762d3b",
+                                        "name": "Main Brush",
+                                        "sub_aspects": null
+                                    },
+                                    {
+                                        "id": "urn:infai:ses:aspect:c46eaf2f-2cfa-43c4-9381-eff0e6c77b7c",
+                                        "name": "Side Brush Right",
+                                        "sub_aspects": null
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "urn:infai:ses:aspect:5dedc63a-747a-4654-a615-bad26582431e",
+                                "name": "Filter",
+                                "sub_aspects": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                        "name": "Battery",
+                        "sub_aspects": [
+                            {
+                                "id": "urn:infai:ses:aspect:77080edb-989f-4232-ac12-794f993e64bd",
+                                "name": "Charge Port",
+                                "sub_aspects": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:934b0058-37f3-44bb-bf65-e6be660a5bbd",
+                        "name": "Key",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:1ee9eb2e-38ee-4e71-ae1a-da9a436900b9",
+                        "name": "Roof",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:336da506-5c9b-4167-8883-f0d134e463d6",
+                        "name": "Horn",
+                        "sub_aspects": null
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:5443e04a-8246-457a-8cde-1d2389e128fd",
+                        "name": "Valve",
+                        "sub_aspects": [
+                            {
+                                "id": "urn:infai:ses:aspect:d941de3a-49e6-4daa-8f71-f988db27acbd",
+                                "name": "Valve 1",
+                                "sub_aspects": null
+                            },
+                            {
+                                "id": "urn:infai:ses:aspect:c86b5629-593c-4687-ad12-33a9236839ea",
+                                "name": "Valve 2",
+                                "sub_aspects": null
+                            }
+                        ]
+                    },
+                    {
+                        "id": "urn:infai:ses:aspect:7c931f9e-230d-42ec-9700-34fb719b6394",
+                        "name": "Panels",
+                        "sub_aspects": [
+                            {
+                                "id": "urn:infai:ses:aspect:7343ccf8-a5c6-4a98-9063-4fa76b84e3eb",
+                                "name": "Panel 0",
+                                "sub_aspects": null
+                            },
+                            {
+                                "id": "urn:infai:ses:aspect:8209a4f7-a914-40b5-842c-2adb22a35461",
+                                "name": "Panel 1",
+                                "sub_aspects": null
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "urn:infai:ses:aspect:91ddc15c-8498-4e3e-bcb3-25d5152676a6",
+        "name": "Sound",
+        "sub_aspects": null
+    },
+    {
+        "id": "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
+        "name": "Air",
+        "sub_aspects": [
+            {
+                "id": "urn:infai:ses:aspect:f65876d6-77db-4123-b38b-f0eef5169378",
+                "name": "Indoor",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:6eb3fb38-3592-4e2c-b2e2-5e303ddc55c0",
+                "name": "Outdoor",
+                "sub_aspects": null
+            }
+        ]
+    },
+    {
+        "id": "urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6",
+        "name": "Lighting",
+        "sub_aspects": null
+    },
+    {
+        "id": "urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9",
+        "name": "Presence",
+        "sub_aspects": null
+    },
+    {
+        "id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+        "name": "Water",
+        "sub_aspects": null
+    },
+    {
+        "id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+        "name": "Door/Window",
+        "sub_aspects": [
+            {
+                "id": "urn:infai:ses:aspect:d30940b6-b043-4730-abe9-1ad362f2b57d",
+                "name": "Driver Front Door",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:719d27b7-271b-4d19-ac35-2308b71af20e",
+                "name": "Driver Rear Door",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:2b49f7e9-7f6b-4016-8050-9a6089695cc3",
+                "name": "Passenger Front Door",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:edec6d51-e60b-4d80-bc1a-cd141c5fa284",
+                "name": "Passenger Rear Door",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:e8d3e5c7-e1d7-4871-9e00-0ad98329dcbd",
+                "name": "Front Trunk",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:54447448-29e3-468f-b0f9-6a15af4c25f1",
+                "name": "Rear Trunk",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:38fbf78c-60db-4e23-af23-8a197aa800c3",
+                "name": "Driver Front Window",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:fbcff13f-2d44-4537-a5f1-b183163d819a",
+                "name": "Driver Rear Window",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:c60c6be2-b442-41ea-b189-abe6a3854ea4",
+                "name": "Passenger Front Window",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:8e44d14d-782c-4d66-be7a-7ff135047a18",
+                "name": "Passenger Rear Window",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:f30ef87a-988f-4714-8cc0-5c8a58e0ff14",
+                "name": "Main Door",
+                "sub_aspects": null
+            },
+            {
+                "id": "urn:infai:ses:aspect:2b98a066-14f4-4f97-95f3-2de4fc0554ad",
+                "name": "Apartment Door",
+                "sub_aspects": null
+            }
+        ]
+    }
+]

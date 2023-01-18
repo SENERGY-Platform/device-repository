@@ -88,7 +88,18 @@ func DeviceTypeSelectableEndpoints(config config.Config, control Controller, rou
 				return
 			}
 		}
-		result, err, errCode := control.GetDeviceTypeSelectablesV2(query, pathPrefix, includeModified)
+
+		servicesMustMatchAllCriteriaStr := request.URL.Query().Get("services_must_match_all_criteria")
+		servicesMustMatchAllCriteria := false
+		if servicesMustMatchAllCriteriaStr != "" {
+			servicesMustMatchAllCriteria, err = strconv.ParseBool(servicesMustMatchAllCriteriaStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		result, err, errCode := control.GetDeviceTypeSelectablesV2(query, pathPrefix, includeModified, servicesMustMatchAllCriteria)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

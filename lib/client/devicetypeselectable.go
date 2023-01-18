@@ -38,13 +38,13 @@ func (c *Client) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPref
 	return do[[]model.DeviceTypeSelectable](req)
 }
 
-func (c *Client) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int) {
+func (c *Client) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int) {
 	body, err := json.Marshal(query)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/v2/query/device-type-selectables?path-prefix="+pathPrefix+
-		"&include_id_modified="+strconv.FormatBool(includeModified), bytes.NewBuffer(body))
+		"&include_id_modified="+strconv.FormatBool(includeModified)+"&services_must_match_all_criteria="+strconv.FormatBool(servicesMustMatchAllCriteria), bytes.NewBuffer(body))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

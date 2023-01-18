@@ -2729,6 +2729,64 @@ func createTestMetadata(config config.Config, interaction models.Interaction) fu
 	}
 }
 
+func createTestMetadataFromString(config config.Config, deviceTypesStr string, aspectsStr string, functionsStr string) func(t *testing.T) {
+	return func(t *testing.T) {
+		aspects := []models.Aspect{}
+		functions := []models.Function{}
+		devicetypes := []models.DeviceType{}
+
+		err := json.Unmarshal([]byte(deviceTypesStr), &devicetypes)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		err = json.Unmarshal([]byte(functionsStr), &functions)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		err = json.Unmarshal([]byte(aspectsStr), &aspects)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		producer, err := testutils.NewPublisher(config)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		for _, aspect := range aspects {
+			err = producer.PublishAspect(aspect, testenv.Userid)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+
+		for _, function := range functions {
+			err = producer.PublishFunction(function, testenv.Userid)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+
+		for _, dt := range devicetypes {
+			err = producer.PublishDeviceType(dt, testenv.Userid)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+
+		time.Sleep(5 * time.Second)
+	}
+}
+
 func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,

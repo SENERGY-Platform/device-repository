@@ -169,10 +169,10 @@ func (this *Controller) GetDeviceTypeSelectables(query []model.FilterCriteria, p
 	return
 }
 
-func (this *Controller) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int) {
+func (this *Controller) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()
-	result, err = this.getDeviceTypeSelectablesV2(ctx, query, pathPrefix, includeModified)
+	result, err = this.getDeviceTypeSelectablesV2(ctx, query, pathPrefix, includeModified, servicesMustMatchAllCriteria)
 	if err != nil {
 		code = http.StatusInternalServerError
 	}
@@ -258,7 +258,7 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 	return result, nil
 }
 
-func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool) (result []model.DeviceTypeSelectable, err error) {
+func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error) {
 	result = []model.DeviceTypeSelectable{}
 
 	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteriaV2(ctx, query, includeModified)
@@ -301,7 +301,7 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 		}
 		usedPaths := map[string]map[string]bool{}
 		for _, criteria := range dtCriteria {
-			if validService[criteria.ServiceId] {
+			if !servicesMustMatchAllCriteria || validService[criteria.ServiceId] {
 				aspectNode, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, criteria.AspectId)
 				if err != nil {
 					return result, err

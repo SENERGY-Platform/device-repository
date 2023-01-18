@@ -1,0 +1,17 @@
+[
+    {
+        "device_type_id": "urn:infai:ses:device-type:caa11b1e-1348-40ff-a62f-2646404fabb4"
+    },
+    {
+        "device_type_id": "urn:infai:ses:device-type:caa11b1e-1348-40ff-a62f-2646404fabb4$service_group_selection=90ab05ce-76fe-40dc-8ecd-9ff4ad0e3172"
+    },
+    {
+        "device_type_id": "urn:infai:ses:device-type:caa11b1e-1348-40ff-a62f-2646404fabb4$service_group_selection=a602db7f-4d68-4437-9d91-f51f86b6c5e0"
+    },
+    {
+        "device_type_id": "urn:infai:ses:device-type:caa11b1e-1348-40ff-a62f-2646404fabb4$service_group_selection=c832e717-7252-4a61-9cf2-a6f90bcac7ad"
+    },
+    {
+        "device_type_id": "urn:infai:ses:device-type:caa11b1e-1348-40ff-a62f-2646404fabb4$service_group_selection=dbb98eb1-6795-4125-b3cf-d32032e69286"
+    }
+]

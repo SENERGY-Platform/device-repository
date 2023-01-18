@@ -19,8 +19,10 @@ package devicetypeselectables_test
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -426,6 +428,89 @@ func TestDeviceTypeSelectablesV2WithModifiedId(t *testing.T) {
 	t.Run("event_and_request modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
 }
 
+//go:embed a5t_testcase/devicetypes.json
+var nousA5tDeviceTypeStr string
+
+//go:embed a5t_testcase/aspects.json
+var aspectsStr string
+
+//go:embed a5t_testcase/functions.json
+var functionsStr string
+
+//go:embed a5t_testcase/expected.json
+var expectedStr string
+
+//go:embed a5t_testcase/expected_with_modified.json
+var expectedWithModifiedStr string
+
+//go:embed a5t_testcase/expected_service_must_match.json
+var expectedServiceMustMatchStr string
+
+//go:embed a5t_testcase/expected_service_must_match_short.json
+var expectedServiceMustMatchShortStr string
+
+func TestDeviceTypeSelectablesV2WithModifiedIdNousA5T(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := testenv.CreateTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Run("init metadata", createTestMetadataFromString(conf, nousA5tDeviceTypeStr, aspectsStr, functionsStr))
+
+	time.Sleep(5 * time.Second)
+
+	criteriaStr := `[{"device_class_id":"urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250","function_id":"urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9","interaction":"request"},{"interaction":"request","function_id":"urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd","device_class_id":"urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"},{"function_id":"urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0","aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"},{"function_id":"urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0","aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","interaction":"event"}]`
+	criteria := []model.FilterCriteria{}
+	err = json.Unmarshal([]byte(criteriaStr), &criteria)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedSelectables := []model.DeviceTypeSelectable{}
+	err = json.Unmarshal([]byte(expectedStr), &expectedSelectables)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedSeletablesWithModifiedIds := []model.DeviceTypeSelectable{}
+	err = json.Unmarshal([]byte(expectedWithModifiedStr), &expectedSeletablesWithModifiedIds)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedSeletablesServiceMustMatch := []model.DeviceTypeSelectable{}
+	err = json.Unmarshal([]byte(expectedServiceMustMatchStr), &expectedSeletablesServiceMustMatch)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedSeletablesServiceMustMatchShort := []model.DeviceTypeSelectable{}
+	err = json.Unmarshal([]byte(expectedServiceMustMatchShortStr), &expectedSeletablesServiceMustMatchShort)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Run("without modified", clientTestDeviceTypeSelectables(conf, criteria, "prefix.", false, false, expectedSelectables))
+	t.Run("with modified", clientTestDeviceTypeSelectables(conf, criteria, "prefix.", true, false, expectedSeletablesWithModifiedIds))
+	t.Run("servicesMustMatchAllCriteria ", clientTestDeviceTypeSelectables(conf, criteria, "prefix.", true, true, expectedSeletablesServiceMustMatch))
+	t.Run("one criteria servicesMustMatchAllCriteria ", clientTestDeviceTypeSelectables(conf, []model.FilterCriteria{{
+		Interaction:   "request",
+		FunctionId:    "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
+		DeviceClassId: "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250",
+	}}, "prefix.", true, true, expectedSeletablesServiceMustMatchShort))
+
+}
+
 func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
 
 	wg := &sync.WaitGroup{}
@@ -712,6 +797,25 @@ func testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(config config.
 func testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(config config.Config, criteria []model.FilterCriteria, pathPrefix string, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectablesV2IncludeModified(config, testenv.Userjwt, pathPrefix, criteria)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expectedResult = removeConfigurables(expectedResult)
+		expectedResult = sortServices(expectedResult)
+		result = removeConfigurables(result)
+		result = sortServices(result)
+		if !reflect.DeepEqual(result, expectedResult) {
+			resultJson, _ := json.Marshal(result)
+			expectedJson, _ := json.Marshal(expectedResult)
+			t.Error("\n", string(resultJson), "\n", string(expectedJson))
+		}
+	}
+}
+
+func clientTestDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+	return func(t *testing.T) {
+		result, err, _ := client.NewClient("http://localhost:"+config.ServerPort).GetDeviceTypeSelectablesV2(criteria, pathPrefix, includeModified, servicesMustMatchAllCriteria)
 		if err != nil {
 			t.Error(err)
 			return

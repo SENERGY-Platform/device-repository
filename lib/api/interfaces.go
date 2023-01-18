@@ -36,7 +36,7 @@ type Controller interface {
 	ValidateDeviceType(deviceType models.DeviceType) (err error, code int)
 
 	GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
-	GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
+	GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int)
 
 	ReadDeviceGroup(id string, token string) (result models.DeviceGroup, err error, errCode int)
 	ValidateDeviceGroup(deviceGroup models.DeviceGroup) (err error, code int)

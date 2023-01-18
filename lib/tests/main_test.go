@@ -219,48 +219,6 @@ func GetDeviceTypeSelectables(config config.Config, token string, prefix string,
 	return result, err
 }
 
-func GetDeviceTypeSelectablesV2(config config.Config, token string, prefix string, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
-	client := http.Client{
-		Timeout: 5 * time.Second,
-	}
-	payload := new(bytes.Buffer)
-	err = json.NewEncoder(payload).Encode(descriptions)
-	if err != nil {
-		debug.PrintStack()
-		return result, err
-	}
-	req, err := http.NewRequest(
-		"POST",
-		"http://localhost:"+config.ServerPort+"/v2/query/device-type-selectables?path-prefix="+url.QueryEscape(prefix),
-		payload,
-	)
-	if err != nil {
-		debug.PrintStack()
-		return result, err
-	}
-	req.Header.Set("Authorization", token)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		debug.PrintStack()
-		return result, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 300 {
-		debug.PrintStack()
-		temp, _ := io.ReadAll(resp.Body)
-		log.Println("ERROR: GetDeviceTypeSelectables():", resp.StatusCode, string(temp))
-		return result, errors.New("unexpected statuscode")
-	}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		debug.PrintStack()
-		return result, err
-	}
-
-	return result, err
-}
-
 func sortServices(list []model.DeviceTypeSelectable) (result []model.DeviceTypeSelectable) {
 	result = []model.DeviceTypeSelectable{}
 	for _, e := range list {
