@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 func Kafka(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, zookeeperUrl string) (kafkaUrl string, err error) {
@@ -45,6 +46,8 @@ func Kafka(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, zooke
 	log.Println("host ip: ", hostIp)
 	log.Println("kafka url:", kafkaUrl)
 	env := []string{
+		"KAFKA_DEFAULT_REPLICATION_FACTOR=1",
+		"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1",
 		"ALLOW_PLAINTEXT_LISTENER=yes",
 		"KAFKA_LISTENERS=OUTSIDE://:9092",
 		"KAFKA_ADVERTISED_LISTENERS=OUTSIDE://" + kafkaUrl,
@@ -85,6 +88,7 @@ func Kafka(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, zooke
 		defer conn.Close()
 		return nil
 	})
+	time.Sleep(5 * time.Second)
 	return kafkaUrl, err
 }
 

@@ -19,6 +19,7 @@ package docker
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	uuid "github.com/satori/go.uuid"
@@ -80,6 +81,27 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 	zookeeperUrl := zkIp + ":2181"
 
 	config.KafkaUrl, err = Kafka(pool, ctx, wg, zookeeperUrl)
+	if err != nil {
+		return config, err
+	}
+
+	err = util.InitTopic(config.KafkaUrl,
+		"concepts",
+		"device-groups",
+		"aspects",
+		"characteristics",
+		"processmodel",
+		"device-types",
+		"hubs",
+		"devices",
+		"device-classes",
+		"functions",
+		"protocols",
+		"import-types",
+		"locations",
+		"smart_service_releases",
+		"gateway_log",
+		"device_log")
 	if err != nil {
 		return config, err
 	}

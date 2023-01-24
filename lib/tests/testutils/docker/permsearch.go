@@ -23,6 +23,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 func PermSearch(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, zk string, elasticIp string) (hostPort string, ipAddress string, err error) {
@@ -30,6 +31,7 @@ func PermSearch(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, 
 	container, err := pool.Run("ghcr.io/senergy-platform/permission-search", "dev", []string{
 		"KAFKA_URL=" + zk,
 		"ELASTIC_URL=" + "http://" + elasticIp + ":9200",
+		"DEBUG=true",
 	})
 	if err != nil {
 		return "", "", err
@@ -53,6 +55,7 @@ func PermSearch(pool *dockertest.Pool, ctx context.Context, wg *sync.WaitGroup, 
 		return err
 	})
 	go Dockerlog(pool, ctx, container, "PERMISSIONS-SEARCH")
+	time.Sleep(5 * time.Second)
 	return hostPort, container.Container.NetworkSettings.IPAddress, err
 }
 

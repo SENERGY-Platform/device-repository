@@ -28,6 +28,71 @@ import (
 	"time"
 )
 
+func NewConsumerWithMultipleTopics(ctx context.Context, bootstrapUrl string, groupId string, topics []string, listener func(topic string, delivery []byte) error, errhandler func(topice string, err error)) error {
+	if len(topics) == 0 {
+		return nil
+	}
+	log.Println("consume:", topics)
+	broker, err := util.GetBroker(bootstrapUrl)
+	if err != nil {
+		log.Println("ERROR: unable to get broker list", err)
+		return err
+	}
+
+	for _, topic := range topics {
+		err = util.InitTopic(bootstrapUrl, topic)
+		if err != nil {
+			log.Println("ERROR: unable to create topic", err)
+			return err
+		}
+	}
+
+	r := kafka.NewReader(kafka.ReaderConfig{
+		CommitInterval: 0, //synchronous commits
+		Brokers:        broker,
+		GroupID:        groupId,
+		GroupTopics:    topics,
+		Logger:         log.New(io.Discard, "", 0),
+		ErrorLogger:    log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+	})
+
+	go func() {
+		defer r.Close()
+		defer log.Println("close consumer for topics ", topics)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				m, err := r.FetchMessage(ctx)
+				if err == io.EOF || err == context.Canceled {
+					return
+				}
+				topic := m.Topic
+				if err != nil {
+					log.Println("ERROR: while consuming topic ", topic, err)
+					errhandler(topic, err)
+					return
+				}
+
+				err = retry(func() error {
+					return listener(topic, m.Value)
+				}, func(n int64) time.Duration {
+					return time.Duration(n) * time.Second
+				}, 10*time.Minute)
+
+				if err != nil {
+					log.Println("ERROR: unable to handle message (no commit)", err)
+					errhandler(topic, err)
+				} else {
+					err = r.CommitMessages(ctx, m)
+				}
+			}
+		}
+	}()
+	return nil
+}
+
 func NewConsumer(ctx context.Context, bootstrapUrl string, groupid string, topic string, listener func(topic string, msg []byte) error, errorhandler func(err error, consumer *Consumer)) (consumer *Consumer, err error) {
 	consumer = &Consumer{ctx: ctx, groupId: groupid, bootstrapUrl: bootstrapUrl, topic: topic, listener: listener, errorhandler: errorhandler}
 	err = consumer.start()
@@ -62,7 +127,6 @@ func (this *Consumer) start() error {
 		Brokers:        broker,
 		GroupID:        this.groupId,
 		Topic:          this.topic,
-		MaxWait:        1 * time.Second,
 		Logger:         log.New(io.Discard, "", 0),
 		ErrorLogger:    log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
 	})

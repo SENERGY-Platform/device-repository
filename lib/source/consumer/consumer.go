@@ -24,23 +24,28 @@ import (
 )
 
 func Start(ctx context.Context, config config.Config, control listener.Controller) (err error) {
+	topics := []string{}
+	handlerMap := map[string]listener.Listener{}
 	for _, factory := range listener.Factories {
 		topic, handler, err := factory(config, control)
 		if err != nil {
 			log.Println("ERROR: listener.factory", topic, err)
 			return err
 		}
-		_, err = NewConsumer(ctx, config.KafkaUrl, config.GroupId, topic, func(topic string, msg []byte) error {
-			if config.Debug {
-				log.Println("DEBUG: consume", topic, string(msg))
-			}
-			return handler(msg)
-		}, func(err error, consumer *Consumer) {
-			config.HandleFatalError(err)
-		})
-		if err != nil {
-			return err
-		}
+		handlerMap[topic] = handler
+		topics = append(topics, topic)
 	}
-	return err
+	return NewConsumerWithMultipleTopics(ctx, config.KafkaUrl, config.GroupId, topics, func(topic string, delivery []byte) error {
+		if config.Debug {
+			log.Println("DEBUG: consume", topic, string(delivery))
+		}
+		handler, ok := handlerMap[topic]
+		if !ok {
+			log.Println("WARNING: unknown topic handler", topic)
+			return nil
+		}
+		return handler(delivery)
+	}, func(topic string, err error) {
+		config.HandleFatalError(err)
+	})
 }
