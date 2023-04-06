@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -57,7 +57,7 @@ func New(conf config.Config) (*Mongo, error) {
 }
 
 func (this *Mongo) CreateId() string {
-	return uuid.NewV4().String()
+	return uuid.NewString()
 }
 
 func (this *Mongo) Transaction(ctx context.Context) (resultCtx context.Context, close func(success bool) error, err error) {

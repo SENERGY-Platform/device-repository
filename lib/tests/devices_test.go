@@ -23,7 +23,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -36,13 +36,13 @@ import (
 
 var device1id = "urn:infai:ses:device:1"
 var device1lid = "lid1"
-var device1name = uuid.NewV4().String()
+var device1name = uuid.NewString()
 var device2id = "urn:infai:ses:device:2"
 var device2lid = "lid2"
-var device2name = uuid.NewV4().String()
+var device2name = uuid.NewString()
 var device3id = "urn:infai:ses:device:3"
 var device3lid = "lid3"
-var device3name = uuid.NewV4().String()
+var device3name = uuid.NewString()
 
 func TestDeviceNameValidation(t *testing.T) {
 	err := controller.ValidateDeviceName(models.Device{Name: "foo"})

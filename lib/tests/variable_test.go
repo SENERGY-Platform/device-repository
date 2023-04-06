@@ -507,6 +507,66 @@ func TestVariableValidation(t *testing.T) {
 			},
 		},
 	}))
+
+	t.Run("omit empty value ''", testValidateVariable(ctrl, false, models.ContentVariable{
+		Id:   "root",
+		Name: "root",
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
+			{
+				Id:        "v",
+				Name:      "v",
+				Type:      models.String,
+				Value:     "",
+				OmitEmpty: true,
+			},
+		},
+	}))
+
+	t.Run("omit empty value 'foo'", testValidateVariable(ctrl, true, models.ContentVariable{
+		Id:   "root",
+		Name: "root",
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
+			{
+				Id:        "v",
+				Name:      "v",
+				Type:      models.String,
+				Value:     "foo",
+				OmitEmpty: true,
+			},
+		},
+	}))
+
+	t.Run("omit empty value 0", testValidateVariable(ctrl, false, models.ContentVariable{
+		Id:   "root",
+		Name: "root",
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
+			{
+				Id:        "v",
+				Name:      "v",
+				Type:      models.Float,
+				Value:     0.0,
+				OmitEmpty: true,
+			},
+		},
+	}))
+
+	t.Run("omit empty value 42", testValidateVariable(ctrl, true, models.ContentVariable{
+		Id:   "root",
+		Name: "root",
+		Type: models.Structure,
+		SubContentVariables: []models.ContentVariable{
+			{
+				Id:        "v",
+				Name:      "v",
+				Type:      models.Float,
+				Value:     4.2,
+				OmitEmpty: true,
+			},
+		},
+	}))
 }
 
 func testValidateVariable(ctrl *controller.Controller, expectError bool, variable models.ContentVariable) func(t *testing.T) {

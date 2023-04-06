@@ -20,9 +20,9 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/source/util"
+	"github.com/google/uuid"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	uuid "github.com/satori/go.uuid"
 	"log"
 	"net"
 	"os"
@@ -47,7 +47,7 @@ func GetFreePort() (int, error) {
 
 func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config) (config config.Config, err error) {
 	config = startConfig
-	config.GroupId = uuid.NewV4().String()
+	config.GroupId = uuid.NewString()
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {

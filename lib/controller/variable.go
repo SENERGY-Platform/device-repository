@@ -32,6 +32,19 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 		return errors.New("missing content variable id"), http.StatusBadRequest
 	}
 
+	if variable.OmitEmpty {
+		switch v := variable.Value.(type) {
+		case string:
+			if v != "" {
+				return fmt.Errorf("validation error: %v has a value (%v) set while omit_empty is true", variable.Name, variable.Value), http.StatusBadRequest
+			}
+		case float64:
+			if v != 0 {
+				return fmt.Errorf("validation error: %v has a value (%v) set while omit_empty is true", variable.Name, variable.Value), http.StatusBadRequest
+			}
+		}
+	}
+
 	if !variable.IsVoid {
 		if variable.Name == "" {
 			return errors.New("missing content variable name"), http.StatusBadRequest

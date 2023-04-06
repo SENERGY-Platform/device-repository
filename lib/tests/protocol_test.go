@@ -22,7 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -32,10 +32,10 @@ import (
 	"time"
 )
 
-var protocol1id = uuid.NewV4().String()
-var protocol1name = uuid.NewV4().String()
-var protocol2id = uuid.NewV4().String()
-var protocol2name = uuid.NewV4().String()
+var protocol1id = uuid.NewString()
+var protocol1name = uuid.NewString()
+var protocol2id = uuid.NewString()
+var protocol2name = uuid.NewString()
 
 func TestProtocolQuery(t *testing.T) {
 	wg := &sync.WaitGroup{}
@@ -67,7 +67,7 @@ func TestProtocolQuery(t *testing.T) {
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishProtocol(models.Protocol{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, userid)
+		err = producer.PublishProtocol(models.Protocol{Id: uuid.NewString(), Name: uuid.NewString()}, userid)
 		if err != nil {
 			t.Error(err)
 			return
@@ -76,7 +76,7 @@ func TestProtocolQuery(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	t.Run("unexisting", func(t *testing.T) {
-		testProtocolReadNotFound(t, conf, uuid.NewV4().String())
+		testProtocolReadNotFound(t, conf, uuid.NewString())
 	})
 	t.Run("testProtocolRead", func(t *testing.T) {
 		testProtocolRead(t, conf)

@@ -25,7 +25,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"net/url"
@@ -36,9 +36,9 @@ import (
 )
 
 var devicetype1id = "urn:infai:ses:device-type:2cc43032-207e-494e-8de4-94784cd4961d"
-var devicetype1name = uuid.NewV4().String()
-var devicetype2id = uuid.NewV4().String()
-var devicetype2name = uuid.NewV4().String()
+var devicetype1name = uuid.NewString()
+var devicetype2id = uuid.NewString()
+var devicetype2name = uuid.NewString()
 
 func TestDeviceTypeSubAspectValidation(t *testing.T) {
 	wg := &sync.WaitGroup{}
@@ -323,7 +323,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishDeviceType(models.DeviceType{Id: uuid.NewV4().String(), Name: uuid.NewV4().String()}, testenv.Userid)
+		err = producer.PublishDeviceType(models.DeviceType{Id: uuid.NewString(), Name: uuid.NewString()}, testenv.Userid)
 		if err != nil {
 			t.Error(err)
 			return
@@ -332,7 +332,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 	time.Sleep(10 * time.Second)
 
 	t.Run("unexisting", func(t *testing.T) {
-		testDeviceTypeReadNotFound(t, conf, uuid.NewV4().String())
+		testDeviceTypeReadNotFound(t, conf, uuid.NewString())
 	})
 	t.Run("testDeviceTypeRead", func(t *testing.T) {
 		testDeviceTypeRead(t, conf)

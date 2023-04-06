@@ -34,8 +34,8 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/google/uuid"
 	"github.com/ory/dockertest/v3"
-	uuid "github.com/satori/go.uuid"
 	"io"
 	"log"
 	"net/http"
@@ -53,9 +53,9 @@ const userjwt = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIzaUta
 const userid = "dd69ea0d-f553-4336-80f3-7f4567f85c7b"
 
 var devicetype1id = "urn:infai:ses:device-type:2cc43032-207e-494e-8de4-94784cd4961d"
-var devicetype1name = uuid.NewV4().String()
-var devicetype2id = uuid.NewV4().String()
-var devicetype2name = uuid.NewV4().String()
+var devicetype1name = uuid.NewString()
+var devicetype2id = uuid.NewString()
+var devicetype2name = uuid.NewString()
 
 func jwtdelete(token string, url string) (resp *http.Response, err error) {
 	req, err := http.NewRequest("DELETE", url, nil)
