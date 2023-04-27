@@ -25,7 +25,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/ory/dockertest/v3"
 	"log"
 	"strconv"
 	"sync"
@@ -49,13 +48,7 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 	}
 	config.ServerPort = strconv.Itoa(whPort)
 
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Println("Could not connect to docker:", err)
-		return config, ctrl, prod, err
-	}
-
-	_, ip, err := docker.MongoDB(pool, ctx, wg)
+	_, ip, err := docker.MongoDB(ctx, wg)
 	if err != nil {
 		return config, ctrl, prod, err
 	}

@@ -23,7 +23,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
-	"github.com/ory/dockertest/v3"
 	"github.com/segmentio/kafka-go"
 	"log"
 	"strconv"
@@ -34,6 +33,11 @@ import (
 
 func TestKafkaRetry(t *testing.T) {
 	t.Skip("experiment to check kafka retry")
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	conf, err := config.Load("../../config.json")
 	if err != nil {
 		t.Error(err)
@@ -43,25 +47,14 @@ func TestKafkaRetry(t *testing.T) {
 	conf.MongoReplSet = false
 	conf.Debug = true
 
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	_, zkIp, err := docker.Zookeeper(pool, ctx, wg)
+	_, zkIp, err := docker.Zookeeper(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	zookeeperUrl := zkIp + ":2181"
 
-	conf.KafkaUrl, err = docker.Kafka(pool, ctx, wg, zookeeperUrl)
+	conf.KafkaUrl, err = docker.Kafka(ctx, wg, zookeeperUrl)
 	if err != nil {
 		t.Error(err)
 		return

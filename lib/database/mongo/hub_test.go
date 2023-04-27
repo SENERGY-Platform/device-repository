@@ -19,32 +19,31 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/ory/dockertest/v3"
+	"sync"
 	"testing"
 	"time"
 )
 
 func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Error("Could not connect to docker: ", err)
-		return
-	}
-	closer, port, _, err := MongoTestServer(pool)
+	port, _, err := docker.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if true {
-		defer closer()
-	}
+
 	conf.MongoUrl = "mongodb://localhost:" + port
 	m, err := New(conf)
 	if err != nil {
@@ -52,20 +51,20 @@ func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
 		return
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = m.SetHub(ctx, models.Hub{Id: "hid1", Name: "h1", DeviceLocalIds: []string{"a", "b"}})
+	timeout, _ := context.WithTimeout(ctx, 10*time.Second)
+	err = m.SetHub(timeout, models.Hub{Id: "hid1", Name: "h1", DeviceLocalIds: []string{"a", "b"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	err = m.SetHub(ctx, models.Hub{Id: "hid2", Name: "h2", DeviceLocalIds: []string{"b", "c"}})
+	timeout, _ = context.WithTimeout(ctx, 10*time.Second)
+	err = m.SetHub(timeout, models.Hub{Id: "hid2", Name: "h2", DeviceLocalIds: []string{"b", "c"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	hubs, err := m.GetHubsByDeviceLocalId(ctx, "a")
+	timeout, _ = context.WithTimeout(ctx, 10*time.Second)
+	hubs, err := m.GetHubsByDeviceLocalId(timeout, "a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,8 +72,8 @@ func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
 		t.Fatal(hubs)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	hubs, err = m.GetHubsByDeviceLocalId(ctx, "b")
+	timeout, _ = context.WithTimeout(ctx, 10*time.Second)
+	hubs, err = m.GetHubsByDeviceLocalId(timeout, "b")
 	if err != nil {
 		t.Fatal(err)
 	}

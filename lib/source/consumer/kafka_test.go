@@ -20,7 +20,6 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
-	"github.com/ory/dockertest/v3"
 	"github.com/segmentio/kafka-go"
 	"io"
 	"log"
@@ -38,20 +37,14 @@ func TestKafkaTimings(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	_, zkIp, err := docker.Zookeeper(pool, ctx, wg)
+	_, zkIp, err := docker.Zookeeper(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	zookeeperUrl := zkIp + ":2181"
 
-	kafkaUrl, err := docker.Kafka(pool, ctx, wg, zookeeperUrl)
+	kafkaUrl, err := docker.Kafka(ctx, wg, zookeeperUrl)
 	if err != nil {
 		t.Error(err)
 		return

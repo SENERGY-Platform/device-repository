@@ -23,7 +23,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/ory/dockertest/v3"
 	"log"
 	"sync"
 	"testing"
@@ -44,14 +43,8 @@ func TestConceptValidation(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Println("Could not connect to docker:", err)
-		t.Error(err)
-		return
-	}
 
-	_, ip, err := docker.MongoDB(pool, ctx, wg)
+	_, ip, err := docker.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return

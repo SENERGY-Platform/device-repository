@@ -21,11 +21,8 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/google/uuid"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
 	"log"
 	"net"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -62,25 +59,19 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 	}
 	config.ServerPort = strconv.Itoa(whPort)
 
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Println("Could not connect to docker:", err)
-		return config, err
-	}
-
-	_, ip, err := MongoDB(pool, ctx, wg)
+	_, ip, err := MongoDB(ctx, wg)
 	if err != nil {
 		return config, err
 	}
 	config.MongoUrl = "mongodb://" + ip + ":27017"
 
-	_, zkIp, err := Zookeeper(pool, ctx, wg)
+	_, zkIp, err := Zookeeper(ctx, wg)
 	if err != nil {
 		return config, err
 	}
 	zookeeperUrl := zkIp + ":2181"
 
-	config.KafkaUrl, err = Kafka(pool, ctx, wg, zookeeperUrl)
+	config.KafkaUrl, err = Kafka(ctx, wg, zookeeperUrl)
 	if err != nil {
 		return config, err
 	}
@@ -106,12 +97,12 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 		return config, err
 	}
 
-	_, elasticIp, err := Elasticsearch(pool, ctx, wg)
+	_, elasticIp, err := Elasticsearch(ctx, wg)
 	if err != nil {
 		return config, err
 	}
 
-	_, permIp, err := PermSearch(pool, ctx, wg, config.KafkaUrl, elasticIp)
+	_, permIp, err := PermSearch(ctx, wg, false, config.KafkaUrl, elasticIp)
 	if err != nil {
 		return config, err
 	}
@@ -120,29 +111,4 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 	time.Sleep(5 * time.Second)
 
 	return
-}
-
-func Dockerlog(pool *dockertest.Pool, ctx context.Context, repo *dockertest.Resource, name string) {
-	out := &LogWriter{logger: log.New(os.Stdout, "["+name+"]", 0)}
-	err := pool.Client.Logs(docker.LogsOptions{
-		Stdout:       true,
-		Stderr:       true,
-		Context:      ctx,
-		Container:    repo.Container.ID,
-		Follow:       true,
-		OutputStream: out,
-		ErrorStream:  out,
-	})
-	if err != nil && err != context.Canceled {
-		log.Println("DEBUG-ERROR: unable to start docker log", name, err)
-	}
-}
-
-type LogWriter struct {
-	logger *log.Logger
-}
-
-func (this *LogWriter) Write(p []byte) (n int, err error) {
-	this.logger.Print(string(p))
-	return len(p), nil
 }

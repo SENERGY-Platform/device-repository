@@ -19,13 +19,18 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/ory/dockertest/v3"
+	"sync"
 	"testing"
 	"time"
 )
 
 func TestMongoDeviceType(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
@@ -33,18 +38,10 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Error("Could not connect to docker: ", err)
-		return
-	}
-	closer, port, _, err := MongoTestServer(pool)
+	port, _, err := docker.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
-	}
-	if true {
-		defer closer()
 	}
 	conf.MongoUrl = "mongodb://localhost:" + port
 	m, err := New(conf)
@@ -53,8 +50,8 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	_, exists, err := m.GetDeviceType(ctx, "does_not_exist")
+	timeout, _ := context.WithTimeout(ctx, 2*time.Second)
+	_, exists, err := m.GetDeviceType(timeout, "does_not_exist")
 	if err != nil {
 		t.Error(err)
 		return
@@ -64,8 +61,8 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, models.DeviceType{
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	err = m.SetDeviceType(timeout, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1",
 		Services: []models.Service{
@@ -105,8 +102,8 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, models.DeviceType{
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	err = m.SetDeviceType(timeout, models.DeviceType{
 		Id:   "foobar2",
 		Name: "foo2",
 		Services: []models.Service{
@@ -127,8 +124,8 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	device, exists, err := m.GetDeviceType(ctx, "foobar1")
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	device, exists, err := m.GetDeviceType(timeout, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return
@@ -147,7 +144,7 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	err = m.SetDeviceType(ctx, models.DeviceType{
+	err = m.SetDeviceType(timeout, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1changed",
 		Services: []models.Service{
@@ -175,8 +172,8 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	device, exists, err = m.GetDeviceType(ctx, "foobar1")
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	device, exists, err = m.GetDeviceType(timeout, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return
@@ -190,8 +187,8 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	result, err := m.ListDeviceTypes(ctx, 100, 0, "name.asc", nil, nil, false)
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	result, err := m.ListDeviceTypes(timeout, 100, 0, "name.asc", nil, nil, false)
 	if err != nil {
 		t.Error(err)
 		return
@@ -205,15 +202,15 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.RemoveDeviceType(ctx, "foobar1")
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	err = m.RemoveDeviceType(timeout, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	dt, exists, err := m.GetDeviceType(ctx, "foobar1")
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	dt, exists, err := m.GetDeviceType(timeout, "foobar1")
 	if err != nil {
 		t.Error(err)
 		return
@@ -225,24 +222,21 @@ func TestMongoDeviceType(t *testing.T) {
 }
 
 func TestMongoDeviceTypeByService(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		t.Error("Could not connect to docker: ", err)
-		return
-	}
-	closer, port, _, err := MongoTestServer(pool)
+	port, _, err := docker.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
-	}
-	if true {
-		defer closer()
 	}
 	conf.MongoUrl = "mongodb://localhost:" + port
 	m, err := New(conf)
@@ -251,8 +245,8 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		return
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	_, exists, err := m.GetDeviceType(ctx, "does_not_exist")
+	timeout, _ := context.WithTimeout(ctx, 2*time.Second)
+	_, exists, err := m.GetDeviceType(timeout, "does_not_exist")
 	if err != nil {
 		t.Error(err)
 		return
@@ -262,8 +256,8 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, models.DeviceType{
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	err = m.SetDeviceType(timeout, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1",
 		Services: []models.Service{
@@ -291,8 +285,8 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	err = m.SetDeviceType(ctx, models.DeviceType{
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	err = m.SetDeviceType(timeout, models.DeviceType{
 		Id:   "foobar2",
 		Name: "foo2",
 		Services: []models.Service{
@@ -313,7 +307,7 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		return
 	}
 
-	err = m.SetDeviceType(ctx, models.DeviceType{
+	err = m.SetDeviceType(timeout, models.DeviceType{
 		Id:   "foobar1",
 		Name: "foo1changed",
 		Services: []models.Service{
@@ -341,8 +335,8 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		return
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	devicetypes, err := m.GetDeviceTypesByServiceId(ctx, "s1")
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	devicetypes, err := m.GetDeviceTypesByServiceId(timeout, "s1")
 	if err != nil {
 		t.Error(err)
 		return
@@ -354,8 +348,8 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		t.Fatal(devicetypes)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	devicetypes, err = m.GetDeviceTypesByServiceId(ctx, "s2")
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	devicetypes, err = m.GetDeviceTypesByServiceId(timeout, "s2")
 	if err != nil {
 		t.Error(err)
 		return
@@ -367,8 +361,8 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 		t.Fatal(devicetypes)
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-	devicetypes, err = m.GetDeviceTypesByServiceId(ctx, "s3")
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	devicetypes, err = m.GetDeviceTypesByServiceId(timeout, "s3")
 	if err != nil {
 		t.Error(err)
 		return

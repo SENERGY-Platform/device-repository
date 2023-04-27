@@ -29,7 +29,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
-	"github.com/ory/dockertest/v3"
 	"log"
 	"net/http"
 	"sync"
@@ -95,13 +94,8 @@ func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 	conf.MongoReplSet = false
 	conf.Debug = true
 	conf.DisableKafkaConsumer = true
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Println("Could not connect to docker:", err)
-		t.Error(err)
-		return
-	}
-	_, ip, err := docker.MongoDB(pool, ctx, wg)
+
+	_, ip, err := docker.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
