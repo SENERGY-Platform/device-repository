@@ -19,10 +19,8 @@ package testutils
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
-	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/segmentio/kafka-go"
 	"log"
@@ -45,51 +43,45 @@ type Publisher struct {
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
-	broker, err := util.GetBroker(conf.KafkaUrl)
-	if err != nil {
-		return nil, err
-	}
-	if len(broker) == 0 {
-		return nil, errors.New("missing kafka broker")
-	}
 	publisher := &Publisher{config: conf}
-	publisher.devicetypes, err = producer.GetKafkaWriter(broker, conf.DeviceTypeTopic, conf.Debug)
+	var err error
+	publisher.devicetypes, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.DeviceTypeTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.devices, err = producer.GetKafkaWriter(broker, conf.DeviceTopic, conf.Debug)
+	publisher.devices, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.DeviceTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.devicegroups, err = producer.GetKafkaWriter(broker, conf.DeviceGroupTopic, conf.Debug)
+	publisher.devicegroups, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.DeviceGroupTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.protocols, err = producer.GetKafkaWriter(broker, conf.ProtocolTopic, conf.Debug)
+	publisher.protocols, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.ProtocolTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.hubs, err = producer.GetKafkaWriter(broker, conf.HubTopic, conf.Debug)
+	publisher.hubs, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.HubTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.aspects, err = producer.GetKafkaWriter(broker, conf.AspectTopic, conf.Debug)
+	publisher.aspects, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.AspectTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.functions, err = producer.GetKafkaWriter(broker, conf.FunctionTopic, conf.Debug)
+	publisher.functions, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.FunctionTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.deviceclass, err = producer.GetKafkaWriter(broker, conf.DeviceClassTopic, conf.Debug)
+	publisher.deviceclass, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.DeviceClassTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.characteristics, err = producer.GetKafkaWriter(broker, conf.CharacteristicTopic, conf.Debug)
+	publisher.characteristics, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.CharacteristicTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	publisher.concepts, err = producer.GetKafkaWriter(broker, conf.ConceptTopic, conf.Debug)
+	publisher.concepts, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.ConceptTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}

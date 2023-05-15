@@ -61,15 +61,6 @@ func (this *Controller) ValidateService(service models.Service, protocolCache *m
 		}
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	protocol, exists, err := this.db.GetProtocol(ctx, service.ProtocolId)
-	if err != nil {
-		return err, http.StatusInternalServerError
-	}
-	if !exists {
-		return errors.New("unknown protocol id: " + service.ProtocolId), http.StatusBadRequest
-	}
-
 	knownContentNames := map[string]bool{}
 	for _, content := range service.Inputs {
 		if _, ok := knownContentNames[content.ContentVariable.Name]; ok {

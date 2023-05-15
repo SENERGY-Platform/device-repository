@@ -50,12 +50,6 @@ func TestKafkaTimings(t *testing.T) {
 		return
 	}
 
-	broker, err := util.GetBroker(kafkaUrl)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
 	t.Run("create test topics", func(t *testing.T) {
 		for _, topic := range []string{"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"} {
 			err = util.InitTopic(kafkaUrl, topic)
@@ -107,7 +101,7 @@ func TestKafkaTimings(t *testing.T) {
 			}()
 
 			writer := &kafka.Writer{
-				Addr:        kafka.TCP(broker...),
+				Addr:        kafka.TCP(kafkaUrl),
 				Topic:       config.Topic,
 				MaxAttempts: 10,
 				BatchSize:   1,
@@ -135,90 +129,106 @@ func TestKafkaTimings(t *testing.T) {
 	}
 
 	t.Run("t1", testFunc(10, 1*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t1",
-		Topic:            "t1",
-		MaxWait:          1 * time.Second,
-		ReadBatchTimeout: 10 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t1",
+		Topic:                  "t1",
+		MaxWait:                1 * time.Second,
+		ReadBatchTimeout:       10 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 
 	t.Run("t2", testFunc(10, 10*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t2",
-		Topic:            "t2",
-		MaxWait:          1 * time.Second,
-		ReadBatchTimeout: 10 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t2",
+		Topic:                  "t2",
+		MaxWait:                1 * time.Second,
+		ReadBatchTimeout:       10 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 
 	t.Run("t3", testFunc(10, 1*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t3",
-		Topic:            "t3",
-		MaxWait:          10 * time.Second,
-		ReadBatchTimeout: 10 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t3",
+		Topic:                  "t3",
+		MaxWait:                10 * time.Second,
+		ReadBatchTimeout:       10 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 
 	t.Run("t4", testFunc(10, 10*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t4",
-		Topic:            "t4",
-		MaxWait:          10 * time.Second,
-		ReadBatchTimeout: 10 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t4",
+		Topic:                  "t4",
+		MaxWait:                10 * time.Second,
+		ReadBatchTimeout:       10 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 
 	t.Run("t5", testFunc(10, 1*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t5",
-		Topic:            "t5",
-		MaxWait:          1 * time.Second,
-		ReadBatchTimeout: 30 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t5",
+		Topic:                  "t5",
+		MaxWait:                1 * time.Second,
+		ReadBatchTimeout:       30 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 
 	t.Run("t6", testFunc(10, 10*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t6",
-		Topic:            "t6",
-		MaxWait:          1 * time.Second,
-		ReadBatchTimeout: 30 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t6",
+		Topic:                  "t6",
+		MaxWait:                1 * time.Second,
+		ReadBatchTimeout:       30 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 
 	t.Run("t7", testFunc(10, 1*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t7",
-		Topic:            "t7",
-		MaxWait:          10 * time.Second,
-		ReadBatchTimeout: 30 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t7",
+		Topic:                  "t7",
+		MaxWait:                10 * time.Second,
+		ReadBatchTimeout:       30 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 
 	t.Run("t8", testFunc(10, 10*time.Second, kafka.ReaderConfig{
-		CommitInterval:   0, //synchronous commits
-		Brokers:          broker,
-		GroupID:          "t8",
-		Topic:            "t8",
-		MaxWait:          10 * time.Second,
-		ReadBatchTimeout: 30 * time.Second,
-		Logger:           log.New(io.Discard, "", 0),
-		ErrorLogger:      log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		CommitInterval:         0, //synchronous commits
+		Brokers:                []string{kafkaUrl},
+		GroupID:                "t8",
+		Topic:                  "t8",
+		MaxWait:                10 * time.Second,
+		ReadBatchTimeout:       30 * time.Second,
+		Logger:                 log.New(io.Discard, "", 0),
+		ErrorLogger:            log.New(os.Stdout, "[KAFKA-ERROR] ", log.Default().Flags()),
+		WatchPartitionChanges:  true,
+		PartitionWatchInterval: time.Minute,
 	}))
 }

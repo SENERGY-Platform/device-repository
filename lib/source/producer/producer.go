@@ -17,11 +17,9 @@
 package producer
 
 import (
-	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/segmentio/kafka-go"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 )
@@ -34,37 +32,30 @@ type Producer struct {
 }
 
 func New(conf config.Config) (*Producer, error) {
-	broker, err := util.GetBroker(conf.KafkaUrl)
+	devices, err := GetKafkaWriter(conf.KafkaUrl, conf.DeviceTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	if len(broker) == 0 {
-		return nil, errors.New("missing kafka broker")
-	}
-	devices, err := GetKafkaWriter(broker, conf.DeviceTopic, conf.Debug)
+	aspects, err := GetKafkaWriter(conf.KafkaUrl, conf.AspectTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
-	aspects, err := GetKafkaWriter(broker, conf.AspectTopic, conf.Debug)
-	if err != nil {
-		return nil, err
-	}
-	hubs, err := GetKafkaWriter(broker, conf.HubTopic, conf.Debug)
+	hubs, err := GetKafkaWriter(conf.KafkaUrl, conf.HubTopic, conf.Debug)
 	if err != nil {
 		return nil, err
 	}
 	return &Producer{config: conf, devices: devices, hubs: hubs, aspects: aspects}, nil
 }
 
-func GetKafkaWriter(broker []string, topic string, debug bool) (writer *kafka.Writer, err error) {
+func GetKafkaWriter(broker string, topic string, debug bool) (writer *kafka.Writer, err error) {
 	var logger *log.Logger
 	if debug {
 		logger = log.New(os.Stdout, "[KAFKA-PRODUCER] ", 0)
 	} else {
-		logger = log.New(ioutil.Discard, "", 0)
+		logger = log.New(io.Discard, "", 0)
 	}
 	writer = &kafka.Writer{
-		Addr:        kafka.TCP(broker...),
+		Addr:        kafka.TCP(broker),
 		Topic:       topic,
 		MaxAttempts: 10,
 		Logger:      logger,

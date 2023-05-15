@@ -85,7 +85,7 @@ func TestKafkaRetry(t *testing.T) {
 		return
 	}
 
-	w, err := producer.GetKafkaWriter([]string{conf.KafkaUrl}, "test", true)
+	w, err := producer.GetKafkaWriter(conf.KafkaUrl, "test", true)
 	if err != nil {
 		t.Error(err)
 		return
