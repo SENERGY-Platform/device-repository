@@ -17,22 +17,13 @@
 package tests
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
 	"testing"
 )
 
 func TestCharacteristicValidation(t *testing.T) {
-	ctrl, err := controller.New(config.Config{}, nil, nil, nil)
-	if err != nil {
-		log.Println("ERROR: unable to start control", err)
-		t.Error(err)
-		return
-	}
-
-	t.Run("struct duplicate sub characteristic name", testValidateCharacteristic(ctrl, true, models.Characteristic{
+	t.Run("struct duplicate sub characteristic name", testValidateCharacteristic(true, models.Characteristic{
 		Id:   "root",
 		Name: "root",
 		Type: models.Structure,
@@ -50,7 +41,7 @@ func TestCharacteristicValidation(t *testing.T) {
 		},
 	}))
 
-	t.Run("list duplicate sub characteristic name", testValidateCharacteristic(ctrl, true, models.Characteristic{
+	t.Run("list duplicate sub characteristic name", testValidateCharacteristic(true, models.Characteristic{
 		Id:   "root",
 		Name: "root",
 		Type: models.List,
@@ -69,9 +60,9 @@ func TestCharacteristicValidation(t *testing.T) {
 	}))
 }
 
-func testValidateCharacteristic(ctrl *controller.Controller, expectError bool, characteristic models.Characteristic) func(t *testing.T) {
+func testValidateCharacteristic(expectError bool, characteristic models.Characteristic) func(t *testing.T) {
 	return func(t *testing.T) {
-		err, _ := ctrl.ValidateCharacteristics(characteristic)
+		err, _ := controller.ValidateCharacteristicsWithoutDbAccess(characteristic)
 		if (err != nil) != expectError {
 			t.Error(expectError, err)
 		}

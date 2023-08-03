@@ -97,7 +97,7 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 		return config, err
 	}
 
-	_, elasticIp, err := Elasticsearch(ctx, wg)
+	_, elasticIp, err := OpenSearch(ctx, wg)
 	if err != nil {
 		return config, err
 	}

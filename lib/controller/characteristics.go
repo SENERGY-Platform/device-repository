@@ -66,7 +66,43 @@ func (this *Controller) GetCharacteristic(id string) (result models.Characterist
 	return result, nil, http.StatusOK
 }
 
+func characteristicIdToBaseCharacteristic(characteristic models.Characteristic) (result map[string]models.Characteristic) {
+	result = map[string]models.Characteristic{characteristic.Id: characteristic}
+	for _, sub := range characteristic.SubCharacteristics {
+		for key, _ := range characteristicIdToBaseCharacteristic(sub) {
+			result[key] = characteristic
+		}
+	}
+	return result
+}
+
 func (this *Controller) ValidateCharacteristics(characteristic models.Characteristic) (err error, code int) {
+	ctx, _ := getTimeoutContext()
+	knownCharacteristics, err := this.db.ListAllCharacteristics(ctx)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	err, code = validateCharacteristicIdReuse(characteristic, knownCharacteristics)
+	if err != nil {
+		return err, code
+	}
+	return ValidateCharacteristicsWithoutDbAccess(characteristic)
+}
+
+func validateCharacteristicIdReuse(characteristic models.Characteristic, knownCharacteristics []models.Characteristic) (err error, code int) {
+	usedCharacteristicIds := characteristicIdToBaseCharacteristic(characteristic)
+	for _, e := range knownCharacteristics {
+		existingSubCharacteristics := characteristicIdToBaseCharacteristic(e)
+		for usedSubId, _ := range usedCharacteristicIds {
+			if existingBaseCharacteristic, found := existingSubCharacteristics[usedSubId]; found && existingBaseCharacteristic.Id != characteristic.Id {
+				return errors.New("characteristic references existing sub characteristic"), http.StatusBadRequest
+			}
+		}
+	}
+	return nil, http.StatusOK
+}
+
+func ValidateCharacteristicsWithoutDbAccess(characteristic models.Characteristic) (err error, code int) {
 	if characteristic.Id == "" {
 		return errors.New("missing characteristic id"), http.StatusBadRequest
 	}
@@ -83,7 +119,7 @@ func (this *Controller) ValidateCharacteristics(characteristic models.Characteri
 		return errors.New("wrong characteristic type"), http.StatusBadRequest
 	}
 
-	err, code = this.validateSubCharacteristics(characteristic.SubCharacteristics)
+	err, code = validateSubCharacteristics(characteristic.SubCharacteristics)
 	if err != nil {
 		return err, code
 	}
@@ -91,14 +127,14 @@ func (this *Controller) ValidateCharacteristics(characteristic models.Characteri
 	return nil, http.StatusOK
 }
 
-func (this *Controller) validateSubCharacteristics(characteristics []models.Characteristic) (error, int) {
+func validateSubCharacteristics(characteristics []models.Characteristic) (error, int) {
 	knownName := map[string]bool{}
 	for _, characteristic := range characteristics {
 		if knownName[characteristic.Name] {
 			return errors.New("duplicate sub characteristic name: " + characteristic.Name), http.StatusBadRequest
 		}
 		knownName[characteristic.Name] = true
-		err, code := this.ValidateCharacteristics(characteristic)
+		err, code := ValidateCharacteristicsWithoutDbAccess(characteristic)
 		if err != nil {
 			return err, code
 		}
