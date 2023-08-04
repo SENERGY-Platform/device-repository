@@ -48,19 +48,19 @@ func (db *DB) ListDeviceTypes(ctx context.Context, limit int64, offset int64, so
 	desc := parts[1] == "desc"
 	switch parts[0] {
 	case "name":
-		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) bool {
+		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) int {
 			if desc {
-				return strings.Compare(a.Name, b.Name) > 0
+				return strings.Compare(a.Name, b.Name)
 			}
-			return strings.Compare(a.Name, b.Name) < 0
+			return strings.Compare(a.Name, b.Name) * -1
 		})
 	default:
 	case "id":
-		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) bool {
+		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) int {
 			if desc {
-				return strings.Compare(a.Id, b.Id) > 0
+				return strings.Compare(a.Id, b.Id)
 			}
-			return strings.Compare(a.Id, b.Id) < 0
+			return strings.Compare(a.Id, b.Id) * -1
 		})
 	}
 	if offset >= int64(len(deviceTypes)) {
