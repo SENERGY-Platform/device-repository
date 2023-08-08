@@ -5,10 +5,8 @@ go 1.20
 require (
 	github.com/Shopify/sarama v1.29.1
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/samuel/go-zookeeper v0.0.0-20200724154423-2164a8ac840e // indirect
 	github.com/segmentio/kafka-go v0.4.42
 	github.com/tidwall/pretty v1.0.2 // indirect
-	github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a // indirect
 	go.mongodb.org/mongo-driver v1.11.4
 )
 
@@ -16,7 +14,7 @@ require github.com/tryvium-travels/memongo v0.7.0
 
 require (
 	github.com/SENERGY-Platform/models/go v0.0.0-20230406081245-2b17534509d4
-	github.com/SENERGY-Platform/permission-search v0.0.0-20230803142550-2d9c439e8451
+	github.com/SENERGY-Platform/permission-search v0.0.0-20230808130449-7a79427102e9
 	github.com/google/uuid v1.3.0
 	github.com/testcontainers/testcontainers-go v0.21.0
 	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
