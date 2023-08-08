@@ -24,7 +24,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 	"log"
 	"runtime/debug"
 	"strings"
@@ -120,7 +119,7 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	if len(parts) > 1 && parts[1] == "desc" {
 		direction = int32(-1)
 	}
-	opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
+	opt.SetSort(bson.D{{sortby, direction}})
 
 	filter := bson.M{}
 	var deviceTypeIds []interface{}
@@ -174,7 +173,7 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 	if len(parts) > 1 && parts[1] == "desc" {
 		direction = int32(-1)
 	}
-	opt.SetSort(bsonx.Doc{{sortby, bsonx.Int32(direction)}})
+	opt.SetSort(bson.D{{sortby, direction}})
 
 	filter := bson.M{}
 	var deviceTypeIds []interface{}

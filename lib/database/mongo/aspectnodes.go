@@ -23,7 +23,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 	"sort"
 )
 
@@ -109,7 +108,7 @@ func (this *Mongo) RemoveAspectNodesByRootId(ctx context.Context, id string) err
 }
 
 func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []models.AspectNode, err error) {
-	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{aspectNodeIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +144,7 @@ func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, anc
 	if descendants {
 		or = append(or, bson.D{{aspectNodeDescendentIdsKey, bson.M{"$in": aspectNodeIds}}})
 	}
-	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{{"$or", or}}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{{"$or", or}}, options.Find().SetSort(bson.D{{aspectNodeIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +169,7 @@ func sortSubIds(a *models.AspectNode) {
 }
 
 func (this *Mongo) ListAspectNodesByIdList(ctx context.Context, ids []string) (result []models.AspectNode, err error) {
-	cursor, err := this.aspectNodeCollection().Find(ctx, bson.M{aspectNodeIdKey: bson.M{"$in": ids}}, options.Find().SetSort(bsonx.Doc{{aspectNodeIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.aspectNodeCollection().Find(ctx, bson.M{aspectNodeIdKey: bson.M{"$in": ids}}, options.Find().SetSort(bson.D{{aspectNodeIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}

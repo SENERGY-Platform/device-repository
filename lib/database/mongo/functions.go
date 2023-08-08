@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 )
 
 const functionIdFieldName = "Id"
@@ -96,7 +95,7 @@ func (this *Mongo) RemoveFunction(ctx context.Context, id string) error {
 }
 
 func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (result []models.Function, err error) {
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionRdfTypeKey: rdfType}, options.Find().SetSort(bsonx.Doc{{functionIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{functionRdfTypeKey: rdfType}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +141,7 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bsonx.Doc{{functionIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +166,7 @@ func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class stri
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bsonx.Doc{{functionIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +192,7 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bsonx.Doc{{functionIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}

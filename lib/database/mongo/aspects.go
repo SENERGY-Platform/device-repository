@@ -22,7 +22,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 )
 
 const aspectIdFieldName = "Id"
@@ -76,7 +75,7 @@ func (this *Mongo) RemoveAspect(ctx context.Context, id string) error {
 }
 
 func (this *Mongo) ListAllAspects(ctx context.Context) (result []models.Aspect, err error) {
-	cursor, err := this.aspectCollection().Find(ctx, bson.D{}, options.Find().SetSort(bsonx.Doc{{aspectIdKey, bsonx.Int32(1)}}))
+	cursor, err := this.aspectCollection().Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{aspectIdKey, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +116,12 @@ func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancesto
 		if err != nil {
 			return nil, err
 		}
-		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": rootIds}}, options.Find().SetSort(bsonx.Doc{{aspectIdKey, bsonx.Int32(1)}}))
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": rootIds}}, options.Find().SetSort(bson.D{{aspectIdKey, 1}}))
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": aspectIds}}, options.Find().SetSort(bsonx.Doc{{aspectIdKey, bsonx.Int32(1)}}))
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": aspectIds}}, options.Find().SetSort(bson.D{{aspectIdKey, 1}}))
 		if err != nil {
 			return nil, err
 		}
