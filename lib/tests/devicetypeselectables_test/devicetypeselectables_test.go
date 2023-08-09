@@ -39,7 +39,7 @@ import (
 	"time"
 )
 
-func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
+func TestDeviceTypeSelectables(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -52,258 +52,118 @@ func TestDeviceTypeSelectablesFindToggle(t *testing.T) {
 
 	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
 
-	toggleCriteria := []model.FilterCriteria{{
-		FunctionId:    model.CONTROLLING_FUNCTION_PREFIX + "toggle",
-		DeviceClassId: "toggle",
-	}}
+	t.Run("toggle", func(t *testing.T) {
+		toggleCriteria := []model.FilterCriteria{{
+			FunctionId:    model.CONTROLLING_FUNCTION_PREFIX + "toggle",
+			DeviceClassId: "toggle",
+		}}
 
-	toggleSelectable := model.DeviceTypeSelectable{
-		DeviceTypeId: "toggle",
-		Services: []models.Service{
-			{
-				Id:          "triggerToggle",
-				Interaction: models.REQUEST,
-				Inputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:         "void",
-							IsVoid:     true,
-							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "toggle",
-						},
-					},
-				},
-			},
-		},
-		ServicePathOptions: map[string][]model.ServicePathOption{
-			"triggerToggle": {
+		toggleSelectable := model.DeviceTypeSelectable{
+			DeviceTypeId: "toggle",
+			Services: []models.Service{
 				{
-					ServiceId:             "triggerToggle",
-					Path:                  "prefix.",
-					CharacteristicId:      "",
-					AspectNode:            models.AspectNode{},
-					FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "toggle",
-					IsControllingFunction: true,
-					IsVoid:                true,
-				},
-			},
-		},
-	}
-
-	t.Run("find toggle", testDeviceTypeSelectablesWithoutConfigurables(conf, toggleCriteria, "prefix.", nil, []model.DeviceTypeSelectable{toggleSelectable}))
-}
-
-func TestDeviceTypeSelectablesInteractionFilter(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
-
-	waterProbeCriteria := []model.FilterCriteria{{
-		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-		AspectId:   "water",
-	}}
-	waterprobeSelectable := model.DeviceTypeSelectable{
-		DeviceTypeId: "water-probe",
-		Services: []models.Service{
-			{
-				Id:          "getTemperature",
-				Interaction: models.REQUEST,
-				Outputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:               "temperature",
-							Name:             "temperature",
-							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-							AspectId:         "water",
-							CharacteristicId: "water-probe-test-characteristic",
-						},
-					},
-				},
-			},
-		},
-		ServicePathOptions: map[string][]model.ServicePathOption{
-			"getTemperature": {
-				{
-					ServiceId:        "getTemperature",
-					Path:             "prefix.temperature",
-					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: models.AspectNode{
-						Id:            "water",
-						Name:          "",
-						RootId:        "water",
-						ParentId:      "",
-						ChildIds:      []string{},
-						AncestorIds:   []string{},
-						DescendentIds: []string{},
-					},
-					FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-				},
-			},
-		},
-	}
-
-	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
-	t.Run("event+request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
-		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-		AspectId:    "water",
-		Interaction: models.EVENT_AND_REQUEST,
-	}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{}))
-	t.Run("event in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
-		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-		AspectId:    "water",
-		Interaction: models.EVENT_AND_REQUEST,
-	}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{}))
-	t.Run("request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
-		FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-		AspectId:    "water",
-		Interaction: models.REQUEST,
-	}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-}
-
-func TestDeviceTypeSelectablesInteractionFilter2(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	t.Run("init metadata", createTestMetadata(conf, models.EVENT_AND_REQUEST))
-
-	waterProbeCriteria := []model.FilterCriteria{{
-		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-		AspectId:   "water",
-	}}
-	waterprobeSelectable := model.DeviceTypeSelectable{
-		DeviceTypeId: "water-probe",
-		Services: []models.Service{
-			{
-				Id:          "getTemperature",
-				Interaction: models.EVENT_AND_REQUEST,
-				Outputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:               "temperature",
-							Name:             "temperature",
-							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-							AspectId:         "water",
-							CharacteristicId: "water-probe-test-characteristic",
-						},
-					},
-				},
-			},
-		},
-		ServicePathOptions: map[string][]model.ServicePathOption{
-			"getTemperature": {
-				{
-					ServiceId:        "getTemperature",
-					Path:             "prefix.temperature",
-					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: models.AspectNode{
-						Id:            "water",
-						Name:          "",
-						RootId:        "water",
-						ParentId:      "",
-						ChildIds:      []string{},
-						AncestorIds:   []string{},
-						DescendentIds: []string{},
-					},
-					FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-				},
-			},
-		},
-	}
-
-	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
-}
-
-func TestDeviceTypeSelectablesInteractionFilterV2(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
-
-	waterProbeCriteria := []model.FilterCriteria{{
-		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-		AspectId:   "water",
-	}}
-	waterprobeSelectable := model.DeviceTypeSelectable{
-		DeviceTypeId: "water-probe",
-		Services: []models.Service{
-			{
-				Id:          "getTemperature",
-				Interaction: models.REQUEST,
-				Outputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:               "temperature",
-							Name:             "temperature",
-							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-							AspectId:         "water",
-							CharacteristicId: "water-probe-test-characteristic",
-						},
-					},
-				},
-			},
-		},
-		ServicePathOptions: map[string][]model.ServicePathOption{
-			"getTemperature": {
-				{
-					ServiceId:        "getTemperature",
-					Path:             "prefix.temperature",
-					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: models.AspectNode{
-						Id:            "water",
-						Name:          "",
-						RootId:        "water",
-						ParentId:      "",
-						ChildIds:      []string{},
-						AncestorIds:   []string{},
-						DescendentIds: []string{},
-					},
-					FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+					Id:          "triggerToggle",
 					Interaction: models.REQUEST,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "void",
+								IsVoid:     true,
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "toggle",
+							},
+						},
+					},
 				},
 			},
-		},
-	}
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"triggerToggle": {
+					{
+						ServiceId:             "triggerToggle",
+						Path:                  "prefix.",
+						CharacteristicId:      "",
+						AspectNode:            models.AspectNode{},
+						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "toggle",
+						IsControllingFunction: true,
+						IsVoid:                true,
+					},
+				},
+			},
+		}
 
-	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+		t.Run("find toggle", testDeviceTypeSelectablesWithoutConfigurables(conf, toggleCriteria, "prefix.", nil, []model.DeviceTypeSelectable{toggleSelectable}))
+
+	})
+
+	t.Run("interaction filter", func(t *testing.T) {
+		waterProbeCriteria := []model.FilterCriteria{{
+			FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+			AspectId:   "water",
+		}}
+		waterprobeSelectable := model.DeviceTypeSelectable{
+			DeviceTypeId: "water-probe",
+			Services: []models.Service{
+				{
+					Id:          "getTemperature",
+					Interaction: models.REQUEST,
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:               "temperature",
+								Name:             "temperature",
+								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+								AspectId:         "water",
+								CharacteristicId: "water-probe-test-characteristic",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"getTemperature": {
+					{
+						ServiceId:        "getTemperature",
+						Path:             "prefix.temperature",
+						CharacteristicId: "water-probe-test-characteristic",
+						AspectNode: models.AspectNode{
+							Id:            "water",
+							Name:          "",
+							RootId:        "water",
+							ParentId:      "",
+							ChildIds:      []string{},
+							AncestorIds:   []string{},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+					},
+				},
+			},
+		}
+
+		t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{}))
+		t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
+		t.Run("event+request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
+			FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+			AspectId:    "water",
+			Interaction: models.EVENT_AND_REQUEST,
+		}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{}))
+		t.Run("event in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
+			FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+			AspectId:    "water",
+			Interaction: models.EVENT_AND_REQUEST,
+		}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{}))
+		t.Run("request in criteria", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{{
+			FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+			AspectId:    "water",
+			Interaction: models.REQUEST,
+		}}, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+	})
 }
 
-func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
+func TestDeviceTypeSelectables2(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -316,57 +176,1835 @@ func TestDeviceTypeSelectablesInteractionFilter2V2(t *testing.T) {
 
 	t.Run("init metadata", createTestMetadata(conf, models.EVENT_AND_REQUEST))
 
-	waterProbeCriteria := []model.FilterCriteria{{
-		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-		AspectId:   "water",
-	}}
-	waterprobeSelectable := model.DeviceTypeSelectable{
-		DeviceTypeId: "water-probe",
-		Services: []models.Service{
-			{
-				Id:          "getTemperature",
-				Interaction: models.EVENT_AND_REQUEST,
-				Outputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:               "temperature",
-							Name:             "temperature",
-							FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-							AspectId:         "water",
-							CharacteristicId: "water-probe-test-characteristic",
+	t.Run("interaction filter", func(t *testing.T) {
+		waterProbeCriteria := []model.FilterCriteria{{
+			FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+			AspectId:   "water",
+		}}
+		waterprobeSelectable := model.DeviceTypeSelectable{
+			DeviceTypeId: "water-probe",
+			Services: []models.Service{
+				{
+					Id:          "getTemperature",
+					Interaction: models.EVENT_AND_REQUEST,
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:               "temperature",
+								Name:             "temperature",
+								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+								AspectId:         "water",
+								CharacteristicId: "water-probe-test-characteristic",
+							},
 						},
 					},
 				},
 			},
-		},
-		ServicePathOptions: map[string][]model.ServicePathOption{
-			"getTemperature": {
-				{
-					ServiceId:        "getTemperature",
-					Path:             "prefix.temperature",
-					CharacteristicId: "water-probe-test-characteristic",
-					AspectNode: models.AspectNode{
-						Id:            "water",
-						Name:          "",
-						RootId:        "water",
-						ParentId:      "",
-						ChildIds:      []string{},
-						AncestorIds:   []string{},
-						DescendentIds: []string{},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"getTemperature": {
+					{
+						ServiceId:        "getTemperature",
+						Path:             "prefix.temperature",
+						CharacteristicId: "water-probe-test-characteristic",
+						AspectNode: models.AspectNode{
+							Id:            "water",
+							Name:          "",
+							RootId:        "water",
+							ParentId:      "",
+							ChildIds:      []string{},
+							AncestorIds:   []string{},
+							DescendentIds: []string{},
+						},
+						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
 					},
-					FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					Interaction: models.EVENT_AND_REQUEST,
 				},
 			},
-		},
-	}
+		}
 
-	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", nil, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, waterProbeCriteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{waterprobeSelectable}))
+
+	})
+
+	t.Run("interaction filter v2", func(t *testing.T) {
+		waterProbeCriteria := []model.FilterCriteria{{
+			FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+			AspectId:   "water",
+		}}
+		waterprobeSelectable := model.DeviceTypeSelectable{
+			DeviceTypeId: "water-probe",
+			Services: []models.Service{
+				{
+					Id:          "getTemperature",
+					Interaction: models.EVENT_AND_REQUEST,
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:               "temperature",
+								Name:             "temperature",
+								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+								AspectId:         "water",
+								CharacteristicId: "water-probe-test-characteristic",
+							},
+						},
+					},
+				},
+			},
+			ServicePathOptions: map[string][]model.ServicePathOption{
+				"getTemperature": {
+					{
+						ServiceId:        "getTemperature",
+						Path:             "prefix.temperature",
+						CharacteristicId: "water-probe-test-characteristic",
+						AspectNode: models.AspectNode{
+							Id:            "water",
+							Name:          "",
+							RootId:        "water",
+							ParentId:      "",
+							ChildIds:      []string{},
+							AncestorIds:   []string{},
+							DescendentIds: []string{},
+						},
+						FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						Interaction: models.EVENT_AND_REQUEST,
+					},
+				},
+			},
+		}
+
+		t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, waterProbeCriteria, "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+		t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(waterProbeCriteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{waterprobeSelectable}))
+	})
+
+	t.Run("measuring", func(t *testing.T) {
+		interaction := models.EVENT_AND_REQUEST
+		t.Run("inside and outside temp", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "inside_air"},
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "outside_air"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "thermometer",
+				Services: []models.Service{
+					{
+						Id:          "getInsideTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+					{
+						Id:          "getOutsideTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "outside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getInsideTemperature": {
+						{
+							ServiceId:        "getInsideTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+					"getOutsideTemperature": {
+						{
+							ServiceId:        "getOutsideTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "outside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("inside temp", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "inside_air"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "thermometer",
+				Services: []models.Service{
+					{
+						Id:          "getInsideTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getInsideTemperature": {
+						{
+							ServiceId:        "getInsideTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat",
+				Services: []models.Service{
+					{
+						Id:          "getTargetTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getTargetTemperature": {
+						{
+							ServiceId:        "getTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("air temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "air"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "simple_thermometer",
+				Services: []models.Service{
+					{
+						Id:          "getTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getTemperature": {
+						{
+							ServiceId:        "getTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "air",
+								RootId:        "air",
+								ParentId:      "",
+								ChildIds:      []string{"inside_air", "outside_air"},
+								AncestorIds:   []string{},
+								DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermometer",
+				Services: []models.Service{
+					{
+						Id:          "getInsideTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+					{
+						Id:          "getOutsideTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "outside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getInsideTemperature": {
+						{
+							ServiceId:        "getInsideTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+					"getOutsideTemperature": {
+						{
+							ServiceId:        "getOutsideTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "outside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat",
+				Services: []models.Service{
+					{
+						Id:          "getTargetTemperature",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getTargetTemperature": {
+						{
+							ServiceId:        "getTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("device temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "device"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "getTemperatures",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "temperatures",
+									Name: "temperatures",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "cpu",
+											Name:       "cpu",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+											AspectId:   "cpu",
+										},
+										{
+											Id:         "gpu",
+											Name:       "gpu",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+											AspectId:   "gpu",
+										},
+										{
+											Id:         "case",
+											Name:       "case",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+											AspectId:   "case",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getTemperatures": {
+						{
+							ServiceId:        "getTemperatures",
+							Path:             "temperatures.case",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case",
+								RootId:        "device",
+								ParentId:      "device",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"device"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+						{
+							ServiceId:        "getTemperatures",
+							Path:             "temperatures.cpu",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "cpu",
+								RootId:        "device",
+								ParentId:      "device",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"device"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+						{
+							ServiceId:        "getTemperatures",
+							Path:             "temperatures.gpu",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "gpu",
+								RootId:        "device",
+								ParentId:      "device",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"device"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("cpu temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "cpu"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "getTemperatures",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "temperatures",
+									Name: "temperatures",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "cpu",
+											Name:       "cpu",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+											AspectId:   "cpu",
+										},
+										{
+											Id:         "gpu",
+											Name:       "gpu",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+											AspectId:   "gpu",
+										},
+										{
+											Id:         "case",
+											Name:       "case",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+											AspectId:   "case",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getTemperatures": {
+						{
+							ServiceId:        "getTemperatures",
+							Path:             "temperatures.cpu",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "cpu",
+								RootId:        "device",
+								ParentId:      "device",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"device"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "fan"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "getFanSpeeds",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "speeds",
+									Name: "speeds",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "cpu_fan",
+											Name:       "cpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "cpu_fan",
+										},
+										{
+											Id:         "gpu_fan",
+											Name:       "gpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "gpu_fan",
+										},
+										{
+											Id:         "case_fan_1",
+											Name:       "case_fan_1",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_1",
+										},
+										{
+											Id:         "case_fan_2",
+											Name:       "case_fan_2",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_2",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getFanSpeeds": {
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.case_fan_1",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_1",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.case_fan_2",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_2",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.cpu_fan",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "cpu_fan",
+								RootId:        "fan",
+								ParentId:      "fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.gpu_fan",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "gpu_fan",
+								RootId:        "fan",
+								ParentId:      "fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("cpu fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "cpu_fan"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "getFanSpeeds",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "speeds",
+									Name: "speeds",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "cpu_fan",
+											Name:       "cpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "cpu_fan",
+										},
+										{
+											Id:         "gpu_fan",
+											Name:       "gpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "gpu_fan",
+										},
+										{
+											Id:         "case_fan_1",
+											Name:       "case_fan_1",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_1",
+										},
+										{
+											Id:         "case_fan_2",
+											Name:       "case_fan_2",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_2",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getFanSpeeds": {
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.cpu_fan",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "cpu_fan",
+								RootId:        "fan",
+								ParentId:      "fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("case fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "case_fan"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "getFanSpeeds",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "speeds",
+									Name: "speeds",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "cpu_fan",
+											Name:       "cpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "cpu_fan",
+										},
+										{
+											Id:         "gpu_fan",
+											Name:       "gpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "gpu_fan",
+										},
+										{
+											Id:         "case_fan_1",
+											Name:       "case_fan_1",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_1",
+										},
+										{
+											Id:         "case_fan_2",
+											Name:       "case_fan_2",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_2",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getFanSpeeds": {
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.case_fan_1",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_1",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.case_fan_2",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_2",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("case fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "case_fan_1"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "getFanSpeeds",
+						Interaction: interaction,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "speeds",
+									Name: "speeds",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "cpu_fan",
+											Name:       "cpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "cpu_fan",
+										},
+										{
+											Id:         "gpu_fan",
+											Name:       "gpu_fan",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "gpu_fan",
+										},
+										{
+											Id:         "case_fan_1",
+											Name:       "case_fan_1",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_1",
+										},
+										{
+											Id:         "case_fan_2",
+											Name:       "case_fan_2",
+											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+											AspectId:   "case_fan_2",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"getFanSpeeds": {
+						{
+							ServiceId:        "getFanSpeeds",
+							Path:             "speeds.case_fan_1",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_1",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+						},
+					},
+				},
+			},
+		}))
+	})
+
+	t.Run("controlling", func(t *testing.T) {
+		interaction := models.EVENT_AND_REQUEST
+		t.Run("thermostat", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "thermostat",
+				Services: []models.Service{{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				}},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId: "setTargetTemperature",
+							Path:      "temperature",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_base",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "air",
+								RootId:        "air",
+								ParentId:      "",
+								ChildIds:      []string{"inside_air", "outside_air"},
+								AncestorIds:   []string{},
+								DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_multiservice",
+				Services: []models.Service{
+					{
+						Id:          "setInsideTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setOutsideTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "outside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setInsideTargetTemperature": {
+						{
+							ServiceId:        "setInsideTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+					"setOutsideTargetTemperature": {
+						{
+							ServiceId:        "setOutsideTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "outside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_multivalue",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "temperature",
+									Name: "temperature",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "inside",
+											Name:       "inside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "inside_air",
+										},
+										{
+											Id:         "outside",
+											Name:       "outside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "outside_air",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature.inside",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature.outside",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "outside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_without_aspect",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:             "setTargetTemperature",
+							Path:                  "temperature",
+							CharacteristicId:      "",
+							AspectNode:            models.AspectNode{},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("thermostat air", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "air"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "thermostat",
+				Services: []models.Service{{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				}},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId: "setTargetTemperature",
+							Path:      "temperature",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_base",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "air",
+								RootId:        "air",
+								ParentId:      "",
+								ChildIds:      []string{"inside_air", "outside_air"},
+								AncestorIds:   []string{},
+								DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_multiservice",
+				Services: []models.Service{
+					{
+						Id:          "setInsideTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setOutsideTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "outside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setInsideTargetTemperature": {
+						{
+							ServiceId:        "setInsideTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+					"setOutsideTargetTemperature": {
+						{
+							ServiceId:        "setOutsideTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "outside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_multivalue",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "temperature",
+									Name: "temperature",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "inside",
+											Name:       "inside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "inside_air",
+										},
+										{
+											Id:         "outside",
+											Name:       "outside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "outside_air",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature.inside",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature.outside",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "outside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("thermostat inside air", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "inside_air"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "thermostat",
+				Services: []models.Service{{
+					Id:          "setTargetTemperature",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "temperature",
+								Name:       "temperature",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+								AspectId:   "inside_air",
+							},
+						},
+					},
+				}},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId: "setTargetTemperature",
+							Path:      "temperature",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_multiservice",
+				Services: []models.Service{
+					{
+						Id:          "setInsideTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "temperature",
+									Name:       "temperature",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+									AspectId:   "inside_air",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setInsideTargetTemperature": {
+						{
+							ServiceId:        "setInsideTargetTemperature",
+							Path:             "temperature",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "thermostat_without_get_multivalue",
+				Services: []models.Service{
+					{
+						Id:          "setTargetTemperature",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:   "temperature",
+									Name: "temperature",
+									SubContentVariables: []models.ContentVariable{
+										{
+											Id:         "inside",
+											Name:       "inside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "inside_air",
+										},
+										{
+											Id:         "outside",
+											Name:       "outside",
+											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+											AspectId:   "outside_air",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setTargetTemperature": {
+						{
+							ServiceId:        "setTargetTemperature",
+							Path:             "temperature.inside",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "inside_air",
+								RootId:        "air",
+								ParentId:      "air",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"air"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("pc_cooling_controller fan_speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "setCaseFan1Speed",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "case_fan_1",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setCaseFan2Speed",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "case_fan_2",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setCpuSpeed",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "cpu_fan",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setGpuSpeed",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "gpu_fan",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setCaseFan1Speed": {
+						{
+							ServiceId:        "setCaseFan1Speed",
+							Path:             "speed",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_1",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+							IsControllingFunction: true,
+						},
+					},
+					"setCaseFan2Speed": {
+						{
+							ServiceId:        "setCaseFan2Speed",
+							Path:             "speed",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_2",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+							IsControllingFunction: true,
+						},
+					},
+					"setCpuSpeed": {
+						{
+							ServiceId:        "setCpuSpeed",
+							Path:             "speed",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "cpu_fan",
+								RootId:        "fan",
+								ParentId:      "fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+							IsControllingFunction: true,
+						},
+					},
+					"setGpuSpeed": {
+						{
+							ServiceId:        "setGpuSpeed",
+							Path:             "speed",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "gpu_fan",
+								RootId:        "fan",
+								ParentId:      "fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("pc_cooling_controller fan_speed case_fan", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "setCaseFan1Speed",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "case_fan_1",
+								},
+							},
+						},
+					},
+					{
+						Id:          "setCaseFan2Speed",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "case_fan_2",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setCaseFan1Speed": {
+						{
+							ServiceId:        "setCaseFan1Speed",
+							Path:             "speed",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_1",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+							IsControllingFunction: true,
+						},
+					},
+					"setCaseFan2Speed": {
+						{
+							ServiceId:        "setCaseFan2Speed",
+							Path:             "speed",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_2",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+		}))
+
+		t.Run("pc_cooling_controller fan_speed case_fan_1", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
+			{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan_1"},
+		}, "", nil, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "pc_cooling_controller",
+				Services: []models.Service{
+					{
+						Id:          "setCaseFan1Speed",
+						Interaction: interaction,
+						Inputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:         "speed",
+									Name:       "speed",
+									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+									AspectId:   "case_fan_1",
+								},
+							},
+						},
+					},
+				},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"setCaseFan1Speed": {
+						{
+							ServiceId:        "setCaseFan1Speed",
+							Path:             "speed",
+							CharacteristicId: "",
+							AspectNode: models.AspectNode{
+								Id:            "case_fan_1",
+								RootId:        "fan",
+								ParentId:      "case_fan",
+								ChildIds:      []string{},
+								AncestorIds:   []string{"case_fan", "fan"},
+								DescendentIds: []string{},
+							},
+							FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+							IsControllingFunction: true,
+						},
+					},
+				},
+			},
+		}))
+	})
 }
 
 func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions []models.Interaction) (result []model.FilterCriteria) {
@@ -377,1756 +2015,6 @@ func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions
 		}
 	}
 	return result
-}
-
-func TestDeviceTypeMeasuringSelectables(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	interaction := models.EVENT_AND_REQUEST
-
-	t.Run("init metadata", createTestMetadata(conf, interaction))
-
-	t.Run("inside and outside temp", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "inside_air"},
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "outside_air"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "thermometer",
-			Services: []models.Service{
-				{
-					Id:          "getInsideTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-				{
-					Id:          "getOutsideTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "outside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getInsideTemperature": {
-					{
-						ServiceId:        "getInsideTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-				"getOutsideTemperature": {
-					{
-						ServiceId:        "getOutsideTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "outside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("inside temp", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "inside_air"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "thermometer",
-			Services: []models.Service{
-				{
-					Id:          "getInsideTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getInsideTemperature": {
-					{
-						ServiceId:        "getInsideTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat",
-			Services: []models.Service{
-				{
-					Id:          "getTargetTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getTargetTemperature": {
-					{
-						ServiceId:        "getTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("air temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "air"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "simple_thermometer",
-			Services: []models.Service{
-				{
-					Id:          "getTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getTemperature": {
-					{
-						ServiceId:        "getTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "air",
-							RootId:        "air",
-							ParentId:      "",
-							ChildIds:      []string{"inside_air", "outside_air"},
-							AncestorIds:   []string{},
-							DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermometer",
-			Services: []models.Service{
-				{
-					Id:          "getInsideTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-				{
-					Id:          "getOutsideTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "outside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getInsideTemperature": {
-					{
-						ServiceId:        "getInsideTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-				"getOutsideTemperature": {
-					{
-						ServiceId:        "getOutsideTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "outside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat",
-			Services: []models.Service{
-				{
-					Id:          "getTargetTemperature",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getTargetTemperature": {
-					{
-						ServiceId:        "getTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("device temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "device"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "getTemperatures",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "temperatures",
-								Name: "temperatures",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "cpu",
-										Name:       "cpu",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-										AspectId:   "cpu",
-									},
-									{
-										Id:         "gpu",
-										Name:       "gpu",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-										AspectId:   "gpu",
-									},
-									{
-										Id:         "case",
-										Name:       "case",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-										AspectId:   "case",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getTemperatures": {
-					{
-						ServiceId:        "getTemperatures",
-						Path:             "temperatures.case",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case",
-							RootId:        "device",
-							ParentId:      "device",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"device"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-					{
-						ServiceId:        "getTemperatures",
-						Path:             "temperatures.cpu",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "cpu",
-							RootId:        "device",
-							ParentId:      "device",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"device"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-					{
-						ServiceId:        "getTemperatures",
-						Path:             "temperatures.gpu",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "gpu",
-							RootId:        "device",
-							ParentId:      "device",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"device"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("cpu temperature", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature", AspectId: "cpu"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "getTemperatures",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "temperatures",
-								Name: "temperatures",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "cpu",
-										Name:       "cpu",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-										AspectId:   "cpu",
-									},
-									{
-										Id:         "gpu",
-										Name:       "gpu",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-										AspectId:   "gpu",
-									},
-									{
-										Id:         "case",
-										Name:       "case",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-										AspectId:   "case",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getTemperatures": {
-					{
-						ServiceId:        "getTemperatures",
-						Path:             "temperatures.cpu",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "cpu",
-							RootId:        "device",
-							ParentId:      "device",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"device"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "fan"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "getFanSpeeds",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "speeds",
-								Name: "speeds",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "cpu_fan",
-										Name:       "cpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "cpu_fan",
-									},
-									{
-										Id:         "gpu_fan",
-										Name:       "gpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "gpu_fan",
-									},
-									{
-										Id:         "case_fan_1",
-										Name:       "case_fan_1",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_1",
-									},
-									{
-										Id:         "case_fan_2",
-										Name:       "case_fan_2",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_2",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getFanSpeeds": {
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.case_fan_1",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_1",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.case_fan_2",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_2",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.cpu_fan",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "cpu_fan",
-							RootId:        "fan",
-							ParentId:      "fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.gpu_fan",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "gpu_fan",
-							RootId:        "fan",
-							ParentId:      "fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("cpu fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "cpu_fan"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "getFanSpeeds",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "speeds",
-								Name: "speeds",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "cpu_fan",
-										Name:       "cpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "cpu_fan",
-									},
-									{
-										Id:         "gpu_fan",
-										Name:       "gpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "gpu_fan",
-									},
-									{
-										Id:         "case_fan_1",
-										Name:       "case_fan_1",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_1",
-									},
-									{
-										Id:         "case_fan_2",
-										Name:       "case_fan_2",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_2",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getFanSpeeds": {
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.cpu_fan",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "cpu_fan",
-							RootId:        "fan",
-							ParentId:      "fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("case fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "case_fan"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "getFanSpeeds",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "speeds",
-								Name: "speeds",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "cpu_fan",
-										Name:       "cpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "cpu_fan",
-									},
-									{
-										Id:         "gpu_fan",
-										Name:       "gpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "gpu_fan",
-									},
-									{
-										Id:         "case_fan_1",
-										Name:       "case_fan_1",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_1",
-									},
-									{
-										Id:         "case_fan_2",
-										Name:       "case_fan_2",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_2",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getFanSpeeds": {
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.case_fan_1",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_1",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.case_fan_2",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_2",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("case fan speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed", AspectId: "case_fan_1"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "getFanSpeeds",
-					Interaction: interaction,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "speeds",
-								Name: "speeds",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "cpu_fan",
-										Name:       "cpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "cpu_fan",
-									},
-									{
-										Id:         "gpu_fan",
-										Name:       "gpu_fan",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "gpu_fan",
-									},
-									{
-										Id:         "case_fan_1",
-										Name:       "case_fan_1",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_1",
-									},
-									{
-										Id:         "case_fan_2",
-										Name:       "case_fan_2",
-										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-										AspectId:   "case_fan_2",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"getFanSpeeds": {
-					{
-						ServiceId:        "getFanSpeeds",
-						Path:             "speeds.case_fan_1",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_1",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-					},
-				},
-			},
-		},
-	}))
-}
-
-func TestDeviceTypeControllingSelectables(t *testing.T) {
-	//t.Skip("not implemented") //TODO
-
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	interaction := models.EVENT_AND_REQUEST
-
-	t.Run("init metadata", createTestMetadata(conf, interaction))
-
-	t.Run("thermostat", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "thermostat",
-			Services: []models.Service{{
-				Id:          "setTargetTemperature",
-				Interaction: interaction,
-				Inputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:         "temperature",
-							Name:       "temperature",
-							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-							AspectId:   "inside_air",
-						},
-					},
-				},
-			}},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId: "setTargetTemperature",
-						Path:      "temperature",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_base",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "air",
-							RootId:        "air",
-							ParentId:      "",
-							ChildIds:      []string{"inside_air", "outside_air"},
-							AncestorIds:   []string{},
-							DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_multiservice",
-			Services: []models.Service{
-				{
-					Id:          "setInsideTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-				{
-					Id:          "setOutsideTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "outside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setInsideTargetTemperature": {
-					{
-						ServiceId:        "setInsideTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-				"setOutsideTargetTemperature": {
-					{
-						ServiceId:        "setOutsideTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "outside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_multivalue",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "temperature",
-								Name: "temperature",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "inside",
-										Name:       "inside",
-										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-										AspectId:   "inside_air",
-									},
-									{
-										Id:         "outside",
-										Name:       "outside",
-										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-										AspectId:   "outside_air",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature.inside",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature.outside",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "outside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_without_aspect",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:             "setTargetTemperature",
-						Path:                  "temperature",
-						CharacteristicId:      "",
-						AspectNode:            models.AspectNode{},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("thermostat air", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "air"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "thermostat",
-			Services: []models.Service{{
-				Id:          "setTargetTemperature",
-				Interaction: interaction,
-				Inputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:         "temperature",
-							Name:       "temperature",
-							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-							AspectId:   "inside_air",
-						},
-					},
-				},
-			}},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId: "setTargetTemperature",
-						Path:      "temperature",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_base",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "air",
-							RootId:        "air",
-							ParentId:      "",
-							ChildIds:      []string{"inside_air", "outside_air"},
-							AncestorIds:   []string{},
-							DescendentIds: []string{"evening_outside_air", "inside_air", "morning_outside_air", "outside_air"},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_multiservice",
-			Services: []models.Service{
-				{
-					Id:          "setInsideTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-				{
-					Id:          "setOutsideTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "outside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setInsideTargetTemperature": {
-					{
-						ServiceId:        "setInsideTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-				"setOutsideTargetTemperature": {
-					{
-						ServiceId:        "setOutsideTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "outside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_multivalue",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "temperature",
-								Name: "temperature",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "inside",
-										Name:       "inside",
-										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-										AspectId:   "inside_air",
-									},
-									{
-										Id:         "outside",
-										Name:       "outside",
-										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-										AspectId:   "outside_air",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature.inside",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature.outside",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "outside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{"evening_outside_air", "morning_outside_air"},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{"evening_outside_air", "morning_outside_air"},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("thermostat inside air", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature", DeviceClassId: "thermostat", AspectId: "inside_air"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "thermostat",
-			Services: []models.Service{{
-				Id:          "setTargetTemperature",
-				Interaction: interaction,
-				Inputs: []models.Content{
-					{
-						ContentVariable: models.ContentVariable{
-							Id:         "temperature",
-							Name:       "temperature",
-							FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-							AspectId:   "inside_air",
-						},
-					},
-				},
-			}},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId: "setTargetTemperature",
-						Path:      "temperature",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_multiservice",
-			Services: []models.Service{
-				{
-					Id:          "setInsideTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "temperature",
-								Name:       "temperature",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-								AspectId:   "inside_air",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setInsideTargetTemperature": {
-					{
-						ServiceId:        "setInsideTargetTemperature",
-						Path:             "temperature",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "thermostat_without_get_multivalue",
-			Services: []models.Service{
-				{
-					Id:          "setTargetTemperature",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:   "temperature",
-								Name: "temperature",
-								SubContentVariables: []models.ContentVariable{
-									{
-										Id:         "inside",
-										Name:       "inside",
-										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-										AspectId:   "inside_air",
-									},
-									{
-										Id:         "outside",
-										Name:       "outside",
-										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-										AspectId:   "outside_air",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setTargetTemperature": {
-					{
-						ServiceId:        "setTargetTemperature",
-						Path:             "temperature.inside",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "inside_air",
-							RootId:        "air",
-							ParentId:      "air",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"air"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setTemperature",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("pc_cooling_controller fan_speed", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "setCaseFan1Speed",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "speed",
-								Name:       "speed",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-								AspectId:   "case_fan_1",
-							},
-						},
-					},
-				},
-				{
-					Id:          "setCaseFan2Speed",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "speed",
-								Name:       "speed",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-								AspectId:   "case_fan_2",
-							},
-						},
-					},
-				},
-				{
-					Id:          "setCpuSpeed",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "speed",
-								Name:       "speed",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-								AspectId:   "cpu_fan",
-							},
-						},
-					},
-				},
-				{
-					Id:          "setGpuSpeed",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "speed",
-								Name:       "speed",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-								AspectId:   "gpu_fan",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setCaseFan1Speed": {
-					{
-						ServiceId:        "setCaseFan1Speed",
-						Path:             "speed",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_1",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-						IsControllingFunction: true,
-					},
-				},
-				"setCaseFan2Speed": {
-					{
-						ServiceId:        "setCaseFan2Speed",
-						Path:             "speed",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_2",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-						IsControllingFunction: true,
-					},
-				},
-				"setCpuSpeed": {
-					{
-						ServiceId:        "setCpuSpeed",
-						Path:             "speed",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "cpu_fan",
-							RootId:        "fan",
-							ParentId:      "fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-						IsControllingFunction: true,
-					},
-				},
-				"setGpuSpeed": {
-					{
-						ServiceId:        "setGpuSpeed",
-						Path:             "speed",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "gpu_fan",
-							RootId:        "fan",
-							ParentId:      "fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("pc_cooling_controller fan_speed case_fan", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "setCaseFan1Speed",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "speed",
-								Name:       "speed",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-								AspectId:   "case_fan_1",
-							},
-						},
-					},
-				},
-				{
-					Id:          "setCaseFan2Speed",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "speed",
-								Name:       "speed",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-								AspectId:   "case_fan_2",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setCaseFan1Speed": {
-					{
-						ServiceId:        "setCaseFan1Speed",
-						Path:             "speed",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_1",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-						IsControllingFunction: true,
-					},
-				},
-				"setCaseFan2Speed": {
-					{
-						ServiceId:        "setCaseFan2Speed",
-						Path:             "speed",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_2",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-	}))
-
-	t.Run("pc_cooling_controller fan_speed case_fan_1", testDeviceTypeSelectablesWithoutConfigurables(conf, []model.FilterCriteria{
-		{FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed", DeviceClassId: "pc_cooling_controller", AspectId: "case_fan_1"},
-	}, "", nil, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "pc_cooling_controller",
-			Services: []models.Service{
-				{
-					Id:          "setCaseFan1Speed",
-					Interaction: interaction,
-					Inputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:         "speed",
-								Name:       "speed",
-								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-								AspectId:   "case_fan_1",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"setCaseFan1Speed": {
-					{
-						ServiceId:        "setCaseFan1Speed",
-						Path:             "speed",
-						CharacteristicId: "",
-						AspectNode: models.AspectNode{
-							Id:            "case_fan_1",
-							RootId:        "fan",
-							ParentId:      "case_fan",
-							ChildIds:      []string{},
-							AncestorIds:   []string{"case_fan", "fan"},
-							DescendentIds: []string{},
-						},
-						FunctionId:            model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-						IsControllingFunction: true,
-					},
-				},
-			},
-		},
-	}))
 }
 
 func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {

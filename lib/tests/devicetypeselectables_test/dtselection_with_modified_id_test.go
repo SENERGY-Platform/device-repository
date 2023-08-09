@@ -54,378 +54,370 @@ func TestDeviceTypeSelectablesWithModifiedId(t *testing.T) {
 
 	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
 
-	criteria := []model.FilterCriteria{{
-		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-		AspectId:   "plug",
-	}}
-	expectedSelectables := []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "plug-strip",
-			Services: []models.Service{
-				{
-					Id:              "plug1",
-					ServiceGroupKey: "sg1",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state1",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
+	t.Run("v1", func(t *testing.T) {
+		criteria := []model.FilterCriteria{{
+			FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+			AspectId:   "plug",
+		}}
+		expectedSelectables := []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "plug-strip",
+				Services: []models.Service{
+					{
+						Id:              "plug1",
+						ServiceGroupKey: "sg1",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state1",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
+							},
+						},
+					},
+					{
+						Id:              "plug2",
+						ServiceGroupKey: "sg2",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state2",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
 							},
 						},
 					},
 				},
-				{
-					Id:              "plug2",
-					ServiceGroupKey: "sg2",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"plug1": {
 						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state2",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
+							ServiceId:        "plug1",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+						},
+					},
+					"plug2": {
+						{
+							ServiceId:        "plug2",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+						},
+					},
+				},
+			},
+		}
+
+		var expectedSeletablesWithModifiedIds []model.DeviceTypeSelectable = append(expectedSelectables, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg1"}}),
+				Services: []models.Service{
+					{
+						Id:              "plug1",
+						ServiceGroupKey: "sg1",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state1",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
 							},
 						},
 					},
 				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"plug1": {
-					{
-						ServiceId:        "plug1",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-					},
-				},
-				"plug2": {
-					{
-						ServiceId:        "plug2",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
-						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-					},
-				},
-			},
-		},
-	}
-
-	var expectedSeletablesWithModifiedIds []model.DeviceTypeSelectable = append(expectedSelectables, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg1"}}),
-			Services: []models.Service{
-				{
-					Id:              "plug1",
-					ServiceGroupKey: "sg1",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"plug1": {
 						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state1",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
+							ServiceId:        "plug1",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg2"}}),
+				Services: []models.Service{
+					{
+						Id:              "plug2",
+						ServiceGroupKey: "sg2",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state2",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
 							},
 						},
 					},
 				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"plug1": {
-					{
-						ServiceId:        "plug1",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"plug2": {
+						{
+							ServiceId:        "plug2",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
+							},
+							FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
 						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
 					},
 				},
 			},
-		},
-		{
-			DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg2"}}),
-			Services: []models.Service{
-				{
-					Id:              "plug2",
-					ServiceGroupKey: "sg2",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state2",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
+		}...)
+
+		t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", nil, expectedSelectables))
+		t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{}, expectedSelectables))
+		t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{}))
+		t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.REQUEST}, expectedSelectables))
+		t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, expectedSelectables))
+		t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
+
+		t.Run("nil modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", nil, expectedSeletablesWithModifiedIds))
+		t.Run("empty modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{}, expectedSeletablesWithModifiedIds))
+		t.Run("event modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{}))
+		t.Run("request modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.REQUEST}, expectedSeletablesWithModifiedIds))
+		t.Run("event+request modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, expectedSeletablesWithModifiedIds))
+		t.Run("event_and_request modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
+
+	})
+
+	t.Run("v2", func(t *testing.T) {
+
+		criteria := []model.FilterCriteria{{
+			FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+			AspectId:   "plug",
+		}}
+		expectedSelectables := []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "plug-strip",
+				Services: []models.Service{
+					{
+						Id:              "plug1",
+						ServiceGroupKey: "sg1",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state1",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
+							},
+						},
+					},
+					{
+						Id:              "plug2",
+						ServiceGroupKey: "sg2",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state2",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
 							},
 						},
 					},
 				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"plug2": {
-					{
-						ServiceId:        "plug2",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"plug1": {
+						{
+							ServiceId:        "plug1",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
+							},
+							FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+							Interaction: models.REQUEST,
 						},
-						FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+					},
+					"plug2": {
+						{
+							ServiceId:        "plug2",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
+							},
+							FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+							Interaction: models.REQUEST,
+						},
 					},
 				},
 			},
-		},
-	}...)
+		}
 
-	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", nil, expectedSelectables))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{}, expectedSelectables))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.REQUEST}, expectedSelectables))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, expectedSelectables))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurables(conf, criteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
-
-	t.Run("nil modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", nil, expectedSeletablesWithModifiedIds))
-	t.Run("empty modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{}, expectedSeletablesWithModifiedIds))
-	t.Run("event modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.EVENT}, []model.DeviceTypeSelectable{}))
-	t.Run("request modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.REQUEST}, expectedSeletablesWithModifiedIds))
-	t.Run("event+request modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.EVENT, models.REQUEST}, expectedSeletablesWithModifiedIds))
-	t.Run("event_and_request modified", testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(conf, criteria, "prefix.", []models.Interaction{models.EVENT_AND_REQUEST}, []model.DeviceTypeSelectable{}))
-
-}
-
-func TestDeviceTypeSelectablesV2WithModifiedId(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	t.Run("init metadata", createTestMetadata(conf, models.REQUEST))
-
-	criteria := []model.FilterCriteria{{
-		FunctionId: model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-		AspectId:   "plug",
-	}}
-	expectedSelectables := []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "plug-strip",
-			Services: []models.Service{
-				{
-					Id:              "plug1",
-					ServiceGroupKey: "sg1",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state1",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
+		var expectedSeletablesWithModifiedIds []model.DeviceTypeSelectable = append(expectedSelectables, []model.DeviceTypeSelectable{
+			{
+				DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg1"}}),
+				Services: []models.Service{
+					{
+						Id:              "plug1",
+						ServiceGroupKey: "sg1",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state1",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
 							},
 						},
 					},
 				},
-				{
-					Id:              "plug2",
-					ServiceGroupKey: "sg2",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"plug1": {
 						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state2",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
+							ServiceId:        "plug1",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
+							},
+							FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+							Interaction: models.REQUEST,
+						},
+					},
+				},
+			},
+			{
+				DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg2"}}),
+				Services: []models.Service{
+					{
+						Id:              "plug2",
+						ServiceGroupKey: "sg2",
+						Interaction:     models.REQUEST,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Id:               "state2",
+									Name:             "state",
+									FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+									AspectId:         "plug",
+									CharacteristicId: "plug-state-characteristic",
+								},
 							},
 						},
 					},
 				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"plug1": {
-					{
-						ServiceId:        "plug1",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
-						},
-						FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-						Interaction: models.REQUEST,
-					},
-				},
-				"plug2": {
-					{
-						ServiceId:        "plug2",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
-						},
-						FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-						Interaction: models.REQUEST,
-					},
-				},
-			},
-		},
-	}
-
-	var expectedSeletablesWithModifiedIds []model.DeviceTypeSelectable = append(expectedSelectables, []model.DeviceTypeSelectable{
-		{
-			DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg1"}}),
-			Services: []models.Service{
-				{
-					Id:              "plug1",
-					ServiceGroupKey: "sg1",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
+				ServicePathOptions: map[string][]model.ServicePathOption{
+					"plug2": {
 						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state1",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
+							ServiceId:        "plug2",
+							Path:             "prefix.state",
+							CharacteristicId: "plug-state-characteristic",
+							AspectNode: models.AspectNode{
+								Id:            "plug",
+								Name:          "",
+								RootId:        "plug",
+								ParentId:      "",
+								ChildIds:      []string{},
+								AncestorIds:   []string{},
+								DescendentIds: []string{},
 							},
+							FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
+							Interaction: models.REQUEST,
 						},
 					},
 				},
 			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"plug1": {
-					{
-						ServiceId:        "plug1",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
-						},
-						FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-						Interaction: models.REQUEST,
-					},
-				},
-			},
-		},
-		{
-			DeviceTypeId: "plug-strip" + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg2"}}),
-			Services: []models.Service{
-				{
-					Id:              "plug2",
-					ServiceGroupKey: "sg2",
-					Interaction:     models.REQUEST,
-					Outputs: []models.Content{
-						{
-							ContentVariable: models.ContentVariable{
-								Id:               "state2",
-								Name:             "state",
-								FunctionId:       model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-								AspectId:         "plug",
-								CharacteristicId: "plug-state-characteristic",
-							},
-						},
-					},
-				},
-			},
-			ServicePathOptions: map[string][]model.ServicePathOption{
-				"plug2": {
-					{
-						ServiceId:        "plug2",
-						Path:             "prefix.state",
-						CharacteristicId: "plug-state-characteristic",
-						AspectNode: models.AspectNode{
-							Id:            "plug",
-							Name:          "",
-							RootId:        "plug",
-							ParentId:      "",
-							ChildIds:      []string{},
-							AncestorIds:   []string{},
-							DescendentIds: []string{},
-						},
-						FunctionId:  model.MEASURING_FUNCTION_PREFIX + "getPlugState",
-						Interaction: models.REQUEST,
-					},
-				},
-			},
-		},
-	}...)
+		}...)
 
-	t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, criteria, "prefix.", expectedSelectables))
-	t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, criteria, "prefix.", expectedSelectables))
-	t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.REQUEST}), "prefix.", expectedSelectables))
-	t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+		t.Run("nil", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, criteria, "prefix.", expectedSelectables))
+		t.Run("empty", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, criteria, "prefix.", expectedSelectables))
+		t.Run("event", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
+		t.Run("request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.REQUEST}), "prefix.", expectedSelectables))
+		t.Run("event+request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+		t.Run("event_and_request", testDeviceTypeSelectablesWithoutConfigurablesV2(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
 
-	t.Run("nil modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, criteria, "prefix.", expectedSeletablesWithModifiedIds))
-	t.Run("empty modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, criteria, "prefix.", expectedSeletablesWithModifiedIds))
-	t.Run("event modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("request modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.REQUEST}), "prefix.", expectedSeletablesWithModifiedIds))
-	t.Run("event+request modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
-	t.Run("event_and_request modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+		t.Run("nil modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, criteria, "prefix.", expectedSeletablesWithModifiedIds))
+		t.Run("empty modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, criteria, "prefix.", expectedSeletablesWithModifiedIds))
+		t.Run("event modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT}), "prefix.", []model.DeviceTypeSelectable{}))
+		t.Run("request modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.REQUEST}), "prefix.", expectedSeletablesWithModifiedIds))
+		t.Run("event+request modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT, models.REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+		t.Run("event_and_request modified", testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(conf, testAddInteractionToCriterias(criteria, []models.Interaction{models.EVENT_AND_REQUEST}), "prefix.", []model.DeviceTypeSelectable{}))
+
+	})
 }
 
 //go:embed a5t_testcase/devicetypes.json
@@ -450,6 +442,10 @@ var expectedServiceMustMatchStr string
 var expectedServiceMustMatchShortStr string
 
 func TestDeviceTypeSelectablesV2WithModifiedIdNousA5T(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip in short test run")
+		return
+	}
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
