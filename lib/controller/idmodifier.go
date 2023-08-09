@@ -21,6 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+	"slices"
 	"strings"
 )
 
@@ -52,6 +53,49 @@ func (this *Controller) modifyDeviceType(dt models.DeviceType, modifier map[stri
 		}
 	}
 	return result, err, code
+}
+
+func (this *Controller) modifyDeviceTypeList(list []models.DeviceType, sort string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, code int) {
+	result = []models.DeviceType{}
+	for _, dt := range list {
+		pureId, modifier := idmodifier.SplitModifier(dt.Id)
+		isModified := pureId != dt.Id && len(modifier) > 0
+		if !isModified && includeUnmodified {
+			result = append(result, dt)
+		}
+		if isModified && includeModified {
+			dt, err, code = this.modifyDeviceType(dt, modifier)
+			if err != nil {
+				return result, err, code
+			}
+			result = append(result, dt)
+		}
+	}
+	if includeModified {
+		result = sortDeviceTypes(result, sort)
+	}
+	return result, nil, http.StatusOK
+}
+
+func sortDeviceTypes(list []models.DeviceType, sort string) []models.DeviceType {
+	parts := strings.Split(sort, ".")
+	direction := 1
+	if len(parts) > 1 && parts[1] == "desc" {
+		direction = -1
+	}
+	switch parts[0] {
+	case "id":
+		slices.SortFunc(list, func(a, b models.DeviceType) int {
+			return strings.Compare(a.Id, b.Id) * direction
+		})
+	case "name":
+		slices.SortFunc(list, func(a, b models.DeviceType) int {
+			return strings.Compare(a.Name, b.Name) * direction
+		})
+	default:
+		return list
+	}
+	return list
 }
 
 const ServiceGroupSelectionIdModifier = "service_group_selection"

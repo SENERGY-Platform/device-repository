@@ -197,7 +197,52 @@ func TestMongoDeviceType(t *testing.T) {
 		t.Error("unexpected result", result)
 		return
 	}
-	if (result[0].Id != "foobar1" && result[1].Id != "foobar1") || (result[0].Id != "foobar2" && result[1].Id != "foobar2") {
+	if result[0].Id != "foobar1" && result[1].Id != "foobar2" {
+		t.Error("unexpected result", result)
+		return
+	}
+
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	result, err = m.ListDeviceTypes(timeout, 100, 0, "name.desc", nil, nil, false)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(result) != 2 {
+		t.Error("unexpected result", result)
+		return
+	}
+	if result[1].Id != "foobar1" && result[0].Id != "foobar2" {
+		t.Error("unexpected result", result)
+		return
+	}
+
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	result, err = m.ListDeviceTypesV2(timeout, 100, 0, "name.asc", nil, false)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(result) != 2 {
+		t.Error("unexpected result", result)
+		return
+	}
+	if result[0].Id != "foobar1" && result[1].Id != "foobar2" {
+		t.Error("unexpected result", result)
+		return
+	}
+
+	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
+	result, err = m.ListDeviceTypesV2(timeout, 100, 0, "name.desc", nil, false)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(result) != 2 {
+		t.Error("unexpected result", result)
+		return
+	}
+	if result[1].Id != "foobar1" && result[0].Id != "foobar2" {
 		t.Error("unexpected result", result)
 		return
 	}

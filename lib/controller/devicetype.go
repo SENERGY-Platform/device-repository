@@ -63,22 +63,7 @@ func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64,
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	result = []models.DeviceType{}
-	for _, dt := range temp {
-		pureId, modifier := idmodifier.SplitModifier(dt.Id)
-		isModified := pureId != dt.Id && len(modifier) > 0
-		if !isModified && includeUnmodified {
-			result = append(result, dt)
-		}
-		if isModified && includeModified {
-			dt, err, errCode = this.modifyDeviceType(dt, modifier)
-			if err != nil {
-				return result, err, errCode
-			}
-			result = append(result, dt)
-		}
-	}
-	return
+	return this.modifyDeviceTypeList(temp, sort, includeModified, includeUnmodified)
 }
 
 func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
@@ -87,22 +72,7 @@ func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int6
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	result = []models.DeviceType{}
-	for _, dt := range temp {
-		pureId, modifier := idmodifier.SplitModifier(dt.Id)
-		isModified := pureId != dt.Id && len(modifier) > 0
-		if !isModified && includeUnmodified {
-			result = append(result, dt)
-		}
-		if isModified && includeModified {
-			dt, err, errCode = this.modifyDeviceType(dt, modifier)
-			if err != nil {
-				return result, err, errCode
-			}
-			result = append(result, dt)
-		}
-	}
-	return
+	return this.modifyDeviceTypeList(temp, sort, includeModified, includeUnmodified)
 }
 
 func (this *Controller) ValidateDeviceType(dt models.DeviceType) (err error, code int) {
