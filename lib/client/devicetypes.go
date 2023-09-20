@@ -27,6 +27,9 @@ import (
 
 func (c *Client) ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types/"+id, nil)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
 	req.Header.Set("Authorization", token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
