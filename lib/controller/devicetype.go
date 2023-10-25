@@ -150,6 +150,10 @@ func (this *Controller) GetDeviceTypeSelectablesV2(query []model.FilterCriteria,
 }
 
 func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error) {
+	if len(query) == 0 {
+		query = append(query, model.FilterCriteria{})
+	}
+
 	result = []model.DeviceTypeSelectable{}
 
 	//EVENT|REQUEST should also find EVENT_AND_REQUEST
@@ -229,6 +233,10 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 }
 
 func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error) {
+	if len(query) == 0 {
+		query = append(query, model.FilterCriteria{})
+	}
+
 	result = []model.DeviceTypeSelectable{}
 
 	deviceTypes, err := this.db.GetDeviceTypeIdsByFilterCriteriaV2(ctx, query, includeModified)
