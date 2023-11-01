@@ -1,7 +1,7 @@
 package topicconfig
 
 import (
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"log"
 )
 
