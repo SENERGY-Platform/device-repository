@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -53,7 +54,11 @@ func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDu
 
 	//ref https://bitnify.atlassian.net/browse/SNRGY-3027
 	if filterGenericDuplicateCriteria {
-		result = FilterGenericDuplicateCriteria(result)
+		result, err = DeviceGroupFilterGenericDuplicateCriteria(result, this.db)
+		if err != nil {
+			result = models.DeviceGroup{}
+			return result, err, http.StatusInternalServerError
+		}
 	}
 
 	if FilterDevicesOfGroupByAccess {
@@ -135,30 +140,68 @@ func (this *Controller) ValidateDeviceGroupSelection(criteria []models.DeviceGro
 	return nil, http.StatusOK
 }
 
-// FilterGenericDuplicateCriteria removes criteria without aspect, that are already present with an aspect
+type AspectNodeProvider interface {
+	ListAspectNodesByIdList(ctx context.Context, ids []string) ([]models.AspectNode, error)
+}
+
+// DeviceGroupFilterGenericDuplicateCriteria removes criteria without aspect, that are already present with an aspect
 // ref: https://bitnify.atlassian.net/browse/SNRGY-3027
-func FilterGenericDuplicateCriteria(result models.DeviceGroup) models.DeviceGroup {
+func DeviceGroupFilterGenericDuplicateCriteria(dg models.DeviceGroup, aspectNodeProvider AspectNodeProvider) (result models.DeviceGroup, err error) {
+	result = dg
+
+	//get used aspect ids
+	aspectIds := []string{}
+	for _, criteria := range result.Criteria {
+		if criteria.AspectId != "" && !slices.Contains(aspectIds, criteria.AspectId) {
+			aspectIds = append(aspectIds, criteria.AspectId)
+		}
+	}
+
+	//get used aspect nodes
+	aspectNodes, err := aspectNodeProvider.ListAspectNodesByIdList(context.Background(), aspectIds)
+	if err != nil {
+		return result, err
+	}
+
+	//prepare index of descendents of aspects
+	descendents := map[string][]string{}
+	for _, aspect := range aspectNodes {
+		descendents[aspect.Id] = append(descendents[aspect.Id], aspect.DescendentIds...)
+	}
+
+	//function to check if candidate aspect is descendent of criteria aspect
+	candidateUsesDescendentAspect := func(criteria models.DeviceGroupFilterCriteria, candidate models.DeviceGroupFilterCriteria) bool {
+		if criteria.AspectId == "" && candidate.AspectId != "" {
+			return true
+		}
+		if criteria.AspectId == candidate.AspectId {
+			return false
+		}
+		return slices.Contains(descendents[criteria.AspectId], candidate.AspectId)
+	}
+
+	//function to check if the candidate is a more specialized variant of criteria
+	isDuplicateCriteriaWithDescendentAspect := func(criteria models.DeviceGroupFilterCriteria, candidate models.DeviceGroupFilterCriteria) bool {
+		return candidateUsesDescendentAspect(criteria, candidate) &&
+			candidate.FunctionId == criteria.FunctionId &&
+			candidate.DeviceClassId == criteria.DeviceClassId &&
+			candidate.Interaction == criteria.Interaction
+	}
+
+	//filter criteria where more specialized variants exist
 	newCriteriaList := []models.DeviceGroupFilterCriteria{}
 	for _, criteria := range result.Criteria {
-		if criteria.AspectId != "" {
+		duplicateWithAspectExists := slices.ContainsFunc(result.Criteria, func(element models.DeviceGroupFilterCriteria) bool {
+			return isDuplicateCriteriaWithDescendentAspect(criteria, element)
+		})
+		if !duplicateWithAspectExists {
 			newCriteriaList = append(newCriteriaList, criteria)
 			continue
-		} else {
-			duplicateWithAspectExists := slices.ContainsFunc(result.Criteria, func(element models.DeviceGroupFilterCriteria) bool {
-				return element.AspectId != "" &&
-					element.FunctionId == criteria.FunctionId &&
-					element.DeviceClassId == criteria.DeviceClassId &&
-					element.Interaction == criteria.Interaction
-			})
-			if !duplicateWithAspectExists {
-				newCriteriaList = append(newCriteriaList, criteria)
-				continue
-			}
 		}
 	}
 	result.Criteria = newCriteriaList
 	result.SetShortCriteria()
-	return result
+	return result, nil
 }
 
 func (this *Controller) selectionMatchesCriteria(

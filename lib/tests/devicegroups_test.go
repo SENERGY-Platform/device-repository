@@ -37,13 +37,25 @@ import (
 	"time"
 )
 
+type aspectNodeProviderMock struct {
+	result []models.AspectNode
+}
+
+func (this *aspectNodeProviderMock) ListAspectNodesByIdList(ctx context.Context, ids []string) ([]models.AspectNode, error) {
+	return this.result, nil
+}
+
 func TestFilterGenericDuplicateCriteria(t *testing.T) {
-	result := controller.FilterGenericDuplicateCriteria(models.DeviceGroup{})
+	result, err := controller.DeviceGroupFilterGenericDuplicateCriteria(models.DeviceGroup{}, &aspectNodeProviderMock{result: []models.AspectNode{}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	if !reflect.DeepEqual(result, models.DeviceGroup{Criteria: []models.DeviceGroupFilterCriteria{}, CriteriaShort: []string{}}) {
 		t.Errorf("%#v", result)
 	}
 
-	result = controller.FilterGenericDuplicateCriteria(models.DeviceGroup{
+	result, err = controller.DeviceGroupFilterGenericDuplicateCriteria(models.DeviceGroup{
 		Id:        "id",
 		Name:      "name",
 		Image:     "image",
@@ -95,7 +107,11 @@ func TestFilterGenericDuplicateCriteria(t *testing.T) {
 			},
 		},
 		CriteriaShort: nil,
-	})
+	}, &aspectNodeProviderMock{result: []models.AspectNode{}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	if !reflect.DeepEqual(result, models.DeviceGroup{
 		Id:        "id",
 		Name:      "name",
@@ -144,6 +160,162 @@ func TestFilterGenericDuplicateCriteria(t *testing.T) {
 			},
 		},
 		CriteriaShort: []string{"keep_keep_keep_keep", "keep2__keep2_keep2", "f1_a1__i1", "f2___i2", "f3__dc3_i3", "f3_a3__i3"},
+	}) {
+		t.Errorf("%#v", result)
+	}
+
+	result, err = controller.DeviceGroupFilterGenericDuplicateCriteria(models.DeviceGroup{
+		Id:        "id",
+		Name:      "name",
+		Image:     "image",
+		DeviceIds: []string{"did1", "did2"},
+		Attributes: []models.Attribute{{
+			Key:    "attr1",
+			Value:  "attrv1",
+			Origin: "o1",
+		}, {
+			Key:    "attr2",
+			Value:  "attrv2",
+			Origin: "o2",
+		}},
+		Criteria: []models.DeviceGroupFilterCriteria{
+			{ //keep
+				Interaction:   "i1",
+				FunctionId:    "f1",
+				AspectId:      "a1",
+				DeviceClassId: "dc1",
+			},
+			{ //keep
+				Interaction: "i2",
+				FunctionId:  "f2",
+				AspectId:    "a2",
+			},
+			{ //removed
+				Interaction: "i2",
+				FunctionId:  "f2",
+			},
+			{ //keep
+				Interaction: "i3",
+				FunctionId:  "f3",
+			},
+			{ //remove
+				Interaction: "i4",
+				FunctionId:  "f4",
+				AspectId:    "base",
+			},
+			{ //keep
+				Interaction: "i4",
+				FunctionId:  "f4",
+				AspectId:    "child1",
+			},
+			{ //keep
+				Interaction: "i4",
+				FunctionId:  "f4",
+				AspectId:    "child2",
+			},
+			{ //remove
+				Interaction: "i5",
+				FunctionId:  "f5",
+				AspectId:    "",
+			},
+			{ //keep
+				Interaction: "i5",
+				FunctionId:  "f5",
+				AspectId:    "child1",
+			},
+			{ //keep
+				Interaction: "i5",
+				FunctionId:  "f5",
+				AspectId:    "child2",
+			},
+
+			{ //remove
+				Interaction: "i6",
+				FunctionId:  "f6",
+				AspectId:    "",
+			},
+			{ //keep
+				Interaction: "i6",
+				FunctionId:  "f6",
+				AspectId:    "base",
+			},
+		},
+		CriteriaShort: nil,
+	}, &aspectNodeProviderMock{result: []models.AspectNode{
+		{
+			Id:            "a1",
+			DescendentIds: []string{},
+		},
+		{
+			Id:            "a2",
+			DescendentIds: []string{},
+		},
+		{
+			Id:            "base",
+			DescendentIds: []string{"child1", "child2"},
+		},
+	}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !reflect.DeepEqual(result, models.DeviceGroup{
+		Id:        "id",
+		Name:      "name",
+		Image:     "image",
+		DeviceIds: []string{"did1", "did2"},
+		Attributes: []models.Attribute{{
+			Key:    "attr1",
+			Value:  "attrv1",
+			Origin: "o1",
+		}, {
+			Key:    "attr2",
+			Value:  "attrv2",
+			Origin: "o2",
+		}},
+		Criteria: []models.DeviceGroupFilterCriteria{
+			{ //keep
+				Interaction:   "i1",
+				FunctionId:    "f1",
+				AspectId:      "a1",
+				DeviceClassId: "dc1",
+			},
+			{ //keep
+				Interaction: "i2",
+				FunctionId:  "f2",
+				AspectId:    "a2",
+			},
+			{ //keep
+				Interaction: "i3",
+				FunctionId:  "f3",
+			},
+			{ //keep
+				Interaction: "i4",
+				FunctionId:  "f4",
+				AspectId:    "child1",
+			},
+			{ //keep
+				Interaction: "i4",
+				FunctionId:  "f4",
+				AspectId:    "child2",
+			},
+			{ //keep
+				Interaction: "i5",
+				FunctionId:  "f5",
+				AspectId:    "child1",
+			},
+			{ //keep
+				Interaction: "i5",
+				FunctionId:  "f5",
+				AspectId:    "child2",
+			},
+			{ //keep
+				Interaction: "i6",
+				FunctionId:  "f6",
+				AspectId:    "base",
+			},
+		},
+		CriteriaShort: []string{"f1_a1_dc1_i1", "f2_a2__i2", "f3___i3", "f4_child1__i4", "f4_child2__i4", "f5_child1__i5", "f5_child2__i5", "f6_base__i6"},
 	}) {
 		t.Errorf("%#v", result)
 	}
