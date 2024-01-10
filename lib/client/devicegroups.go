@@ -23,8 +23,12 @@ import (
 	"net/http"
 )
 
-func (c *Client) ReadDeviceGroup(id string, token string) (result models.DeviceGroup, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-groups/"+id, nil)
+func (c *Client) ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
+	query := ""
+	if filterGenericDuplicateCriteria {
+		query = "?filter_generic_duplicate_criteria=true"
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-groups/"+id+query, nil)
 	req.Header.Set("Authorization", token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError

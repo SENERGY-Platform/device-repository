@@ -23,6 +23,7 @@ import (
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"net/http"
+	"slices"
 )
 
 /////////////////////////
@@ -31,7 +32,7 @@ import (
 
 const FilterDevicesOfGroupByAccess = true
 
-func (this *Controller) ReadDeviceGroup(id string, token string) (result models.DeviceGroup, err error, errCode int) {
+func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetDeviceGroup(ctx, id)
 	if err != nil {
@@ -49,6 +50,12 @@ func (this *Controller) ReadDeviceGroup(id string, token string) (result models.
 		result = models.DeviceGroup{}
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
+
+	//ref https://bitnify.atlassian.net/browse/SNRGY-3027
+	if filterGenericDuplicateCriteria {
+		result = FilterGenericDuplicateCriteria(result)
+	}
+
 	if FilterDevicesOfGroupByAccess {
 		return this.FilterDevicesOfGroupByAccess(token, result)
 	} else {
@@ -126,6 +133,32 @@ func (this *Controller) ValidateDeviceGroupSelection(criteria []models.DeviceGro
 		}
 	}
 	return nil, http.StatusOK
+}
+
+// FilterGenericDuplicateCriteria removes criteria without aspect, that are already present with an aspect
+// ref: https://bitnify.atlassian.net/browse/SNRGY-3027
+func FilterGenericDuplicateCriteria(result models.DeviceGroup) models.DeviceGroup {
+	newCriteriaList := []models.DeviceGroupFilterCriteria{}
+	for _, criteria := range result.Criteria {
+		if criteria.AspectId != "" {
+			newCriteriaList = append(newCriteriaList, criteria)
+			continue
+		} else {
+			duplicateWithAspectExists := slices.ContainsFunc(result.Criteria, func(element models.DeviceGroupFilterCriteria) bool {
+				return element.AspectId != "" &&
+					element.FunctionId == criteria.FunctionId &&
+					element.DeviceClassId == criteria.DeviceClassId &&
+					element.Interaction == criteria.Interaction
+			})
+			if !duplicateWithAspectExists {
+				newCriteriaList = append(newCriteriaList, criteria)
+				continue
+			}
+		}
+	}
+	result.Criteria = newCriteriaList
+	result.SetShortCriteria()
+	return result
 }
 
 func (this *Controller) selectionMatchesCriteria(

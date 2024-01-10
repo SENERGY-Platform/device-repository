@@ -36,11 +36,16 @@ func DeviceGroupEndpoints(config config.Config, control Controller, router *http
 
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
-		result, err, errCode := control.ReadDeviceGroup(id, util.GetAuthToken(request))
+		
+		//ref https://bitnify.atlassian.net/browse/SNRGY-3027
+		filterGenericDuplicateCriteria := request.URL.Query().Get("filter_generic_duplicate_criteria") == "true"
+
+		result, err, errCode := control.ReadDeviceGroup(id, util.GetAuthToken(request), filterGenericDuplicateCriteria)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
 		}
+
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {

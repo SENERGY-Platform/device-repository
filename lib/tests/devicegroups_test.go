@@ -37,6 +37,118 @@ import (
 	"time"
 )
 
+func TestFilterGenericDuplicateCriteria(t *testing.T) {
+	result := controller.FilterGenericDuplicateCriteria(models.DeviceGroup{})
+	if !reflect.DeepEqual(result, models.DeviceGroup{Criteria: []models.DeviceGroupFilterCriteria{}, CriteriaShort: []string{}}) {
+		t.Errorf("%#v", result)
+	}
+
+	result = controller.FilterGenericDuplicateCriteria(models.DeviceGroup{
+		Id:        "id",
+		Name:      "name",
+		Image:     "image",
+		DeviceIds: []string{"did1", "did2"},
+		Attributes: []models.Attribute{{
+			Key:    "attr1",
+			Value:  "attrv1",
+			Origin: "o1",
+		}, {
+			Key:    "attr2",
+			Value:  "attrv2",
+			Origin: "o2",
+		}},
+		Criteria: []models.DeviceGroupFilterCriteria{
+			{
+				Interaction:   "keep",
+				FunctionId:    "keep",
+				AspectId:      "keep",
+				DeviceClassId: "keep",
+			},
+			{
+				Interaction:   "keep2",
+				FunctionId:    "keep2",
+				DeviceClassId: "keep2",
+			},
+			{
+				Interaction: "i1",
+				FunctionId:  "f1",
+				AspectId:    "a1",
+			},
+			{
+				Interaction: "i1",
+				FunctionId:  "f1",
+			},
+			{
+				Interaction: "i2",
+				FunctionId:  "f2",
+			},
+			{
+				Interaction:   "i3",
+				FunctionId:    "f3",
+				DeviceClassId: "dc3",
+			},
+			//should never happen, because the function id should be different for criteria with aspects and criteria with device-classes
+			{
+				Interaction: "i3",
+				FunctionId:  "f3",
+				AspectId:    "a3",
+			},
+		},
+		CriteriaShort: nil,
+	})
+	if !reflect.DeepEqual(result, models.DeviceGroup{
+		Id:        "id",
+		Name:      "name",
+		Image:     "image",
+		DeviceIds: []string{"did1", "did2"},
+		Attributes: []models.Attribute{{
+			Key:    "attr1",
+			Value:  "attrv1",
+			Origin: "o1",
+		}, {
+			Key:    "attr2",
+			Value:  "attrv2",
+			Origin: "o2",
+		}},
+		Criteria: []models.DeviceGroupFilterCriteria{
+			{
+				Interaction:   "keep",
+				FunctionId:    "keep",
+				AspectId:      "keep",
+				DeviceClassId: "keep",
+			},
+			{
+				Interaction:   "keep2",
+				FunctionId:    "keep2",
+				DeviceClassId: "keep2",
+			},
+			{
+				Interaction: "i1",
+				FunctionId:  "f1",
+				AspectId:    "a1",
+			},
+			{
+				Interaction: "i2",
+				FunctionId:  "f2",
+			},
+			{
+				Interaction:   "i3",
+				FunctionId:    "f3",
+				DeviceClassId: "dc3",
+			},
+			//should never happen, because the function id should be different for criteria with aspects and criteria with device-classes
+			{
+				Interaction: "i3",
+				FunctionId:  "f3",
+				AspectId:    "a3",
+			},
+		},
+		CriteriaShort: []string{"keep_keep_keep_keep", "keep2__keep2_keep2", "f1_a1__i1", "f2___i2", "f3__dc3_i3", "f3_a3__i3"},
+	}) {
+		t.Errorf("%#v", result)
+	}
+}
+
 func TestDeviceGroupsValidation(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
