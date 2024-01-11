@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"regexp"
@@ -27,7 +28,7 @@ import (
 	"time"
 )
 
-func (this *Controller) ValidateVariable(variable models.ContentVariable, serialization models.Serialization) (err error, code int) {
+func (this *Controller) ValidateVariable(variable models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
 	if variable.Id == "" {
 		return errors.New("missing content variable id"), http.StatusBadRequest
 	}
@@ -58,16 +59,6 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 			return err, code
 		}
 
-		if variable.AspectId != "" && !this.config.AllowNoneLeafAspectNodesInDeviceTypes {
-			aspectNode, err, code := this.GetAspectNode(variable.AspectId)
-			if err != nil {
-				return err, code
-			}
-			if len(aspectNode.DescendentIds) > 0 {
-				return errors.New("only leaf aspects are allowed in device-types" + variable.Name), http.StatusBadRequest
-			}
-		}
-
 		switch variable.Type {
 		case models.String:
 			if len(variable.SubContentVariables) > 0 {
@@ -86,12 +77,12 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 				return errors.New("booleans can not have sub content variables for " + variable.Name), http.StatusBadRequest
 			}
 		case models.List:
-			err, code = this.ValidateListSubVariables(variable.SubContentVariables, serialization)
+			err, code = this.ValidateListSubVariables(variable.SubContentVariables, serialization, options)
 			if err != nil {
 				return err, code
 			}
 		case models.Structure:
-			err, code = this.ValidateStructureSubVariables(variable.SubContentVariables, serialization)
+			err, code = this.ValidateStructureSubVariables(variable.SubContentVariables, serialization, options)
 			if err != nil {
 				return err, code
 			}
@@ -102,12 +93,15 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	if variable.AspectId != "" && this != nil {
-		_, exists, err := this.db.GetAspectNode(ctx, variable.AspectId)
+		aspectNode, exists, err := this.db.GetAspectNode(ctx, variable.AspectId)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 		if !exists {
 			return errors.New("unknown aspect id:" + variable.AspectId), http.StatusBadRequest
+		}
+		if !options.CheckAllowNoneLeafAspectNodesInDeviceTypes(this.config) && len(aspectNode.DescendentIds) > 0 {
+			return errors.New("only leaf aspects are allowed in device-types" + variable.Name), http.StatusBadRequest
 		}
 	}
 
@@ -158,7 +152,7 @@ func ValidateVariableName(name string) (err error, code int) {
 	return ValidateName(name)
 }
 
-func (this *Controller) ValidateListSubVariables(variables []models.ContentVariable, serialization models.Serialization) (err error, code int) {
+func (this *Controller) ValidateListSubVariables(variables []models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("lists expect sub content variables"), http.StatusBadRequest
 	}
@@ -166,7 +160,7 @@ func (this *Controller) ValidateListSubVariables(variables []models.ContentVaria
 		if len(variables) != 1 {
 			return errors.New("lists with name placeholder '*' have a variable length -> only one sub variable may be defined"), http.StatusBadRequest
 		}
-		return this.ValidateVariable(variables[0], serialization)
+		return this.ValidateVariable(variables[0], serialization, options)
 	}
 	nameIndex := map[string]bool{}
 	for _, variable := range variables {
@@ -175,7 +169,7 @@ func (this *Controller) ValidateListSubVariables(variables []models.ContentVaria
 			return errors.New("name of list variable should be a number (if list is variable in length is may be defined with one element and the placeholder '*' as name)"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
-		err, code = this.ValidateVariable(variable, serialization)
+		err, code = this.ValidateVariable(variable, serialization, options)
 		if err != nil {
 			return err, code
 		}
@@ -188,7 +182,7 @@ func (this *Controller) ValidateListSubVariables(variables []models.ContentVaria
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateStructureSubVariables(variables []models.ContentVariable, serialization models.Serialization) (err error, code int) {
+func (this *Controller) ValidateStructureSubVariables(variables []models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("structures expect sub content variables"), http.StatusBadRequest
 	}
@@ -203,7 +197,7 @@ func (this *Controller) ValidateStructureSubVariables(variables []models.Content
 			return errors.New("structure sub content variable reuses name '" + variable.Name + "'"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
-		err, code = this.ValidateVariable(variable, serialization)
+		err, code = this.ValidateVariable(variable, serialization, options)
 		if err != nil {
 			return err, code
 		}

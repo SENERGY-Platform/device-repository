@@ -21,6 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -564,7 +565,7 @@ func TestVariableValidation(t *testing.T) {
 
 func testValidateVariable(ctrl *controller.Controller, expectError bool, variable models.ContentVariable) func(t *testing.T) {
 	return func(t *testing.T) {
-		err, _ := ctrl.ValidateVariable(variable, "json")
+		err, _ := ctrl.ValidateVariable(variable, "json", model.ValidationOptions{})
 		if (err != nil) != expectError {
 			t.Error(expectError, err)
 		}

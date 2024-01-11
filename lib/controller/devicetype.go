@@ -75,7 +75,7 @@ func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int6
 	return this.modifyDeviceTypeList(temp, sort, includeModified, includeUnmodified)
 }
 
-func (this *Controller) ValidateDeviceType(dt models.DeviceType) (err error, code int) {
+func (this *Controller) ValidateDeviceType(dt models.DeviceType, options model.ValidationOptions) (err error, code int) {
 	if dt.Id == "" {
 		return errors.New("missing device-type id"), http.StatusBadRequest
 	}
@@ -98,7 +98,7 @@ func (this *Controller) ValidateDeviceType(dt models.DeviceType) (err error, cod
 		if len(deviceTypes) == 1 && deviceTypes[0].Id != dt.Id {
 			return errors.New("reused service id"), http.StatusBadRequest
 		}
-		err, code = this.ValidateService(service, protocolCache)
+		err, code = this.ValidateService(service, protocolCache, options)
 		if err != nil {
 			return err, code
 		}

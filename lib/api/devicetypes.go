@@ -160,13 +160,18 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
+		options, err := model.LoadDeviceTypeValidationOptions(request.URL.Query())
+		if err != nil {
+			http.Error(writer, "invalid validation options: "+err.Error(), http.StatusBadRequest)
+			return
+		}
 		dt := models.DeviceType{}
 		err = json.NewDecoder(request.Body).Decode(&dt)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDeviceType(dt)
+		err, code := control.ValidateDeviceType(dt, options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

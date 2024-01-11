@@ -18,11 +18,12 @@ package controller
 
 import (
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )
 
-func (this *Controller) ValidateContent(content models.Content, protocol models.Protocol) (err error, code int) {
+func (this *Controller) ValidateContent(content models.Content, protocol models.Protocol, options model.ValidationOptions) (err error, code int) {
 	if content.Id == "" {
 		return errors.New("missing content id"), http.StatusBadRequest
 	}
@@ -38,7 +39,7 @@ func (this *Controller) ValidateContent(content models.Content, protocol models.
 	if !protocolContainsSegment(protocol, content.ProtocolSegmentId) {
 		return errors.New("protocol_segment_id does not match to protocol"), http.StatusBadRequest
 	}
-	err, code = this.ValidateVariable(content.ContentVariable, content.Serialization)
+	err, code = this.ValidateVariable(content.ContentVariable, content.Serialization, options)
 	if err != nil {
 		return err, code
 	}

@@ -69,6 +69,8 @@ func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort
 	return do[[]models.DeviceType](req)
 }
 
-func (c *Client) ValidateDeviceType(deviceType models.DeviceType) (err error, code int) {
-	return c.validate("/device-types", deviceType)
+type DeviceTypeValidationOptions = model.ValidationOptions
+
+func (c *Client) ValidateDeviceType(deviceType models.DeviceType, options model.ValidationOptions) (err error, code int) {
+	return c.validateWithOptions("/device-types", deviceType, options.AsUrlValues())
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 type Interface = api.Controller
@@ -54,9 +55,17 @@ func do[T any](req *http.Request) (result T, err error, code int) {
 }
 
 func (c *Client) validate(path string, e interface{}) (err error, code int) {
+	return c.validateWithOptions(path, e, nil)
+}
+
+func (c *Client) validateWithOptions(path string, e interface{}, options url.Values) (err error, code int) {
 	b, err := json.Marshal(e)
 	if err != nil {
 		return err, http.StatusInternalServerError
+	}
+	optQuery := options.Encode()
+	if optQuery != "" {
+		optQuery = "&" + optQuery
 	}
 	req, err := http.NewRequest(http.MethodPut, c.baseUrl+path+"?dry-run=true", bytes.NewBuffer(b))
 	if err != nil {

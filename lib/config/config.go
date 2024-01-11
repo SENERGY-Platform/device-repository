@@ -65,8 +65,8 @@ type Config struct {
 	HttpClientTimeout             string `json:"http_client_timeout"`
 	FatalErrHandler               func(v ...interface{})
 
-	DeviceServiceGroupSelectionAllowNotFound bool `json:"device_service_group_selection_allow_not_found"`
-	AllowNoneLeafAspectNodesInDeviceTypes    bool `json:"allow_none_leaf_aspect_nodes_in_device_types"`
+	DeviceServiceGroupSelectionAllowNotFound     bool `json:"device_service_group_selection_allow_not_found"`
+	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {

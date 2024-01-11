@@ -26,7 +26,7 @@ import (
 	"time"
 )
 
-func (this *Controller) ValidateService(service models.Service, protocolCache *map[string]models.Protocol) (error, int) {
+func (this *Controller) ValidateService(service models.Service, protocolCache *map[string]models.Protocol, options model.ValidationOptions) (error, int) {
 	if service.Id == "" {
 		return errors.New("missing service id"), http.StatusBadRequest
 	}
@@ -79,7 +79,7 @@ func (this *Controller) ValidateService(service models.Service, protocolCache *m
 	}
 
 	for _, content := range service.Inputs {
-		err, code := this.ValidateContent(content, protocol)
+		err, code := this.ValidateContent(content, protocol, options)
 		if err != nil {
 			return err, code
 		}
@@ -89,7 +89,7 @@ func (this *Controller) ValidateService(service models.Service, protocolCache *m
 		}
 	}
 	for _, content := range service.Outputs {
-		err, code := this.ValidateContent(content, protocol)
+		err, code := this.ValidateContent(content, protocol, options)
 		if err != nil {
 			return err, code
 		}

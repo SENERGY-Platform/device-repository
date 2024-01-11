@@ -33,7 +33,7 @@ type Controller interface {
 	ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int)
 	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)
 	ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)
-	ValidateDeviceType(deviceType models.DeviceType) (err error, code int)
+	ValidateDeviceType(deviceType models.DeviceType, options model.ValidationOptions) (err error, code int)
 
 	GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
 	GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int)
