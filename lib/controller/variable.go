@@ -58,6 +58,16 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 			return err, code
 		}
 
+		if variable.AspectId != "" && !this.config.AllowNoneLeafAspectNodesInDeviceTypes {
+			aspectNode, err, code := this.GetAspectNode(variable.AspectId)
+			if err != nil {
+				return err, code
+			}
+			if len(aspectNode.DescendentIds) > 0 {
+				return errors.New("only leaf aspects are allowed in device-types" + variable.Name), http.StatusBadRequest
+			}
+		}
+
 		switch variable.Type {
 		case models.String:
 			if len(variable.SubContentVariables) > 0 {

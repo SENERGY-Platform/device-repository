@@ -45,7 +45,9 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t)
+	conf, err := testenv.CreateTestEnv(ctx, wg, t, func(c *config.Config) {
+		c.AllowNoneLeafAspectNodesInDeviceTypes = true
+	})
 	if err != nil {
 		t.Error(err)
 		return

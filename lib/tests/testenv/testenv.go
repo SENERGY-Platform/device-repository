@@ -60,7 +60,7 @@ func Jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 	return
 }
 
-func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf config.Config, err error) {
+func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...func(*config.Config)) (conf config.Config, err error) {
 	conf, err = config.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
@@ -69,6 +69,11 @@ func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf 
 	conf.FatalErrHandler = t.Fatal
 	conf.MongoReplSet = false
 	conf.Debug = true
+
+	for _, f := range cm {
+		f(&conf)
+	}
+
 	conf, err = docker.NewEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)
