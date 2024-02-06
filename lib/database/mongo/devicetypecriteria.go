@@ -196,6 +196,98 @@ func isControllingFunction(functionId string) bool {
 	return false
 }
 
+func (this *Mongo) GetDeviceTypeCriteriaByAspectIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	filter := bson.M{
+		DeviceTypeCriteriaBson.AspectId: bson.M{"$in": ids},
+	}
+	if !includeModified {
+		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
+	}
+	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		dtCriteria := model.DeviceTypeCriteria{}
+		err = cursor.Decode(&dtCriteria)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dtCriteria)
+	}
+	err = cursor.Err()
+	return result, err
+}
+
+func (this *Mongo) GetDeviceTypeCriteriaByFunctionIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	filter := bson.M{
+		DeviceTypeCriteriaBson.FunctionId: bson.M{"$in": ids},
+	}
+	if !includeModified {
+		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
+	}
+	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		dtCriteria := model.DeviceTypeCriteria{}
+		err = cursor.Decode(&dtCriteria)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dtCriteria)
+	}
+	err = cursor.Err()
+	return
+}
+
+func (this *Mongo) GetDeviceTypeCriteriaByDeviceClassIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	filter := bson.M{
+		DeviceTypeCriteriaBson.DeviceClassId: bson.M{"$in": ids},
+	}
+	if !includeModified {
+		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
+	}
+	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		dtCriteria := model.DeviceTypeCriteria{}
+		err = cursor.Decode(&dtCriteria)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dtCriteria)
+	}
+	err = cursor.Err()
+	return
+}
+
+func (this *Mongo) GetDeviceTypeCriteriaByCharacteristicIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	filter := bson.M{
+		DeviceTypeCriteriaBson.CharacteristicId: bson.M{"$in": ids},
+	}
+	if !includeModified {
+		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
+	}
+	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		dtCriteria := model.DeviceTypeCriteria{}
+		err = cursor.Decode(&dtCriteria)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dtCriteria)
+	}
+	err = cursor.Err()
+	return
+}
+
 func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
 	filter := bson.M{
 		DeviceTypeCriteriaBson.DeviceTypeId: bson.M{"$in": deviceTypeIds},

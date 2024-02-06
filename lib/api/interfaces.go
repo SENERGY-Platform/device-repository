@@ -85,4 +85,5 @@ type Controller interface {
 
 	GetLocation(id string, token string) (location models.Location, err error, errCode int)
 	ValidateLocation(location models.Location) (err error, code int)
+	GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int)
 }

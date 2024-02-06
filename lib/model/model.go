@@ -82,3 +82,35 @@ type FilterCriteria struct {
 	DeviceClassId string             `json:"device_class_id"`
 	AspectId      string             `json:"aspect_id"`
 }
+
+type UsedInDeviceTypeQuery struct {
+	Resource string                    `json:"resource"`           // "aspects"|"functions"|"device-classes"|"characteristics"
+	With     string                    `json:"with,omitempty"`     // ""|"device-type"|"service"|"variable": selects how deep the result "used_in" is set; defaults to "device-type"
+	CountBy  string                    `json:"count_by,omitempty"` // ""|"device-type"|"service"|"variable": selects what is counted; defaults to "device-type"
+	Ids      []UsedInDeviceTypeQueryId `json:"ids"`
+}
+
+type UsedInDeviceTypeQueryId = string
+type UsedInDeviceTypeResponse = map[UsedInDeviceTypeQueryId]RefInDeviceTypeResponseElement
+
+type RefInDeviceTypeResponseElement struct {
+	Count  int                   `json:"count"`
+	UsedIn []DeviceTypeReference `json:"used_in"`
+}
+
+type DeviceTypeReference struct {
+	Id     string             `json:"id"`
+	Name   string             `json:"name"`
+	UsedIn []ServiceReference `json:"used_in,omitempty"`
+}
+
+type ServiceReference struct {
+	Id     string              `json:"id"`
+	Name   string              `json:"name"`
+	UsedIn []VariableReference `json:"used_in,omitempty"`
+}
+
+type VariableReference struct {
+	Id   string `json:"id"`
+	Path string `json:"path"`
+}

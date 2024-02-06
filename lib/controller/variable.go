@@ -101,7 +101,7 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 			return errors.New("unknown aspect id:" + variable.AspectId), http.StatusBadRequest
 		}
 		if !options.CheckAllowNoneLeafAspectNodesInDeviceTypes(this.config) && len(aspectNode.DescendentIds) > 0 {
-			return errors.New("only leaf aspects are allowed in device-types" + variable.Name), http.StatusBadRequest
+			return errors.New("only leaf aspects are allowed in device-types " + variable.Name), http.StatusBadRequest
 		}
 	}
 

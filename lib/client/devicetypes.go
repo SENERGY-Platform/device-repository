@@ -17,6 +17,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -73,4 +74,16 @@ type DeviceTypeValidationOptions = model.ValidationOptions
 
 func (c *Client) ValidateDeviceType(deviceType models.DeviceType, options model.ValidationOptions) (err error, code int) {
 	return c.validateWithOptions("/device-types", deviceType, options.AsUrlValues())
+}
+
+func (c *Client) GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int) {
+	body, err := json.Marshal(query)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/query/used-in-device-type", bytes.NewBuffer(body))
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return do[model.UsedInDeviceTypeResponse](req)
 }

@@ -21,6 +21,26 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 )
 
+func (db *DB) GetDeviceTypeCriteriaByAspectIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (db *DB) GetDeviceTypeCriteriaByFunctionIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (db *DB) GetDeviceTypeCriteriaByDeviceClassIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (db *DB) GetDeviceTypeCriteriaByCharacteristicIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (db *DB) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
 	panic("not implemented") // TODO
 }

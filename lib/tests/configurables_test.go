@@ -670,283 +670,293 @@ func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCrit
 	}
 }
 
+func getTestConfigurableMetadata() (aspects []models.Aspect, functions []models.Function, devicetypes []models.DeviceType) {
+	interaction := models.EVENT_AND_REQUEST
+	aspects = []models.Aspect{
+		{
+			Id: "air",
+			SubAspects: []models.Aspect{
+				{Id: "inside_air"},
+				{Id: "outside_air",
+					SubAspects: []models.Aspect{
+						{Id: "morning_outside_air"},
+						{Id: "evening_outside_air"},
+					},
+				},
+			},
+		},
+		{
+			Id: "water",
+		},
+		{
+			Id: "device",
+			SubAspects: []models.Aspect{
+				{Id: "cpu"},
+				{Id: "gpu"},
+				{Id: "case"},
+			},
+		},
+		{
+			Id: "fan",
+			SubAspects: []models.Aspect{
+				{Id: "cpu_fan"},
+				{Id: "gpu_fan"},
+				{Id: "case_fan",
+					SubAspects: []models.Aspect{
+						{Id: "case_fan_1"},
+						{Id: "case_fan_2"},
+						{Id: "case_fan_3"},
+						{Id: "case_fan_4"},
+						{Id: "case_fan_5"},
+					},
+				},
+			},
+		},
+	}
+	functions = []models.Function{
+		{Id: model.MEASURING_FUNCTION_PREFIX + "getTemperature"},
+		{Id: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature"},
+		{Id: model.MEASURING_FUNCTION_PREFIX + "getVolume"},
+		{Id: model.CONTROLLING_FUNCTION_PREFIX + "setVolume"},
+		{Id: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed"},
+		{Id: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed"},
+		{Id: model.CONTROLLING_FUNCTION_PREFIX + "toggle"},
+		{Id: model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime"},
+	}
+	devicetypes = []models.DeviceType{
+		{
+			Id:            "pc_cooling_controller",
+			Name:          "pc_cooling_controller_name",
+			DeviceClassId: "pc_cooling_controller",
+			Services: []models.Service{
+				{
+					Id:          "getTemperatures",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:   "duration",
+								Name: "duration",
+								Type: models.Structure,
+								SubContentVariables: []models.ContentVariable{
+									{
+										Id:               "sec",
+										Name:             "sec",
+										Type:             models.Integer,
+										CharacteristicId: "",
+										Value:            30,
+									},
+									{
+										Id:               "ms",
+										Name:             "ms",
+										Type:             models.Integer,
+										CharacteristicId: "ms",
+										Value:            32,
+									},
+								},
+							},
+						},
+					},
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:   "avg_temperatures",
+								Name: "avg_temperatures",
+								SubContentVariables: []models.ContentVariable{
+									{
+										Id:         "cpu",
+										Name:       "cpu",
+										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+										AspectId:   "cpu",
+									},
+									{
+										Id:         "gpu",
+										Name:       "gpu",
+										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+										AspectId:   "gpu",
+									},
+									{
+										Id:         "case",
+										Name:       "case",
+										FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
+										AspectId:   "case",
+									},
+								},
+							},
+						},
+					},
+				},
+
+				{
+					Id:          "getCaseFan1Speed",
+					Interaction: interaction,
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "case_fan_1",
+							},
+						},
+					},
+				},
+				{
+					Id:          "getCaseFan2Speed",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:               "sec",
+								Name:             "sec",
+								Type:             models.Integer,
+								CharacteristicId: "",
+								Value:            24,
+							},
+						},
+					},
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "case_fan_2",
+							},
+						},
+					},
+				},
+				{
+					Id:          "getCpuSpeed",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:               "sec",
+								Name:             "sec",
+								Type:             models.Integer,
+								CharacteristicId: "sec",
+								Value:            24,
+							},
+						},
+					},
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "cpu_fan",
+							},
+						},
+					},
+				},
+				{
+					Id:          "getGpuSpeed",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:               "sec",
+								Name:             "sec",
+								Type:             models.Integer,
+								CharacteristicId: "sec",
+								FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime",
+								Value:            24,
+							},
+						},
+					},
+					Outputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
+								AspectId:   "gpu_fan",
+							},
+						},
+					},
+				},
+
+				{
+					Id:          "setCaseFanSpeed",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:   "speed",
+								Name: "speed",
+								SubContentVariables: []models.ContentVariable{
+									{
+										Id:         "1",
+										Name:       "1",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+										AspectId:   "case_fan_1",
+										Value:      13,
+									},
+									{
+										Id:         "2",
+										Name:       "2",
+										FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+										AspectId:   "case_fan_2",
+										Value:      14,
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Id:          "setCaseFan1Speed",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:         "speed",
+								Name:       "speed",
+								FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:   "case_fan_1",
+							},
+						},
+					},
+				},
+				{
+					Id:          "setCaseFan2Speed",
+					Interaction: interaction,
+					Inputs: []models.Content{
+						{
+							ContentVariable: models.ContentVariable{
+								Id:    "header",
+								Name:  "header",
+								Type:  models.String,
+								Value: "auth",
+							},
+						},
+						{
+							ContentVariable: models.ContentVariable{
+								Id:               "speed",
+								Name:             "speed",
+								FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
+								AspectId:         "case_fan_2",
+								CharacteristicId: "foo",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return
+}
+
 func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
+	aspects, functions, deviceTypes := getTestConfigurableMetadata()
+	return createTestConfigurableMetadataBase(config, aspects, functions, deviceTypes)
+}
+
+func createTestConfigurableMetadataBase(config config.Config, aspects []models.Aspect, functions []models.Function, devicetypes []models.DeviceType) func(t *testing.T) {
 	return func(t *testing.T) {
-		interaction := models.EVENT_AND_REQUEST
-		aspects := []models.Aspect{
-			{
-				Id: "air",
-				SubAspects: []models.Aspect{
-					{Id: "inside_air"},
-					{Id: "outside_air",
-						SubAspects: []models.Aspect{
-							{Id: "morning_outside_air"},
-							{Id: "evening_outside_air"},
-						},
-					},
-				},
-			},
-			{
-				Id: "water",
-			},
-			{
-				Id: "device",
-				SubAspects: []models.Aspect{
-					{Id: "cpu"},
-					{Id: "gpu"},
-					{Id: "case"},
-				},
-			},
-			{
-				Id: "fan",
-				SubAspects: []models.Aspect{
-					{Id: "cpu_fan"},
-					{Id: "gpu_fan"},
-					{Id: "case_fan",
-						SubAspects: []models.Aspect{
-							{Id: "case_fan_1"},
-							{Id: "case_fan_2"},
-							{Id: "case_fan_3"},
-							{Id: "case_fan_4"},
-							{Id: "case_fan_5"},
-						},
-					},
-				},
-			},
-		}
-		functions := []models.Function{
-			{Id: model.MEASURING_FUNCTION_PREFIX + "getTemperature"},
-			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setTemperature"},
-			{Id: model.MEASURING_FUNCTION_PREFIX + "getVolume"},
-			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setVolume"},
-			{Id: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed"},
-			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed"},
-			{Id: model.CONTROLLING_FUNCTION_PREFIX + "toggle"},
-			{Id: model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime"},
-		}
-		devicetypes := []models.DeviceType{
-			{
-				Id:            "pc_cooling_controller",
-				DeviceClassId: "pc_cooling_controller",
-				Services: []models.Service{
-					{
-						Id:          "getTemperatures",
-						Interaction: interaction,
-						Inputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:   "duration",
-									Name: "duration",
-									Type: models.Structure,
-									SubContentVariables: []models.ContentVariable{
-										{
-											Id:               "sec",
-											Name:             "sec",
-											Type:             models.Integer,
-											CharacteristicId: "",
-											Value:            30,
-										},
-										{
-											Id:               "ms",
-											Name:             "ms",
-											Type:             models.Integer,
-											CharacteristicId: "ms",
-											Value:            32,
-										},
-									},
-								},
-							},
-						},
-						Outputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:   "avg_temperatures",
-									Name: "avg_temperatures",
-									SubContentVariables: []models.ContentVariable{
-										{
-											Id:         "cpu",
-											Name:       "cpu",
-											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-											AspectId:   "cpu",
-										},
-										{
-											Id:         "gpu",
-											Name:       "gpu",
-											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-											AspectId:   "gpu",
-										},
-										{
-											Id:         "case",
-											Name:       "case",
-											FunctionId: model.MEASURING_FUNCTION_PREFIX + "getTemperature",
-											AspectId:   "case",
-										},
-									},
-								},
-							},
-						},
-					},
-
-					{
-						Id:          "getCaseFan1Speed",
-						Interaction: interaction,
-						Outputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:         "speed",
-									Name:       "speed",
-									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-									AspectId:   "case_fan_1",
-								},
-							},
-						},
-					},
-					{
-						Id:          "getCaseFan2Speed",
-						Interaction: interaction,
-						Inputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:               "sec",
-									Name:             "sec",
-									Type:             models.Integer,
-									CharacteristicId: "",
-									Value:            24,
-								},
-							},
-						},
-						Outputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:         "speed",
-									Name:       "speed",
-									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-									AspectId:   "case_fan_2",
-								},
-							},
-						},
-					},
-					{
-						Id:          "getCpuSpeed",
-						Interaction: interaction,
-						Inputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:               "sec",
-									Name:             "sec",
-									Type:             models.Integer,
-									CharacteristicId: "sec",
-									Value:            24,
-								},
-							},
-						},
-						Outputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:         "speed",
-									Name:       "speed",
-									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-									AspectId:   "cpu_fan",
-								},
-							},
-						},
-					},
-					{
-						Id:          "getGpuSpeed",
-						Interaction: interaction,
-						Inputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:               "sec",
-									Name:             "sec",
-									Type:             models.Integer,
-									CharacteristicId: "sec",
-									FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setMeasuringTime",
-									Value:            24,
-								},
-							},
-						},
-						Outputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:         "speed",
-									Name:       "speed",
-									FunctionId: model.MEASURING_FUNCTION_PREFIX + "getFanSpeed",
-									AspectId:   "gpu_fan",
-								},
-							},
-						},
-					},
-
-					{
-						Id:          "setCaseFanSpeed",
-						Interaction: interaction,
-						Inputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:   "speed",
-									Name: "speed",
-									SubContentVariables: []models.ContentVariable{
-										{
-											Id:         "1",
-											Name:       "1",
-											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-											AspectId:   "case_fan_1",
-											Value:      13,
-										},
-										{
-											Id:         "2",
-											Name:       "2",
-											FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-											AspectId:   "case_fan_2",
-											Value:      14,
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Id:          "setCaseFan1Speed",
-						Interaction: interaction,
-						Inputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:         "speed",
-									Name:       "speed",
-									FunctionId: model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-									AspectId:   "case_fan_1",
-								},
-							},
-						},
-					},
-					{
-						Id:          "setCaseFan2Speed",
-						Interaction: interaction,
-						Inputs: []models.Content{
-							{
-								ContentVariable: models.ContentVariable{
-									Id:    "header",
-									Name:  "header",
-									Type:  models.String,
-									Value: "auth",
-								},
-							},
-							{
-								ContentVariable: models.ContentVariable{
-									Id:               "speed",
-									Name:             "speed",
-									FunctionId:       model.CONTROLLING_FUNCTION_PREFIX + "setFanSpeed",
-									AspectId:         "case_fan_2",
-									CharacteristicId: "foo",
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-
 		producer, err := testutils.NewPublisher(config)
 		if err != nil {
 			t.Error(err)

@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -395,6 +396,173 @@ func pathOptionIsAncestorOfConfigurableCandidate(option model.ServicePathOption,
 		return true
 	}
 	return false
+}
+
+func (this *Controller) GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int) {
+	result = model.UsedInDeviceTypeResponse{}
+	if query.Resource == "" {
+		return result, errors.New("unknown resource"), http.StatusBadRequest
+	}
+	if query.With == "" {
+		query.With = "device-type"
+	}
+	if query.CountBy == "" {
+		query.CountBy = "device-type"
+	}
+
+	ctx, _ := getTimeoutContext()
+
+	criteria := []model.DeviceTypeCriteria{}
+
+	switch query.Resource {
+	case "aspects":
+		criteria, err = this.db.GetDeviceTypeCriteriaByAspectIds(ctx, query.Ids, false)
+	case "device-classes":
+		criteria, err = this.db.GetDeviceTypeCriteriaByDeviceClassIds(ctx, query.Ids, false)
+	case "functions":
+		criteria, err = this.db.GetDeviceTypeCriteriaByFunctionIds(ctx, query.Ids, false)
+	case "characteristics":
+		criteria, err = this.db.GetDeviceTypeCriteriaByCharacteristicIds(ctx, query.Ids, false)
+	default:
+		return result, fmt.Errorf("unknown resource=\"%v\"", query.Resource), http.StatusBadRequest
+	}
+
+	for _, id := range query.Ids {
+		result[id] = model.RefInDeviceTypeResponseElement{UsedIn: []model.DeviceTypeReference{}}
+	}
+
+	//collect ids
+	for _, c := range criteria {
+		id := ""
+		switch query.Resource {
+		case "aspects":
+			id = c.AspectId
+		case "device-classes":
+			id = c.DeviceClassId
+		case "functions":
+			id = c.FunctionId
+		case "characteristics":
+			id = c.CharacteristicId
+		default:
+			return result, fmt.Errorf("unknown resource=\"%v\"", query.Resource), http.StatusBadRequest
+		}
+		temp := result[id]
+		temp.UsedIn = addDeviceTypeCriteriaToDeviceTypeRefs(temp.UsedIn, c)
+		result[id] = temp
+	}
+
+	//collect count
+	for key, value := range result {
+		switch query.CountBy {
+		case "device-type":
+			value.Count = len(value.UsedIn)
+		case "service":
+			for _, dt := range value.UsedIn {
+				value.Count = value.Count + len(dt.UsedIn)
+			}
+		case "variable":
+			for _, dt := range value.UsedIn {
+				for _, s := range dt.UsedIn {
+					value.Count = value.Count + len(s.UsedIn)
+				}
+			}
+		default:
+			return result, fmt.Errorf("unknown count_by=\"%v\"", query.CountBy), http.StatusBadRequest
+		}
+		result[key] = value
+	}
+
+	//remove unwanted used-in lists
+	for key, value := range result {
+		switch query.With {
+		case "device-type":
+			for i, dtRef := range value.UsedIn {
+				dtRef.UsedIn = []model.ServiceReference{}
+				value.UsedIn[i] = dtRef
+			}
+		case "service":
+			for i, dtRef := range value.UsedIn {
+				for j, sRef := range dtRef.UsedIn {
+					sRef.UsedIn = []model.VariableReference{}
+					dtRef.UsedIn[j] = sRef
+				}
+				value.UsedIn[i] = dtRef
+			}
+		case "variable":
+			//nothing to do here
+		default:
+			return result, fmt.Errorf("unknown with=\"%v\"", query.With), http.StatusBadRequest
+		}
+		result[key] = value
+	}
+
+	//add names
+	for key, value := range result {
+		for i, dtRef := range value.UsedIn {
+			dt, _, err := this.db.GetDeviceType(ctx, dtRef.Id)
+			if err != nil {
+				return result, err, http.StatusInternalServerError
+			}
+			dtRef.Name = dt.Name
+			for j, sRef := range dtRef.UsedIn {
+				for _, s := range dt.Services {
+					if s.Id == sRef.Id {
+						sRef.Name = s.Name
+						break
+					}
+				}
+				dtRef.UsedIn[j] = sRef
+			}
+			value.UsedIn[i] = dtRef
+		}
+		result[key] = value
+	}
+
+	return result, nil, 200
+}
+
+func addDeviceTypeCriteriaToDeviceTypeRefs(list []model.DeviceTypeReference, criteria model.DeviceTypeCriteria) []model.DeviceTypeReference {
+	found := false
+	for i, e := range list {
+		if e.Id == criteria.DeviceTypeId {
+			e.UsedIn = addDeviceTypeCriteriaToServiceRefs(e.UsedIn, criteria)
+			list[i] = e
+			found = true
+		}
+	}
+	if !found {
+		list = append(list, model.DeviceTypeReference{
+			Id:     criteria.DeviceTypeId,
+			UsedIn: addDeviceTypeCriteriaToServiceRefs([]model.ServiceReference{}, criteria),
+		})
+	}
+	return list
+}
+
+func addDeviceTypeCriteriaToServiceRefs(list []model.ServiceReference, criteria model.DeviceTypeCriteria) []model.ServiceReference {
+	found := false
+	for i, e := range list {
+		if e.Id == criteria.ServiceId {
+			e.UsedIn = addDeviceTypeCriteriaToVariableRefs(e.UsedIn, criteria)
+			list[i] = e
+			found = true
+		}
+	}
+	if !found {
+		list = append(list, model.ServiceReference{
+			Id:     criteria.ServiceId,
+			UsedIn: addDeviceTypeCriteriaToVariableRefs([]model.VariableReference{}, criteria),
+		})
+	}
+	return list
+}
+
+func addDeviceTypeCriteriaToVariableRefs(list []model.VariableReference, criteria model.DeviceTypeCriteria) []model.VariableReference {
+	list = append(list, model.VariableReference{
+		Id:   criteria.ContentVariableId,
+		Path: criteria.ContentVariablePath,
+	})
+	return list
 }
 
 /////////////////////////
