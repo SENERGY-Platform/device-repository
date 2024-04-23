@@ -18,11 +18,13 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"net/http"
 	"runtime/debug"
+	"slices"
 )
 
 /////////////////////////
@@ -89,14 +91,35 @@ func (this *Controller) ValidateHub(hub models.Hub) (err error, code int) {
 	for _, localId := range hub.DeviceLocalIds {
 		//device exists?
 		ctx, _ := getTimeoutContext()
-		_, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
+		device, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 		if !exists {
 			return errors.New("unknown device local id: " + localId), http.StatusBadRequest
 		}
+		if !slices.Contains(hub.DeviceIds, device.Id) {
+			return fmt.Errorf("missing device.id %s in device_ids (found by device_local_ids %s)", device.Id, localId), http.StatusBadRequest
+		}
+	}
 
+	for _, id := range hub.DeviceIds {
+		//device exists?
+		ctx, _ := getTimeoutContext()
+		device, exists, err := this.db.GetDevice(ctx, id)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		if !exists {
+			return errors.New("unknown device id: " + id), http.StatusBadRequest
+		}
+		if !slices.Contains(hub.DeviceIds, device.Id) {
+			return fmt.Errorf("missing device.local_id %s in device_local_ids (found by device_ids %s)", device.LocalId, id), http.StatusBadRequest
+		}
+	}
+
+	if len(hub.DeviceIds) != len(hub.DeviceLocalIds) {
+		return errors.New("hub.device_ids length does not match hub.device_local_ids length"), http.StatusBadRequest
 	}
 
 	return nil, http.StatusOK

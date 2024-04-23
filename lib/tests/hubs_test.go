@@ -93,6 +93,7 @@ func TestHubs(t *testing.T) {
 		Name:           hub1name,
 		Hash:           "hash1",
 		DeviceLocalIds: []string{device1lid, device2lid},
+		DeviceIds:      []string{device1id, device2id},
 	}
 
 	err = producer.PublishHub(h1, userid)
