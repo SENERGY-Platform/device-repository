@@ -18,10 +18,12 @@ package producer
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/segmentio/kafka-go"
 	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 type Producer struct {
@@ -29,6 +31,7 @@ type Producer struct {
 	devices *kafka.Writer
 	hubs    *kafka.Writer
 	aspects *kafka.Writer
+	done    *kafka.Writer
 }
 
 func New(conf config.Config) (*Producer, error) {
@@ -44,7 +47,15 @@ func New(conf config.Config) (*Producer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Producer{config: conf, devices: devices, hubs: hubs, aspects: aspects}, nil
+	err = util.InitTopic(conf.KafkaUrl, conf.DoneTopic)
+	if err != nil {
+		return nil, err
+	}
+	done, err := GetKafkaWriter(conf.KafkaUrl, conf.DoneTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
+	return &Producer{config: conf, devices: devices, hubs: hubs, aspects: aspects, done: done}, nil
 }
 
 func GetKafkaWriter(broker string, topic string, debug bool) (writer *kafka.Writer, err error) {
@@ -60,7 +71,22 @@ func GetKafkaWriter(broker string, topic string, debug bool) (writer *kafka.Writ
 		MaxAttempts: 10,
 		Logger:      logger,
 		BatchSize:   1,
-		Balancer:    &kafka.Hash{},
+		Balancer:    &KeySeparationBalancer{SubBalancer: &kafka.Hash{}, Seperator: "/"},
 	}
 	return writer, err
+}
+
+type KeySeparationBalancer struct {
+	SubBalancer kafka.Balancer
+	Seperator   string
+}
+
+func (this *KeySeparationBalancer) Balance(msg kafka.Message, partitions ...int) (partition int) {
+	key := string(msg.Key)
+	if this.Seperator != "" {
+		keyParts := strings.Split(key, this.Seperator)
+		key = keyParts[0]
+	}
+	msg.Key = []byte(key)
+	return this.SubBalancer.Balance(msg, partitions...)
 }

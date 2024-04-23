@@ -25,6 +25,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
 	"log"
 	"strconv"
 	"sync"
@@ -87,6 +88,10 @@ func (s SecurityMock) CheckMultiple(token string, kind string, ids []string, act
 }
 
 type VoidProducerMock struct{}
+
+func (v VoidProducerMock) SendDone(msg donewait.DoneMsg) error {
+	return nil
+}
 
 func (v VoidProducerMock) PublishAspectDelete(id string, owner string) error {
 	//TODO implement me

@@ -1,6 +1,7 @@
 {
     "server_port": "8080",
     "log_level": "CALL",
+    "done_topic": "device_repository_done",
     "device_topic": "devices",
     "device_type_topic": "device-types",
     "device_group_topic": "device-groups",

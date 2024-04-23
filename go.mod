@@ -14,7 +14,7 @@ require (
 	github.com/IBM/sarama v1.43.1
 	github.com/SENERGY-Platform/models/go v0.0.0-20230824080159-16585960df38
 	github.com/SENERGY-Platform/permission-search v0.0.9
-	github.com/SENERGY-Platform/service-commons v0.0.0-20240320115156-56d8cca6717c
+	github.com/SENERGY-Platform/service-commons v0.0.0-20240423075736-0c66be6b5102
 	github.com/google/uuid v1.6.0
 	github.com/testcontainers/testcontainers-go v0.30.0
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f

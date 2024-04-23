@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
 )
 
 func init() {
@@ -36,6 +37,15 @@ func LocationsListenerFactory(config config.Config, control Controller) (topic s
 		if err != nil {
 			return
 		}
+		defer func() {
+			if err == nil {
+				err = control.SendDone(donewait.DoneMsg{
+					ResourceKind: config.LocationTopic,
+					ResourceId:   command.Id,
+					Command:      command.Command,
+				})
+			}
+		}()
 		switch command.Command {
 		case "PUT":
 			return control.SetLocation(command.Location, command.Owner)

@@ -16,7 +16,10 @@
 
 package listener
 
-import "github.com/SENERGY-Platform/models/go/models"
+import (
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
+)
 
 type Controller interface {
 	SetDevice(device models.Device, owner string) error
@@ -42,4 +45,5 @@ type Controller interface {
 	DeleteFunction(id string) error
 	SetLocation(location models.Location, owner string) error
 	DeleteLocation(id string) error
+	SendDone(done donewait.DoneMsg) error
 }

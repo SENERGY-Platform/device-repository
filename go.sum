@@ -14,8 +14,8 @@ github.com/SENERGY-Platform/models/go v0.0.0-20230824080159-16585960df38 h1:PDvF
 github.com/SENERGY-Platform/models/go v0.0.0-20230824080159-16585960df38/go.mod h1:bCREPNRN4P8oxLgpC3/ZKK4jXSy4MSPXoiomhohE+aw=
 github.com/SENERGY-Platform/permission-search v0.0.9 h1:p/k9I739e49K60Mr8rTnk9aKjtWCA4kP7DpxLgpukcA=
 github.com/SENERGY-Platform/permission-search v0.0.9/go.mod h1:TL+tg9zvYGjBWmdjOhfT10oRBnbdDvHSml1p1U/eeNI=
-github.com/SENERGY-Platform/service-commons v0.0.0-20240320115156-56d8cca6717c h1:npsFeF0Sy9XadYtophvUduJhkvv9nfbhQ7segDE7Q9s=
-github.com/SENERGY-Platform/service-commons v0.0.0-20240320115156-56d8cca6717c/go.mod h1:1p2CQPNtler5leXqNgaOfr7DlgZUydrQlQYA97ycm4k=
+github.com/SENERGY-Platform/service-commons v0.0.0-20240423075736-0c66be6b5102 h1:Gng9WWWORoR+GDT3y9ezCv625BrPQycQYGX3eAIxOo0=
+github.com/SENERGY-Platform/service-commons v0.0.0-20240423075736-0c66be6b5102/go.mod h1:1p2CQPNtler5leXqNgaOfr7DlgZUydrQlQYA97ycm4k=
 github.com/acobaugh/osrelease v0.1.0 h1:Yb59HQDGGNhCj4suHaFQQfBps5wyoKLSSX/J/+UifRE=
 github.com/acobaugh/osrelease v0.1.0/go.mod h1:4bFEs0MtgHNHBrmHCt67gNisnabCRAlzdVasCEGHTWY=
 github.com/aws/aws-sdk-go v1.42.27/go.mod h1:OGr6lGMAKGlG9CVrYnWYDKIyb829c6EVBRjxqjmPepc=

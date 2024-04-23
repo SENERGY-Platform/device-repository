@@ -33,6 +33,7 @@ type Config struct {
 	ServerPort                    string `json:"server_port"`
 	KafkaUrl                      string `json:"kafka_url"`
 	GroupId                       string `json:"group_id"`
+	DoneTopic                     string `json:"done_topic"`
 	DeviceTopic                   string `json:"device_topic"`
 	DeviceTypeTopic               string `json:"device_type_topic"`
 	DeviceGroupTopic              string `json:"device_group_topic"`

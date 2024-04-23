@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
 	"log"
 )
 
@@ -33,9 +34,16 @@ type Producer interface {
 	PublishHub(hub models.Hub) (err error)
 	PublishAspectDelete(id string, owner string) error
 	PublishAspectUpdate(aspect models.Aspect, owner string) error
+	SendDone(msg donewait.DoneMsg) error
 }
 
 type ErrorProducer struct{}
+
+func (this ErrorProducer) SendDone(msg donewait.DoneMsg) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
 
 func (this ErrorProducer) PublishAspectDelete(id string, owner string) (err error) {
 	err = errors.New("no producer usage expected")
