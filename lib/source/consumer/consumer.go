@@ -23,11 +23,11 @@ import (
 	"log"
 )
 
-func Start(ctx context.Context, config config.Config, control listener.Controller) (err error) {
+func Start(ctx context.Context, config config.Config, control listener.Controller, securitySink listener.SecuritySink) (err error) {
 	topics := []string{}
 	handlerMap := map[string]listener.Listener{}
 	for _, factory := range listener.Factories {
-		topic, handler, err := factory(config, control)
+		topic, handler, err := factory(config, control, securitySink)
 		if err != nil {
 			log.Println("ERROR: listener.factory", topic, err)
 			return err

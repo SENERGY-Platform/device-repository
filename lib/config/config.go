@@ -46,9 +46,11 @@ type Config struct {
 	DeviceClassTopic              string `json:"device_class_topic"`
 	LocationTopic                 string `json:"location_topic"`
 	PermissionsUrl                string `json:"permissions_url"`
+	SecurityImpl                  string `json:"security_impl"` // "db" || "permissions-search" || "" --> defaults to "permissions-search"
 	MongoUrl                      string `json:"mongo_url"`
 	MongoReplSet                  bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
 	MongoTable                    string `json:"mongo_table"`
+	MongoRightsCollection         string `json:"mongo_rights_collection"`
 	MongoDeviceCollection         string `json:"mongo_device_collection"`
 	MongoDeviceTypeCollection     string `json:"mongo_device_type_collection"`
 	MongoDeviceGroupCollection    string `json:"mongo_device_group_collection"`
@@ -68,6 +70,8 @@ type Config struct {
 
 	DeviceServiceGroupSelectionAllowNotFound     bool `json:"device_service_group_selection_allow_not_found"`
 	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
+
+	InitialGroupRights map[string]map[string]string `json:"initial_group_rights"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {

@@ -14,8 +14,10 @@
     "device_class_topic": "device-classes",
     "location_topic": "locations",
     "permissions_url": "http://permissionsearch:8080",
+    "security_impl": "permissions-search",
     "mongo_url": "mongodb://localhost:27017",
     "mongo_table": "devicerepository",
+    "mongo_rights_collection": "rights",
     "mongo_device_collection": "device",
     "mongo_device_type_collection": "devicetype",
     "mongo_device_group_collection": "devicegroup",
@@ -35,5 +37,11 @@
     "disable_http_api": false,
     "http_client_timeout": "30s",
     "device_service_group_selection_allow_not_found": true,
-    "allow_none_leaf_aspect_nodes_in_device_types_default": true
+    "allow_none_leaf_aspect_nodes_in_device_types_default": true,
+
+    "initial_group_rights": {
+        "devices": {"admin": "rwxa"},
+        "device-groups": {"system": "rwxa"},
+        "hubs": {"admin": "rwxa"}
+    }
 }

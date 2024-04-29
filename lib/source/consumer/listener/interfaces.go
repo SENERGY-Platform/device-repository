@@ -17,6 +17,7 @@
 package listener
 
 import (
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
 )
@@ -46,4 +47,10 @@ type Controller interface {
 	SetLocation(location models.Location, owner string) error
 	DeleteLocation(id string) error
 	SendDone(done donewait.DoneMsg) error
+}
+
+type SecuritySink interface {
+	EnsureInitialRights(resourceKind string, resourceId string, owner string) error
+	SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error
+	RemoveRights(topic string, id string) error
 }

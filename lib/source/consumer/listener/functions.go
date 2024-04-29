@@ -30,7 +30,7 @@ func init() {
 	Factories = append(Factories, FunctionsListenerFactory)
 }
 
-func FunctionsListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
+func FunctionsListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
 	return config.FunctionTopic, func(msg []byte) (err error) {
 		command := FunctionCommand{}
 		err = json.Unmarshal(msg, &command)

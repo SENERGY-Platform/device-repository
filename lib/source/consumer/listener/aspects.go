@@ -30,7 +30,7 @@ func init() {
 	Factories = append(Factories, AspectsListenerFactory)
 }
 
-func AspectsListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
+func AspectsListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
 	return config.AspectTopic, func(msg []byte) (err error) {
 		command := AspectCommand{}
 		err = json.Unmarshal(msg, &command)

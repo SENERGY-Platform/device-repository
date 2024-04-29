@@ -63,7 +63,7 @@ func StartSourceMock(config config.Config, control listener.Controller) (prod *P
 	prod = New(config)
 
 	for _, factory := range listener.Factories {
-		topic, handler, err := factory(config, control)
+		topic, handler, err := factory(config, control, nil)
 		if err != nil {
 			log.Println("ERROR: listener.factory", topic, err)
 			return prod, err

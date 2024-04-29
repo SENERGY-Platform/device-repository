@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 InfAI (CC SES)
+ * Copyright 2024InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package listener
+package model
 
-import (
-	"github.com/SENERGY-Platform/device-repository/lib/config"
-)
+type ResourceRights struct {
+	UserRights  map[string]Right `json:"user_rights"`
+	GroupRights map[string]Right `json:"group_rights"`
+}
 
-type Listener func(msg []byte) (err error)
-
-var Factories = []func(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error){}
+type Right struct {
+	Read         bool `json:"read"`
+	Write        bool `json:"write"`
+	Execute      bool `json:"execute"`
+	Administrate bool `json:"administrate"`
+}

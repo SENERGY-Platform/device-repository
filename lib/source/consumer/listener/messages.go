@@ -16,20 +16,25 @@
 
 package listener
 
-import "github.com/SENERGY-Platform/models/go/models"
+import (
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+)
 
 type DeviceCommand struct {
-	Command string        `json:"command"`
-	Id      string        `json:"id"`
-	Owner   string        `json:"owner"`
-	Device  models.Device `json:"device"`
+	Command string                `json:"command"`
+	Id      string                `json:"id"`
+	Owner   string                `json:"owner"`
+	Device  models.Device         `json:"device"`
+	Rights  *model.ResourceRights `json:"rights,omitempty"`
 }
 
 type HubCommand struct {
-	Command string     `json:"command"`
-	Id      string     `json:"id"`
-	Owner   string     `json:"owner"`
-	Hub     models.Hub `json:"hub"`
+	Command string                `json:"command"`
+	Id      string                `json:"id"`
+	Owner   string                `json:"owner"`
+	Hub     models.Hub            `json:"hub"`
+	Rights  *model.ResourceRights `json:"rights,omitempty"`
 }
 
 type DeviceTypeCommand struct {
@@ -47,10 +52,11 @@ type ProtocolCommand struct {
 }
 
 type DeviceGroupCommand struct {
-	Command     string             `json:"command"`
-	Id          string             `json:"id"`
-	Owner       string             `json:"owner"`
-	DeviceGroup models.DeviceGroup `json:"device_group"`
+	Command     string                `json:"command"`
+	Id          string                `json:"id"`
+	Owner       string                `json:"owner"`
+	DeviceGroup models.DeviceGroup    `json:"device_group"`
+	Rights      *model.ResourceRights `json:"rights,omitempty"`
 }
 
 type ConceptCommand struct {

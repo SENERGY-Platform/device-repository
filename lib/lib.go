@@ -18,18 +18,20 @@ package lib
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
 	"github.com/SENERGY-Platform/device-repository/lib/com"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
+	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"log"
 	"sync"
 )
 
-//set wg if you want to wait for clean disconnects after ctx is done
+// set wg if you want to wait for clean disconnects after ctx is done
 func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err error) {
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
@@ -53,10 +55,21 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		}
 	}()
 
-	perm, err := com.NewSecurity(conf)
-	if err != nil {
-		log.Println("ERROR: unable to create permission handler", err)
-		return err
+	var sec controller.Security
+	var securitySink listener.SecuritySink
+
+	switch conf.SecurityImpl {
+	case "db":
+		sec = db
+		securitySink = db
+	case "", "permissions-search":
+		sec, err = com.NewSecurity(conf)
+		if err != nil {
+			log.Println("ERROR: unable to create permission handler", err)
+			return err
+		}
+	default:
+		return errors.New("unknown security implementation: " + conf.SecurityImpl)
 	}
 
 	var p controller.Producer = controller.ErrorProducer{}
@@ -68,7 +81,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		}
 	}
 
-	ctrl, err := controller.New(conf, db, perm, p)
+	ctrl, err := controller.New(conf, db, sec, p)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
@@ -76,7 +89,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 	}
 
 	if !conf.DisableKafkaConsumer {
-		err = consumer.Start(ctx, conf, ctrl)
+		err = consumer.Start(ctx, conf, ctrl, securitySink)
 		if err != nil {
 			log.Println("ERROR: unable to start source", err)
 			return err

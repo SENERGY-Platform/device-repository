@@ -27,7 +27,7 @@ func init() {
 	Factories = append(Factories, HubListenerFactory)
 }
 
-func HubListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
+func HubListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
 	return config.HubTopic, func(msg []byte) (err error) {
 		command := HubCommand{}
 		err = json.Unmarshal(msg, &command)
@@ -45,10 +45,26 @@ func HubListenerFactory(config config.Config, control Controller) (topic string,
 		}()
 		switch command.Command {
 		case "PUT":
+			if securitySink != nil {
+				err = securitySink.EnsureInitialRights(config.HubTopic, command.Id, command.Owner)
+				if err != nil {
+					return err
+				}
+			}
 			return control.SetHub(command.Hub, command.Owner)
 		case "DELETE":
-			return control.DeleteHub(command.Id)
+			err = control.DeleteHub(command.Id)
+			if err != nil {
+				return err
+			}
+			if securitySink != nil {
+				return securitySink.RemoveRights(config.HubTopic, command.Id)
+			}
+			return nil
 		case "RIGHTS":
+			if securitySink != nil && command.Rights != nil {
+				return securitySink.SetRights(config.HubTopic, command.Id, *command.Rights)
+			}
 			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))

@@ -109,4 +109,18 @@ type Database interface {
 	CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 	CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error)
 	ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
+
+	SecuritySink
+	Security
+}
+
+type SecuritySink interface {
+	EnsureInitialRights(resourceKind string, resourceId string, owner string) error
+	SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error
+	RemoveRights(topic string, id string) error
+}
+
+type Security interface {
+	CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error)
+	CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
 }
