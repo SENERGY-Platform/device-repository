@@ -58,8 +58,8 @@ func (this *Mongo) rightsCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoRightsCollection)
 }
 
-func (this *Mongo) EnsureInitialRights(resourceKind string, resourceId string, owner string) error {
-	kind, err := this.getInternalKind(resourceKind)
+func (this *Mongo) EnsureInitialRights(topic string, resourceId string, owner string) error {
+	kind, err := this.getInternalKind(topic)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (this *Mongo) rightsElementExists(ctx context.Context, kind Kind, resourceI
 	return true, nil
 }
 
-func (this *Mongo) SetRights(resourceKind string, resourceId string, rights model.ResourceRights) (err error) {
+func (this *Mongo) SetRights(topic string, resourceId string, rights model.ResourceRights) (err error) {
 	element := RightsEntry{
 		Id:            resourceId,
 		AdminUsers:    []string{},
@@ -101,7 +101,7 @@ func (this *Mongo) SetRights(resourceKind string, resourceId string, rights mode
 		ExecuteUsers:  []string{},
 		ExecuteGroups: []string{},
 	}
-	element.Kind, err = this.getInternalKind(resourceKind)
+	element.Kind, err = this.getInternalKind(topic)
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func (this *Mongo) CheckMultiple(token string, topic string, ids []string, actio
 		return result, err
 	}
 	ctx, _ := getTimeoutContext()
-	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, bson.M{"kind": kind, "id": bson.M{"$in": ids}})
+	cursor, err := this.rightsCollection().Find(ctx, bson.M{"kind": kind, "id": bson.M{"$in": ids}})
 	if err != nil {
 		return result, err
 	}
