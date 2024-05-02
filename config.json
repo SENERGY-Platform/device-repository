@@ -35,6 +35,7 @@
     "debug": false,
     "disable_kafka_consumer": false,
     "disable_http_api": false,
+    "disable_rights_handling": false,
     "http_client_timeout": "30s",
     "device_service_group_selection_allow_not_found": true,
     "allow_none_leaf_aspect_nodes_in_device_types_default": true,

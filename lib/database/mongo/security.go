@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -125,6 +126,7 @@ func (this *Mongo) RemoveRights(topic string, id string) error {
 }
 
 func (this *Mongo) CheckBool(token string, topic string, id string, action model.AuthAction) (allowed bool, err error) {
+	pureid, _ := idmodifier.SplitModifier(id)
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
 		return false, err
@@ -134,7 +136,7 @@ func (this *Mongo) CheckBool(token string, topic string, id string, action model
 		return false, err
 	}
 	ctx, _ := getTimeoutContext()
-	result := this.rightsCollection().FindOne(ctx, bson.M{"kind": kind, "id": id})
+	result := this.rightsCollection().FindOne(ctx, bson.M{"kind": kind, "id": pureid})
 	err = result.Err()
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return false, nil
@@ -154,6 +156,11 @@ func (this *Mongo) CheckBool(token string, topic string, id string, action model
 }
 
 func (this *Mongo) CheckMultiple(token string, topic string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
+	pureIds := []string{}
+	for _, id := range ids {
+		pureId, _ := idmodifier.SplitModifier(id)
+		pureIds = append(pureIds, pureId)
+	}
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
 		return result, err
@@ -163,7 +170,7 @@ func (this *Mongo) CheckMultiple(token string, topic string, ids []string, actio
 		return result, err
 	}
 	ctx, _ := getTimeoutContext()
-	cursor, err := this.rightsCollection().Find(ctx, bson.M{"kind": kind, "id": bson.M{"$in": ids}})
+	cursor, err := this.rightsCollection().Find(ctx, bson.M{"kind": kind, "id": bson.M{"$in": pureIds}})
 	if err != nil {
 		return result, err
 	}

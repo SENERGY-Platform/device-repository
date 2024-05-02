@@ -71,7 +71,8 @@ type Config struct {
 	DeviceServiceGroupSelectionAllowNotFound     bool `json:"device_service_group_selection_allow_not_found"`
 	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
 
-	InitialGroupRights map[string]map[string]string `json:"initial_group_rights"`
+	InitialGroupRights    map[string]map[string]string `json:"initial_group_rights"`
+	DisableRightsHandling bool                         `json:"disable_rights_handling"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {

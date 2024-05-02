@@ -56,12 +56,9 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 	}()
 
 	var sec controller.Security
-	var securitySink listener.SecuritySink
-
 	switch conf.SecurityImpl {
 	case "db":
 		sec = db
-		securitySink = db
 	case "", "permissions-search":
 		sec, err = com.NewSecurity(conf)
 		if err != nil {
@@ -89,7 +86,11 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 	}
 
 	if !conf.DisableKafkaConsumer {
-		err = consumer.Start(ctx, conf, ctrl, securitySink)
+		var secSink listener.SecuritySink = database.VoidSecSink{}
+		if !conf.DisableRightsHandling {
+			secSink = db
+		}
+		err = consumer.Start(ctx, conf, ctrl, secSink)
 		if err != nil {
 			log.Println("ERROR: unable to start source", err)
 			return err
