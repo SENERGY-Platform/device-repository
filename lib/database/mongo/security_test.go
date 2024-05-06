@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"reflect"
@@ -121,6 +122,32 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
+		})
+
+		t.Run("check rights with modified id", func(t *testing.T) {
+			modId := id1 + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg1"}})
+			allowed, err := m.CheckBool(ownerToken, topic, modId, model.READ)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if !allowed {
+				t.Error("expected allowed")
+				return
+			}
+
+			allowedMap, err := m.CheckMultiple(ownerToken, topic, []string{modId}, model.READ)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if !reflect.DeepEqual(allowedMap, map[string]bool{
+				modId: true,
+			}) {
+				t.Errorf("%#v", allowedMap)
+				return
+			}
+
 		})
 
 		t.Run("check rights with second user", func(t *testing.T) {

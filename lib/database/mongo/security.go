@@ -157,9 +157,11 @@ func (this *Mongo) CheckBool(token string, topic string, id string, action model
 
 func (this *Mongo) CheckMultiple(token string, topic string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
 	pureIds := []string{}
+	rawIdsIndex := map[string]string{}
 	for _, id := range ids {
 		pureId, _ := idmodifier.SplitModifier(id)
 		pureIds = append(pureIds, pureId)
+		rawIdsIndex[pureId] = id
 	}
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
@@ -181,8 +183,9 @@ func (this *Mongo) CheckMultiple(token string, topic string, ids []string, actio
 		if err != nil {
 			return nil, err
 		}
-		result[element.Id] = checkRights(jwtToken, element, action)
+		result[rawIdsIndex[element.Id]] = checkRights(jwtToken, element, action)
 	}
+
 	err = cursor.Err()
 	return result, err
 }
