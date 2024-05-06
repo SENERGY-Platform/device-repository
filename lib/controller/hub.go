@@ -140,8 +140,13 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 		if hub.Name == "" {
 			hub.Name = "generated-name"
 		}
+		hub.DeviceIds = []string{}
 		hub.DeviceLocalIds = []string{}
 		hub.Hash = ""
+		if err, _ = this.ValidateHub(hub); err != nil {
+			log.Println("ERROR: unable to fix invalid hub --> ignore: ", hub, err)
+			return nil
+		}
 		return this.producer.PublishHub(hub)
 	}
 	hubIndex := map[string]models.Hub{}
