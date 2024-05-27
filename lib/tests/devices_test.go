@@ -91,6 +91,7 @@ func TestDeviceQuery(t *testing.T) {
 		LocalId:      device1lid,
 		Name:         device1name,
 		DeviceTypeId: devicetype1id,
+		OwnerId:      userid,
 	}
 
 	err = producer.PublishDevice(d1, userid)
@@ -104,6 +105,7 @@ func TestDeviceQuery(t *testing.T) {
 		LocalId:      device2lid,
 		Name:         device2name,
 		DeviceTypeId: devicetype2id,
+		OwnerId:      userid,
 	}
 
 	err = producer.PublishDevice(d2, userid)
@@ -121,6 +123,7 @@ func TestDeviceQuery(t *testing.T) {
 			{Key: "bar", Value: "batz"},
 		},
 		DeviceTypeId: devicetype2id,
+		OwnerId:      userid,
 	}
 
 	err = producer.PublishDevice(d3, userid)

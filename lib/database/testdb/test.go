@@ -55,6 +55,10 @@ func NewTestDB() database.Database {
 
 func (db *DB) Disconnect() {}
 
+func (db *DB) RunStartupMigrations() error {
+	return nil
+}
+
 func get[T any](id string, m map[string]T) (T, bool, error) {
 	resp, ok := m[id]
 	return resp, ok, nil

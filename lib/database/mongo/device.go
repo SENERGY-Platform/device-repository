@@ -26,9 +26,11 @@ import (
 
 const deviceIdFieldName = "Id"
 const deviceLocalIdFieldName = "LocalId"
+const deviceOwnerIdFieldName = "OwnerId"
 
 var deviceIdKey string
 var deviceLocalIdKey string
+var deviceOwnerIdKey string
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
@@ -38,6 +40,10 @@ func init() {
 			return err
 		}
 		deviceLocalIdKey, err = getBsonFieldName(models.Device{}, deviceLocalIdFieldName)
+		if err != nil {
+			return err
+		}
+		deviceOwnerIdKey, err = getBsonFieldName(models.Device{}, deviceOwnerIdFieldName)
 		if err != nil {
 			return err
 		}

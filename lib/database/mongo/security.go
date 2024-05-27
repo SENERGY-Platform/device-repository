@@ -125,8 +125,30 @@ func (this *Mongo) RemoveRights(topic string, id string) error {
 	return err
 }
 
+var ErrNoRightsFound = errors.New("no rights found")
+
+func (this *Mongo) getRights(kind Kind, id string) (rights RightsEntry, err error) {
+	pureId, _ := idmodifier.SplitModifier(id)
+	ctx, _ := getTimeoutContext()
+	result := this.rightsCollection().FindOne(ctx, bson.M{"kind": kind, "id": pureId})
+	err = result.Err()
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return rights, ErrNoRightsFound
+	}
+	if err != nil {
+		return rights, err
+	}
+	err = result.Decode(&rights)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return rights, ErrNoRightsFound
+	}
+	if err != nil {
+		return rights, err
+	}
+	return rights, err
+}
+
 func (this *Mongo) CheckBool(token string, topic string, id string, action model.AuthAction) (allowed bool, err error) {
-	pureid, _ := idmodifier.SplitModifier(id)
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
 		return false, err
@@ -135,22 +157,9 @@ func (this *Mongo) CheckBool(token string, topic string, id string, action model
 	if err != nil {
 		return false, err
 	}
-	ctx, _ := getTimeoutContext()
-	result := this.rightsCollection().FindOne(ctx, bson.M{"kind": kind, "id": pureid})
-	err = result.Err()
-	if errors.Is(err, mongo.ErrNoDocuments) {
+	element, err := this.getRights(kind, id)
+	if errors.Is(err, ErrNoRightsFound) {
 		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	var element RightsEntry
-	err = result.Decode(&element)
-	if errors.Is(err, mongo.ErrNoDocuments) {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
 	}
 	return checkRights(jwtToken, element, action), err
 }

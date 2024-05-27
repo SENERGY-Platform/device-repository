@@ -23,6 +23,7 @@ import (
 )
 
 type Database interface {
+	RunStartupMigrations() error
 	Disconnect()
 
 	GetDevice(ctx context.Context, id string) (device models.Device, exists bool, err error)

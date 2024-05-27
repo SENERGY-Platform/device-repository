@@ -85,6 +85,15 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		return err
 	}
 
+	if conf.RunStartupMigrations {
+		err = ctrl.RunStartupMigrations()
+		if err != nil {
+			db.Disconnect()
+			log.Println("ERROR: RunStartupMigrations()", err)
+			return err
+		}
+	}
+
 	if !conf.DisableKafkaConsumer {
 		var secSink listener.SecuritySink = database.VoidSecSink{}
 		if !conf.DisableRightsHandling {

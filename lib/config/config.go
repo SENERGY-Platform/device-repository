@@ -73,6 +73,7 @@ type Config struct {
 
 	InitialGroupRights    map[string]map[string]string `json:"initial_group_rights"`
 	DisableRightsHandling bool                         `json:"disable_rights_handling"`
+	RunStartupMigrations  bool                         `json:"run_startup_migrations"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {

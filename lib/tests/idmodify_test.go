@@ -87,6 +87,7 @@ func TestModifiedDevice(t *testing.T) {
 		LocalId:      device1lid,
 		Name:         device1name,
 		DeviceTypeId: devicetype1id,
+		OwnerId:      userid,
 	}
 
 	err = producer.PublishDevice(d1, userid)
@@ -106,6 +107,7 @@ func TestModifiedDevice(t *testing.T) {
 			},
 		},
 		DeviceTypeId: devicetype1id,
+		OwnerId:      userid,
 	}
 
 	err = producer.PublishDevice(d2, userid)
@@ -127,6 +129,7 @@ func TestModifiedDevice(t *testing.T) {
 		LocalId:      device1lid,
 		Name:         device1name + modifiedNameSuffix,
 		DeviceTypeId: devicetype1id + idModifier,
+		OwnerId:      userid,
 	}
 
 	d2Modified := models.Device{
@@ -140,6 +143,7 @@ func TestModifiedDevice(t *testing.T) {
 			},
 		},
 		DeviceTypeId: devicetype1id + idModifier,
+		OwnerId:      userid,
 	}
 
 	d1ModifiedUnknown := models.Device{
@@ -147,6 +151,7 @@ func TestModifiedDevice(t *testing.T) {
 		LocalId:      device1lid,
 		Name:         device1name + modifiedNameSuffixUnknown,
 		DeviceTypeId: devicetype1id + idModifierUnknown,
+		OwnerId:      userid,
 	}
 	d2ModifiedUnknown := models.Device{
 		Id:      device3id + idModifierUnknown,
@@ -159,6 +164,7 @@ func TestModifiedDevice(t *testing.T) {
 			},
 		},
 		DeviceTypeId: devicetype1id + idModifierUnknown,
+		OwnerId:      userid,
 	}
 
 	dtModified := models.DeviceType{

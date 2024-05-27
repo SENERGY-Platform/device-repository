@@ -179,6 +179,7 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 
 		//handle invalid device
 		device.LocalId = ""
+		device.OwnerId = owner
 		ctx, _ = getTimeoutContext()
 		err = this.db.SetDevice(ctx, device)
 		if err != nil {
@@ -196,6 +197,14 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 		}
 		if exists && old.LocalId != device.LocalId {
 			err = this.resetHubsForDeviceUpdate(old)
+		}
+
+		if device.OwnerId == "" {
+			if exists {
+				device.OwnerId = old.OwnerId
+			} else {
+				device.OwnerId = owner
+			}
 		}
 
 		//save device

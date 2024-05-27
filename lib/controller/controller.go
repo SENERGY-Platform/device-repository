@@ -43,3 +43,7 @@ type Controller struct {
 func getTimeoutContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 10*time.Second)
 }
+
+func (this *Controller) RunStartupMigrations() error {
+	return this.db.RunStartupMigrations()
+}
