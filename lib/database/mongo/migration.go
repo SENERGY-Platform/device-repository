@@ -20,6 +20,7 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"log"
 )
 
 func (this *Mongo) RunStartupMigrations() error {
@@ -27,6 +28,8 @@ func (this *Mongo) RunStartupMigrations() error {
 }
 
 func (this *Mongo) runDeviceOwnerMigration() error {
+	log.Println("start device-owner-id migration")
+	defer log.Println("end device-owner-id migration")
 	cursor, err := this.deviceCollection().Find(context.Background(), bson.M{
 		"$or": bson.A{
 			bson.M{deviceOwnerIdKey: bson.M{"$exists": false}},
@@ -57,6 +60,7 @@ func (this *Mongo) runDeviceOwnerMigration() error {
 			element.OwnerId = rights.AdminUsers[0]
 		}
 		ctx, _ := getTimeoutContext()
+		log.Println("update device owner", element.Id, element.OwnerId)
 		err = this.SetDevice(ctx, element)
 		if err != nil {
 			return err
