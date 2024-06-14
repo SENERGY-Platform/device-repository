@@ -152,7 +152,7 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 	hubIndex := map[string]models.Hub{}
 	for _, lid := range hub.DeviceLocalIds {
 		ctx, _ := getTimeoutContext()
-		hubs, err := this.db.GetHubsByDeviceLocalId(ctx, lid)
+		hubs, err := this.db.GetHubsByDeviceLocalId(ctx, lid) //TODO: add owner-id
 		if err != nil {
 			return err
 		}

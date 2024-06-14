@@ -237,12 +237,13 @@ func (this *Controller) PublishDeviceDelete(id string, owner string) error {
 
 func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 	ctx, _ := getTimeoutContext()
-	hubs, err := this.db.GetHubsByDeviceLocalId(ctx, old.LocalId)
+	hubs, err := this.db.GetHubsByDeviceLocalId(ctx, old.LocalId) //TODO: add owner-id
 	if err != nil {
 		return err
 	}
 	for _, hub := range hubs {
 		hub.DeviceLocalIds = filter(hub.DeviceLocalIds, old.LocalId)
+		hub.DeviceIds = filter(hub.DeviceIds, old.Id)
 		hub.Hash = ""
 		err = this.producer.PublishHub(hub)
 		if err != nil {

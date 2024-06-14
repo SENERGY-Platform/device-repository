@@ -29,12 +29,14 @@ type Database interface {
 	GetDevice(ctx context.Context, id string) (device models.Device, exists bool, err error)
 	SetDevice(ctx context.Context, device models.Device) error
 	RemoveDevice(ctx context.Context, id string) error
-	GetDeviceByLocalId(ctx context.Context, localId string) (device models.Device, exists bool, err error)
+	//deprecated: TODO: add owner-id
+	GetDeviceByLocalId(ctx context.Context, localId string) (device models.Device, exists bool, err error) //TODO: add owner-id
 
 	GetHub(ctx context.Context, id string) (hub models.Hub, exists bool, err error)
 	SetHub(ctx context.Context, hub models.Hub) error
 	RemoveHub(ctx context.Context, id string) error
-	GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []models.Hub, err error)
+	//deprecated: TODO: add owner-id
+	GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []models.Hub, err error) //TODO: add owner id
 
 	GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType models.DeviceType) error
