@@ -24,22 +24,22 @@ import (
 
 func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+id+"?p="+string(action), nil)
-	req.Header.Set("Authorization", token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
+	req.Header.Set("Authorization", token)
 	return do[models.Device](req)
 }
 
 func (c *Client) ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+localId+"?p="+string(action)+"&as=local_id", nil)
-	req.Header.Set("Authorization", token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
+	req.Header.Set("Authorization", token)
 	return do[models.Device](req)
 }
 
-func (c *Client) ValidateDevice(device models.Device) (err error, code int) {
-	return c.validate("/devices", device)
+func (c *Client) ValidateDevice(token string, device models.Device) (err error, code int) {
+	return c.validateWithToken(token, "/devices", device)
 }

@@ -82,7 +82,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDevice(device)
+		err, code := control.ValidateDevice(util.GetAuthToken(request), device)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

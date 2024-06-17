@@ -18,6 +18,7 @@ package testdb
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 )
 
@@ -55,7 +56,7 @@ func NewTestDB() database.Database {
 
 func (db *DB) Disconnect() {}
 
-func (db *DB) RunStartupMigrations() error {
+func (db *DB) RunStartupMigrations(producer model.MigrationPublisher) error {
 	return nil
 }
 

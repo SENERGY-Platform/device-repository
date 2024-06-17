@@ -76,6 +76,9 @@ type Config struct {
 	RunStartupMigrations  bool                         `json:"run_startup_migrations"`
 }
 
+const DbSecurity = "db"
+const PermSearchSecurity = "permissions-search"
+
 func (this Config) HandleFatalError(v ...interface{}) {
 	if this.FatalErrHandler != nil {
 		this.FatalErrHandler(v...)

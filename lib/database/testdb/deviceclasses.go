@@ -32,12 +32,11 @@ func (db *DB) ListAllDeviceClasses(_ context.Context) ([]models.DeviceClass, err
 	return maps.Values(db.deviceClasses), nil
 }
 func (db *DB) ListAllDeviceClassesUsedWithControllingFunctions(_ context.Context) ([]models.DeviceClass, error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 func (db *DB) GetDeviceClass(_ context.Context, id string) (result models.DeviceClass, exists bool, err error) {
 	return get(id, db.deviceClasses)
 }
 func (db *DB) DeviceClassIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
-	//TODO implement me
 	panic("implement me")
 }

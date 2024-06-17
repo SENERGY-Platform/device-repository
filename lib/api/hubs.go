@@ -128,7 +128,7 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateHub(hub)
+		err, code := control.ValidateHub(util.GetAuthToken(request), hub)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

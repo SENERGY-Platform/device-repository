@@ -24,11 +24,11 @@ import (
 type Controller interface {
 	ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
 	ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
-	ValidateDevice(device models.Device) (err error, code int)
+	ValidateDevice(token string, device models.Device) (err error, code int)
 
 	ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int)
 	ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
-	ValidateHub(hub models.Hub) (err error, code int)
+	ValidateHub(token string, hub models.Hub) (err error, code int)
 
 	ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int)
 	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)

@@ -23,7 +23,7 @@ import (
 )
 
 type Database interface {
-	RunStartupMigrations() error
+	RunStartupMigrations(model.MigrationPublisher) error
 	Disconnect()
 
 	GetDevice(ctx context.Context, id string) (device models.Device, exists bool, err error)
@@ -126,4 +126,5 @@ type SecuritySink interface {
 type Security interface {
 	CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error)
 	CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
+	GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error)
 }

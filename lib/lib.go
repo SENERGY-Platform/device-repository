@@ -57,9 +57,9 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 
 	var sec controller.Security
 	switch conf.SecurityImpl {
-	case "db":
+	case config.DbSecurity:
 		sec = db
-	case "", "permissions-search":
+	case "", config.PermSearchSecurity:
 		sec, err = com.NewSecurity(conf)
 		if err != nil {
 			log.Println("ERROR: unable to create permission handler", err)
@@ -85,7 +85,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		return err
 	}
 
-	if conf.RunStartupMigrations {
+	if conf.RunStartupMigrations && !conf.DisableKafkaConsumer {
 		err = ctrl.RunStartupMigrations()
 		if err != nil {
 			db.Disconnect()

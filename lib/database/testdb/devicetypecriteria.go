@@ -22,37 +22,32 @@ import (
 )
 
 func (db *DB) GetDeviceTypeCriteriaByAspectIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (db *DB) GetDeviceTypeCriteriaByFunctionIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (db *DB) GetDeviceTypeCriteriaByDeviceClassIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (db *DB) GetDeviceTypeCriteriaByCharacteristicIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (db *DB) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx context.Context, deviceTypeIds []interface{}, criteria model.FilterCriteria, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 func (db *DB) GetDeviceTypeIdsByFilterCriteria(ctx context.Context, criteria []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []interface{}, err error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 
 func (db *DB) GetConfigurableCandidates(_ context.Context, serviceId string) (result []model.DeviceTypeCriteria, err error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 
 func (db *DB) GetDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, criteria []model.FilterCriteria, includeModified bool) (result []interface{}, err error) {
-	//TODO implement me
 	panic("implement me")
 }

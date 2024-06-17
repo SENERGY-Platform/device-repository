@@ -95,6 +95,14 @@ func TestHubs(t *testing.T) {
 		DeviceLocalIds: []string{device1lid, device2lid},
 		DeviceIds:      []string{device1id, device2id},
 	}
+	expectedHub := models.Hub{
+		Id:             hub1id,
+		Name:           hub1name,
+		Hash:           "hash1",
+		DeviceLocalIds: []string{device1lid, device2lid},
+		DeviceIds:      []string{device1id, device2id},
+		OwnerId:        userid,
+	}
 
 	err = producer.PublishHub(h1, userid)
 	if err != nil {
@@ -107,7 +115,7 @@ func TestHubs(t *testing.T) {
 		testHubReadNotFound(t, conf, "foobar")
 	})
 	t.Run("testHubRead", func(t *testing.T) {
-		testHubRead(t, conf, h1)
+		testHubRead(t, conf, expectedHub)
 	})
 	t.Run("testHubDeviceRead", func(t *testing.T) {
 		testHubDeviceRead(t, conf, h1, d1, d2)
@@ -160,7 +168,7 @@ func testHubRead(t *testing.T, conf config.Config, expectedHubs ...models.Hub) {
 			t.Error(err)
 		}
 		if !reflect.DeepEqual(expected, result) {
-			t.Error("unexpected result", expected, result)
+			t.Errorf("unexpected result\n%#v\n%#v\n", expected, result)
 			return
 		}
 	}

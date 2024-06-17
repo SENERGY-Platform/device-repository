@@ -115,6 +115,18 @@ func (this *Mongo) SetRights(topic string, resourceId string, rights model.Resou
 	return err
 }
 
+func (this *Mongo) GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error) {
+	kind, err := this.getInternalKind(topic)
+	if err != nil {
+		return admins, err
+	}
+	rights, err := this.getRights(kind, resourceId)
+	if err != nil {
+		return admins, err
+	}
+	return rights.AdminUsers, nil
+}
+
 func (this *Mongo) RemoveRights(topic string, id string) error {
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
@@ -307,4 +319,78 @@ func (this *Mongo) getInternalKind(topic string) (Kind, error) {
 		return "hubs", nil
 	}
 	return "", errors.New("unknown topic to rights entry kind mapping: " + topic)
+}
+
+func (this *RightsEntry) ToResourceRights() model.ResourceRights {
+	result := model.ResourceRights{
+		UserRights:  map[string]model.Right{},
+		GroupRights: map[string]model.Right{},
+	}
+	for _, user := range this.AdminUsers {
+		if _, ok := result.UserRights[user]; !ok {
+			result.UserRights[user] = model.Right{}
+		}
+		permissions := result.UserRights[user]
+		permissions.Administrate = true
+		result.UserRights[user] = permissions
+	}
+	for _, user := range this.ReadUsers {
+		if _, ok := result.UserRights[user]; !ok {
+			result.UserRights[user] = model.Right{}
+		}
+		permissions := result.UserRights[user]
+		permissions.Read = true
+		result.UserRights[user] = permissions
+	}
+	for _, user := range this.WriteUsers {
+		if _, ok := result.UserRights[user]; !ok {
+			result.UserRights[user] = model.Right{}
+		}
+		permissions := result.UserRights[user]
+		permissions.Write = true
+		result.UserRights[user] = permissions
+	}
+	for _, user := range this.ExecuteUsers {
+		if _, ok := result.UserRights[user]; !ok {
+			result.UserRights[user] = model.Right{}
+		}
+		permissions := result.UserRights[user]
+		permissions.Execute = true
+		result.UserRights[user] = permissions
+	}
+
+	result.GroupRights = map[string]model.Right{}
+	for _, group := range this.AdminGroups {
+		if _, ok := result.GroupRights[group]; !ok {
+			result.GroupRights[group] = model.Right{}
+		}
+		permissions := result.GroupRights[group]
+		permissions.Administrate = true
+		result.GroupRights[group] = permissions
+	}
+	for _, group := range this.ReadGroups {
+		if _, ok := result.GroupRights[group]; !ok {
+			result.GroupRights[group] = model.Right{}
+		}
+		permissions := result.GroupRights[group]
+		permissions.Read = true
+		result.GroupRights[group] = permissions
+	}
+	for _, group := range this.WriteGroups {
+		if _, ok := result.GroupRights[group]; !ok {
+			result.GroupRights[group] = model.Right{}
+		}
+		permissions := result.GroupRights[group]
+		permissions.Write = true
+		result.GroupRights[group] = permissions
+	}
+	for _, group := range this.ExecuteGroups {
+		if _, ok := result.GroupRights[group]; !ok {
+			result.GroupRights[group] = model.Right{}
+		}
+		permissions := result.GroupRights[group]
+		permissions.Execute = true
+		result.GroupRights[group] = permissions
+	}
+	return result
 }

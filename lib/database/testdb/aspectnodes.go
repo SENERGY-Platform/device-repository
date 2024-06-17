@@ -26,7 +26,7 @@ func (db *DB) AddAspectNode(_ context.Context, node models.AspectNode) error {
 	return set(node.Id, db.aspectNodes, node)
 }
 func (db *DB) RemoveAspectNodesByRootId(_ context.Context, id string) error {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 
 func (db *DB) GetAspectNode(_ context.Context, id string) (result models.AspectNode, exists bool, err error) {
@@ -36,7 +36,7 @@ func (db *DB) ListAllAspectNodes(_ context.Context) ([]models.AspectNode, error)
 	return maps.Values(db.aspectNodes), nil
 }
 func (db *DB) ListAspectNodesWithMeasuringFunction(_ context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 func (db *DB) ListAspectNodesByIdList(_ context.Context, ids []string) (result []models.AspectNode, err error) {
 	for _, node := range db.aspectNodes {

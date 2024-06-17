@@ -30,12 +30,10 @@ type Producer struct {
 }
 
 func (this *Producer) PublishDeviceDelete(id string, owner string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Producer) PublishHub(hub models.Hub) (err error) {
-	//TODO implement me
 	panic("implement me")
 }
 

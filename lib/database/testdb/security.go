@@ -21,26 +21,25 @@ import (
 )
 
 func (this *DB) EnsureInitialRights(resourceKind string, resourceId string, owner string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *DB) SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *DB) RemoveRights(topic string, id string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *DB) CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *DB) CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error) {
-	//TODO implement me
+	panic("implement me")
+}
+
+func (this *DB) GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error) {
 	panic("implement me")
 }

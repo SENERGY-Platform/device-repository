@@ -39,18 +39,17 @@ func (db *DB) ListAllFunctionsByType(_ context.Context, rdfType string) (result 
 	return
 }
 func (db *DB) ListAllMeasuringFunctionsByAspect(_ context.Context, aspect string, ancestors bool, descendants bool) ([]models.Function, error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 
 func (db *DB) ListAllFunctionsByDeviceClass(_ context.Context, class string) ([]models.Function, error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 
 func (db *DB) ListAllControllingFunctionsByDeviceClass(_ context.Context, class string) ([]models.Function, error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 
 func (db *DB) FunctionIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
-	//TODO implement me
 	panic("implement me")
 }

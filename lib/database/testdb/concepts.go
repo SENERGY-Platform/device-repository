@@ -28,12 +28,11 @@ func (db *DB) RemoveConcept(_ context.Context, id string) error {
 	return del(id, db.concepts)
 }
 func (db *DB) GetConceptWithCharacteristics(_ context.Context, id string) (result models.ConceptWithCharacteristics, exists bool, err error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 func (db *DB) GetConceptWithoutCharacteristics(_ context.Context, id string) (result models.Concept, exists bool, err error) {
 	return get(id, db.concepts)
 }
 func (db *DB) ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
-	//TODO implement me
 	panic("implement me")
 }

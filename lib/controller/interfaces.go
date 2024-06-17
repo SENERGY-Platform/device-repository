@@ -30,6 +30,8 @@ type Security interface {
 }
 
 type Producer interface {
+	PublishDevice(element models.Device) error
+	PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error)
 	PublishDeviceDelete(id string, owner string) error
 	PublishHub(hub models.Hub) (err error)
 	PublishAspectDelete(id string, owner string) error
@@ -38,6 +40,18 @@ type Producer interface {
 }
 
 type ErrorProducer struct{}
+
+func (this ErrorProducer) PublishDevice(element models.Device) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
+
+func (this ErrorProducer) PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
 
 func (this ErrorProducer) SendDone(msg donewait.DoneMsg) (err error) {
 	err = errors.New("no producer usage expected")

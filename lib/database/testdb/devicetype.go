@@ -71,7 +71,6 @@ func (db *DB) ListDeviceTypes(ctx context.Context, limit int64, offset int64, so
 }
 
 func (db *DB) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool) (result []models.DeviceType, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 

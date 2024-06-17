@@ -35,10 +35,8 @@ func (db *DB) ListAllCharacteristics(_ context.Context) ([]models.Characteristic
 	return maps.Values(db.characteristics), nil
 }
 func (db *DB) CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 func (db *DB) CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error) {
-	//TODO implement me
 	panic("implement me")
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+	"slices"
 	"strings"
 )
 
@@ -101,7 +102,7 @@ func ValidateDeviceName(device models.Device) (err error) {
 	return nil
 }
 
-func (this *Controller) ValidateDevice(device models.Device) (err error, code int) {
+func (this *Controller) ValidateDevice(token string, device models.Device) (err error, code int) {
 	if device.Id == "" {
 		return errors.New("missing device id"), http.StatusBadRequest
 	}
@@ -116,8 +117,28 @@ func (this *Controller) ValidateDevice(device models.Device) (err error, code in
 		return errors.New("missing device type id"), http.StatusBadRequest
 	}
 
-	//device-type exists
 	ctx, _ := getTimeoutContext()
+
+	original, exists, err := this.db.GetDevice(ctx, device.Id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if exists {
+		admins, err := this.db.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		//new device owner-id must be existing admin user (ignore for new devices or devices with unchanged owner)
+		if device.OwnerId != original.OwnerId && !slices.Contains(admins, device.OwnerId) {
+			return errors.New("new owner must have existing user admin rights"), http.StatusBadRequest
+		}
+		if device.OwnerId != original.OwnerId && len(admins) == 0 {
+			//o admins indicates the requesting user has not the needed admin rights to see other admins
+			return errors.New("requesting user must have admin rights"), http.StatusBadRequest
+		}
+	}
+
+	//device-type exists
 	dt, ok, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 	if err != nil {
 		return err, http.StatusInternalServerError

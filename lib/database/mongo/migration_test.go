@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,7 +29,21 @@ import (
 	"testing"
 )
 
-func TestMigration(t *testing.T) {
+type MockProducer struct{}
+
+func (m MockProducer) PublishHub(hub models.Hub) (err error) {
+	return nil
+}
+
+func (m MockProducer) PublishDevice(element models.Device) (err error) {
+	return nil
+}
+
+func (m MockProducer) PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error) {
+	return nil
+}
+
+func TestMigrationWithMockProducer(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -39,6 +54,9 @@ func TestMigration(t *testing.T) {
 		t.Error(err)
 		return
 	}
+
+	conf.RunStartupMigrations = true
+	conf.SecurityImpl = "db"
 
 	port, _, err := docker.MongoDB(ctx, wg)
 	if err != nil {
@@ -128,7 +146,7 @@ func TestMigration(t *testing.T) {
 	})
 
 	t.Run("migrate", func(t *testing.T) {
-		err = db.RunStartupMigrations()
+		err = db.RunStartupMigrations(MockProducer{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -169,7 +187,7 @@ func TestMigration(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(actual, d) {
-				t.Errorf("expected: %v\nactual: %v\n", d, actual)
+				t.Errorf("expected: %#v\nactual: %#v\n", d, actual)
 			}
 		}
 	})

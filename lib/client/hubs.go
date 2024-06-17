@@ -44,6 +44,6 @@ func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthActi
 	return do[[]string](req)
 }
 
-func (c *Client) ValidateHub(hub models.Hub) (err error, code int) {
-	return c.validate("/hubs", hub)
+func (c *Client) ValidateHub(token string, hub models.Hub) (err error, code int) {
+	return c.validateWithToken(token, "/hubs", hub)
 }

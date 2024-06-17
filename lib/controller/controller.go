@@ -45,5 +45,5 @@ func getTimeoutContext() (context.Context, context.CancelFunc) {
 }
 
 func (this *Controller) RunStartupMigrations() error {
-	return this.db.RunStartupMigrations()
+	return this.db.RunStartupMigrations(this.producer)
 }

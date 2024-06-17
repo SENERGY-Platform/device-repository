@@ -54,6 +54,31 @@ func do[T any](req *http.Request) (result T, err error, code int) {
 	return
 }
 
+func (c *Client) validateWithToken(token string, path string, e interface{}) (err error, code int) {
+	return c.validateWithTokenAndOptions(token, path, e, nil)
+}
+
+func (c *Client) validateWithTokenAndOptions(token string, path string, e interface{}, options url.Values) (err error, code int) {
+	b, err := json.Marshal(e)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	optQuery := options.Encode()
+	if optQuery != "" {
+		optQuery = "&" + optQuery
+	}
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+path+"?dry-run=true", bytes.NewBuffer(b))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, resp.StatusCode
+}
+
 func (c *Client) validate(path string, e interface{}) (err error, code int) {
 	return c.validateWithOptions(path, e, nil)
 }

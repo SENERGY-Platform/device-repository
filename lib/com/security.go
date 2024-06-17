@@ -21,6 +21,9 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/permission-search/lib/client"
+	permmodel "github.com/SENERGY-Platform/permission-search/lib/model"
+	"log"
+	"runtime/debug"
 )
 
 func NewSecurity(config config.Config) (*Security, error) {
@@ -56,4 +59,35 @@ func (this *Security) CheckMultiple(token string, kind string, ids []string, act
 	}
 	result, _, err = client.Query[map[string]bool](this.permissionsearch, token, query)
 	return result, err
+}
+
+func (this *Security) GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error) {
+	rights, _, err := this.GetResourceRights(token, topic, resourceId, "a")
+	if err != nil {
+		log.Println("ERROR:", err)
+		debug.PrintStack()
+		return admins, err
+	}
+	return rights.PermissionHolders.AdminUsers, nil
+}
+
+func (this *Security) GetResourceRights(token string, kind string, id string, rights string) (result permmodel.EntryResult, found bool, err error) {
+	temp, _, err := client.Query[[]permmodel.EntryResult](this.permissionsearch, token, client.QueryMessage{
+		Resource: kind,
+		ListIds: &permmodel.QueryListIds{
+			QueryListCommons: permmodel.QueryListCommons{
+				Limit:  1,
+				Offset: 0,
+				Rights: rights,
+			},
+			Ids: []string{id},
+		},
+	})
+	if err != nil {
+		return result, false, err
+	}
+	if len(temp) == 0 {
+		return result, false, nil
+	}
+	return temp[0], true, nil
 }

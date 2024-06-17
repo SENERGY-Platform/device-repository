@@ -41,152 +41,122 @@ func (this *Database) Disconnect() {
 }
 
 func (this *Database) ListAspectsWithMeasuringFunction(ctx context.Context) ([]models.Aspect, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.Context) ([]models.DeviceClass, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string) ([]models.Function, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllFunctionsByDeviceClass(ctx context.Context, class string) ([]models.Function, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) ([]models.Function, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria) (result []models.DeviceType, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) GetAspect(ctx context.Context, id string) (result models.Aspect, exists bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) SetAspect(ctx context.Context, aspect models.Aspect) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) RemoveAspect(ctx context.Context, id string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllAspects(ctx context.Context) ([]models.Aspect, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) GetFunction(ctx context.Context, id string) (result models.Function, exists bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) SetCharacteristic(ctx context.Context, characteristic models.Characteristic) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) RemoveCharacteristic(ctx context.Context, id string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) GetCharacteristic(ctx context.Context, id string) (result models.Characteristic, exists bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllCharacteristics(ctx context.Context) ([]models.Characteristic, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) SetConcept(ctx context.Context, concept models.Concept) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) RemoveConcept(ctx context.Context, id string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) GetConceptWithCharacteristics(ctx context.Context, id string) (result models.ConceptWithCharacteristics, exists bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) GetConceptWithoutCharacteristics(ctx context.Context, id string) (result models.Concept, exists bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) SetDeviceClass(ctx context.Context, class models.DeviceClass) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) RemoveDeviceClass(ctx context.Context, id string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllDeviceClasses(ctx context.Context) ([]models.DeviceClass, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) GetDeviceClass(ctx context.Context, id string) (result models.DeviceClass, exists bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) SetFunction(ctx context.Context, function models.Function) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) RemoveFunction(ctx context.Context, id string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListAllFunctionsByType(ctx context.Context, rdfType string) ([]models.Function, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) ListFunctions(ctx context.Context, limit int, offset int, search string, direction string) (result []models.Function, count int, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) SetLocation(ctx context.Context, location models.Location) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) RemoveLocation(ctx context.Context, id string) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (this *Database) GetLocation(ctx context.Context, id string) (result models.Location, exists bool, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 

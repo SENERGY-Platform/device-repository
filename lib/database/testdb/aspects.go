@@ -35,10 +35,10 @@ func (db *DB) ListAllAspects(_ context.Context) ([]models.Aspect, error) {
 	return maps.Values(db.aspects), nil
 }
 func (db *DB) ListAspectsWithMeasuringFunction(_ context.Context, ancestors bool, descendants bool) ([]models.Aspect, error) {
-	panic("not implemented") // TODO
+	panic("not implemented")
 }
 
 func (db *DB) AspectIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
-	//TODO implement me
+
 	panic("implement me")
 }

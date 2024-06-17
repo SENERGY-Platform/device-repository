@@ -12,7 +12,7 @@ require github.com/tryvium-travels/memongo v0.12.0
 
 require (
 	github.com/IBM/sarama v1.43.2
-	github.com/SENERGY-Platform/models/go v0.0.0-20240527081255-52b6a0f84955
+	github.com/SENERGY-Platform/models/go v0.0.0-20240614103449-f208279dad36
 	github.com/SENERGY-Platform/permission-search v0.0.13
 	github.com/SENERGY-Platform/service-commons v0.0.0-20240423132428-8eccbc027e71
 	github.com/google/uuid v1.6.0
