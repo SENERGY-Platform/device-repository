@@ -24,6 +24,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -136,7 +137,7 @@ func testHubReadNotFound(t *testing.T, conf config.Config, id string) {
 		return
 	}
 	if resp.StatusCode != http.StatusNotFound {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}

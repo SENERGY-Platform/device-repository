@@ -60,7 +60,9 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 		return config, ctrl, prod, err
 	}
 
-	ctrl, err = controller.New(config, db, SecurityMock{}, VoidProducerMock{})
+	config.SecurityImpl = "db"
+
+	ctrl, err = controller.New(config, db, db, VoidProducerMock{})
 	if err != nil {
 		return config, ctrl, prod, err
 	}
@@ -71,20 +73,6 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 	}
 
 	return config, ctrl, prod, err
-}
-
-type SecurityMock struct{}
-
-func (s SecurityMock) CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error) {
-	return true, nil
-}
-
-func (s SecurityMock) CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
-	result = map[string]bool{}
-	for _, id := range ids {
-		result[id] = true
-	}
-	return
 }
 
 type VoidProducerMock struct{}

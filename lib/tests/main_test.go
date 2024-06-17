@@ -32,7 +32,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/google/uuid"
 	"io"
@@ -137,6 +136,7 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 			cancel()
 		}
 	}()
+	conf.SecurityImpl = config.DbSecurity
 	db, err := database.New(conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
@@ -153,7 +153,7 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 		}
 	}()
 
-	ctrl, err = controller.New(conf, db, mocks.NewSecurity(), controller.ErrorProducer{})
+	ctrl, err = controller.New(conf, db, db, controller.ErrorProducer{})
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)

@@ -110,7 +110,7 @@ func (this *Controller) ValidateHub(token string, hub models.Hub) (err error, co
 		return err, http.StatusInternalServerError
 	}
 	if exists {
-		admins, err := this.db.GetAdminUsers(token, this.config.DeviceTopic, hub.Id)
+		admins, err := this.security.GetAdminUsers(token, this.config.DeviceTopic, hub.Id)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}

@@ -22,12 +22,10 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 )
 
-func NewTestClient() (ctrl Interface, db database.Database, sec *mocks.Security, err error) {
+func NewTestClient() (ctrl Interface, db database.Database, err error) {
 	db = testdb.NewTestDB()
-	sec = mocks.NewSecurity()
 	ctrl, err = controller.New(config.Config{
 		ServerPort:                               "8080",
 		DeviceTopic:                              "devices",
@@ -41,15 +39,16 @@ func NewTestClient() (ctrl Interface, db database.Database, sec *mocks.Security,
 		FunctionTopic:                            "functions",
 		DeviceClassTopic:                         "device-classes",
 		LocationTopic:                            "locations",
+		SecurityImpl:                             config.DbSecurity,
 		Debug:                                    true,
 		DisableKafkaConsumer:                     false,
 		DisableHttpApi:                           false,
 		HttpClientTimeout:                        "30s",
 		FatalErrHandler:                          nil,
 		DeviceServiceGroupSelectionAllowNotFound: true,
-	}, db, sec, semantic_legacy.VoidProducerMock{})
+	}, db, db, semantic_legacy.VoidProducerMock{})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
-	return ctrl, db, sec, nil
+	return ctrl, db, nil
 }

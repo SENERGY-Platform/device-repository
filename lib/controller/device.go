@@ -124,7 +124,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 		return err, http.StatusInternalServerError
 	}
 	if exists {
-		admins, err := this.db.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
+		admins, err := this.security.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}

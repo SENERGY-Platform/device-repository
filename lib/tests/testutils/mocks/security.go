@@ -22,10 +22,11 @@ import (
 
 type Security struct {
 	access map[string]bool
+	admins map[string][]string
 }
 
 func NewSecurity() *Security {
-	return &Security{access: map[string]bool{}}
+	return &Security{access: map[string]bool{}, admins: map[string][]string{}}
 }
 
 func (this *Security) CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error) {
@@ -46,4 +47,12 @@ func (this *Security) getKey(kind string, id string) string {
 
 func (this *Security) Set(kind string, id string, access bool) {
 	this.access[this.getKey(kind, id)] = access
+}
+
+func (this *Security) GetAdminUsers(token string, kind string, id string) (admins []string, err error) {
+	return this.admins[this.getKey(kind, id)], nil
+}
+
+func (this *Security) SetAdmins(kind string, id string, admins []string) {
+	this.admins[this.getKey(kind, id)] = admins
 }

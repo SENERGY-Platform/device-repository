@@ -28,7 +28,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"log"
 	"net/http"
 	"sync"
@@ -108,6 +107,7 @@ func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 	conf.MongoReplSet = false
 	conf.Debug = true
 	conf.DisableKafkaConsumer = true
+	conf.SecurityImpl = config.DbSecurity
 
 	_, ip, err := docker.MongoDB(ctx, wg)
 	if err != nil {
@@ -150,7 +150,7 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 		}
 	}()
 
-	ctrl, err = controller.New(conf, db, mocks.NewSecurity(), controller.ErrorProducer{})
+	ctrl, err = controller.New(conf, db, db, controller.ErrorProducer{})
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
