@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -182,8 +183,18 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 		if element.OwnerId == "" {
 			log.Printf("WARNING: no owner for device %v (%v) found\n", element.Name, element.Id)
 		} else {
-			//TODO: ensure no breaking of local-id constraints
-			log.Println("update hub owner", element.Id, element.OwnerId)
+			log.Println("update device owner", element.Id, element.OwnerId)
+
+			//check local-id constraints
+			ctx, _ := getTimeoutContext()
+			existing, found, err := this.GetDeviceByLocalId(ctx, element.OwnerId, element.LocalId)
+			if err != nil {
+				log.Println("ERROR: unable to check local-id constraint", element.Id, element.OwnerId, err)
+				return err
+			}
+			if found && existing.Id != element.Id {
+				return fmt.Errorf("unable to migrate: new device owner breaks local-id constraint (device-to-change=%v(%v), existing-device=%v(%v), owner=%v)", element.Name, element.Id, existing.Name, existing.Id, element.OwnerId)
+			}
 
 			//publish so that other services know the new owner immediately
 			err = producer.PublishDevice(element)
@@ -193,8 +204,7 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 			}
 
 			//locally, so that hubs can check device owners
-			ctx, _ := getTimeoutContext()
-			log.Println("update device owner", element.Id, element.OwnerId)
+			ctx, _ = getTimeoutContext()
 			err = this.SetDevice(ctx, element)
 			if err != nil {
 				return err
@@ -222,7 +232,6 @@ func (this *Mongo) assertEveryDeviceHasOwner() error {
 }
 
 func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationPublisher, device models.Device, owner string) error {
-	//TODO: ensure no breaking of local-id constraints
 	if owner == "" {
 		return errors.New("missing owner")
 	}
@@ -234,16 +243,31 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 	}
 	log.Printf("force owner %v on device %v %v\n", owner, device.Name, device.Id)
 
+	device.OwnerId = owner
+
+	//check local-id constraints
+	ctx, _ := getTimeoutContext()
+	existing, found, err := this.GetDeviceByLocalId(ctx, device.OwnerId, device.LocalId)
+	if err != nil {
+		log.Println("ERROR: unable to check local-id constraint", device.Id, device.OwnerId, err)
+		return err
+	}
+	if found && existing.Id != device.Id {
+		return fmt.Errorf("unable to migrate: new device owner breaks local-id constraint (device-to-change=%v(%v), existing-device=%v(%v), owner=%v)", device.Name, device.Id, existing.Name, existing.Id, device.OwnerId)
+	}
+
 	deviceKind, err := this.getInternalKind(this.config.DeviceTopic)
 	if err != nil {
 		return err
 	}
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext()
 	rights, err := this.getRights(deviceKind, device.Id)
 	if err != nil {
 		return err
 	}
+
+	//update admin rights if necessary
 	if !slices.Contains(rights.AdminUsers, owner) {
 		log.Printf("device %v %v may currently not use owner %v because %v is not an admin --> add %v as admin", device.Name, device.Id, owner, owner, owner)
 		rights.AdminUsers = append(rights.AdminUsers, owner)
@@ -258,8 +282,15 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 		}
 	}
 
+	//publish so that other services know the new owner immediately
+	err = producer.PublishDevice(device)
+	if err != nil {
+		log.Println("ERROR: unable to update device owner", device.Id, device.OwnerId, err)
+		return err
+	}
+
+	//update device owner
 	ctx, _ = getTimeoutContext()
-	device.OwnerId = owner
 	err = this.SetDevice(ctx, device)
 	if err != nil {
 		return err
