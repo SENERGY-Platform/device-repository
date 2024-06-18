@@ -68,17 +68,9 @@ func (this *Controller) ListHubDeviceIds(id string, token string, action model.A
 	}
 	if asLocalId {
 		return hub.DeviceLocalIds, nil, http.StatusOK
+	} else {
+		return hub.DeviceIds, nil, http.StatusOK
 	}
-	for _, id := range hub.DeviceLocalIds {
-		device, exists, err := this.db.GetDeviceByLocalId(ctx, id)
-		if err != nil {
-			return result, err, http.StatusInternalServerError
-		}
-		if exists {
-			result = append(result, device.Id)
-		}
-	}
-	return result, nil, http.StatusOK
 }
 
 func (this *Controller) ValidateHub(token string, hub models.Hub) (err error, code int) {
@@ -130,12 +122,12 @@ func (this *Controller) ValidateHubDevices(hub models.Hub) (err error, code int)
 	for _, localId := range hub.DeviceLocalIds {
 		//device exists?
 		ctx, _ := getTimeoutContext()
-		device, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
+		device, exists, err := this.db.GetDeviceByLocalId(ctx, hub.OwnerId, localId)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 		if !exists {
-			return errors.New("unknown device local id: " + localId), http.StatusBadRequest
+			return errors.New("unknown device local id: " + localId + "for owner " + hub.OwnerId), http.StatusBadRequest
 		}
 		if !slices.Contains(hub.DeviceIds, device.Id) {
 			return fmt.Errorf("missing device.id %s in device_ids (found by device_local_ids %s)", device.Id, localId), http.StatusBadRequest
@@ -201,9 +193,9 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 		return this.producer.PublishHub(hub)
 	}
 	hubIndex := map[string]models.Hub{}
-	for _, lid := range hub.DeviceLocalIds {
+	for _, id := range hub.DeviceIds {
 		ctx, _ := getTimeoutContext()
-		hubs, err := this.db.GetHubsByDeviceLocalId(ctx, lid) //TODO: add owner-id
+		hubs, err := this.db.GetHubsByDeviceId(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -216,6 +208,12 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 	for _, lid := range hub.DeviceLocalIds {
 		for _, hub2 := range hubIndex {
 			hub2.DeviceLocalIds = filter(hub2.DeviceLocalIds, lid)
+			hubIndex[hub2.Id] = hub2
+		}
+	}
+	for _, id := range hub.DeviceIds {
+		for _, hub2 := range hubIndex {
+			hub2.DeviceLocalIds = filter(hub2.DeviceIds, id)
 			hubIndex[hub2.Id] = hub2
 		}
 	}

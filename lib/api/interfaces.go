@@ -22,8 +22,9 @@ import (
 )
 
 type Controller interface {
+	ListDevices(token string, options model.DeviceListOptions) (result []models.Device, err error, errCode int)
 	ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
-	ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
+	ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
 	ValidateDevice(token string, device models.Device) (err error, code int)
 
 	ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int)

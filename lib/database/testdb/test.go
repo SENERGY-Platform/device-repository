@@ -17,12 +17,15 @@
 package testdb
 
 import (
+	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"sync"
 )
 
 type DB struct {
+	config          config.Config
 	devices         map[string]models.Device
 	hubs            map[string]models.Hub
 	deviceTypes     map[string]models.DeviceType
@@ -35,10 +38,19 @@ type DB struct {
 	deviceClasses   map[string]models.DeviceClass
 	functions       map[string]models.Function
 	locations       map[string]models.Location
+	permissions     []Resource
+	mux             sync.Mutex
 }
 
-func NewTestDB() database.Database {
+type Resource struct {
+	Id      string `json:"id"`
+	TopicId string `json:"topic_id"`
+	model.ResourceRights
+}
+
+func NewTestDB(config config.Config) database.Database {
 	return &DB{
+		config:          config,
 		devices:         make(map[string]models.Device),
 		hubs:            make(map[string]models.Hub),
 		deviceTypes:     make(map[string]models.DeviceType),

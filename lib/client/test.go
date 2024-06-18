@@ -25,8 +25,7 @@ import (
 )
 
 func NewTestClient() (ctrl Interface, db database.Database, err error) {
-	db = testdb.NewTestDB()
-	ctrl, err = controller.New(config.Config{
+	conf := config.Config{
 		ServerPort:                               "8080",
 		DeviceTopic:                              "devices",
 		DeviceTypeTopic:                          "device-types",
@@ -46,7 +45,10 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		HttpClientTimeout:                        "30s",
 		FatalErrHandler:                          nil,
 		DeviceServiceGroupSelectionAllowNotFound: true,
-	}, db, db, semantic_legacy.VoidProducerMock{})
+		LocalIdUniqueForOwner:                    true,
+	}
+	db = testdb.NewTestDB(conf)
+	ctrl, err = controller.New(conf, db, db, semantic_legacy.VoidProducerMock{})
 	if err != nil {
 		return nil, nil, err
 	}

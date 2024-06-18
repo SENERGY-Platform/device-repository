@@ -91,3 +91,24 @@ func (this *Security) GetResourceRights(token string, kind string, id string, ri
 	}
 	return temp[0], true, nil
 }
+
+type IdWrapper struct {
+	Id string `json:"id"`
+}
+
+func (this *Security) ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) (result []string, err error) {
+	list, err := client.List[[]IdWrapper](this.permissionsearch, token, topic, client.ListOptions{
+		QueryListCommons: permmodel.QueryListCommons{
+			Limit:  int(limit),
+			Offset: int(offset),
+			Rights: action.String(),
+		},
+	})
+	if err != nil {
+		return result, err
+	}
+	for _, element := range list {
+		result = append(result, element.Id)
+	}
+	return result, err
+}

@@ -56,6 +56,10 @@ func init() {
 		if err != nil {
 			return err
 		}
+		err = db.ensureCompoundIndex(collection, "deviceownerlocalidindex", true, false, deviceOwnerIdKey, deviceLocalIdKey)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 }
@@ -90,8 +94,12 @@ func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) GetDeviceByLocalId(ctx context.Context, localId string) (device models.Device, exists bool, err error) {
-	result := this.deviceCollection().FindOne(ctx, bson.M{deviceLocalIdKey: localId})
+func (this *Mongo) GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device models.Device, exists bool, err error) {
+	filter := bson.M{deviceLocalIdKey: localId}
+	if this.config.LocalIdUniqueForOwner {
+		filter[deviceOwnerIdKey] = ownerId
+	}
+	result := this.deviceCollection().FindOne(ctx, filter)
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return device, false, nil

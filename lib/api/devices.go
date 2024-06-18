@@ -22,10 +22,12 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -35,13 +37,71 @@ func init() {
 func DeviceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
 	resource := "/devices"
 
+	//query-parameter:
+	//		- limit: number; default 100, will be ignored if 'ids' is set
+	//		- offset: number; default 0, will be ignored if 'ids' is set
+	//		- ids: filter by comma seperated id list
+	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		deviceListOptions := model.DeviceListOptions{
+			Limit:  100,
+			Offset: 0,
+		}
+		var err error
+		limitParam := request.URL.Query().Get("limit")
+		if limitParam != "" {
+			deviceListOptions.Limit, err = strconv.ParseInt(limitParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse limit:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		offsetParam := request.URL.Query().Get("offset")
+		if offsetParam != "" {
+			deviceListOptions.Offset, err = strconv.ParseInt(offsetParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse offset:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		idsParam := request.URL.Query().Get("ids")
+		if idsParam != "" {
+			deviceListOptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
+		}
+
+		result, err, errCode := control.ListDevices(util.GetAuthToken(request), deviceListOptions)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+
+	})
+
 	//use 'as=local_id' query parameter to search device by local_id
+	//		may use the 'owner_id' query parameter, which will default to the user/subject of the Auth-Token
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
 	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		id := params.ByName("id")
 		as := request.URL.Query().Get("as")
+		ownerId := request.URL.Query().Get("owner_id")
+		if ownerId == "" {
+			token, err := jwt.GetParsedToken(request)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusUnauthorized)
+				return
+			}
+			ownerId = token.GetUserId()
+		}
 		permission := model.AuthAction(request.URL.Query().Get("p"))
 		if permission == "" {
 			permission = model.READ
@@ -50,7 +110,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 		var err error
 		var errCode int
 		if as == "local_id" {
-			result, err, errCode = control.ReadDeviceByLocalId(id, util.GetAuthToken(request), permission)
+			result, err, errCode = control.ReadDeviceByLocalId(ownerId, id, util.GetAuthToken(request), permission)
 		} else {
 			result, err, errCode = control.ReadDevice(id, util.GetAuthToken(request), permission)
 		}

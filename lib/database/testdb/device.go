@@ -34,9 +34,9 @@ func (db *DB) RemoveDevice(_ context.Context, id string) error {
 
 }
 
-func (db *DB) GetDeviceByLocalId(_ context.Context, localId string) (device models.Device, exists bool, err error) {
+func (db *DB) GetDeviceByLocalId(_ context.Context, ownerId string, localId string) (device models.Device, exists bool, err error) {
 	for i := range db.devices {
-		if db.devices[i].LocalId == localId {
+		if db.devices[i].LocalId == localId && (!db.config.LocalIdUniqueForOwner || db.devices[i].OwnerId == ownerId) {
 			return db.devices[i], true, nil
 		}
 	}

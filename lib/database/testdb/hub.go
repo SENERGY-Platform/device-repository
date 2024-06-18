@@ -30,10 +30,10 @@ func (db *DB) SetHub(_ context.Context, hub models.Hub) error {
 func (db *DB) RemoveHub(_ context.Context, id string) error {
 	return del(id, db.hubs)
 }
-func (db *DB) GetHubsByDeviceLocalId(_ context.Context, localId string) (hubs []models.Hub, err error) {
+func (db *DB) GetHubsByDeviceId(_ context.Context, id string) (hubs []models.Hub, err error) {
 	for i := range db.hubs {
-		for j := range db.hubs[i].DeviceLocalIds {
-			if db.hubs[i].DeviceLocalIds[j] == localId {
+		for j := range db.hubs[i].DeviceIds {
+			if db.hubs[i].DeviceLocalIds[j] == id {
 				hubs = append(hubs, db.hubs[i])
 				break
 			}

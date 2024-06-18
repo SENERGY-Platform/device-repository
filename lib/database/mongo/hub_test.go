@@ -26,7 +26,7 @@ import (
 	"time"
 )
 
-func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
+func TestMongo_GetHubsByDeviceId(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -52,19 +52,19 @@ func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
 	}
 
 	timeout, _ := context.WithTimeout(ctx, 10*time.Second)
-	err = m.SetHub(timeout, models.Hub{Id: "hid1", Name: "h1", DeviceLocalIds: []string{"a", "b"}})
+	err = m.SetHub(timeout, models.Hub{Id: "hid1", Name: "h1", DeviceIds: []string{"a", "b"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	timeout, _ = context.WithTimeout(ctx, 10*time.Second)
-	err = m.SetHub(timeout, models.Hub{Id: "hid2", Name: "h2", DeviceLocalIds: []string{"b", "c"}})
+	err = m.SetHub(timeout, models.Hub{Id: "hid2", Name: "h2", DeviceIds: []string{"b", "c"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	timeout, _ = context.WithTimeout(ctx, 10*time.Second)
-	hubs, err := m.GetHubsByDeviceLocalId(timeout, "a")
+	hubs, err := m.GetHubsByDeviceId(timeout, "a")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +73,7 @@ func TestMongo_GetHubsByDeviceLocalId(t *testing.T) {
 	}
 
 	timeout, _ = context.WithTimeout(ctx, 10*time.Second)
-	hubs, err = m.GetHubsByDeviceLocalId(timeout, "b")
+	hubs, err = m.GetHubsByDeviceId(timeout, "b")
 	if err != nil {
 		t.Fatal(err)
 	}

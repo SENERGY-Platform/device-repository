@@ -25,11 +25,11 @@ import (
 )
 
 const hubIdFieldName = "Id"
-const hubDeviceLocalIdFieldName = "DeviceLocalIds"
+const hubDeviceIdFieldName = "DeviceIds"
 const hubOwnerIdFieldName = "OwnerId"
 
 var hubIdKey string
-var hubDeviceLocalIdKey string
+var hubDeviceIdKey string
 var hubOwnerIdKey string
 
 func init() {
@@ -39,7 +39,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		hubDeviceLocalIdKey, err = getBsonFieldName(models.Hub{}, hubDeviceLocalIdFieldName)
+		hubDeviceIdKey, err = getBsonFieldName(models.Hub{}, hubDeviceIdFieldName)
 		if err != nil {
 			return err
 		}
@@ -52,7 +52,11 @@ func init() {
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "hubdevicelocalidindex", hubDeviceLocalIdKey, true, false)
+		err = db.ensureIndex(collection, "hubdeviceidindex", hubDeviceIdKey, true, false)
+		if err != nil {
+			return err
+		}
+		err = db.removeIndex(collection, "hubdevicelocalidindex")
 		if err != nil {
 			return err
 		}
@@ -90,8 +94,8 @@ func (this *Mongo) RemoveHub(ctx context.Context, id string) error {
 	return err
 }
 
-func (this *Mongo) GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []models.Hub, err error) {
-	cursor, err := this.hubCollection().Find(ctx, bson.M{hubDeviceLocalIdKey: localId})
+func (this *Mongo) GetHubsByDeviceId(ctx context.Context, id string) (hubs []models.Hub, err error) {
+	cursor, err := this.hubCollection().Find(ctx, bson.M{hubDeviceIdKey: id})
 	if err != nil {
 		return nil, err
 	}

@@ -30,6 +30,36 @@ import (
 //		api
 /////////////////////////
 
+func (this *Controller) ListDevices(token string, options model.DeviceListOptions) (result []models.Device, err error, errCode int) {
+	ids := []string{}
+	if options.Ids == nil {
+		ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, options.Limit, options.Offset, model.READ)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+	} else {
+		idMap, err := this.security.CheckMultiple(token, this.config.DeviceTopic, options.Ids, model.READ)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		for id, ok := range idMap {
+			if ok {
+				ids = append(ids, id)
+			}
+		}
+	}
+	result = []models.Device{}
+	for _, id := range ids {
+		var device models.Device
+		device, err, errCode = this.readDevice(id)
+		if err != nil {
+			return result, err, errCode
+		}
+		result = append(result, device)
+	}
+	return result, nil, http.StatusOK
+}
+
 func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	result, err, errCode = this.readDevice(id)
 	if err != nil {
@@ -65,9 +95,9 @@ func (this *Controller) readDevice(id string) (result models.Device, err error, 
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) ReadDeviceByLocalId(localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
-	device, exists, err := this.db.GetDeviceByLocalId(ctx, localId)
+	device, exists, err := this.db.GetDeviceByLocalId(ctx, ownerId, localId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -173,12 +203,15 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 
 	//local ids are globally unique
 	ctx, _ = getTimeoutContext()
-	d, ok, err := this.db.GetDeviceByLocalId(ctx, device.LocalId)
+	d, ok, err := this.db.GetDeviceByLocalId(ctx, device.OwnerId, device.LocalId)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if ok && d.Id != device.Id {
-		return errors.New("local id should be empty or globally unique"), http.StatusBadRequest
+		if this.config.LocalIdUniqueForOwner {
+			return errors.New("local id should be empty or globally unique"), http.StatusBadRequest
+		}
+		return errors.New("local id should be empty or for the owner unique"), http.StatusBadRequest
 	}
 
 	return nil, http.StatusOK
@@ -192,7 +225,7 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 	//prevent collision of local ids
 	//this if branch should be rarely needed if 2 devices are created at the same time with the same local_id (when the second device is validated before the creation of the first is finished)
 	ctx, _ := getTimeoutContext()
-	d, collision, err := this.db.GetDeviceByLocalId(ctx, device.LocalId)
+	d, collision, err := this.db.GetDeviceByLocalId(ctx, device.OwnerId, device.LocalId)
 	if err != nil {
 		return err
 	}
@@ -258,7 +291,7 @@ func (this *Controller) PublishDeviceDelete(id string, owner string) error {
 
 func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 	ctx, _ := getTimeoutContext()
-	hubs, err := this.db.GetHubsByDeviceLocalId(ctx, old.LocalId) //TODO: add owner-id
+	hubs, err := this.db.GetHubsByDeviceId(ctx, old.Id)
 	if err != nil {
 		return err
 	}

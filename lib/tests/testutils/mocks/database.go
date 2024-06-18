@@ -191,7 +191,7 @@ func (this *Database) RemoveHub(ctx context.Context, id string) error {
 	panic("implement me")
 }
 
-func (this *Database) GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []models.Hub, err error) {
+func (this *Database) GetHubsByDeviceId(ctx context.Context, id string) (hubs []models.Hub, err error) {
 	panic("implement me")
 }
 

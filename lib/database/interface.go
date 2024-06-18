@@ -29,14 +29,12 @@ type Database interface {
 	GetDevice(ctx context.Context, id string) (device models.Device, exists bool, err error)
 	SetDevice(ctx context.Context, device models.Device) error
 	RemoveDevice(ctx context.Context, id string) error
-	//deprecated: TODO: add owner-id
-	GetDeviceByLocalId(ctx context.Context, localId string) (device models.Device, exists bool, err error) //TODO: add owner-id
+	GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device models.Device, exists bool, err error)
 
 	GetHub(ctx context.Context, id string) (hub models.Hub, exists bool, err error)
 	SetHub(ctx context.Context, hub models.Hub) error
 	RemoveHub(ctx context.Context, id string) error
-	//deprecated: TODO: add owner-id
-	GetHubsByDeviceLocalId(ctx context.Context, localId string) (hubs []models.Hub, err error) //TODO: add owner id
+	GetHubsByDeviceId(ctx context.Context, deviceId string) (hubs []models.Hub, err error)
 
 	GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType models.DeviceType) error
@@ -127,4 +125,5 @@ type Security interface {
 	CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error)
 	CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
 	GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error)
+	ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) (result []string, err error)
 }

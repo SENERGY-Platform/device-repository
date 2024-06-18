@@ -94,6 +94,19 @@ func (this *Mongo) Transaction(ctx context.Context) (resultCtx context.Context, 
 	}, nil
 }
 
+func (this *Mongo) removeIndex(collection *mongo.Collection, indexname string) error {
+	_, err := collection.Indexes().DropOne(context.Background(), indexname)
+	if err != nil {
+		if strings.Contains(err.Error(), "IndexNotFound") {
+			return nil
+		} else {
+			debug.PrintStack()
+			return err
+		}
+	}
+	return nil
+}
+
 func (this *Mongo) ensureIndex(collection *mongo.Collection, indexname string, indexKey string, asc bool, unique bool) error {
 	ctx, _ := getTimeoutContext()
 	var direction int32 = -1
@@ -166,6 +179,13 @@ func fillObjectWithItsBsonFieldNames(ptr interface{}, prefix []string) error {
 				return err
 			}
 			objval.Field(i).SetString(strings.Join(append(prefix, tags.Name), "."))
+		}
+		if field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.String {
+			tags, err := bsoncodec.DefaultStructTagParser.ParseStructTags(field)
+			if err != nil {
+				return err
+			}
+			objval.Field(i).Set(reflect.ValueOf([]string{strings.Join(append(prefix, tags.Name), ".")}))
 		}
 		if field.Type.Kind() == reflect.Struct {
 			tags, err := bsoncodec.DefaultStructTagParser.ParseStructTags(field)

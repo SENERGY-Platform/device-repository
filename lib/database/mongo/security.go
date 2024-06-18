@@ -28,6 +28,8 @@ import (
 	"slices"
 )
 
+var RightsEntryBson = getBsonFieldObject[RightsEntry]()
+
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
@@ -205,6 +207,73 @@ func (this *Mongo) CheckMultiple(token string, topic string, ids []string, actio
 			return nil, err
 		}
 		result[rawIdsIndex[element.Id]] = checkRights(jwtToken, element, action)
+	}
+
+	err = cursor.Err()
+	return result, err
+}
+
+func (this *Mongo) ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) (result []string, err error) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err
+	}
+	temp, err := this.ListResourcesByPermissions(topic, jwtToken.GetUserId(), jwtToken.GetRoles(), limit, offset, action)
+	if err != nil {
+		return nil, err
+	}
+	result = []string{}
+	for _, e := range temp {
+		result = append(result, e.Id)
+	}
+	return result, err
+}
+
+func (this *Mongo) ListResourcesByPermissions(topic string, userId string, groupIds []string, limit int64, offset int64, permissions ...model.AuthAction) (result []RightsEntry, err error) {
+	kind, err := this.getInternalKind(topic)
+	if err != nil {
+		return result, err
+	}
+	result = []RightsEntry{}
+	permissionsFilter := bson.A{}
+	for _, r := range permissions {
+		switch r {
+		case model.READ:
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ReadUsers[0]: userId}, bson.M{RightsEntryBson.ReadGroups[0]: bson.M{"$in": groupIds}}}})
+		case model.WRITE:
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.WriteUsers[0]: userId}, bson.M{RightsEntryBson.WriteGroups[0]: bson.M{"$in": groupIds}}}})
+		case model.EXECUTE:
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ExecuteUsers[0]: userId}, bson.M{RightsEntryBson.ExecuteGroups[0]: bson.M{"$in": groupIds}}}})
+		case model.ADMINISTRATE:
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.AdminUsers[0]: userId}, bson.M{RightsEntryBson.AdminGroups[0]: bson.M{"$in": groupIds}}}})
+		default:
+			return []RightsEntry{}, errors.New("invalid permissions parameter")
+		}
+	}
+
+	opt := options.Find()
+	if limit > 0 {
+		opt.SetLimit(limit)
+	}
+	if offset > 0 {
+		opt.SetSkip(offset)
+	}
+	opt.SetSort(bson.D{{RightsEntryBson.Id, 1}})
+
+	filter := bson.M{"kind": kind, "$and": permissionsFilter}
+
+	ctx, _ := getTimeoutContext()
+	cursor, err := this.rightsCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		element := RightsEntry{}
+		err = cursor.Decode(&element)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, element)
 	}
 
 	err = cursor.Err()

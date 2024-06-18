@@ -18,6 +18,7 @@ package mocks
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"strings"
 )
 
 type Security struct {
@@ -55,4 +56,13 @@ func (this *Security) GetAdminUsers(token string, kind string, id string) (admin
 
 func (this *Security) SetAdmins(kind string, id string, admins []string) {
 	this.admins[this.getKey(kind, id)] = admins
+}
+
+func (this *Security) ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) (result []string, err error) {
+	for key, access := range this.access {
+		if access && strings.HasPrefix(key, topic+"/") {
+			result = append(result, strings.TrimPrefix(key, topic+"/"))
+		}
+	}
+	return result, nil
 }

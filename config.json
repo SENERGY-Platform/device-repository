@@ -42,6 +42,8 @@
 
     "run_startup_migrations": true,
 
+    "local_id_unique_for_owner": false,
+
     "initial_group_rights": {
         "devices": {"admin": "rwxa"},
         "device-groups": {"system": "rwxa"},
