@@ -81,33 +81,49 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 		}
 
 		ownerCount := map[string]int{}
-		foundDeviceWithoutOwner := false
 		devices := []models.Device{}
 		for _, deviceId := range element.DeviceIds {
 			device, exists, err := this.GetDevice(context.Background(), deviceId)
 			if err != nil {
 				return err
 			}
+			devices = append(devices, device)
 			if exists && device.OwnerId != "" {
 				if device.OwnerId != "" {
 					ownerCount[device.OwnerId] = ownerCount[device.OwnerId] + 1
 				} else {
-					foundDeviceWithoutOwner = true
+					return errors.New("expect all hub devices to have owner")
 				}
 			}
 		}
-		if foundDeviceWithoutOwner {
-			log.Println("WARNING: unable to find the owner of at least one device of the hub", element.Name, element.Id, "--> skip migration")
-			continue
+
+		rights, err := this.getRights(hubKind, element.Id)
+		if err != nil {
+			return err
 		}
-		majorityOwnerCount := 0
-		for owner, count := range ownerCount {
-			if count > majorityOwnerCount {
-				majorityOwnerCount = count
-				element.OwnerId = owner
+		if len(rights.AdminUsers) == 0 {
+			return fmt.Errorf("no admin users found for hub %v", element.Id)
+		}
+
+		getMajorityOwnerInAdmin := func(ownerCount map[string]int, admins []string) (majorityOwner string) {
+			majorityOwnerCount := 0
+			for owner, count := range ownerCount {
+				if count > majorityOwnerCount && slices.Contains(admins, owner) {
+					majorityOwnerCount = count
+					majorityOwner = owner
+				}
 			}
+			return majorityOwner
 		}
-		if len(ownerCount) > 1 {
+
+		element.OwnerId = getMajorityOwnerInAdmin(ownerCount, rights.AdminUsers)
+		useMajorityOwner := true
+		if element.OwnerId == "" && len(rights.AdminUsers) > 0 {
+			element.OwnerId = rights.AdminUsers[0]
+			useMajorityOwner = false
+		}
+
+		if len(ownerCount) > 1 || !useMajorityOwner {
 			log.Printf("WARNING: hub %v (%v) contains devices with multiple different owners.\ndevices-ids=%v\nthe majority owner %v will be used for the hub and as new owner for all devices of the hub", element.Name, element.Id, element.DeviceIds, element.OwnerId)
 			for _, device := range devices {
 				if device.OwnerId != element.OwnerId {
@@ -118,16 +134,6 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 				}
 			}
 		}
-		//may only happen if the hub has no devices (or if not all devices have an owner, but with assertEveryDeviceHasOwner() all devices must have an owner)
-		if element.OwnerId == "" {
-			rights, err := this.getRights(hubKind, element.Id)
-			if err != nil {
-				return err
-			}
-			if len(rights.AdminUsers) > 0 {
-				element.OwnerId = rights.AdminUsers[0]
-			}
-		}
 
 		if element.OwnerId == "" {
 			log.Printf("WARNING: no owner for hub %v (%v) found\n", element.Name, element.Id)
@@ -136,6 +142,12 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 			err = producer.PublishHub(element)
 			if err != nil {
 				log.Println("ERROR: unable to update hub owner", element.Id, element.OwnerId, err)
+				return err
+			}
+			//locally, so that hubs can check device owners
+			ctx, _ := getTimeoutContext()
+			err = this.SetHub(ctx, element)
+			if err != nil {
 				return err
 			}
 		}
@@ -150,6 +162,7 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 	}
 	log.Println("start device-owner-id migration")
 	defer log.Println("end device-owner-id migration")
+
 	cursor, err := this.deviceCollection().Find(context.Background(), bson.M{
 		"$or": bson.A{
 			bson.M{deviceOwnerIdKey: bson.M{"$exists": false}},
@@ -175,6 +188,9 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 		rights, err := this.getRights(deviceKind, element.Id)
 		if err != nil {
 			return err
+		}
+		if len(rights.AdminUsers) == 0 {
+			return fmt.Errorf("no admin users found for device %v", element.Id)
 		}
 		if len(rights.AdminUsers) > 0 {
 			element.OwnerId = rights.AdminUsers[0]
@@ -215,22 +231,6 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 	return cursor.Err()
 }
 
-func (this *Mongo) assertEveryDeviceHasOwner() error {
-	count, err := this.deviceCollection().CountDocuments(context.Background(), bson.M{
-		"$or": bson.A{
-			bson.M{deviceOwnerIdKey: bson.M{"$exists": false}},
-			bson.M{deviceOwnerIdKey: ""},
-		},
-	}, options.Count().SetLimit(1))
-	if err != nil {
-		return err
-	}
-	if count > 0 {
-		return errors.New("assertEveryDeviceHasOwner() failed: found devicew without owner")
-	}
-	return nil
-}
-
 func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationPublisher, device models.Device, owner string) error {
 	if owner == "" {
 		return errors.New("missing owner")
@@ -239,6 +239,7 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 		return errors.New("invalid device")
 	}
 	if device.OwnerId == owner {
+		log.Println("")
 		return nil
 	}
 	log.Printf("force owner %v on device %v %v\n", owner, device.Name, device.Id)
@@ -270,8 +271,13 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 	//update admin rights if necessary
 	if !slices.Contains(rights.AdminUsers, owner) {
 		log.Printf("device %v %v may currently not use owner %v because %v is not an admin --> add %v as admin", device.Name, device.Id, owner, owner, owner)
-		rights.AdminUsers = append(rights.AdminUsers, owner)
 		resourceRights := rights.ToResourceRights()
+		resourceRights.UserRights[owner] = model.Right{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		}
 		err = producer.PublishDeviceRights(device.Id, owner, resourceRights)
 		if err != nil {
 			return err
@@ -294,6 +300,22 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 	err = this.SetDevice(ctx, device)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (this *Mongo) assertEveryDeviceHasOwner() error {
+	count, err := this.deviceCollection().CountDocuments(context.Background(), bson.M{
+		"$or": bson.A{
+			bson.M{deviceOwnerIdKey: bson.M{"$exists": false}},
+			bson.M{deviceOwnerIdKey: ""},
+		},
+	}, options.Count().SetLimit(1))
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("assertEveryDeviceHasOwner() failed: found devicew without owner")
 	}
 	return nil
 }

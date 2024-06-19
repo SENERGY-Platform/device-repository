@@ -154,17 +154,22 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 		return err, http.StatusInternalServerError
 	}
 	if exists {
-		admins, err := this.security.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
-		if err != nil {
-			return err, http.StatusInternalServerError
-		}
-		//new device owner-id must be existing admin user (ignore for new devices or devices with unchanged owner)
-		if device.OwnerId != original.OwnerId && !slices.Contains(admins, device.OwnerId) {
-			return errors.New("new owner must have existing user admin rights"), http.StatusBadRequest
-		}
-		if device.OwnerId != original.OwnerId && len(admins) == 0 {
-			//o admins indicates the requesting user has not the needed admin rights to see other admins
-			return errors.New("requesting user must have admin rights"), http.StatusBadRequest
+		if device.OwnerId != original.OwnerId {
+			admins, err := this.security.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
+			if errors.Is(err, model.PermissionCheckFailed) {
+				return errors.New("requesting user must have admin rights to change owner"), http.StatusBadRequest
+			}
+			if err != nil {
+				return err, http.StatusInternalServerError
+			}
+			if len(admins) == 0 {
+				//o admins indicates the requesting user has not the needed admin rights to see other admins
+				return errors.New("requesting user must have admin rights to change owner"), http.StatusBadRequest
+			}
+			//new device owner-id must be existing admin user (ignore for new devices or devices with unchanged owner)
+			if !slices.Contains(admins, device.OwnerId) {
+				return errors.New("new owner must have existing user admin rights"), http.StatusBadRequest
+			}
 		}
 	}
 

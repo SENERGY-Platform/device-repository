@@ -126,6 +126,13 @@ func (this *Mongo) GetAdminUsers(token string, topic string, resourceId string) 
 	if err != nil {
 		return admins, err
 	}
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return admins, err
+	}
+	if !checkRights(jwtToken, rights, model.ADMINISTRATE) {
+		return []string{}, model.PermissionCheckFailed
+	}
 	return rights.AdminUsers, nil
 }
 
