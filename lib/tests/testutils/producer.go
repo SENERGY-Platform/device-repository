@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/segmentio/kafka-go"
@@ -103,10 +104,11 @@ type DeviceGroupCommand struct {
 }
 
 type DeviceCommand struct {
-	Command string        `json:"command"`
-	Id      string        `json:"id"`
-	Owner   string        `json:"owner"`
-	Device  models.Device `json:"device"`
+	Command string                `json:"command"`
+	Id      string                `json:"id"`
+	Owner   string                `json:"owner"`
+	Device  models.Device         `json:"device"`
+	Rights  *model.ResourceRights `json:"rights,omitempty"`
 }
 
 func (this *Publisher) PublishDeviceGroup(dg models.DeviceGroup, userId string) (err error) {
@@ -172,6 +174,11 @@ func (this *Publisher) PublishDeviceTypeCommand(cmd DeviceTypeCommand) error {
 
 func (this *Publisher) PublishDevice(device models.Device, userId string) (err error) {
 	cmd := DeviceCommand{Command: "PUT", Id: device.Id, Device: device, Owner: userId}
+	return this.PublishDeviceCommand(cmd)
+}
+
+func (this *Publisher) PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error) {
+	cmd := DeviceCommand{Command: "RIGHTS", Id: deviceId, Owner: userId, Rights: &rights}
 	return this.PublishDeviceCommand(cmd)
 }
 

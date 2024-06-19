@@ -57,6 +57,9 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 		}
 		result = append(result, device)
 	}
+	slices.SortFunc(result, func(a, b models.Device) int {
+		return strings.Compare(a.Id, b.Id)
+	})
 	return result, nil, http.StatusOK
 }
 
@@ -213,7 +216,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 		return err, http.StatusInternalServerError
 	}
 	if ok && d.Id != device.Id {
-		if this.config.LocalIdUniqueForOwner {
+		if !this.config.LocalIdUniqueForOwner {
 			return errors.New("local id should be empty or globally unique"), http.StatusBadRequest
 		}
 		return errors.New("local id should be empty or for the owner unique"), http.StatusBadRequest

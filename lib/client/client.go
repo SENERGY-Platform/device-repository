@@ -76,6 +76,10 @@ func (c *Client) validateWithTokenAndOptions(token string, path string, e interf
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
+	if resp.StatusCode > 299 {
+		temp, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("validation error: %v", string(temp)), resp.StatusCode
+	}
 	return nil, resp.StatusCode
 }
 

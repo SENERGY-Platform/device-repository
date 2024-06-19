@@ -19,16 +19,26 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/source/util"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
+	"github.com/SENERGY-Platform/service-commons/pkg/kafka"
 	"github.com/google/uuid"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
+	"slices"
+	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -146,6 +156,68 @@ func TestDeviceQuery(t *testing.T) {
 	t.Run("testDeviceRead localid", func(t *testing.T) {
 		testDeviceRead(t, conf, true, d1, d2, d3)
 	})
+
+	t.Run("test list devices", func(t *testing.T) {
+		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		t.Run("list all", func(t *testing.T) {
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{d1, d2, d3}
+			slices.SortFunc(expected, func(a, b models.Device) int {
+				return strings.Compare(a.Id, b.Id)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+		t.Run("list limit/offset", func(t *testing.T) {
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{d1, d2, d3}
+			slices.SortFunc(expected, func(a, b models.Device) int {
+				return strings.Compare(a.Id, b.Id)
+			})
+			expected = expected[1:2]
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+		t.Run("list ids all", func(t *testing.T) {
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Ids: []string{d1.Id, d2.Id, d3.Id}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{d1, d2, d3}
+			slices.SortFunc(expected, func(a, b models.Device) int {
+				return strings.Compare(a.Id, b.Id)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+
+		t.Run("list ids d1, d3", func(t *testing.T) {
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Ids: []string{d1.Id, d3.Id}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{d1, d3}
+			slices.SortFunc(expected, func(a, b models.Device) int {
+				return strings.Compare(a.Id, b.Id)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+	})
 }
 
 func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDevices ...models.Device) {
@@ -203,8 +275,406 @@ func testDeviceReadNotFound(t *testing.T, conf config.Config, asLocalId bool, id
 		return
 	}
 	if resp.StatusCode != http.StatusNotFound {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
+	}
+}
+
+func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := config.Load("../../config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.FatalErrHandler = t.Fatal
+	conf.MongoReplSet = false
+	conf.Debug = true
+	conf.LocalIdUniqueForOwner = true
+	whPort, err := docker.GetFreePort()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.ServerPort = strconv.Itoa(whPort)
+
+	_, ip, err := docker.MongoDB(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.MongoUrl = "mongodb://" + ip + ":27017"
+
+	_, zkIp, err := docker.Zookeeper(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	zookeeperUrl := zkIp + ":2181"
+
+	conf.KafkaUrl, err = docker.Kafka(ctx, wg, zookeeperUrl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = util.InitTopic(conf.KafkaUrl,
+		"concepts",
+		"device-groups",
+		"aspects",
+		"characteristics",
+		"processmodel",
+		"device-types",
+		"hubs",
+		"devices",
+		"device-classes",
+		"functions",
+		"protocols",
+		"import-types",
+		"locations",
+		"smart_service_releases",
+		"gateway_log",
+		"device_log")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(1 * time.Second)
+	t.Run("test", testDeviceLocalIdOwnerConstraint(ctx, wg, conf))
+}
+
+func TestDeviceLocalIdOwnerConstraintPermissionsSearch(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := config.Load("../../config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.FatalErrHandler = t.Fatal
+	conf.MongoReplSet = false
+	conf.Debug = true
+	conf.LocalIdUniqueForOwner = true
+	conf, err = docker.NewEnv(ctx, wg, conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(1 * time.Second)
+	t.Run("test", testDeviceLocalIdOwnerConstraint(ctx, wg, conf))
+}
+
+func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, conf config.Config) func(t *testing.T) {
+	return func(t *testing.T) {
+		err := lib.Start(ctx, wg, conf)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		time.Sleep(1 * time.Second)
+		producer, err := testutils.NewPublisher(conf)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		err = donewait.StartDoneWaitListener(ctx, kafka.Config{
+			KafkaUrl:    conf.KafkaUrl,
+			StartOffset: kafka.LastOffset,
+			Debug:       conf.Debug,
+		}, []string{conf.DoneTopic}, nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		t.Run("create device-type", func(t *testing.T) {
+			doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
+			wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
+				ResourceKind: conf.DeviceTypeTopic,
+				ResourceId:   devicetype1id,
+				Command:      "PUT",
+			}, nil)
+
+			err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			err = wait()
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		})
+
+		t.Run("create devices", func(t *testing.T) {
+			doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
+			wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
+				ResourceKind: conf.DeviceTopic,
+				ResourceId:   testenv.SecendOwnerTokenUser,
+				Command:      "PUT",
+			}, nil)
+			for i := range 10 {
+				err = producer.PublishDevice(models.Device{
+					Id:           testenv.TestTokenUser + "/" + strconv.Itoa(i),
+					LocalId:      strconv.Itoa(i),
+					Name:         testenv.TestTokenUser + "/" + strconv.Itoa(i),
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.TestTokenUser,
+				}, testenv.TestTokenUser)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				err = producer.PublishDevice(models.Device{
+					Id:           testenv.SecendOwnerTokenUser + "/" + strconv.Itoa(i),
+					LocalId:      strconv.Itoa(i),
+					Name:         testenv.SecendOwnerTokenUser + "/" + strconv.Itoa(i),
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.SecendOwnerTokenUser,
+				}, testenv.SecendOwnerTokenUser)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
+			err = producer.PublishDevice(models.Device{
+				Id:           testenv.TestTokenUser,
+				LocalId:      testenv.TestTokenUser,
+				Name:         testenv.TestTokenUser,
+				DeviceTypeId: devicetype1id,
+				OwnerId:      testenv.TestTokenUser,
+			}, testenv.TestTokenUser)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			err = producer.PublishDevice(models.Device{
+				Id:           testenv.SecendOwnerTokenUser,
+				LocalId:      testenv.SecendOwnerTokenUser,
+				Name:         testenv.SecendOwnerTokenUser,
+				DeviceTypeId: devicetype1id,
+				OwnerId:      testenv.SecendOwnerTokenUser,
+			}, testenv.TestTokenUser)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			err = wait()
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+		})
+
+		t.Run("validates", func(t *testing.T) {
+			c := client.NewClient("http://localhost:" + conf.ServerPort)
+			t.Run("user may add new device with new local-id", func(t *testing.T) {
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/20",
+					LocalId:      "20",
+					Name:         testenv.TestTokenUser + "/20",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.TestTokenUser,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+			t.Run("user may update device with new local-id", func(t *testing.T) {
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/1",
+					LocalId:      "20",
+					Name:         testenv.TestTokenUser + "/1",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.TestTokenUser,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+			t.Run("user may update device with local-id existing for other owner", func(t *testing.T) {
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/1",
+					LocalId:      testenv.SecendOwnerTokenUser,
+					Name:         testenv.TestTokenUser + "/1",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.TestTokenUser,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+			t.Run("user may update device", func(t *testing.T) {
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/1",
+					LocalId:      "1",
+					Name:         "updated name",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.TestTokenUser,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+			t.Run("user may not add new device with existing local-id", func(t *testing.T) {
+				err, code := c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/20",
+					LocalId:      "1",
+					Name:         testenv.TestTokenUser + "/20",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.TestTokenUser,
+				})
+				if err == nil {
+					t.Error(err, code)
+					return
+				}
+			})
+			t.Run("user may not update device with existing local-id", func(t *testing.T) {
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/1",
+					LocalId:      "2",
+					Name:         testenv.TestTokenUser + "/1",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.TestTokenUser,
+				})
+				if err == nil {
+					t.Error(err)
+					return
+				}
+			})
+			t.Run("user may not update owner to none admin", func(t *testing.T) {
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/1",
+					LocalId:      "20",
+					Name:         testenv.TestTokenUser + "/1",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.SecendOwnerTokenUser,
+				})
+				if err == nil {
+					t.Error(err)
+					return
+				}
+			})
+			t.Run("user may update owner to admin with not existing local id", func(t *testing.T) {
+				doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
+				wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
+					ResourceKind: conf.DeviceTopic,
+					ResourceId:   testenv.TestTokenUser + "/1",
+					Command:      "RIGHTS",
+				}, nil)
+				err = producer.PublishDeviceRights(testenv.TestTokenUser+"/1", testenv.TestTokenUser, model.ResourceRights{
+					UserRights: map[string]model.Right{
+						testenv.TestTokenUser:        {Read: true, Write: true, Execute: true, Administrate: true},
+						testenv.SecendOwnerTokenUser: {Read: true, Write: true, Execute: true, Administrate: true},
+					},
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				err = wait()
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/1",
+					LocalId:      "20",
+					Name:         testenv.TestTokenUser + "/1",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.SecendOwnerTokenUser,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+
+			t.Run("user may update owner to admin with not existing local id (unchanged)", func(t *testing.T) {
+				doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
+				wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
+					ResourceKind: conf.DeviceTopic,
+					ResourceId:   testenv.TestTokenUser,
+					Command:      "RIGHTS",
+				}, nil)
+				err = producer.PublishDeviceRights(testenv.TestTokenUser, testenv.TestTokenUser, model.ResourceRights{
+					UserRights: map[string]model.Right{
+						testenv.TestTokenUser:        {Read: true, Write: true, Execute: true, Administrate: true},
+						testenv.SecendOwnerTokenUser: {Read: true, Write: true, Execute: true, Administrate: true},
+					},
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				err = wait()
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser,
+					LocalId:      testenv.TestTokenUser,
+					Name:         testenv.TestTokenUser,
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.SecendOwnerTokenUser,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+
+			t.Run("user may not update owner to admin with existing local id", func(t *testing.T) {
+				doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
+				wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
+					ResourceKind: conf.DeviceTopic,
+					ResourceId:   testenv.TestTokenUser + "/1",
+					Command:      "RIGHTS",
+				}, nil)
+				err = producer.PublishDeviceRights(testenv.TestTokenUser+"/1", testenv.TestTokenUser, model.ResourceRights{
+					UserRights: map[string]model.Right{
+						testenv.TestTokenUser:        {Read: true, Write: true, Execute: true, Administrate: true},
+						testenv.SecendOwnerTokenUser: {Read: true, Write: true, Execute: true, Administrate: true},
+					},
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				err = wait()
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+					Id:           testenv.TestTokenUser + "/1",
+					LocalId:      "1",
+					Name:         testenv.TestTokenUser + "/1",
+					DeviceTypeId: devicetype1id,
+					OwnerId:      testenv.SecendOwnerTokenUser,
+				})
+				if err == nil {
+					t.Error(err)
+					return
+				}
+			})
+
+		})
+
 	}
 }
