@@ -77,7 +77,7 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 
 type VoidProducerMock struct{}
 
-func (v VoidProducerMock) PublishDevice(element models.Device) error {
+func (v VoidProducerMock) PublishDevice(element models.Device, userId string) error {
 	panic("implement me")
 }
 
@@ -101,6 +101,6 @@ func (v VoidProducerMock) PublishDeviceDelete(id string, owner string) error {
 	panic("implement me")
 }
 
-func (v VoidProducerMock) PublishHub(hub models.Hub) (err error) {
+func (v VoidProducerMock) PublishHub(hub models.Hub, userId string) (err error) {
 	panic("implement me")
 }

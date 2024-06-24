@@ -21,7 +21,7 @@ import (
 )
 
 type MigrationPublisher interface {
-	PublishHub(hub models.Hub) (err error)
-	PublishDevice(element models.Device) (err error)
+	PublishHub(hub models.Hub, userId string) (err error)
+	PublishDevice(element models.Device, userId string) (err error)
 	PublishDeviceRights(deviceId string, userId string, rights ResourceRights) (err error)
 }

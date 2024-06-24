@@ -33,8 +33,8 @@ type HubCommand struct {
 	Hub     models.Hub `json:"hub"`
 }
 
-func (this *Producer) PublishHub(hub models.Hub) (err error) {
-	cmd := HubCommand{Command: "PUT", Id: hub.Id, Hub: hub}
+func (this *Producer) PublishHub(hub models.Hub, userId string) (err error) {
+	cmd := HubCommand{Command: "PUT", Id: hub.Id, Hub: hub, Owner: hub.OwnerId}
 	return this.PublishHubCommand(cmd)
 }
 

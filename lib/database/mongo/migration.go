@@ -139,7 +139,7 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 			log.Printf("WARNING: no owner for hub %v (%v) found\n", element.Name, element.Id)
 		} else {
 			log.Println("update hub owner", element.Id, element.OwnerId)
-			err = producer.PublishHub(element)
+			err = producer.PublishHub(element, element.OwnerId)
 			if err != nil {
 				log.Println("ERROR: unable to update hub owner", element.Id, element.OwnerId, err)
 				return err
@@ -213,7 +213,7 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 			}
 
 			//publish so that other services know the new owner immediately
-			err = producer.PublishDevice(element)
+			err = producer.PublishDevice(element, element.OwnerId)
 			if err != nil {
 				log.Println("ERROR: unable to update device owner", element.Id, element.OwnerId, err)
 				return err
@@ -289,7 +289,7 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 	}
 
 	//publish so that other services know the new owner immediately
-	err = producer.PublishDevice(device)
+	err = producer.PublishDevice(device, device.OwnerId)
 	if err != nil {
 		log.Println("ERROR: unable to update device owner", device.Id, device.OwnerId, err)
 		return err

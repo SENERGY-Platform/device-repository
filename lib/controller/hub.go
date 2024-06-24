@@ -195,7 +195,7 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 			log.Println("ERROR: unable to fix invalid hub --> ignore: ", hub, err)
 			return nil
 		}
-		return this.producer.PublishHub(hub)
+		return this.producer.PublishHub(hub, owner)
 	}
 	hubIndex := map[string]models.Hub{}
 	for _, id := range hub.DeviceIds {
@@ -223,7 +223,7 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 		}
 	}
 	for _, hub2 := range hubIndex {
-		err := this.producer.PublishHub(hub2)
+		err := this.producer.PublishHub(hub2, owner)
 		if err != nil {
 			return err
 		}

@@ -45,8 +45,8 @@ func (this *Producer) PublishDeviceRights(deviceId string, userId string, rights
 	return this.PublishDeviceCommand(cmd)
 }
 
-func (this *Producer) PublishDevice(device models.Device) error {
-	cmd := DeviceCommand{Command: "PUT", Id: device.Id, Device: device}
+func (this *Producer) PublishDevice(device models.Device, userId string) error {
+	cmd := DeviceCommand{Command: "PUT", Id: device.Id, Device: device, Owner: userId}
 	return this.PublishDeviceCommand(cmd)
 }
 

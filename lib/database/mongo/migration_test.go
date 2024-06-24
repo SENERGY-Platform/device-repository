@@ -38,7 +38,7 @@ type MockProducer struct {
 	PublishedDeviceRightsUpdate map[string][]model.ResourceRights
 }
 
-func (this *MockProducer) PublishHub(hub models.Hub) (err error) {
+func (this *MockProducer) PublishHub(hub models.Hub, userId string) (err error) {
 	this.Mux.Lock()
 	defer this.Mux.Unlock()
 	if this.PublishedHubUpdates == nil {
@@ -48,7 +48,7 @@ func (this *MockProducer) PublishHub(hub models.Hub) (err error) {
 	return nil
 }
 
-func (this *MockProducer) PublishDevice(device models.Device) (err error) {
+func (this *MockProducer) PublishDevice(device models.Device, userId string) (err error) {
 	this.Mux.Lock()
 	defer this.Mux.Unlock()
 	if this.PublishedDeviceUpdates == nil {

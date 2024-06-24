@@ -307,7 +307,7 @@ func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 		hub.DeviceLocalIds = filter(hub.DeviceLocalIds, old.LocalId)
 		hub.DeviceIds = filter(hub.DeviceIds, old.Id)
 		hub.Hash = ""
-		err = this.producer.PublishHub(hub)
+		err = this.producer.PublishHub(hub, hub.OwnerId)
 		if err != nil {
 			return err
 		}
