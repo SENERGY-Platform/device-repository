@@ -180,7 +180,7 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 		}
 	}
 	if err, _ := this.ValidateHubDevices(hub); err != nil {
-		log.Println("ERROR: ", err)
+		log.Printf("ERROR: received invalid hub from kafka\n%v\n%#v\n", err, hub)
 		debug.PrintStack()
 		if hub.Name == "" {
 			hub.Name = "generated-name"
