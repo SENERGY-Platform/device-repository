@@ -10,12 +10,8 @@ github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERo
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/Microsoft/hcsshim v0.12.3 h1:LS9NXqXhMoqNCplK1ApmVSfB4UnVLRDWRapB6EIlxE0=
 github.com/Microsoft/hcsshim v0.12.3/go.mod h1:Iyl1WVpZzr+UkzjekHZbV8o5Z9ZkxNGx6CtY2Qg/JVQ=
-github.com/SENERGY-Platform/models/go v0.0.0-20230824080159-16585960df38 h1:PDvFwIJBnFyKt1KeepkABNIS57+WhVj4vBw7X5JGZJw=
-github.com/SENERGY-Platform/models/go v0.0.0-20230824080159-16585960df38/go.mod h1:bCREPNRN4P8oxLgpC3/ZKK4jXSy4MSPXoiomhohE+aw=
-github.com/SENERGY-Platform/models/go v0.0.0-20240527081255-52b6a0f84955 h1:F2/npODU4ODkrkZ7mVmRKjHW1KJFgtaFOKq+rI1XwDM=
-github.com/SENERGY-Platform/models/go v0.0.0-20240527081255-52b6a0f84955/go.mod h1:bCREPNRN4P8oxLgpC3/ZKK4jXSy4MSPXoiomhohE+aw=
-github.com/SENERGY-Platform/models/go v0.0.0-20240614103449-f208279dad36 h1:K/CixW5j2aCJmjY/5YJlIhqwAimlTpur8wQNsEqcR0I=
-github.com/SENERGY-Platform/models/go v0.0.0-20240614103449-f208279dad36/go.mod h1:bCREPNRN4P8oxLgpC3/ZKK4jXSy4MSPXoiomhohE+aw=
+github.com/SENERGY-Platform/models/go v0.0.0-20240627082833-157bd627a94f h1:nFZkMoKp6RtsbYijj071sVQ3uZqloDILMWCIDaInUSI=
+github.com/SENERGY-Platform/models/go v0.0.0-20240627082833-157bd627a94f/go.mod h1:bCREPNRN4P8oxLgpC3/ZKK4jXSy4MSPXoiomhohE+aw=
 github.com/SENERGY-Platform/permission-search v0.0.13 h1:MCmdcMXsMCsvS1uEIzhrYb0WfAvGkrnTPxwS9dr7ZWo=
 github.com/SENERGY-Platform/permission-search v0.0.13/go.mod h1:TL+tg9zvYGjBWmdjOhfT10oRBnbdDvHSml1p1U/eeNI=
 github.com/SENERGY-Platform/service-commons v0.0.0-20240423132428-8eccbc027e71 h1:Z3Vj9ImRERXQE5fprE/KGkAsS/dgX0dMesM/cDSN9Tw=

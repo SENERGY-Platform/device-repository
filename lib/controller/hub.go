@@ -218,7 +218,7 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 	}
 	for _, id := range hub.DeviceIds {
 		for _, hub2 := range hubIndex {
-			hub2.DeviceLocalIds = filter(hub2.DeviceIds, id)
+			hub2.DeviceIds = filter(hub2.DeviceIds, id)
 			hubIndex[hub2.Id] = hub2
 		}
 	}
