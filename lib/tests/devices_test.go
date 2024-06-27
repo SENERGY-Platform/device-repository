@@ -159,6 +159,17 @@ func TestDeviceQuery(t *testing.T) {
 
 	t.Run("test list devices", func(t *testing.T) {
 		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		t.Run("list none", func(t *testing.T) {
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Ids: []string{}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{}
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
 		t.Run("list all", func(t *testing.T) {
 			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{})
 			if err != nil {

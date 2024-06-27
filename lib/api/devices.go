@@ -66,8 +66,12 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 		}
 
 		idsParam := request.URL.Query().Get("ids")
-		if idsParam != "" {
-			deviceListOptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
+		if request.URL.Query().Has("ids") {
+			if idsParam != "" {
+				deviceListOptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
+			} else {
+				deviceListOptions.Ids = []string{}
+			}
 		}
 
 		result, err, errCode := control.ListDevices(util.GetAuthToken(request), deviceListOptions)
