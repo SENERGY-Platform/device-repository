@@ -23,12 +23,15 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
+	psclient "github.com/SENERGY-Platform/permission-search/lib/client"
+	permmodel "github.com/SENERGY-Platform/permission-search/lib/model"
 	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
 	"github.com/SENERGY-Platform/service-commons/pkg/kafka"
 	"github.com/google/uuid"
@@ -69,6 +72,82 @@ func TestDeviceNameValidation(t *testing.T) {
 	err = controller.ValidateDeviceName(models.Device{})
 	if err == nil {
 		t.Error("missing error")
+		return
+	}
+}
+
+func TestDeviceOwnerMigrationToPermissions(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := config.Load("../../config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.FatalErrHandler = t.Fatal
+	conf.MongoReplSet = false
+	conf.Debug = true
+	conf.RunStartupMigrations = false
+	conf, err = docker.NewEnv(ctx, wg, conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	time.Sleep(1 * time.Second)
+	db, err := database.New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = db.SetDevice(ctx, models.Device{
+		Id:           "test",
+		LocalId:      "test",
+		Name:         "test",
+		DeviceTypeId: "test",
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = db.SetRights(conf.DeviceTopic, "test", model.ResourceRights{
+		UserRights:  map[string]model.Right{testenv.TestTokenUser: {Read: true, Write: true, Execute: true, Administrate: true}},
+		GroupRights: map[string]model.Right{"admin": {Read: true, Write: true, Execute: true, Administrate: true}},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	conf.RunStartupMigrations = true
+
+	time.Sleep(1 * time.Second)
+	err = lib.Start(ctx, wg, conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(5 * time.Second)
+
+	ps := psclient.NewClient(conf.PermissionsUrl)
+
+	devices, err := psclient.List[[]models.Device](ps, testenv.TestToken, conf.DeviceTopic, permmodel.ListOptions{
+		ListIds: []string{"test"},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(devices) != 1 {
+		t.Error(devices)
+		return
+	}
+	if devices[0].OwnerId != testenv.TestTokenUser {
+		t.Error(devices[0].OwnerId)
 		return
 	}
 }
