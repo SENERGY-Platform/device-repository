@@ -25,6 +25,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"log"
 	"reflect"
 	"runtime/debug"
@@ -41,7 +42,7 @@ var CreateCollections = []func(db *Mongo) error{}
 
 func New(conf config.Config) (*Mongo, error) {
 	ctx, _ := getTimeoutContext()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.MongoUrl))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.MongoUrl), options.Client().SetReadConcern(readconcern.Majority()))
 	if err != nil {
 		return nil, err
 	}
