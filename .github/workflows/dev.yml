@@ -34,11 +34,3 @@ jobs:
           tags: |
             smartenergyplatform/device-repository:dev
             ghcr.io/senergy-platform/device-repository:dev
-      - name: Deploy-Api
-        uses: wei/curl@v1
-        with:
-          args: -X POST -u ${{ secrets.RANCHER_TOKEN }} ${{ secrets.RANCHER_URL }}${{ secrets.RANCHER_SERVICE_API }}?action=redeploy
-      - name: Deploy-Worker
-        uses: wei/curl@v1
-        with:
-          args: -X POST -u ${{ secrets.RANCHER_TOKEN }} ${{ secrets.RANCHER_URL }}${{ secrets.RANCHER_SERVICE_WORKER }}?action=redeploy
