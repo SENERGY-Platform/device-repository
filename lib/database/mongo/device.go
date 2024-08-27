@@ -134,7 +134,7 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {
-		filter[DeviceBson.Name] = bson.M{DeviceBson.Name: bson.M{"$regex": regexp.QuoteMeta(search), "$options": "i"}}
+		filter[DeviceBson.Name] = bson.M{"$regex": regexp.QuoteMeta(search), "$options": "i"}
 	}
 	if listOptions.ConnectionState != nil {
 		filter[DeviceBson.ConnectionState] = listOptions.ConnectionState

@@ -104,7 +104,7 @@ func ExtendedHubEndpoints(config config.Config, control Controller, router *http
 
 		if request.URL.Query().Has("connection-state") {
 			searchedState := request.URL.Query().Get("connection-state")
-			if !slices.Contains([]models.ConnectionState{models.ConnectionStateOnline, models.ConnectionStateOffline}, searchedState) {
+			if !slices.Contains([]models.ConnectionState{models.ConnectionStateOnline, models.ConnectionStateOffline, models.ConnectionStateUnknown}, searchedState) {
 				http.Error(writer, "invalid connection state:"+searchedState, http.StatusBadRequest)
 				return
 			}

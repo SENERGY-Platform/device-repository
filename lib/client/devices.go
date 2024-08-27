@@ -27,6 +27,15 @@ import (
 
 type DeviceListOptions = model.DeviceListOptions
 
+var connectionStateOnline = models.ConnectionStateOnline
+var ConnectionStateOnline = &connectionStateOnline
+
+var connectionStateOffline = models.ConnectionStateOffline
+var ConnectionStateOffline = &connectionStateOffline
+
+var connectionStateUnknown = models.ConnectionStateUnknown
+var ConnectionStateUnknown = &connectionStateUnknown
+
 func (c *Client) ListDevices(token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}

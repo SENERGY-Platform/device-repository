@@ -83,7 +83,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 
 		if request.URL.Query().Has("connection-state") {
 			searchedState := request.URL.Query().Get("connection-state")
-			if !slices.Contains([]models.ConnectionState{models.ConnectionStateOnline, models.ConnectionStateOffline}, searchedState) {
+			if !slices.Contains([]models.ConnectionState{models.ConnectionStateOnline, models.ConnectionStateOffline, models.ConnectionStateUnknown}, searchedState) {
 				http.Error(writer, "invalid connection state:"+searchedState, http.StatusBadRequest)
 				return
 			}

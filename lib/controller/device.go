@@ -21,6 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"log"
 	"net/http"
 	"slices"
 	"strings"
@@ -86,11 +87,15 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 		if !slices.ContainsFunc(deviceTypes, func(deviceType models.DeviceType) bool {
 			return deviceType.Id == device.DeviceTypeId
 		}) {
-			dt, _, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
+			dt, exists, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 			if err != nil {
 				return result, err, http.StatusInternalServerError
 			}
-			deviceTypes = append(deviceTypes, dt)
+			if exists {
+				deviceTypes = append(deviceTypes, dt)
+			} else {
+				log.Println("WARNING: unable to find device type for ListExtendedDevices device.id=", device.Id)
+			}
 		}
 	}
 
@@ -273,7 +278,7 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 		}
 	}
 	dtIndex := slices.IndexFunc(deviceTypes, func(deviceType models.DeviceType) bool {
-		return deviceType.Id != device.DeviceTypeId
+		return deviceType.Id == device.DeviceTypeId
 	})
 	deviceTypeName := ""
 	if dtIndex >= 0 {

@@ -41,6 +41,8 @@ type Publisher struct {
 	deviceclass     *kafka.Writer
 	characteristics *kafka.Writer
 	concepts        *kafka.Writer
+	deviceLog       *kafka.Writer
+	hubLog          *kafka.Writer
 }
 
 func NewPublisher(conf config.Config) (*Publisher, error) {
@@ -86,6 +88,14 @@ func NewPublisher(conf config.Config) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
+	publisher.deviceLog, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.DeviceConnectionStateTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
+	publisher.hubLog, err = producer.GetKafkaWriter(conf.KafkaUrl, conf.HubConnectionStateTopic, conf.Debug)
+	if err != nil {
+		return nil, err
+	}
 	return publisher, nil
 }
 
@@ -109,6 +119,60 @@ type DeviceCommand struct {
 	Owner   string                `json:"owner"`
 	Device  models.Device         `json:"device"`
 	Rights  *model.ResourceRights `json:"rights,omitempty"`
+}
+
+type ConnectionStateMessage struct {
+	Id        string    `json:"id"`
+	Connected bool      `json:"connected"`
+	Time      time.Time `json:"time"`
+}
+
+func (this *Publisher) PublishDeviceConnectionState(id string, connected bool) error {
+	message, err := json.Marshal(ConnectionStateMessage{
+		Id:        id,
+		Connected: connected,
+		Time:      time.Now(),
+	})
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.deviceLog.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
+}
+
+func (this *Publisher) PublishHubConnectionState(id string, connected bool) error {
+	message, err := json.Marshal(ConnectionStateMessage{
+		Id:        id,
+		Connected: connected,
+		Time:      time.Now(),
+	})
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	err = this.hubLog.WriteMessages(
+		context.Background(),
+		kafka.Message{
+			Key:   []byte(id),
+			Value: message,
+			Time:  time.Now(),
+		},
+	)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
 }
 
 func (this *Publisher) PublishDeviceGroup(dg models.DeviceGroup, userId string) (err error) {

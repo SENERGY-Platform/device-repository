@@ -103,7 +103,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	result = []models.ExtendedHub{}
+	result = make([]models.ExtendedHub, len(hubs))
 	wg := sync.WaitGroup{}
 	mux := sync.Mutex{}
 	for i, hub := range hubs {

@@ -131,7 +131,7 @@ func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOption
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {
-		filter[HubBson.Name] = bson.M{HubBson.Name: bson.M{"$regex": regexp.QuoteMeta(search), "$options": "i"}}
+		filter[HubBson.Name] = bson.M{"$regex": regexp.QuoteMeta(search), "$options": "i"}
 	}
 	if listOptions.ConnectionState != nil {
 		filter[HubBson.ConnectionState] = listOptions.ConnectionState

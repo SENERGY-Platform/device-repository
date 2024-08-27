@@ -182,6 +182,19 @@ func TestDeviceQuery(t *testing.T) {
 		DeviceTypeId: devicetype1id,
 		OwnerId:      userid,
 	}
+	dx1 := models.ExtendedDevice{
+		Device:          d1,
+		ConnectionState: models.ConnectionStateUnknown,
+		DisplayName:     d1.Name,
+		DeviceTypeName:  devicetype1name,
+		Shared:          false,
+		Permissions: models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		},
+	}
 
 	err = producer.PublishDevice(d1, userid)
 	if err != nil {
@@ -193,8 +206,22 @@ func TestDeviceQuery(t *testing.T) {
 		Id:           device2id,
 		LocalId:      device2lid,
 		Name:         device2name,
-		DeviceTypeId: devicetype2id,
+		DeviceTypeId: devicetype1id,
 		OwnerId:      userid,
+	}
+
+	dx2 := models.ExtendedDevice{
+		Device:          d2,
+		ConnectionState: models.ConnectionStateUnknown,
+		DisplayName:     d2.Name,
+		DeviceTypeName:  devicetype1name,
+		Shared:          false,
+		Permissions: models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		},
 	}
 
 	err = producer.PublishDevice(d2, userid)
@@ -211,8 +238,22 @@ func TestDeviceQuery(t *testing.T) {
 			{Key: "foo", Value: "bar"},
 			{Key: "bar", Value: "batz"},
 		},
-		DeviceTypeId: devicetype2id,
+		DeviceTypeId: devicetype1id,
 		OwnerId:      userid,
+	}
+
+	dx3 := models.ExtendedDevice{
+		Device:          d3,
+		ConnectionState: models.ConnectionStateUnknown,
+		DisplayName:     d3.Name,
+		DeviceTypeName:  devicetype1name,
+		Shared:          false,
+		Permissions: models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		},
 	}
 
 	err = producer.PublishDevice(d3, userid)
@@ -302,6 +343,79 @@ func TestDeviceQuery(t *testing.T) {
 			expected := []models.Device{d1, d3}
 			slices.SortFunc(expected, func(a, b models.Device) int {
 				return strings.Compare(a.Id, b.Id)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+	})
+
+	t.Run("test list extended-devices", func(t *testing.T) {
+		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		t.Run("list none", func(t *testing.T) {
+			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Ids: []string{}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{}
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+		t.Run("list all", func(t *testing.T) {
+			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{dx1, dx2, dx3}
+			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+		t.Run("list limit/offset", func(t *testing.T) {
+			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{dx1, dx2, dx3}
+			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			expected = expected[1:2]
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+		t.Run("list ids all", func(t *testing.T) {
+			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{dx1, dx2, dx3}
+			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+
+		t.Run("list ids d1, d3", func(t *testing.T) {
+			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{dx1, dx3}
+			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
+				return strings.Compare(a.LocalId, b.LocalId)
 			})
 			if !reflect.DeepEqual(result, expected) {
 				t.Errorf("\n%#v\n%#v\n", result, expected)
