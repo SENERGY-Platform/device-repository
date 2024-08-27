@@ -16,15 +16,33 @@
 
 package model
 
-type AuthAction string
-
-const (
-	READ         AuthAction = "r"
-	WRITE        AuthAction = "w"
-	EXECUTE      AuthAction = "x"
-	ADMINISTRATE AuthAction = "a"
+import (
+	"errors"
+	"github.com/SENERGY-Platform/models/go/models"
+	"net/url"
+	"slices"
 )
 
-func (this AuthAction) String() string {
-	return string(this)
+type AuthAction = models.PermissionFlag
+
+const (
+	READ         = models.Read
+	WRITE        = models.Write
+	EXECUTE      = models.Execute
+	ADMINISTRATE = models.Administrate
+)
+
+func GetPermissionFlagFromQuery(query url.Values) (models.PermissionFlag, error) {
+	if !query.Has("p") {
+		return models.UnsetPermissionFlag, nil
+	}
+	runes := []rune(query.Get("p"))
+	if len(runes) != 1 {
+		return models.UnsetPermissionFlag, errors.New("invalid permission flag")
+	}
+	flag := models.PermissionFlag(runes[0])
+	if !slices.Contains([]models.PermissionFlag{READ, WRITE, EXECUTE, ADMINISTRATE}, flag) {
+		return models.UnsetPermissionFlag, errors.New("invalid permission flag")
+	}
+	return flag, nil
 }

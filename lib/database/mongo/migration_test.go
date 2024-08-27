@@ -357,7 +357,7 @@ func createTestDevices(t *testing.T, db *Mongo, count int, owner string, admins 
 			OwnerId: owner,
 		}
 		devices = append(devices, device)
-		err := db.SetDevice(context.Background(), device)
+		err := db.SetDevice(context.Background(), model.DeviceWithConnectionState{Device: device})
 		if err != nil {
 			t.Error(err)
 			return
@@ -397,7 +397,7 @@ func creatTestHub(t *testing.T, db *Mongo, name string, owner string, admins []s
 		hub.DeviceIds = append(hub.DeviceIds, device.Id)
 		hub.DeviceLocalIds = append(hub.DeviceLocalIds, device.Id)
 	}
-	err := db.SetHub(context.Background(), hub)
+	err := db.SetHub(context.Background(), model.HubWithConnectionState{Hub: hub})
 	if err != nil {
 		t.Error(err)
 		return
@@ -518,12 +518,12 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 	}
 
 	t.Run("init test data", func(t *testing.T) {
-		err = db.SetDevice(context.Background(), models.Device{
+		err = db.SetDevice(context.Background(), model.DeviceWithConnectionState{Device: models.Device{
 			Id:      "withOwner",
 			LocalId: "withOwner",
 			Name:    "withOwner",
 			OwnerId: "withOwner",
-		})
+		}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -535,12 +535,12 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 			return
 		}
 
-		err = db.SetDevice(context.Background(), models.Device{
+		err = db.SetDevice(context.Background(), model.DeviceWithConnectionState{Device: models.Device{
 			Id:      "withOtherOwner",
 			LocalId: "withOtherOwner",
 			Name:    "withOtherOwner",
 			OwnerId: "withOtherOwner",
-		})
+		}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -552,12 +552,12 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 			return
 		}
 
-		err = db.SetDevice(context.Background(), models.Device{
+		err = db.SetDevice(context.Background(), model.DeviceWithConnectionState{Device: models.Device{
 			Id:      "withEmptyOwner",
 			LocalId: "withEmptyOwner",
 			Name:    "withEmptyOwner",
 			OwnerId: "",
-		})
+		}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -569,7 +569,7 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 			return
 		}
 
-		_, err = db.deviceCollection().ReplaceOne(ctx, bson.M{deviceIdKey: "withNullOwner"}, struct {
+		_, err = db.deviceCollection().ReplaceOne(ctx, bson.M{DeviceBson.Id: "withNullOwner"}, struct {
 			Id           string `json:"id"`
 			LocalId      string `json:"local_id"`
 			Name         string `json:"name"`
@@ -637,30 +637,38 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 	})
 
 	t.Run("check devices", func(t *testing.T) {
-		expected := []models.Device{
+		expected := []model.DeviceWithConnectionState{
 			{
-				Id:      "withOwner",
-				LocalId: "withOwner",
-				Name:    "withOwner",
-				OwnerId: "withOwner",
+				Device: models.Device{
+					Id:      "withOwner",
+					LocalId: "withOwner",
+					Name:    "withOwner",
+					OwnerId: "withOwner",
+				},
 			},
 			{
-				Id:      "withOtherOwner",
-				LocalId: "withOtherOwner",
-				Name:    "withOtherOwner",
-				OwnerId: "withOtherOwner",
+				Device: models.Device{
+					Id:      "withOtherOwner",
+					LocalId: "withOtherOwner",
+					Name:    "withOtherOwner",
+					OwnerId: "withOtherOwner",
+				},
 			},
 			{
-				Id:      "withEmptyOwner",
-				LocalId: "withEmptyOwner",
-				Name:    "withEmptyOwner",
-				OwnerId: "withEmptyOwner",
+				Device: models.Device{
+					Id:      "withEmptyOwner",
+					LocalId: "withEmptyOwner",
+					Name:    "withEmptyOwner",
+					OwnerId: "withEmptyOwner",
+				},
 			},
 			{
-				Id:      "withNullOwner",
-				LocalId: "withNullOwner",
-				Name:    "withNullOwner",
-				OwnerId: "withNullOwner",
+				Device: models.Device{
+					Id:      "withNullOwner",
+					LocalId: "withNullOwner",
+					Name:    "withNullOwner",
+					OwnerId: "withNullOwner",
+				},
 			},
 		}
 		for _, d := range expected {
@@ -670,7 +678,7 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(actual, d) {
-				t.Errorf("expected: %#v\nactual: %#v\n", d, actual)
+				t.Errorf("\nexpected: %#v\n  actual: %#v\n", d, actual)
 			}
 		}
 	})

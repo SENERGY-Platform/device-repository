@@ -23,3 +23,5 @@ import (
 var PermSearch = docker.PermissionSearch
 
 var OpenSearch = docker.OpenSearch
+
+var OpenSearchTestPw = docker.OpenSearchTestPw

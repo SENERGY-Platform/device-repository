@@ -31,11 +31,11 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, HubEndpoints)
+	endpoints = append(endpoints, ExtendedHubEndpoints)
 }
 
-func HubEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/hubs"
+func ExtendedHubEndpoints(config config.Config, control Controller, router *httprouter.Router) {
+	resource := "/extended-hubs"
 
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
@@ -50,7 +50,7 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 		if permission == models.UnsetPermissionFlag {
 			permission = model.READ
 		}
-		result, err, errCode := control.ReadHub(id, util.GetAuthToken(request), permission)
+		result, err, errCode := control.ReadExtendedHub(id, util.GetAuthToken(request), permission)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -120,7 +120,7 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 			hubListOptions.Permission = model.READ
 		}
 
-		result, err, errCode := control.ListHubs(util.GetAuthToken(request), hubListOptions)
+		result, err, errCode := control.ListExtendedHubs(util.GetAuthToken(request), hubListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -133,92 +133,4 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 		}
 		return
 	})
-
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
-	//use 'as' query parameter to decide if a list of device.Id or device.LocalId should be returned
-	//		default is LocalId
-	//		allowed values are 'id', 'local_id' and 'localId'
-	router.GET(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
-		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if permission == models.UnsetPermissionFlag {
-			permission = model.READ
-		}
-
-		var asLocalId bool
-		asParam := request.URL.Query().Get("as")
-		switch asParam {
-		case "":
-			asLocalId = true
-		case "id":
-			asLocalId = false
-		case "localId":
-			asLocalId = true
-		case "local_id":
-			asLocalId = true
-		default:
-			http.Error(writer, "expect 'id', 'localId' or 'local_id' as value for 'as' query-parameter if it is used", http.StatusBadRequest)
-			return
-		}
-		result, err, errCode := control.ListHubDeviceIds(id, util.GetAuthToken(request), permission, asLocalId)
-		if err != nil {
-			http.Error(writer, err.Error(), errCode)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-		err = json.NewEncoder(writer).Encode(result)
-		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
-		}
-		return
-	})
-
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
-	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if permission == models.UnsetPermissionFlag {
-			permission = model.READ
-		}
-		id := params.ByName("id")
-		_, _, errCode := control.ReadHub(id, util.GetAuthToken(request), permission)
-		writer.WriteHeader(errCode)
-		return
-	})
-
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
-		hub := models.Hub{}
-		err = json.NewDecoder(request.Body).Decode(&hub)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		err, code := control.ValidateHub(util.GetAuthToken(request), hub)
-		if err != nil {
-			http.Error(writer, err.Error(), code)
-			return
-		}
-		writer.WriteHeader(http.StatusOK)
-	})
-
 }

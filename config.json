@@ -13,6 +13,8 @@
     "function_topic": "functions",
     "device_class_topic": "device-classes",
     "location_topic": "locations",
+    "device_connection_state_topic": "device_log",
+    "hub_connection_state_topic": "gateway_log",
     "permissions_url": "",
     "security_impl": "db",
     "mongo_url": "mongodb://localhost:27017",

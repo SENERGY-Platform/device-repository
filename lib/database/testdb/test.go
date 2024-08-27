@@ -26,8 +26,8 @@ import (
 
 type DB struct {
 	config          config.Config
-	devices         map[string]models.Device
-	hubs            map[string]models.Hub
+	devices         map[string]model.DeviceWithConnectionState
+	hubs            map[string]model.HubWithConnectionState
 	deviceTypes     map[string]models.DeviceType
 	deviceGroups    map[string]models.DeviceGroup
 	protocols       map[string]models.Protocol
@@ -51,8 +51,8 @@ type Resource struct {
 func NewTestDB(config config.Config) database.Database {
 	return &DB{
 		config:          config,
-		devices:         make(map[string]models.Device),
-		hubs:            make(map[string]models.Hub),
+		devices:         make(map[string]model.DeviceWithConnectionState),
+		hubs:            make(map[string]model.HubWithConnectionState),
 		deviceTypes:     make(map[string]models.DeviceType),
 		deviceGroups:    make(map[string]models.DeviceGroup),
 		protocols:       make(map[string]models.Protocol),

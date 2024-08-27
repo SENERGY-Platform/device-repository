@@ -102,12 +102,12 @@ func TestDeviceOwnerMigrationToPermissions(t *testing.T) {
 		return
 	}
 
-	err = db.SetDevice(ctx, models.Device{
+	err = db.SetDevice(ctx, model.DeviceWithConnectionState{Device: models.Device{
 		Id:           "test",
 		LocalId:      "test",
 		Name:         "test",
 		DeviceTypeId: "test",
-	})
+	}})
 	if err != nil {
 		t.Error(err)
 		return
@@ -250,7 +250,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list all", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{})
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -260,11 +260,11 @@ func TestDeviceQuery(t *testing.T) {
 				return strings.Compare(a.Id, b.Id)
 			})
 			if !reflect.DeepEqual(result, expected) {
-				t.Errorf("%#v\n", result)
+				t.Errorf("\n%#v\n%#v\n", result, expected)
 			}
 		})
 		t.Run("list limit/offset", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1})
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -275,11 +275,11 @@ func TestDeviceQuery(t *testing.T) {
 			})
 			expected = expected[1:2]
 			if !reflect.DeepEqual(result, expected) {
-				t.Errorf("%#v\n", result)
+				t.Errorf("\n%#v\n%#v\n", result, expected)
 			}
 		})
 		t.Run("list ids all", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Ids: []string{d1.Id, d2.Id, d3.Id}})
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -289,12 +289,12 @@ func TestDeviceQuery(t *testing.T) {
 				return strings.Compare(a.Id, b.Id)
 			})
 			if !reflect.DeepEqual(result, expected) {
-				t.Errorf("%#v\n", result)
+				t.Errorf("\n%#v\n%#v\n", result, expected)
 			}
 		})
 
 		t.Run("list ids d1, d3", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Ids: []string{d1.Id, d3.Id}})
+			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -304,7 +304,7 @@ func TestDeviceQuery(t *testing.T) {
 				return strings.Compare(a.Id, b.Id)
 			})
 			if !reflect.DeepEqual(result, expected) {
-				t.Errorf("%#v\n", result)
+				t.Errorf("\n%#v\n%#v\n", result, expected)
 			}
 		})
 	})

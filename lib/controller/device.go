@@ -24,21 +24,33 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"sync"
 )
 
 /////////////////////////
 //		api
 /////////////////////////
 
-func (this *Controller) ListDevices(token string, options model.DeviceListOptions) (result []models.Device, err error, errCode int) {
+func (this *Controller) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, err error, errCode int) {
 	ids := []string{}
+	permissionFlag := options.Permission
+	if permissionFlag == models.UnsetPermissionFlag {
+		permissionFlag = models.Read
+	}
+
+	//check permissions
 	if options.Ids == nil {
-		ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, options.Limit, options.Offset, model.READ)
+		if options.ConnectionState == nil && options.Search == "" {
+			//if no filters are used, we can limit right here
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, options.Limit, options.Offset, permissionFlag)
+		} else {
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
+		}
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
 	} else {
-		idMap, err := this.security.CheckMultiple(token, this.config.DeviceTopic, options.Ids, model.READ)
+		idMap, err := this.security.CheckMultiple(token, this.config.DeviceTopic, options.Ids, permissionFlag)
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
@@ -48,26 +60,160 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 			}
 		}
 	}
-	result = []models.Device{}
+
+	//handle and preserve id modifiers
+	pureIds := []string{}
+	pureIdToRawIds := map[string][]string{}
 	for _, id := range ids {
-		var device models.Device
-		device, err, errCode = this.readDevice(id)
-		if err != nil {
-			return result, err, errCode
+		pureId, _ := idmodifier.SplitModifier(id)
+		if !slices.Contains(pureIds, pureId) {
+			pureIds = append(pureIds, pureId)
 		}
-		result = append(result, device)
+		pureIdToRawIds[pureId] = append(pureIdToRawIds[pureId], id)
 	}
-	slices.SortFunc(result, func(a, b models.Device) int {
-		return strings.Compare(a.Id, b.Id)
-	})
+
+	options.Ids = pureIds
+
+	ctx, _ := getTimeoutContext()
+	devices, err := this.db.ListDevices(ctx, options)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+
+	//get device-types for use in extendDevice()
+	deviceTypes := []models.DeviceType{}
+	for _, device := range devices {
+		if !slices.ContainsFunc(deviceTypes, func(deviceType models.DeviceType) bool {
+			return deviceType.Id == device.DeviceTypeId
+		}) {
+			dt, _, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
+			if err != nil {
+				return result, err, http.StatusInternalServerError
+			}
+			deviceTypes = append(deviceTypes, dt)
+		}
+	}
+
+	//pre allocate result slice. no append() use to preserve sort
+	resultSize := 0
+	for _, device := range devices {
+		for range pureIdToRawIds[device.Id] {
+			resultSize = resultSize + 1
+		}
+	}
+	result = make([]models.ExtendedDevice, resultSize)
+
+	//transform db devices to extended devices; use go-routines; applies modified ids
+	wg := sync.WaitGroup{}
+	mux := sync.Mutex{}
+	errCode = http.StatusOK
+	index := 0
+	for _, device := range devices {
+		for _, id := range pureIdToRawIds[device.Id] {
+			wg.Add(1)
+			go func(d model.DeviceWithConnectionState, rawId string, resultIndex int) {
+				defer wg.Done()
+				d.Id = rawId
+				_, modifier := idmodifier.SplitModifier(rawId)
+				modDevice, modErr, modErrCode := this.modifyDevice(d.Device, modifier)
+				if modErr != nil {
+					mux.Lock()
+					defer mux.Unlock()
+					err = errors.Join(err, modErr)
+					if errCode != http.StatusInternalServerError {
+						errCode = modErrCode
+					}
+					return
+				}
+				d.Device = modDevice
+				extendedDevice, extendErr := this.extendDevice(token, d, deviceTypes)
+				if extendErr != nil {
+					mux.Lock()
+					defer mux.Unlock()
+					err = errors.Join(err, extendErr)
+					errCode = http.StatusInternalServerError
+					return
+				}
+				mux.Lock()
+				defer mux.Unlock()
+				result[resultIndex] = extendedDevice
+			}(device, id, index)
+			index = index + 1
+		}
+	}
+	wg.Wait()
+	if err != nil {
+		return result, err, errCode
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) ListDevices(token string, options model.DeviceListOptions) (result []models.Device, err error, errCode int) {
+	ids := []string{}
+	permissionFlag := options.Permission
+	if permissionFlag == models.UnsetPermissionFlag {
+		permissionFlag = models.Read
+	}
+	if options.Ids == nil {
+		if options.ConnectionState == nil && options.Search == "" {
+			//if no filters are used, we can limit right here
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, options.Limit, options.Offset, permissionFlag)
+		} else {
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
+		}
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+	} else {
+		idMap, err := this.security.CheckMultiple(token, this.config.DeviceTopic, options.Ids, permissionFlag)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		for id, ok := range idMap {
+			if ok {
+				ids = append(ids, id)
+			}
+		}
+	}
+
+	pureIds := []string{}
+	pureIdToRawIds := map[string][]string{}
+	for _, id := range ids {
+		pureId, _ := idmodifier.SplitModifier(id)
+		if !slices.Contains(pureIds, pureId) {
+			pureIds = append(pureIds, pureId)
+		}
+		pureIdToRawIds[pureId] = append(pureIdToRawIds[pureId], id)
+	}
+
+	options.Ids = pureIds
+
+	ctx, _ := getTimeoutContext()
+	devices, err := this.db.ListDevices(ctx, options)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	result = []models.Device{}
+	for _, device := range devices {
+		for _, id := range pureIdToRawIds[device.Id] {
+			device.Id = id
+			_, modifier := idmodifier.SplitModifier(id)
+			device.Device, err, errCode = this.modifyDevice(device.Device, modifier)
+			if err != nil {
+				return result, err, errCode
+			}
+			result = append(result, device.Device)
+		}
+	}
 	return result, nil, http.StatusOK
 }
 
 func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
-	result, err, errCode = this.readDevice(id)
+	temp, err, errCode := this.readDevice(id)
 	if err != nil {
 		return result, err, errCode
 	}
+	result = temp.Device
 	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -78,7 +224,28 @@ func (this *Controller) ReadDevice(id string, token string, action model.AuthAct
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) readDevice(id string) (result models.Device, err error, errCode int) {
+func (this *Controller) ReadExtendedDevice(id string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
+	temp, err, errCode := this.readDevice(id)
+	if err != nil {
+		return result, err, errCode
+	}
+	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, id, action)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	ctx, _ := getTimeoutContext()
+	dt, _, _ := this.db.GetDeviceType(ctx, temp.DeviceTypeId)
+	result, err = this.extendDevice(token, temp, []models.DeviceType{dt})
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) readDevice(id string) (result model.DeviceWithConnectionState, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	pureId, modifier := idmodifier.SplitModifier(id)
 	device, exists, err := this.db.GetDevice(ctx, pureId)
@@ -90,12 +257,40 @@ func (this *Controller) readDevice(id string) (result models.Device, err error, 
 	}
 	device.Id = id
 	if modifier != nil && len(modifier) > 0 {
-		device, err, errCode = this.modifyDevice(device, modifier)
+		device.Device, err, errCode = this.modifyDevice(device.Device, modifier)
 		if err != nil {
 			return result, err, errCode
 		}
 	}
 	return device, nil, http.StatusOK
+}
+
+func (this *Controller) extendDevice(token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType) (models.ExtendedDevice, error) {
+	displayName := device.Name
+	for _, attr := range device.Attributes {
+		if attr.Key == "shared/nickname" && attr.Value != "" {
+			displayName = attr.Value
+		}
+	}
+	dtIndex := slices.IndexFunc(deviceTypes, func(deviceType models.DeviceType) bool {
+		return deviceType.Id != device.DeviceTypeId
+	})
+	deviceTypeName := ""
+	if dtIndex >= 0 {
+		deviceTypeName = deviceTypes[dtIndex].Name
+	}
+	requestingUser, permissions, err := this.security.GetPermissionsInfo(token, this.config.DeviceTopic, device.Id)
+	if err != nil {
+		return models.ExtendedDevice{}, err
+	}
+	return models.ExtendedDevice{
+		Device:          device.Device,
+		ConnectionState: device.ConnectionState,
+		DisplayName:     displayName,
+		DeviceTypeName:  deviceTypeName,
+		Shared:          requestingUser != device.OwnerId,
+		Permissions:     permissions,
+	}, err
 }
 
 func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
@@ -114,7 +309,31 @@ func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, toke
 	if !ok {
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
-	return device, nil, http.StatusOK
+	return device.Device, nil, http.StatusOK
+}
+
+func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	device, exists, err := this.db.GetDeviceByLocalId(ctx, ownerId, localId)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return result, errors.New("not found"), http.StatusNotFound
+	}
+	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, device.Id, action)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	dt, _, _ := this.db.GetDeviceType(ctx, device.DeviceTypeId)
+	result, err = this.extendDevice(token, device, []models.DeviceType{dt})
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return result, nil, http.StatusOK
 }
 
 const DisplayNameAttributeName = "shared/nickname"
@@ -243,7 +462,10 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 		device.LocalId = ""
 		device.OwnerId = owner
 		ctx, _ = getTimeoutContext()
-		err = this.db.SetDevice(ctx, device)
+		err = this.db.SetDevice(ctx, model.DeviceWithConnectionState{
+			Device:          device,
+			ConnectionState: "",
+		})
 		if err != nil {
 			return err
 		}
@@ -258,7 +480,7 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 			return err
 		}
 		if exists && old.LocalId != device.LocalId {
-			err = this.resetHubsForDeviceUpdate(old)
+			err = this.resetHubsForDeviceUpdate(old.Device)
 		}
 
 		if device.OwnerId == "" {
@@ -269,11 +491,28 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 			}
 		}
 
+		connectionState := models.ConnectionStateUnknown
+		if exists {
+			connectionState = old.ConnectionState
+		}
+
 		//save device
 		ctx, _ = getTimeoutContext()
-		return this.db.SetDevice(ctx, device)
+		return this.db.SetDevice(ctx, model.DeviceWithConnectionState{
+			Device:          device,
+			ConnectionState: connectionState,
+		})
 	}
 
+}
+
+func (this *Controller) SetDeviceConnectionState(id string, connected bool) error {
+	state := models.ConnectionStateOffline
+	if connected {
+		state = models.ConnectionStateOnline
+	}
+	ctx, _ := getTimeoutContext()
+	return this.db.SetDeviceConnectionState(ctx, id, state)
 }
 
 func (this *Controller) DeleteDevice(id string) error {
@@ -288,7 +527,7 @@ func (this *Controller) DeleteDevice(id string) error {
 		if err != nil {
 			return err
 		}
-		return this.resetHubsForDeviceUpdate(old)
+		return this.resetHubsForDeviceUpdate(old.Device)
 	}
 	return nil
 }
@@ -307,7 +546,7 @@ func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 		hub.DeviceLocalIds = filter(hub.DeviceLocalIds, old.LocalId)
 		hub.DeviceIds = filter(hub.DeviceIds, old.Id)
 		hub.Hash = ""
-		err = this.producer.PublishHub(hub, hub.OwnerId)
+		err = this.producer.PublishHub(hub.Hub, hub.OwnerId)
 		if err != nil {
 			return err
 		}

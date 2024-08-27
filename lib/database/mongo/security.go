@@ -21,6 +21,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -187,11 +188,11 @@ func (this *Mongo) CheckBool(token string, topic string, id string, action model
 
 func (this *Mongo) CheckMultiple(token string, topic string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
 	pureIds := []string{}
-	rawIdsIndex := map[string]string{}
+	rawIdsIndex := map[string][]string{}
 	for _, id := range ids {
 		pureId, _ := idmodifier.SplitModifier(id)
 		pureIds = append(pureIds, pureId)
-		rawIdsIndex[pureId] = id
+		rawIdsIndex[pureId] = append(rawIdsIndex[pureId], id)
 	}
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
@@ -213,7 +214,9 @@ func (this *Mongo) CheckMultiple(token string, topic string, ids []string, actio
 		if err != nil {
 			return nil, err
 		}
-		result[rawIdsIndex[element.Id]] = checkRights(jwtToken, element, action)
+		for _, id := range rawIdsIndex[element.Id] {
+			result[id] = checkRights(jwtToken, element, action)
+		}
 	}
 
 	err = cursor.Err()
@@ -285,6 +288,60 @@ func (this *Mongo) ListResourcesByPermissions(topic string, userId string, group
 
 	err = cursor.Err()
 	return result, err
+}
+
+func (this *Mongo) GetPermissionsInfo(token string, topic string, id string) (requestingUser string, permissions models.Permissions, err error) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	requestingUser = jwtToken.GetUserId()
+	kind, err := this.getInternalKind(topic)
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	rights, err := this.getRights(kind, id)
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	resourceRights := rights.ToResourceRights()
+	permissions = models.Permissions{
+		Read:         resourceRights.UserRights[requestingUser].Read,
+		Write:        resourceRights.UserRights[requestingUser].Write,
+		Execute:      resourceRights.UserRights[requestingUser].Execute,
+		Administrate: resourceRights.UserRights[requestingUser].Administrate,
+	}
+	for _, role := range jwtToken.GetRoles() {
+		rolePermissions := resourceRights.GroupRights[role]
+		if rolePermissions.Read {
+			permissions.Read = true
+		}
+		if rolePermissions.Write {
+			permissions.Write = true
+		}
+		if rolePermissions.Execute {
+			permissions.Execute = true
+		}
+		if rolePermissions.Administrate {
+			permissions.Administrate = true
+		}
+	}
+	for _, group := range jwtToken.GetGroups() {
+		groupPermissions := resourceRights.KeycloakGroupsRights[group]
+		if groupPermissions.Read {
+			permissions.Read = true
+		}
+		if groupPermissions.Write {
+			permissions.Write = true
+		}
+		if groupPermissions.Execute {
+			permissions.Execute = true
+		}
+		if groupPermissions.Administrate {
+			permissions.Administrate = true
+		}
+	}
+	return requestingUser, permissions, err
 }
 
 func checkRights(token jwt.Token, element RightsEntry, right model.AuthAction) bool {

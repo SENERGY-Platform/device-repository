@@ -20,8 +20,10 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/permission-search/lib/client"
 	permmodel "github.com/SENERGY-Platform/permission-search/lib/model"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"log"
 	"runtime/debug"
 )
@@ -101,7 +103,7 @@ func (this *Security) ListAccessibleResourceIds(token string, topic string, limi
 		QueryListCommons: permmodel.QueryListCommons{
 			Limit:  int(limit),
 			Offset: int(offset),
-			Rights: action.String(),
+			Rights: string(action),
 		},
 	})
 	if err != nil {
@@ -111,4 +113,23 @@ func (this *Security) ListAccessibleResourceIds(token string, topic string, limi
 		result = append(result, element.Id)
 	}
 	return result, err
+}
+
+func (this *Security) GetPermissionsInfo(token string, kind string, id string) (requestingUser string, permissions models.Permissions, err error) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	requestingUser = jwtToken.GetUserId()
+	permentry, _, err := this.GetResourceRights(token, kind, id, "r")
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	permissions = models.Permissions{
+		Read:         permentry.Permissions["r"],
+		Write:        permentry.Permissions["w"],
+		Execute:      permentry.Permissions["x"],
+		Administrate: permentry.Permissions["a"],
+	}
+	return requestingUser, permissions, nil
 }

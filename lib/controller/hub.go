@@ -25,11 +25,140 @@ import (
 	"net/http"
 	"runtime/debug"
 	"slices"
+	"sync"
 )
 
 /////////////////////////
 //		api
 /////////////////////////
+
+func (this *Controller) ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int) {
+	ids := []string{}
+	permissionFlag := options.Permission
+	if permissionFlag == models.UnsetPermissionFlag {
+		permissionFlag = models.Read
+	}
+	if options.Ids == nil {
+		if options.ConnectionState == nil && options.Search == "" {
+			//if no filters are used, we can limit right here
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, options.Limit, options.Offset, permissionFlag)
+		} else {
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
+		}
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+	} else {
+		idMap, err := this.security.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		for id, ok := range idMap {
+			if ok {
+				ids = append(ids, id)
+			}
+		}
+	}
+	ctx, _ := getTimeoutContext()
+	hubs, err := this.db.ListHubs(ctx, options)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	result = []models.Hub{}
+	for _, hub := range hubs {
+		result = append(result, hub.Hub)
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, err error, errCode int) {
+	ids := []string{}
+	permissionFlag := options.Permission
+	if permissionFlag == models.UnsetPermissionFlag {
+		permissionFlag = models.Read
+	}
+	if options.Ids == nil {
+		if options.ConnectionState == nil && options.Search == "" {
+			//if no filters are used, we can limit right here
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, options.Limit, options.Offset, permissionFlag)
+		} else {
+			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
+		}
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+	} else {
+		idMap, err := this.security.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		for id, ok := range idMap {
+			if ok {
+				ids = append(ids, id)
+			}
+		}
+	}
+	ctx, _ := getTimeoutContext()
+	hubs, err := this.db.ListHubs(ctx, options)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	result = []models.ExtendedHub{}
+	wg := sync.WaitGroup{}
+	mux := sync.Mutex{}
+	for i, hub := range hubs {
+		wg.Add(1)
+		go func(h model.HubWithConnectionState, resultIndex int) {
+			defer wg.Done()
+			extended, temperr := this.extendHub(token, h)
+			mux.Lock()
+			defer mux.Unlock()
+			err = errors.Join(err, temperr)
+			result[resultIndex] = extended
+		}(hub, i)
+	}
+	wg.Wait()
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) ReadExtendedHub(id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	hub, exists, err := this.db.GetHub(ctx, id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		return result, errors.New("not found"), http.StatusNotFound
+	}
+	ok, err := this.security.CheckBool(token, this.config.HubTopic, id, action)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
+	result, err = this.extendHub(token, hub)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) extendHub(token string, hub model.HubWithConnectionState) (models.ExtendedHub, error) {
+	requestingUser, permissions, err := this.security.GetPermissionsInfo(token, this.config.HubTopic, hub.Id)
+	if err != nil {
+		return models.ExtendedHub{}, err
+	}
+	return models.ExtendedHub{
+		Hub:             hub.Hub,
+		ConnectionState: hub.ConnectionState,
+		Shared:          requestingUser != hub.OwnerId,
+		Permissions:     permissions,
+	}, nil
+}
 
 func (this *Controller) ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
@@ -47,7 +176,7 @@ func (this *Controller) ReadHub(id string, token string, action model.AuthAction
 	if !ok {
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
-	return hub, nil, http.StatusOK
+	return hub.Hub, nil, http.StatusOK
 }
 
 func (this *Controller) ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
@@ -206,7 +335,7 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 		}
 		for _, hub2 := range hubs {
 			if hub2.Id != hub.Id {
-				hubIndex[hub2.Id] = hub2
+				hubIndex[hub2.Id] = hub2.Hub
 			}
 		}
 	}
@@ -230,7 +359,19 @@ func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
 	}
 
 	ctx, _ = getTimeoutContext()
-	return this.db.SetHub(ctx, hub)
+	return this.db.SetHub(ctx, model.HubWithConnectionState{
+		Hub:             hub,
+		ConnectionState: old.ConnectionState,
+	})
+}
+
+func (this *Controller) SetHubConnectionState(id string, connected bool) error {
+	state := models.ConnectionStateOffline
+	if connected {
+		state = models.ConnectionStateOnline
+	}
+	ctx, _ := getTimeoutContext()
+	return this.db.SetHubConnectionState(ctx, id, state)
 }
 
 func (this *Controller) DeleteHub(id string) error {

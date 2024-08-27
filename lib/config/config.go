@@ -45,6 +45,8 @@ type Config struct {
 	FunctionTopic                 string `json:"function_topic"`
 	DeviceClassTopic              string `json:"device_class_topic"`
 	LocationTopic                 string `json:"location_topic"`
+	DeviceConnectionStateTopic    string `json:"device_connection_state_topic"`
+	HubConnectionStateTopic       string `json:"hub_connection_state_topic"`
 	PermissionsUrl                string `json:"permissions_url"`
 	SecurityImpl                  string `json:"security_impl"` // "db" || "permissions-search" || "" --> defaults to "permissions-search"
 	MongoUrl                      string `json:"mongo_url"`

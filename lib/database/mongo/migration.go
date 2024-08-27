@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -59,8 +58,8 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 
 	cursor, err := this.hubCollection().Find(context.Background(), bson.M{
 		"$or": bson.A{
-			bson.M{hubOwnerIdKey: bson.M{"$exists": false}},
-			bson.M{hubOwnerIdKey: ""},
+			bson.M{HubBson.OwnerId: bson.M{"$exists": false}},
+			bson.M{HubBson.OwnerId: ""},
 		},
 	})
 	if err != nil {
@@ -71,7 +70,7 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 		return err
 	}
 	for cursor.Next(context.Background()) {
-		element := models.Hub{}
+		element := model.HubWithConnectionState{}
 		err = cursor.Decode(&element)
 		if err != nil {
 			return err
@@ -81,7 +80,7 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 		}
 
 		ownerCount := map[string]int{}
-		devices := []models.Device{}
+		devices := []model.DeviceWithConnectionState{}
 		for _, deviceId := range element.DeviceIds {
 			device, exists, err := this.GetDevice(context.Background(), deviceId)
 			if err != nil {
@@ -139,7 +138,7 @@ func (this *Mongo) runHubOwnerMigration(producer model.MigrationPublisher) error
 			log.Printf("WARNING: no owner for hub %v (%v) found\n", element.Name, element.Id)
 		} else {
 			log.Println("update hub owner", element.Id, element.OwnerId)
-			err = producer.PublishHub(element, element.OwnerId)
+			err = producer.PublishHub(element.Hub, element.OwnerId)
 			if err != nil {
 				log.Println("ERROR: unable to update hub owner", element.Id, element.OwnerId, err)
 				return err
@@ -165,8 +164,8 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 
 	cursor, err := this.deviceCollection().Find(context.Background(), bson.M{
 		"$or": bson.A{
-			bson.M{deviceOwnerIdKey: bson.M{"$exists": false}},
-			bson.M{deviceOwnerIdKey: ""},
+			bson.M{DeviceBson.OwnerId: bson.M{"$exists": false}},
+			bson.M{DeviceBson.OwnerId: ""},
 		},
 	})
 	if err != nil {
@@ -177,7 +176,7 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 		return err
 	}
 	for cursor.Next(context.Background()) {
-		element := models.Device{}
+		element := model.DeviceWithConnectionState{}
 		err = cursor.Decode(&element)
 		if err != nil {
 			return err
@@ -213,7 +212,7 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 			}
 
 			//publish so that other services know the new owner immediately
-			err = producer.PublishDevice(element, element.OwnerId)
+			err = producer.PublishDevice(element.Device, element.OwnerId)
 			if err != nil {
 				log.Println("ERROR: unable to update device owner", element.Id, element.OwnerId, err)
 				return err
@@ -231,7 +230,7 @@ func (this *Mongo) runDeviceOwnerMigration(producer model.MigrationPublisher) er
 	return cursor.Err()
 }
 
-func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationPublisher, device models.Device, owner string) error {
+func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationPublisher, device model.DeviceWithConnectionState, owner string) error {
 	if owner == "" {
 		return errors.New("missing owner")
 	}
@@ -289,7 +288,7 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 	}
 
 	//publish so that other services know the new owner immediately
-	err = producer.PublishDevice(device, device.OwnerId)
+	err = producer.PublishDevice(device.Device, device.OwnerId)
 	if err != nil {
 		log.Println("ERROR: unable to update device owner", device.Id, device.OwnerId, err)
 		return err
@@ -307,8 +306,8 @@ func (this *Mongo) hubOwnerMigrationEnforceDeviceOwner(producer model.MigrationP
 func (this *Mongo) assertEveryDeviceHasOwner() error {
 	count, err := this.deviceCollection().CountDocuments(context.Background(), bson.M{
 		"$or": bson.A{
-			bson.M{deviceOwnerIdKey: bson.M{"$exists": false}},
-			bson.M{deviceOwnerIdKey: ""},
+			bson.M{DeviceBson.OwnerId: bson.M{"$exists": false}},
+			bson.M{DeviceBson.OwnerId: ""},
 		},
 	}, options.Count().SetLimit(1))
 	if err != nil {

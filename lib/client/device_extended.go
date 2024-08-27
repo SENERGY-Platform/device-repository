@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 InfAI (CC SES)
+ * Copyright 2024 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ import (
 	"strings"
 )
 
-type DeviceListOptions = model.DeviceListOptions
+const extendedDevicePath = "extended-devices"
 
-func (c *Client) ListDevices(token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {
-	queryString := ""
+func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, err error, errCode int) {
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
 		query.Set("p", string(options.Permission))
@@ -51,18 +50,19 @@ func (c *Client) ListDevices(token string, options DeviceListOptions) (result []
 	if options.Offset != 0 {
 		query.Set("offset", strconv.FormatInt(options.Limit, 10))
 	}
+	queryString := ""
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices"+queryString, nil)
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.Device](req)
+	return do[[]models.ExtendedDevice](req)
 }
 
-func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -71,29 +71,25 @@ func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (r
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+id+queryString, nil)
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+"/"+id+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Device](req)
+	return do[models.ExtendedDevice](req)
 }
 
-func (c *Client) ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+func (c *Client) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
 	}
 	query.Set("as", "local_id")
 	query.Set("owner_id", ownerId)
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+"/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Device](req)
-}
-
-func (c *Client) ValidateDevice(token string, device models.Device) (err error, code int) {
-	return c.validateWithToken(token, "/devices", device)
+	return do[models.ExtendedDevice](req)
 }

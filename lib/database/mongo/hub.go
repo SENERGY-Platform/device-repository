@@ -18,41 +18,30 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
+	"strings"
 )
 
-const hubIdFieldName = "Id"
-const hubDeviceIdFieldName = "DeviceIds"
-const hubOwnerIdFieldName = "OwnerId"
-
-var hubIdKey string
-var hubDeviceIdKey string
-var hubOwnerIdKey string
+var HubBson = getBsonFieldObject[model.HubWithConnectionState]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		hubIdKey, err = getBsonFieldName(models.Hub{}, hubIdFieldName)
-		if err != nil {
-			return err
-		}
-		hubDeviceIdKey, err = getBsonFieldName(models.Hub{}, hubDeviceIdFieldName)
-		if err != nil {
-			return err
-		}
-		hubOwnerIdKey, err = getBsonFieldName(models.Hub{}, hubOwnerIdFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoHubCollection)
-		err = db.ensureIndex(collection, "hubidindex", hubIdKey, true, true)
+		err = db.ensureIndex(collection, "hubidindex", HubBson.Id, true, true)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "hubdeviceidindex", hubDeviceIdKey, true, false)
+		err = db.ensureIndex(collection, "hubnameindex", HubBson.Name, true, false) //to support faster sort
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "hubdeviceidindex", HubBson.DeviceIds[0], true, false)
 		if err != nil {
 			return err
 		}
@@ -68,8 +57,8 @@ func (this *Mongo) hubCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoHubCollection)
 }
 
-func (this *Mongo) GetHub(ctx context.Context, id string) (hub models.Hub, exists bool, err error) {
-	result := this.hubCollection().FindOne(ctx, bson.M{hubIdKey: id})
+func (this *Mongo) GetHub(ctx context.Context, id string) (hub model.HubWithConnectionState, exists bool, err error) {
+	result := this.hubCollection().FindOne(ctx, bson.M{HubBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return hub, false, nil
@@ -84,23 +73,23 @@ func (this *Mongo) GetHub(ctx context.Context, id string) (hub models.Hub, exist
 	return hub, true, err
 }
 
-func (this *Mongo) SetHub(ctx context.Context, hub models.Hub) error {
-	_, err := this.hubCollection().ReplaceOne(ctx, bson.M{hubIdKey: hub.Id}, hub, options.Replace().SetUpsert(true))
+func (this *Mongo) SetHub(ctx context.Context, hub model.HubWithConnectionState) error {
+	_, err := this.hubCollection().ReplaceOne(ctx, bson.M{HubBson.Id: hub.Id}, hub, options.Replace().SetUpsert(true))
 	return err
 }
 
 func (this *Mongo) RemoveHub(ctx context.Context, id string) error {
-	_, err := this.hubCollection().DeleteOne(ctx, bson.M{hubIdKey: id})
+	_, err := this.hubCollection().DeleteOne(ctx, bson.M{HubBson.Id: id})
 	return err
 }
 
-func (this *Mongo) GetHubsByDeviceId(ctx context.Context, id string) (hubs []models.Hub, err error) {
-	cursor, err := this.hubCollection().Find(ctx, bson.M{hubDeviceIdKey: id})
+func (this *Mongo) GetHubsByDeviceId(ctx context.Context, id string) (hubs []model.HubWithConnectionState, err error) {
+	cursor, err := this.hubCollection().Find(ctx, bson.M{HubBson.DeviceIds[0]: id})
 	if err != nil {
 		return nil, err
 	}
 	for cursor.Next(ctx) {
-		hub := models.Hub{}
+		hub := model.HubWithConnectionState{}
 		err = cursor.Decode(&hub)
 		if err != nil {
 			return nil, err
@@ -109,4 +98,58 @@ func (this *Mongo) GetHubsByDeviceId(ctx context.Context, id string) (hubs []mod
 	}
 	err = cursor.Err()
 	return hubs, err
+}
+
+func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOptions) (result []model.HubWithConnectionState, err error) {
+	opt := options.Find()
+	if listOptions.Ids == nil {
+		if listOptions.Limit > 0 {
+			opt.SetLimit(listOptions.Limit)
+		}
+		if listOptions.Offset > 0 {
+			opt.SetSkip(listOptions.Offset)
+		}
+	}
+
+	if listOptions.SortBy == "" {
+		listOptions.SortBy = HubBson.Name + ".asc"
+	}
+
+	sortby := listOptions.SortBy
+	sortby = strings.TrimSuffix(sortby, ".asc")
+	sortby = strings.TrimSuffix(sortby, ".desc")
+
+	direction := int32(1)
+	if strings.HasSuffix(listOptions.SortBy, ".desc") {
+		direction = int32(-1)
+	}
+	opt.SetSort(bson.D{{sortby, direction}})
+
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[HubBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		filter[HubBson.Name] = bson.M{HubBson.Name: bson.M{"$regex": regexp.QuoteMeta(search), "$options": "i"}}
+	}
+	if listOptions.ConnectionState != nil {
+		filter[HubBson.ConnectionState] = listOptions.ConnectionState
+	}
+
+	cursor, err := this.hubCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return result, err
+	}
+	result, err, _ = readCursorResult[model.HubWithConnectionState](ctx, cursor)
+	return result, err
+}
+
+func (this *Mongo) SetHubConnectionState(ctx context.Context, id string, state models.ConnectionState) error {
+	_, err := this.hubCollection().UpdateOne(ctx, bson.M{
+		HubBson.Id: id,
+	}, bson.M{
+		"$set": bson.M{HubBson.ConnectionState: state},
+	})
+	return err
 }

@@ -32,16 +32,12 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceEndpoints)
+	endpoints = append(endpoints, ExtendedDeviceEndpoints)
 }
 
-func DeviceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/devices"
+func ExtendedDeviceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
+	resource := "/extended-devices"
 
-	//query-parameter:
-	//		- limit: number; default 100, will be ignored if 'ids' is set
-	//		- offset: number; default 0, will be ignored if 'ids' is set
-	//		- ids: filter by comma seperated id list
 	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		deviceListOptions := model.DeviceListOptions{
 			Limit:  100,
@@ -99,7 +95,7 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 			deviceListOptions.Permission = model.READ
 		}
 
-		result, err, errCode := control.ListDevices(util.GetAuthToken(request), deviceListOptions)
+		result, err, errCode := control.ListExtendedDevices(util.GetAuthToken(request), deviceListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -139,12 +135,12 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 		if permission == models.UnsetPermissionFlag {
 			permission = model.READ
 		}
-		var result models.Device
+		var result models.ExtendedDevice
 		var errCode int
 		if as == "local_id" {
-			result, err, errCode = control.ReadDeviceByLocalId(ownerId, id, util.GetAuthToken(request), permission)
+			result, err, errCode = control.ReadExtendedDeviceByLocalId(ownerId, id, util.GetAuthToken(request), permission)
 		} else {
-			result, err, errCode = control.ReadDevice(id, util.GetAuthToken(request), permission)
+			result, err, errCode = control.ReadExtendedDevice(id, util.GetAuthToken(request), permission)
 		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -157,29 +153,4 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 		}
 		return
 	})
-
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
-		device := models.Device{}
-		err = json.NewDecoder(request.Body).Decode(&device)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		err, code := control.ValidateDevice(util.GetAuthToken(request), device)
-		if err != nil {
-			http.Error(writer, err.Error(), code)
-			return
-		}
-		writer.WriteHeader(http.StatusOK)
-	})
-
 }

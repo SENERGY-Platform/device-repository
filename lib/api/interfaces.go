@@ -27,9 +27,17 @@ type Controller interface {
 	ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
 	ValidateDevice(token string, device models.Device) (err error, code int)
 
+	ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, err error, errCode int)                               //TODO: test
+	ReadExtendedDevice(id string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int)                               //TODO: test
+	ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) //TODO: test
+
 	ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int)
+	ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int)
 	ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
 	ValidateHub(token string, hub models.Hub) (err error, code int)
+
+	ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, err error, errCode int)    //TODO: test
+	ReadExtendedHub(id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) //TODO: test
 
 	ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int)
 	ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)

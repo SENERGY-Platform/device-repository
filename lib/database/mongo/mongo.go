@@ -27,6 +27,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"log"
+	"net/http"
 	"reflect"
 	"runtime/debug"
 	"strings"
@@ -59,6 +60,23 @@ func New(conf config.Config) (*Mongo, error) {
 
 func (this *Mongo) CreateId() string {
 	return uuid.NewString()
+}
+
+func readCursorResult[T any](ctx context.Context, cursor *mongo.Cursor) (result []T, err error, code int) {
+	result = []T{}
+	for cursor.Next(ctx) {
+		element := new(T)
+		err = cursor.Decode(element)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		result = append(result, *element)
+	}
+	err = cursor.Err()
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return result, nil, http.StatusOK
 }
 
 func (this *Mongo) Transaction(ctx context.Context) (resultCtx context.Context, close func(success bool) error, err error) {

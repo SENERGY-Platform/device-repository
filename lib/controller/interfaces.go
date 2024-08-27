@@ -29,6 +29,7 @@ type Security interface {
 	CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
 	GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error)
 	ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) ([]string, error)
+	GetPermissionsInfo(token string, kind string, id string) (requestingUser string, permissions models.Permissions, err error)
 }
 
 type Producer interface {

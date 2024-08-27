@@ -25,9 +25,9 @@ import (
 	"strings"
 )
 
-type DeviceListOptions = model.DeviceListOptions
+const extendedHubPath = "extended-hubs"
 
-func (c *Client) ListDevices(token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {
+func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
@@ -54,15 +54,15 @@ func (c *Client) ListDevices(token string, options DeviceListOptions) (result []
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices"+queryString, nil)
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedHubPath+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.Device](req)
+	return do[[]models.ExtendedHub](req)
 }
 
-func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+func (c *Client) ReadExtendedHub(id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -71,29 +71,10 @@ func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (r
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+id+queryString, nil)
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedHubPath+"/"+id+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Device](req)
-}
-
-func (c *Client) ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
-	query := url.Values{}
-	if action != models.UnsetPermissionFlag {
-		query.Set("p", string(action))
-	}
-	query.Set("as", "local_id")
-	query.Set("owner_id", ownerId)
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
-	}
-	req.Header.Set("Authorization", token)
-	return do[models.Device](req)
-}
-
-func (c *Client) ValidateDevice(token string, device models.Device) (err error, code int) {
-	return c.validateWithToken(token, "/devices", device)
+	return do[models.ExtendedHub](req)
 }

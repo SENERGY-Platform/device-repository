@@ -1,5 +1,5 @@
 /*
- * Copyright 2024InfAI (CC SES)
+ * Copyright 2024 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 
 package model
 
-type ResourceRights struct {
-	UserRights           map[string]Right `json:"user_rights"`
-	GroupRights          map[string]Right `json:"group_rights"`
-	KeycloakGroupsRights map[string]Right `json:"keycloak_groups_rights"` //TODO
+import "github.com/SENERGY-Platform/models/go/models"
+
+type DeviceWithConnectionState struct {
+	models.Device   `bson:",inline"`
+	ConnectionState models.ConnectionState `json:"connection_state"`
 }
 
-type Right struct {
-	Read         bool `json:"read"`
-	Write        bool `json:"write"`
-	Execute      bool `json:"execute"`
-	Administrate bool `json:"administrate"`
+type HubWithConnectionState struct {
+	models.Hub      `bson:",inline"`
+	ConnectionState models.ConnectionState `json:"connection_state"`
 }

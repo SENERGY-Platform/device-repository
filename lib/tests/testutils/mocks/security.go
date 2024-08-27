@@ -18,6 +18,8 @@ package mocks
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"strings"
 )
 
@@ -65,4 +67,27 @@ func (this *Security) ListAccessibleResourceIds(token string, topic string, limi
 		}
 	}
 	return result, nil
+}
+
+func (this *Security) GetPermissionsInfo(token string, kind string, id string) (requestingUser string, permissions models.Permissions, err error) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	requestingUser = jwtToken.GetUserId()
+	if this.access[this.getKey(kind, id)] {
+		return requestingUser, models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		}, nil
+	} else {
+		return requestingUser, models.Permissions{
+			Read:         false,
+			Write:        false,
+			Execute:      false,
+			Administrate: false,
+		}, nil
+	}
 }

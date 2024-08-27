@@ -18,45 +18,34 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
+	"strings"
 )
 
-const deviceIdFieldName = "Id"
-const deviceLocalIdFieldName = "LocalId"
-const deviceOwnerIdFieldName = "OwnerId"
-
-var deviceIdKey string
-var deviceLocalIdKey string
-var deviceOwnerIdKey string
+var DeviceBson = getBsonFieldObject[model.DeviceWithConnectionState]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceIdKey, err = getBsonFieldName(models.Device{}, deviceIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceLocalIdKey, err = getBsonFieldName(models.Device{}, deviceLocalIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceOwnerIdKey, err = getBsonFieldName(models.Device{}, deviceOwnerIdFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceCollection)
-		err = db.ensureIndex(collection, "deviceidindex", deviceIdKey, true, true)
+		err = db.ensureIndex(collection, "deviceidindex", DeviceBson.Id, true, true)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "devicelocalidindex", deviceLocalIdKey, true, false)
+		err = db.ensureIndex(collection, "devicelocalidindex", DeviceBson.LocalId, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureCompoundIndex(collection, "deviceownerlocalidindex", true, false, deviceOwnerIdKey, deviceLocalIdKey)
+		err = db.ensureIndex(collection, "devicenameindex", DeviceBson.Name, true, false) //to support faster sort
+		if err != nil {
+			return err
+		}
+		err = db.ensureCompoundIndex(collection, "deviceownerlocalidindex", true, false, DeviceBson.OwnerId, DeviceBson.LocalId)
 		if err != nil {
 			return err
 		}
@@ -68,8 +57,8 @@ func (this *Mongo) deviceCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceCollection)
 }
 
-func (this *Mongo) GetDevice(ctx context.Context, id string) (device models.Device, exists bool, err error) {
-	result := this.deviceCollection().FindOne(ctx, bson.M{deviceIdKey: id})
+func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error) {
+	result := this.deviceCollection().FindOne(ctx, bson.M{DeviceBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return device, false, nil
@@ -84,20 +73,20 @@ func (this *Mongo) GetDevice(ctx context.Context, id string) (device models.Devi
 	return device, true, err
 }
 
-func (this *Mongo) SetDevice(ctx context.Context, device models.Device) error {
-	_, err := this.deviceCollection().ReplaceOne(ctx, bson.M{deviceIdKey: device.Id}, device, options.Replace().SetUpsert(true))
+func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnectionState) error {
+	_, err := this.deviceCollection().ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, device, options.Replace().SetUpsert(true))
 	return err
 }
 
 func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
-	_, err := this.deviceCollection().DeleteOne(ctx, bson.M{deviceIdKey: id})
+	_, err := this.deviceCollection().DeleteOne(ctx, bson.M{DeviceBson.Id: id})
 	return err
 }
 
-func (this *Mongo) GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device models.Device, exists bool, err error) {
-	filter := bson.M{deviceLocalIdKey: localId}
+func (this *Mongo) GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error) {
+	filter := bson.M{DeviceBson.LocalId: localId}
 	if this.config.LocalIdUniqueForOwner {
-		filter[deviceOwnerIdKey] = ownerId
+		filter[DeviceBson.OwnerId] = ownerId
 	}
 	result := this.deviceCollection().FindOne(ctx, filter)
 	err = result.Err()
@@ -112,4 +101,58 @@ func (this *Mongo) GetDeviceByLocalId(ctx context.Context, ownerId string, local
 		return device, false, nil
 	}
 	return device, true, err
+}
+
+func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceListOptions) (result []model.DeviceWithConnectionState, err error) {
+	opt := options.Find()
+	if listOptions.Ids == nil {
+		if listOptions.Limit > 0 {
+			opt.SetLimit(listOptions.Limit)
+		}
+		if listOptions.Offset > 0 {
+			opt.SetSkip(listOptions.Offset)
+		}
+	}
+
+	if listOptions.SortBy == "" {
+		listOptions.SortBy = DeviceBson.Name + ".asc"
+	}
+
+	sortby := listOptions.SortBy
+	sortby = strings.TrimSuffix(sortby, ".asc")
+	sortby = strings.TrimSuffix(sortby, ".desc")
+
+	direction := int32(1)
+	if strings.HasSuffix(listOptions.SortBy, ".desc") {
+		direction = int32(-1)
+	}
+	opt.SetSort(bson.D{{sortby, direction}})
+
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[DeviceBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		filter[DeviceBson.Name] = bson.M{DeviceBson.Name: bson.M{"$regex": regexp.QuoteMeta(search), "$options": "i"}}
+	}
+	if listOptions.ConnectionState != nil {
+		filter[DeviceBson.ConnectionState] = listOptions.ConnectionState
+	}
+
+	cursor, err := this.deviceCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return result, err
+	}
+	result, err, _ = readCursorResult[model.DeviceWithConnectionState](ctx, cursor)
+	return result, err
+}
+
+func (this *Mongo) SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error {
+	_, err := this.deviceCollection().UpdateOne(ctx, bson.M{
+		DeviceBson.Id: id,
+	}, bson.M{
+		"$set": bson.M{DeviceBson.ConnectionState: state},
+	})
+	return err
 }

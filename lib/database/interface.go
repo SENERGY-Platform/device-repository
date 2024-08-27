@@ -26,15 +26,19 @@ type Database interface {
 	RunStartupMigrations(model.MigrationPublisher) error
 	Disconnect()
 
-	GetDevice(ctx context.Context, id string) (device models.Device, exists bool, err error)
-	SetDevice(ctx context.Context, device models.Device) error
+	GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error)
+	ListDevices(ctx context.Context, options model.DeviceListOptions) (devices []model.DeviceWithConnectionState, err error) //TODO: test
+	SetDevice(ctx context.Context, device model.DeviceWithConnectionState) error
 	RemoveDevice(ctx context.Context, id string) error
-	GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device models.Device, exists bool, err error)
+	GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error)
+	SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error //TODO: test
 
-	GetHub(ctx context.Context, id string) (hub models.Hub, exists bool, err error)
-	SetHub(ctx context.Context, hub models.Hub) error
+	GetHub(ctx context.Context, id string) (hub model.HubWithConnectionState, exists bool, err error)
+	ListHubs(ctx context.Context, options model.HubListOptions) (hubs []model.HubWithConnectionState, err error) //TODO: test
+	SetHub(ctx context.Context, hub model.HubWithConnectionState) error
 	RemoveHub(ctx context.Context, id string) error
-	GetHubsByDeviceId(ctx context.Context, deviceId string) (hubs []models.Hub, err error)
+	GetHubsByDeviceId(ctx context.Context, deviceId string) (hubs []model.HubWithConnectionState, err error)
+	SetHubConnectionState(ctx context.Context, id string, state models.ConnectionState) error //TODO: test
 
 	GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error)
 	SetDeviceType(ctx context.Context, deviceType models.DeviceType) error
@@ -126,4 +130,5 @@ type Security interface {
 	CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
 	GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error)
 	ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) (result []string, err error)
+	GetPermissionsInfo(token string, topic string, id string) (requestingUser string, permissions models.Permissions, err error)
 }

@@ -1,6 +1,6 @@
 module github.com/SENERGY-Platform/device-repository
 
-go 1.22
+go 1.23
 
 require (
 	github.com/julienschmidt/httprouter v1.3.0
@@ -12,10 +12,11 @@ require github.com/tryvium-travels/memongo v0.12.0
 
 require (
 	github.com/IBM/sarama v1.43.2
-	github.com/SENERGY-Platform/models/go v0.0.0-20240627082833-157bd627a94f
-	github.com/SENERGY-Platform/permission-search v0.0.16
-	github.com/SENERGY-Platform/service-commons v0.0.0-20240708085423-94423a495d7f
+	github.com/SENERGY-Platform/models/go v0.0.0-20240827063846-a59641a0fe86
+	github.com/SENERGY-Platform/permission-search v0.0.22
+	github.com/SENERGY-Platform/service-commons v0.0.0-20240813072046-91b3195dd8fc
 	github.com/google/uuid v1.6.0
+	github.com/opensearch-project/opensearch-go v1.1.0
 	github.com/testcontainers/testcontainers-go v0.31.0
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
 )
@@ -66,7 +67,6 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
-	github.com/opensearch-project/opensearch-go v1.1.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect

@@ -20,27 +20,78 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
 func (c *Client) ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/hubs/"+id+"&p="+string(action), nil)
-	req.Header.Set("Authorization", token)
+	query := url.Values{}
+	if action != models.UnsetPermissionFlag {
+		query.Set("p", string(action))
+	}
+	queryString := ""
+	if len(query) > 0 {
+		queryString = "?" + query.Encode()
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/hubs/"+id+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
+	req.Header.Set("Authorization", token)
 	return do[models.Hub](req)
 }
 
-func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
-	url := c.baseUrl + "/hubs/" + id + "?p=" + string(action)
-	if asLocalId {
-		url += "&as=local_id"
+func (c *Client) ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int) {
+	queryString := ""
+	query := url.Values{}
+	if options.Permission != models.UnsetPermissionFlag {
+		query.Set("p", string(options.Permission))
 	}
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	req.Header.Set("Authorization", token)
+	if options.Search != "" {
+		query.Set("search", options.Search)
+	}
+	if options.Ids != nil {
+		query.Set("ids", strings.Join(options.Ids, ","))
+	}
+	if options.ConnectionState != nil {
+		query.Set("connection-state", *options.ConnectionState)
+	}
+	if options.SortBy != "" {
+		query.Set("sort", options.SortBy)
+	}
+	if options.Limit != 0 {
+		query.Set("limit", strconv.FormatInt(options.Limit, 10))
+	}
+	if options.Offset != 0 {
+		query.Set("offset", strconv.FormatInt(options.Limit, 10))
+	}
+	if len(query) > 0 {
+		queryString = "?" + query.Encode()
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/hubs"+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
+	req.Header.Set("Authorization", token)
+	return do[[]models.Hub](req)
+}
+
+func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
+	query := url.Values{}
+	if action != models.UnsetPermissionFlag {
+		query.Set("p", string(action))
+	}
+	if asLocalId {
+		query.Set("as", "local_id")
+	}
+	queryString := ""
+	url := c.baseUrl + "/hubs/" + id + queryString
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
 	return do[[]string](req)
 }
 

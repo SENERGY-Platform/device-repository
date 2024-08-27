@@ -19,6 +19,7 @@ package testdb
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"slices"
 	"strings"
@@ -242,4 +243,53 @@ func (this *DB) ListAccessibleResourceIds(token string, topic string, limit int6
 		}
 	}
 	return result, nil
+}
+
+func (this *DB) GetPermissionsInfo(token string, kind string, id string) (requestingUser string, permissions models.Permissions, err error) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	requestingUser = jwtToken.GetUserId()
+	resourceRights, err := this.getSecurityResource(kind, id, GetOptions{})
+	if err != nil {
+		return requestingUser, permissions, err
+	}
+	permissions = models.Permissions{
+		Read:         resourceRights.UserRights[requestingUser].Read,
+		Write:        resourceRights.UserRights[requestingUser].Write,
+		Execute:      resourceRights.UserRights[requestingUser].Execute,
+		Administrate: resourceRights.UserRights[requestingUser].Administrate,
+	}
+	for _, role := range jwtToken.GetRoles() {
+		rolePermissions := resourceRights.GroupRights[role]
+		if rolePermissions.Read {
+			permissions.Read = true
+		}
+		if rolePermissions.Write {
+			permissions.Write = true
+		}
+		if rolePermissions.Execute {
+			permissions.Execute = true
+		}
+		if rolePermissions.Administrate {
+			permissions.Administrate = true
+		}
+	}
+	for _, group := range jwtToken.GetGroups() {
+		groupPermissions := resourceRights.KeycloakGroupsRights[group]
+		if groupPermissions.Read {
+			permissions.Read = true
+		}
+		if groupPermissions.Write {
+			permissions.Write = true
+		}
+		if groupPermissions.Execute {
+			permissions.Execute = true
+		}
+		if groupPermissions.Administrate {
+			permissions.Administrate = true
+		}
+	}
+	return requestingUser, permissions, err
 }

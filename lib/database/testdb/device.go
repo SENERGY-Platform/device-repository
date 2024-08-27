@@ -18,14 +18,18 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"regexp"
+	"slices"
+	"strings"
 )
 
-func (db *DB) GetDevice(_ context.Context, id string) (device models.Device, exists bool, err error) {
+func (db *DB) GetDevice(_ context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error) {
 	return get(id, db.devices)
 }
 
-func (db *DB) SetDevice(_ context.Context, device models.Device) error {
+func (db *DB) SetDevice(_ context.Context, device model.DeviceWithConnectionState) error {
 	return set(device.Id, db.devices, device)
 }
 
@@ -34,11 +38,78 @@ func (db *DB) RemoveDevice(_ context.Context, id string) error {
 
 }
 
-func (db *DB) GetDeviceByLocalId(_ context.Context, ownerId string, localId string) (device models.Device, exists bool, err error) {
+func (db *DB) GetDeviceByLocalId(_ context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error) {
 	for i := range db.devices {
 		if db.devices[i].LocalId == localId && (!db.config.LocalIdUniqueForOwner || db.devices[i].OwnerId == ownerId) {
 			return db.devices[i], true, nil
 		}
 	}
-	return models.Device{}, false, err
+	return model.DeviceWithConnectionState{}, false, err
+}
+
+func (db *DB) ListDevices(ctx context.Context, options model.DeviceListOptions) (devices []model.DeviceWithConnectionState, err error) {
+	devices = []model.DeviceWithConnectionState{}
+	var r *regexp.Regexp
+	if options.Search != "" {
+		r, err = regexp.Compile("(?i)" + regexp.QuoteMeta(options.Search))
+		if err != nil {
+			return nil, err
+		}
+
+	}
+	for _, device := range db.devices {
+		if options.Ids != nil && !slices.Contains(options.Ids, device.Id) {
+			continue
+		}
+		if options.ConnectionState != nil && *options.ConnectionState != device.ConnectionState {
+			continue
+		}
+		if options.Search != "" && r != nil {
+			if !r.MatchString(device.Name) {
+				continue
+			}
+		}
+		devices = append(devices, device)
+	}
+	if options.SortBy == "" {
+		options.SortBy = "name.asc"
+	}
+	sortby := options.SortBy
+	sortby = strings.TrimSuffix(sortby, ".asc")
+	sortby = strings.TrimSuffix(sortby, ".desc")
+
+	direction := 1
+	if strings.HasSuffix(options.SortBy, ".desc") {
+		direction = -1
+	}
+	slices.SortFunc(devices, func(a, b model.DeviceWithConnectionState) int {
+		afield := a.Name
+		bfield := b.Name
+		if sortby == "id" {
+			afield = a.Id
+			bfield = b.Id
+		}
+		return strings.Compare(afield, bfield) * direction
+	})
+
+	if options.Limit > 0 || options.Offset > 0 {
+		if options.Offset >= int64(len(devices)) {
+			return []model.DeviceWithConnectionState{}, nil
+		}
+		if (options.Limit + options.Offset) >= int64(len(devices)) {
+			return devices[options.Offset:], nil
+		}
+		return devices[options.Offset : options.Limit+options.Offset], nil
+	}
+
+	return devices, nil
+}
+
+func (db *DB) SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error {
+	device, ok := db.devices[id]
+	if !ok {
+		return nil
+	}
+	device.ConnectionState = state
+	return db.SetDevice(ctx, device)
 }

@@ -47,6 +47,8 @@ type Controller interface {
 	SetLocation(location models.Location, owner string) error
 	DeleteLocation(id string) error
 	SendDone(done donewait.DoneMsg) error
+	SetDeviceConnectionState(id string, connected bool) error
+	SetHubConnectionState(id string, connected bool) error
 }
 
 type SecuritySink interface {
