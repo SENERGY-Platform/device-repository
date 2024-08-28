@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -38,17 +39,22 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 	if permissionFlag == models.UnsetPermissionFlag {
 		permissionFlag = models.Read
 	}
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
 	if options.Ids == nil {
-		if options.ConnectionState == nil && options.Search == "" {
-			//if no filters are used, we can limit right here
-			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, options.Limit, options.Offset, permissionFlag)
+		if !jwtToken.IsAdmin() {
+			ids = nil //no auth check for admins -> no id filter
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
-		}
-		if err != nil {
-			return result, err, http.StatusInternalServerError
+			if err != nil {
+				return result, err, http.StatusInternalServerError
+			}
 		}
 	} else {
+		options.Limit = 0
+		options.Offset = 0
 		idMap, err := this.security.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
 		if err != nil {
 			return result, err, http.StatusInternalServerError
@@ -77,17 +83,22 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 	if permissionFlag == models.UnsetPermissionFlag {
 		permissionFlag = models.Read
 	}
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
 	if options.Ids == nil {
-		if options.ConnectionState == nil && options.Search == "" {
-			//if no filters are used, we can limit right here
-			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, options.Limit, options.Offset, permissionFlag)
+		if !jwtToken.IsAdmin() {
+			ids = nil //no auth check for admins -> no id filter
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
-		}
-		if err != nil {
-			return result, err, http.StatusInternalServerError
+			if err != nil {
+				return result, err, http.StatusInternalServerError
+			}
 		}
 	} else {
+		options.Limit = 0
+		options.Offset = 0
 		idMap, err := this.security.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
 		if err != nil {
 			return result, err, http.StatusInternalServerError

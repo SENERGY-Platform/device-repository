@@ -907,4 +907,187 @@ func TestConnectionStateHandling(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("check as admin", func(t *testing.T) {
+		t.Run("check extended device list", func(t *testing.T) {
+			t.Run("list all", func(t *testing.T) {
+				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedDevice{dx1, dx3, dx2}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("list online", func(t *testing.T) {
+				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedDevice{dx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("list offline", func(t *testing.T) {
+				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedDevice{dx1, dx2}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("list unknown", func(t *testing.T) {
+				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedDevice{}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("search 'd1'", func(t *testing.T) {
+				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "d1"})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedDevice{dx1}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("search 'a d'", func(t *testing.T) {
+				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a d"})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedDevice{dx1, dx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("search online 'a'", func(t *testing.T) {
+				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedDevice{dx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+		})
+		t.Run("check extended device d1", func(t *testing.T) {
+			result, err, _ := c.ReadExtendedDevice(d1.Id, adminjwt, models.Read)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := dx1
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+		t.Run("check extended hub list", func(t *testing.T) {
+			t.Run("list all", func(t *testing.T) {
+				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedHub{hx1, hx3, hx2}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("list online", func(t *testing.T) {
+				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedHub{hx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("list offline", func(t *testing.T) {
+				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedHub{hx1, hx2}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("list unknown", func(t *testing.T) {
+				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedHub{}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("search 'h1'", func(t *testing.T) {
+				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "h1"})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedHub{hx1}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("search 'a h'", func(t *testing.T) {
+				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "a h"})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedHub{hx1, hx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("search online 'a'", func(t *testing.T) {
+				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				expected := []models.ExtendedHub{hx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+		})
+		t.Run("check extended hub h", func(t *testing.T) {
+			result, err, _ := c.ReadExtendedHub(h1.Id, adminjwt, models.Read)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := hx1
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+	})
 }

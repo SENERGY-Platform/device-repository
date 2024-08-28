@@ -102,13 +102,11 @@ func (this *Mongo) GetHubsByDeviceId(ctx context.Context, id string) (hubs []mod
 
 func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOptions) (result []model.HubWithConnectionState, err error) {
 	opt := options.Find()
-	if listOptions.Ids == nil {
-		if listOptions.Limit > 0 {
-			opt.SetLimit(listOptions.Limit)
-		}
-		if listOptions.Offset > 0 {
-			opt.SetSkip(listOptions.Offset)
-		}
+	if listOptions.Limit > 0 {
+		opt.SetLimit(listOptions.Limit)
+	}
+	if listOptions.Offset > 0 {
+		opt.SetSkip(listOptions.Offset)
 	}
 
 	if listOptions.SortBy == "" {

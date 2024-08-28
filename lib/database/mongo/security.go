@@ -228,14 +228,53 @@ func (this *Mongo) ListAccessibleResourceIds(token string, topic string, limit i
 	if err != nil {
 		return result, err
 	}
-	temp, err := this.ListResourcesByPermissions(topic, jwtToken.GetUserId(), jwtToken.GetRoles(), limit, offset, action)
+	userId, groupIds := jwtToken.GetUserId(), jwtToken.GetRoles()
+	kind, err := this.getInternalKind(topic)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 	result = []string{}
-	for _, e := range temp {
-		result = append(result, e.Id)
+	permissionsFilter := bson.A{}
+	switch action {
+	case model.READ:
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ReadUsers[0]: userId}, bson.M{RightsEntryBson.ReadGroups[0]: bson.M{"$in": groupIds}}}})
+	case model.WRITE:
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.WriteUsers[0]: userId}, bson.M{RightsEntryBson.WriteGroups[0]: bson.M{"$in": groupIds}}}})
+	case model.EXECUTE:
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ExecuteUsers[0]: userId}, bson.M{RightsEntryBson.ExecuteGroups[0]: bson.M{"$in": groupIds}}}})
+	case model.ADMINISTRATE:
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.AdminUsers[0]: userId}, bson.M{RightsEntryBson.AdminGroups[0]: bson.M{"$in": groupIds}}}})
+	default:
+		return []string{}, errors.New("invalid permissions parameter")
 	}
+
+	opt := options.Find()
+	if limit > 0 {
+		opt.SetLimit(limit)
+	}
+	if offset > 0 {
+		opt.SetSkip(offset)
+	}
+	opt.SetSort(bson.D{{RightsEntryBson.Id, 1}})
+	opt.SetProjection(bson.D{{RightsEntryBson.Id, 1}})
+
+	filter := bson.M{"kind": kind, "$and": permissionsFilter}
+
+	ctx, _ := getTimeoutContext()
+	cursor, err := this.rightsCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return result, err
+	}
+	for cursor.Next(context.Background()) {
+		element := RightsEntry{}
+		err = cursor.Decode(&element)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, element.Id)
+	}
+
+	err = cursor.Err()
 	return result, err
 }
 
