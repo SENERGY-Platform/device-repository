@@ -38,6 +38,9 @@ func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptio
 	if options.Ids != nil {
 		query.Set("ids", strings.Join(options.Ids, ","))
 	}
+	if options.DeviceTypeIds != nil {
+		query.Set("device-type-ids", strings.Join(options.DeviceTypeIds, ","))
+	}
 	if options.ConnectionState != nil {
 		query.Set("connection-state", *options.ConnectionState)
 	}

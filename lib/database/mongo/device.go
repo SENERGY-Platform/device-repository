@@ -45,6 +45,10 @@ func init() {
 		if err != nil {
 			return err
 		}
+		err = db.ensureIndex(collection, "devicedevicetypeindex", DeviceBson.DeviceTypeId, true, false)
+		if err != nil {
+			return err
+		}
 		err = db.ensureCompoundIndex(collection, "deviceownerlocalidindex", true, false, DeviceBson.OwnerId, DeviceBson.LocalId)
 		if err != nil {
 			return err
@@ -129,6 +133,9 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	filter := bson.M{}
 	if listOptions.Ids != nil {
 		filter[DeviceBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	if listOptions.DeviceTypeIds != nil {
+		filter[DeviceBson.DeviceTypeId] = bson.M{"$in": listOptions.DeviceTypeIds}
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {

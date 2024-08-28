@@ -152,6 +152,230 @@ func TestDeviceOwnerMigrationToPermissions(t *testing.T) {
 	}
 }
 
+func TestDeviceDeviceTypeFilter(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	d1 := models.Device{
+		Id:           device1id,
+		LocalId:      device1lid,
+		Name:         "a d1",
+		DeviceTypeId: devicetype1id,
+		OwnerId:      userid,
+	}
+	dx1 := models.ExtendedDevice{
+		Device:          d1,
+		ConnectionState: models.ConnectionStateUnknown,
+		DisplayName:     d1.Name,
+		DeviceTypeName:  devicetype1name,
+		Shared:          false,
+		Permissions: models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		},
+	}
+
+	err = producer.PublishDevice(d1, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	d2 := models.Device{
+		Id:           device2id,
+		LocalId:      device2lid,
+		Name:         "b d2",
+		DeviceTypeId: devicetype1id,
+		OwnerId:      userid,
+	}
+
+	dx2 := models.ExtendedDevice{
+		Device:          d2,
+		ConnectionState: models.ConnectionStateUnknown,
+		DisplayName:     d2.Name,
+		DeviceTypeName:  devicetype1name,
+		Shared:          false,
+		Permissions: models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		},
+	}
+
+	err = producer.PublishDevice(d2, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	d3 := models.Device{
+		Id:      device3id,
+		LocalId: device3lid,
+		Name:    "a d3",
+		Attributes: []models.Attribute{
+			{Key: "foo", Value: "bar"},
+			{Key: "bar", Value: "batz"},
+		},
+		DeviceTypeId: devicetype2id,
+		OwnerId:      userid,
+	}
+
+	dx3 := models.ExtendedDevice{
+		Device:          d3,
+		ConnectionState: models.ConnectionStateUnknown,
+		DisplayName:     d3.Name,
+		DeviceTypeName:  "",
+		Shared:          false,
+		Permissions: models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		},
+	}
+
+	err = producer.PublishDevice(d3, userid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(10 * time.Second)
+
+	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	t.Run("list none", func(t *testing.T) {
+		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.Device{}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list none extended", func(t *testing.T) {
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.ExtendedDevice{}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list all", func(t *testing.T) {
+		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.Device{d1, d3, d2}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list all extended", func(t *testing.T) {
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.ExtendedDevice{dx1, dx3, dx2}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list dt1", func(t *testing.T) {
+		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.Device{d1, d2}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list dt1 extended", func(t *testing.T) {
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.ExtendedDevice{dx1, dx2}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list dt2", func(t *testing.T) {
+		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.Device{d3}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list dt2 extended", func(t *testing.T) {
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.ExtendedDevice{dx3}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list dt1+dt2", func(t *testing.T) {
+		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.Device{d1, d3, d2}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+	t.Run("list dt1+dt2 extended", func(t *testing.T) {
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.ExtendedDevice{dx1, dx3, dx2}
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("%#v\n", result)
+		}
+	})
+}
+
 func TestDeviceQuery(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()

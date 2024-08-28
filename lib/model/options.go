@@ -20,6 +20,7 @@ import "github.com/SENERGY-Platform/models/go/models"
 
 type DeviceListOptions struct {
 	Ids             []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	DeviceTypeIds   []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
 	ConnectionState *models.ConnectionState //filter
 	Search          string
 	Limit           int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)

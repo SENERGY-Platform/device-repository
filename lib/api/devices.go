@@ -75,6 +75,15 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 			}
 		}
 
+		deviceTypeIdsParam := request.URL.Query().Get("device-type-ids")
+		if request.URL.Query().Has("device-type-ids") {
+			if deviceTypeIdsParam != "" {
+				deviceListOptions.DeviceTypeIds = strings.Split(strings.TrimSpace(deviceTypeIdsParam), ",")
+			} else {
+				deviceListOptions.DeviceTypeIds = []string{}
+			}
+		}
+
 		deviceListOptions.Search = request.URL.Query().Get("search")
 		deviceListOptions.SortBy = request.URL.Query().Get("sort")
 		if deviceListOptions.SortBy == "" {
