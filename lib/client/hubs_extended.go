@@ -27,7 +27,7 @@ import (
 
 const extendedHubPath = "extended-hubs"
 
-func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, err error, errCode int) {
+func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
@@ -56,10 +56,10 @@ func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (r
 	}
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedHubPath+queryString, nil)
 	if err != nil {
-		return result, err, http.StatusInternalServerError
+		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.ExtendedHub](req)
+	return doWithTotalInResult[[]models.ExtendedHub](req)
 }
 
 func (c *Client) ReadExtendedHub(id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) {

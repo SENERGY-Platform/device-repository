@@ -224,9 +224,13 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check with unknown connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3, dx2}
@@ -235,9 +239,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{}
@@ -246,9 +254,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{}
@@ -257,9 +269,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3, dx2}
@@ -268,9 +284,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1}
@@ -279,9 +299,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3}
@@ -290,9 +314,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{}
@@ -314,9 +342,13 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("check extended hub list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3, hx2}
@@ -325,9 +357,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{}
@@ -336,9 +372,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{}
@@ -347,9 +387,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3, hx2}
@@ -358,9 +402,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'h1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "h1"})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "h1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1}
@@ -369,9 +417,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a h'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a h"})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a h"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3}
@@ -380,9 +432,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{}
@@ -492,9 +548,13 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check with set connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3, dx2}
@@ -503,9 +563,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx2}
@@ -514,9 +578,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx3}
@@ -525,9 +593,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{}
@@ -536,9 +608,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1}
@@ -547,9 +623,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3}
@@ -558,9 +638,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1}
@@ -582,9 +666,13 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("check extended hub list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3, hx2}
@@ -593,9 +681,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx2}
@@ -604,9 +696,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx3}
@@ -615,9 +711,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{}
@@ -626,9 +726,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'h1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "h1"})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "h1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1}
@@ -637,9 +741,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a h'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a h"})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a h"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3}
@@ -648,9 +756,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1}
@@ -728,9 +840,13 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check with updated connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3, dx2}
@@ -739,9 +855,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx3}
@@ -750,9 +870,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx2}
@@ -761,9 +885,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{}
@@ -772,9 +900,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1}
@@ -783,9 +915,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3}
@@ -794,9 +930,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx3}
@@ -818,9 +958,13 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("check extended hub list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3, hx2}
@@ -829,9 +973,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx3}
@@ -840,9 +988,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx2}
@@ -851,9 +1003,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{}
@@ -862,9 +1018,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'h1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "h1"})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "h1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1}
@@ -873,9 +1033,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a h'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a h"})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a h"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3}
@@ -884,9 +1048,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx3}
@@ -911,9 +1079,13 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check as admin", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3, dx2}
@@ -922,9 +1094,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx3}
@@ -933,9 +1109,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx2}
@@ -944,9 +1124,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{}
@@ -955,9 +1139,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1}
@@ -966,9 +1154,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedDevice{dx1, dx3}
@@ -977,12 +1169,31 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
 				}
+				if total != 1 {
+					t.Error(total)
+					return
+				}
 				expected := []models.ExtendedDevice{dx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("pagination", func(t *testing.T) {
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Limit: 1, Offset: 1})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
+					return
+				}
+				expected := []models.ExtendedDevice{dx3} //by sort: 3 before 2
 				if !reflect.DeepEqual(result, expected) {
 					t.Errorf("%#v\n", result)
 				}
@@ -1001,9 +1212,13 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("check extended hub list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{})
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3, hx2}
@@ -1012,9 +1227,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx3}
@@ -1023,9 +1242,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx2}
@@ -1034,9 +1257,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 0 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{}
@@ -1045,9 +1272,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'h1'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "h1"})
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "h1"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1}
@@ -1056,9 +1287,13 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a h'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "a h"})
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "a h"})
 				if err != nil {
 					t.Error(err)
+					return
+				}
+				if total != 2 {
+					t.Error(total)
 					return
 				}
 				expected := []models.ExtendedHub{hx1, hx3}
@@ -1067,12 +1302,32 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
 				}
+				if total != 1 {
+					t.Error(total)
+					return
+				}
 				expected := []models.ExtendedHub{hx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+
+			t.Run("pagination", func(t *testing.T) {
+				result, total, err, _ := c.ListExtendedHubs(adminjwt, client.HubListOptions{Limit: 1, Offset: 1})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
+					return
+				}
+				expected := []models.ExtendedHub{hx3} //by sort: 3 before 2
 				if !reflect.DeepEqual(result, expected) {
 					t.Errorf("%#v\n", result)
 				}

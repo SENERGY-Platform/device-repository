@@ -103,7 +103,7 @@ func (this *Mongo) GetDeviceByLocalId(ctx context.Context, ownerId string, local
 	return device, true, err
 }
 
-func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceListOptions) (result []model.DeviceWithConnectionState, err error) {
+func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceListOptions, withTotal bool) (result []model.DeviceWithConnectionState, total int64, err error) {
 	opt := options.Find()
 	if listOptions.Limit > 0 {
 		opt.SetLimit(listOptions.Limit)
@@ -140,10 +140,17 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 
 	cursor, err := this.deviceCollection().Find(ctx, filter, opt)
 	if err != nil {
-		return result, err
+		return result, total, err
 	}
 	result, err, _ = readCursorResult[model.DeviceWithConnectionState](ctx, cursor)
-	return result, err
+	if err != nil {
+		return result, total, err
+	}
+	total, err = this.deviceCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return result, total, err
+	}
+	return result, total, err
 }
 
 func (this *Mongo) SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error {

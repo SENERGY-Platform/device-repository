@@ -66,7 +66,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 		}
 	}
 	ctx, _ := getTimeoutContext()
-	hubs, err := this.db.ListHubs(ctx, options)
+	hubs, _, err := this.db.ListHubs(ctx, options, false)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -77,7 +77,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, err error, errCode int) {
+func (this *Controller) ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, total int64, err error, errCode int) {
 	ids := []string{}
 	permissionFlag := options.Permission
 	if permissionFlag == models.UnsetPermissionFlag {
@@ -85,7 +85,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 	}
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
-		return result, err, http.StatusBadRequest
+		return result, total, err, http.StatusBadRequest
 	}
 	if options.Ids == nil {
 		if !jwtToken.IsAdmin() {
@@ -93,7 +93,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
 			if err != nil {
-				return result, err, http.StatusInternalServerError
+				return result, total, err, http.StatusInternalServerError
 			}
 		}
 	} else {
@@ -101,7 +101,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 		options.Offset = 0
 		idMap, err := this.security.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
 		if err != nil {
-			return result, err, http.StatusInternalServerError
+			return result, total, err, http.StatusInternalServerError
 		}
 		for id, ok := range idMap {
 			if ok {
@@ -110,9 +110,9 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 		}
 	}
 	ctx, _ := getTimeoutContext()
-	hubs, err := this.db.ListHubs(ctx, options)
+	hubs, total, err := this.db.ListHubs(ctx, options, true)
 	if err != nil {
-		return result, err, http.StatusInternalServerError
+		return result, total, err, http.StatusInternalServerError
 	}
 	result = make([]models.ExtendedHub, len(hubs))
 	wg := sync.WaitGroup{}
@@ -130,9 +130,9 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 	}
 	wg.Wait()
 	if err != nil {
-		return result, err, http.StatusInternalServerError
+		return result, total, err, http.StatusInternalServerError
 	}
-	return result, nil, http.StatusOK
+	return result, total, nil, http.StatusOK
 }
 
 func (this *Controller) ReadExtendedHub(id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) {

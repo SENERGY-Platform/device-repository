@@ -120,12 +120,13 @@ func ExtendedHubEndpoints(config config.Config, control Controller, router *http
 			hubListOptions.Permission = model.READ
 		}
 
-		result, err, errCode := control.ListExtendedHubs(util.GetAuthToken(request), hubListOptions)
+		result, total, err, errCode := control.ListExtendedHubs(util.GetAuthToken(request), hubListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
 		}
 
+		writer.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {

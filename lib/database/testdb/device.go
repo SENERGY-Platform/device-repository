@@ -47,13 +47,13 @@ func (db *DB) GetDeviceByLocalId(_ context.Context, ownerId string, localId stri
 	return model.DeviceWithConnectionState{}, false, err
 }
 
-func (db *DB) ListDevices(ctx context.Context, options model.DeviceListOptions) (devices []model.DeviceWithConnectionState, err error) {
+func (db *DB) ListDevices(ctx context.Context, options model.DeviceListOptions, withTotal bool) (devices []model.DeviceWithConnectionState, total int64, err error) {
 	devices = []model.DeviceWithConnectionState{}
 	var r *regexp.Regexp
 	if options.Search != "" {
 		r, err = regexp.Compile("(?i)" + regexp.QuoteMeta(options.Search))
 		if err != nil {
-			return nil, err
+			return nil, total, err
 		}
 
 	}
@@ -92,17 +92,18 @@ func (db *DB) ListDevices(ctx context.Context, options model.DeviceListOptions) 
 		return strings.Compare(afield, bfield) * direction
 	})
 
+	total = int64(len(devices))
 	if options.Limit > 0 || options.Offset > 0 {
 		if options.Offset >= int64(len(devices)) {
-			return []model.DeviceWithConnectionState{}, nil
+			return []model.DeviceWithConnectionState{}, total, nil
 		}
 		if (options.Limit + options.Offset) >= int64(len(devices)) {
-			return devices[options.Offset:], nil
+			return devices[options.Offset:], total, nil
 		}
-		return devices[options.Offset : options.Limit+options.Offset], nil
+		return devices[options.Offset : options.Limit+options.Offset], total, nil
 	}
 
-	return devices, nil
+	return devices, total, nil
 }
 
 func (db *DB) SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error {

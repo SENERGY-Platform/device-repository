@@ -24,6 +24,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 type Interface = api.Controller
@@ -50,6 +51,28 @@ func do[T any](req *http.Request) (result T, err error, code int) {
 	if err != nil {
 		_, _ = io.ReadAll(resp.Body) //ensure resp.Body is read to EOF
 		return result, err, http.StatusInternalServerError
+	}
+	return
+}
+
+func doWithTotalInResult[T any](req *http.Request) (result T, total int64, err error, code int) {
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode > 299 {
+		temp, _ := io.ReadAll(resp.Body) //read error response end ensure that resp.Body is read to EOF
+		return result, total, fmt.Errorf("unexpected statuscode %v: %v", resp.StatusCode, string(temp)), resp.StatusCode
+	}
+	total, err = strconv.ParseInt(resp.Header.Get("X-Total-Count"), 10, 64)
+	if err != nil {
+		return result, total, fmt.Errorf("unable to read X-Total-Count header %w", err), http.StatusInternalServerError
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		_, _ = io.ReadAll(resp.Body) //ensure resp.Body is read to EOF
+		return result, total, err, http.StatusInternalServerError
 	}
 	return
 }

@@ -95,12 +95,12 @@ func ExtendedDeviceEndpoints(config config.Config, control Controller, router *h
 			deviceListOptions.Permission = model.READ
 		}
 
-		result, err, errCode := control.ListExtendedDevices(util.GetAuthToken(request), deviceListOptions)
+		result, total, err, errCode := control.ListExtendedDevices(util.GetAuthToken(request), deviceListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
 		}
-
+		writer.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {

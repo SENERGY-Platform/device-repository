@@ -27,14 +27,14 @@ type Database interface {
 	Disconnect()
 
 	GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error)
-	ListDevices(ctx context.Context, options model.DeviceListOptions) (devices []model.DeviceWithConnectionState, err error) //TODO: test
+	ListDevices(ctx context.Context, options model.DeviceListOptions, withTotal bool) (devices []model.DeviceWithConnectionState, total int64, err error)
 	SetDevice(ctx context.Context, device model.DeviceWithConnectionState) error
 	RemoveDevice(ctx context.Context, id string) error
 	GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error)
 	SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error //TODO: test
 
 	GetHub(ctx context.Context, id string) (hub model.HubWithConnectionState, exists bool, err error)
-	ListHubs(ctx context.Context, options model.HubListOptions) (hubs []model.HubWithConnectionState, err error) //TODO: test
+	ListHubs(ctx context.Context, options model.HubListOptions, withTotal bool) (hubs []model.HubWithConnectionState, total int64, err error)
 	SetHub(ctx context.Context, hub model.HubWithConnectionState) error
 	RemoveHub(ctx context.Context, id string) error
 	GetHubsByDeviceId(ctx context.Context, deviceId string) (hubs []model.HubWithConnectionState, err error)

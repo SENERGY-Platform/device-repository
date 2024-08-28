@@ -353,7 +353,7 @@ func TestDeviceQuery(t *testing.T) {
 	t.Run("test list extended-devices", func(t *testing.T) {
 		c := client.NewClient("http://localhost:" + conf.ServerPort)
 		t.Run("list none", func(t *testing.T) {
-			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Ids: []string{}})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Ids: []string{}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -364,7 +364,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list all", func(t *testing.T) {
-			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid"})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -378,7 +378,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list limit/offset", func(t *testing.T) {
-			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -393,7 +393,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list ids all", func(t *testing.T) {
-			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -408,7 +408,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list ids d1, d3", func(t *testing.T) {
-			result, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return

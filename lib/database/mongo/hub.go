@@ -100,7 +100,7 @@ func (this *Mongo) GetHubsByDeviceId(ctx context.Context, id string) (hubs []mod
 	return hubs, err
 }
 
-func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOptions) (result []model.HubWithConnectionState, err error) {
+func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOptions, withTotal bool) (result []model.HubWithConnectionState, total int64, err error) {
 	opt := options.Find()
 	if listOptions.Limit > 0 {
 		opt.SetLimit(listOptions.Limit)
@@ -137,10 +137,17 @@ func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOption
 
 	cursor, err := this.hubCollection().Find(ctx, filter, opt)
 	if err != nil {
-		return result, err
+		return result, total, err
 	}
 	result, err, _ = readCursorResult[model.HubWithConnectionState](ctx, cursor)
-	return result, err
+	if err != nil {
+		return result, total, err
+	}
+	total, err = this.hubCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return result, total, err
+	}
+	return result, total, err
 }
 
 func (this *Mongo) SetHubConnectionState(ctx context.Context, id string, state models.ConnectionState) error {

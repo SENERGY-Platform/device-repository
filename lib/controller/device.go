@@ -33,7 +33,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, err error, errCode int) {
+func (this *Controller) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
 	ids := []string{}
 	permissionFlag := options.Permission
 	if permissionFlag == models.UnsetPermissionFlag {
@@ -41,7 +41,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 	}
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
-		return result, err, http.StatusBadRequest
+		return result, total, err, http.StatusBadRequest
 	}
 
 	//check permissions
@@ -51,7 +51,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
 			if err != nil {
-				return result, err, http.StatusInternalServerError
+				return result, total, err, http.StatusInternalServerError
 			}
 		}
 	} else {
@@ -59,7 +59,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 		options.Offset = 0
 		idMap, err := this.security.CheckMultiple(token, this.config.DeviceTopic, options.Ids, permissionFlag)
 		if err != nil {
-			return result, err, http.StatusInternalServerError
+			return result, total, err, http.StatusInternalServerError
 		}
 		for id, ok := range idMap {
 			if ok {
@@ -82,9 +82,9 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 	options.Ids = pureIds
 
 	ctx, _ := getTimeoutContext()
-	devices, err := this.db.ListDevices(ctx, options)
+	devices, total, err := this.db.ListDevices(ctx, options, true)
 	if err != nil {
-		return result, err, http.StatusInternalServerError
+		return result, total, err, http.StatusInternalServerError
 	}
 
 	//get device-types for use in extendDevice()
@@ -95,7 +95,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 		}) {
 			dt, exists, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 			if err != nil {
-				return result, err, http.StatusInternalServerError
+				return result, total, err, http.StatusInternalServerError
 			}
 			if exists {
 				deviceTypes = append(deviceTypes, dt)
@@ -154,9 +154,9 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 	}
 	wg.Wait()
 	if err != nil {
-		return result, err, errCode
+		return result, total, err, errCode
 	}
-	return result, nil, http.StatusOK
+	return result, total, nil, http.StatusOK
 }
 
 func (this *Controller) ListDevices(token string, options model.DeviceListOptions) (result []models.Device, err error, errCode int) {
@@ -205,7 +205,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 	options.Ids = pureIds
 
 	ctx, _ := getTimeoutContext()
-	devices, err := this.db.ListDevices(ctx, options)
+	devices, _, err := this.db.ListDevices(ctx, options, false)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

@@ -46,13 +46,13 @@ func (db *DB) GetHubsByDeviceId(_ context.Context, id string) (hubs []model.HubW
 	return
 }
 
-func (db *DB) ListHubs(ctx context.Context, options model.HubListOptions) (hubs []model.HubWithConnectionState, err error) {
+func (db *DB) ListHubs(ctx context.Context, options model.HubListOptions, withTotal bool) (hubs []model.HubWithConnectionState, total int64, err error) {
 	hubs = []model.HubWithConnectionState{}
 	var r *regexp.Regexp
 	if options.Search != "" {
 		r, err = regexp.Compile("(?i)" + regexp.QuoteMeta(options.Search))
 		if err != nil {
-			return nil, err
+			return nil, total, err
 		}
 
 	}
@@ -91,17 +91,18 @@ func (db *DB) ListHubs(ctx context.Context, options model.HubListOptions) (hubs 
 		return strings.Compare(afield, bfield) * direction
 	})
 
+	total = int64(len(hubs))
 	if options.Limit > 0 || options.Offset > 0 {
 		if options.Offset >= int64(len(hubs)) {
-			return []model.HubWithConnectionState{}, nil
+			return []model.HubWithConnectionState{}, total, nil
 		}
 		if (options.Limit + options.Offset) >= int64(len(hubs)) {
-			return hubs[options.Offset:], nil
+			return hubs[options.Offset:], total, nil
 		}
-		return hubs[options.Offset : options.Limit+options.Offset], nil
+		return hubs[options.Offset : options.Limit+options.Offset], total, nil
 	}
 
-	return hubs, nil
+	return hubs, total, nil
 }
 
 func (db *DB) SetHubConnectionState(ctx context.Context, id string, state models.ConnectionState) error {

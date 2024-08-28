@@ -27,7 +27,7 @@ import (
 
 const extendedDevicePath = "extended-devices"
 
-func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, err error, errCode int) {
+func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
 		query.Set("p", string(options.Permission))
@@ -56,10 +56,10 @@ func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptio
 	}
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+queryString, nil)
 	if err != nil {
-		return result, err, http.StatusInternalServerError
+		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.ExtendedDevice](req)
+	return doWithTotalInResult[[]models.ExtendedDevice](req)
 }
 
 func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
