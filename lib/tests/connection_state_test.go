@@ -405,6 +405,38 @@ func TestConnectionStateHandling(t *testing.T) {
 	})
 
 	t.Run("set connection state", func(t *testing.T) {
+		t.Run("set unknown1 online", func(t *testing.T) {
+			dx1.ConnectionState = models.ConnectionStateOnline
+			err = producer.PublishDeviceConnectionState("unknown1", true)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		})
+		t.Run("set unknown2 offline", func(t *testing.T) {
+			dx1.ConnectionState = models.ConnectionStateOnline
+			err = producer.PublishDeviceConnectionState("unknown2", true)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		})
+		t.Run("set unknown1 hub online", func(t *testing.T) {
+			dx1.ConnectionState = models.ConnectionStateOnline
+			err = producer.PublishHubConnectionState("unknown1", true)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		})
+		t.Run("set unknown2 hub offline", func(t *testing.T) {
+			dx1.ConnectionState = models.ConnectionStateOnline
+			err = producer.PublishHubConnectionState("unknown2", true)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		})
 		t.Run("set d1 online", func(t *testing.T) {
 			dx1.ConnectionState = models.ConnectionStateOnline
 			err = producer.PublishDeviceConnectionState(d1.Id, true)
