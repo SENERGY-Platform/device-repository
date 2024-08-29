@@ -49,7 +49,7 @@ func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (r
 		query.Set("limit", strconv.FormatInt(options.Limit, 10))
 	}
 	if options.Offset != 0 {
-		query.Set("offset", strconv.FormatInt(options.Limit, 10))
+		query.Set("offset", strconv.FormatInt(options.Offset, 10))
 	}
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()

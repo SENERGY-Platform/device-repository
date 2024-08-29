@@ -51,7 +51,7 @@ func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptio
 		query.Set("limit", strconv.FormatInt(options.Limit, 10))
 	}
 	if options.Offset != 0 {
-		query.Set("offset", strconv.FormatInt(options.Limit, 10))
+		query.Set("offset", strconv.FormatInt(options.Offset, 10))
 	}
 	queryString := ""
 	if len(query) > 0 {
