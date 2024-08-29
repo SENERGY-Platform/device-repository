@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -39,34 +40,49 @@ func (c *Client) ReadDeviceType(id string, token string) (result models.DeviceTy
 }
 
 func (c *Client) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
-	filterStr, err := json.Marshal(filter)
+	options := url.Values{
+		"limit":                 {strconv.FormatInt(limit, 10)},
+		"offset":                {strconv.FormatInt(offset, 10)},
+		"sort":                  {sort},
+		"include_id_modified":   {strconv.FormatBool(includeModified)},
+		"include_id_unmodified": {strconv.FormatBool(includeUnmodified)},
+		"interactions-filter":   {strings.Join(interactionsFilter, ",")},
+	}
+	if len(filter) > 0 {
+		filterStr, err := json.Marshal(filter)
+		if err != nil {
+			return result, err, http.StatusBadRequest
+		}
+		options.Add("filter", string(filterStr))
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types?"+options.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types?limit="+strconv.FormatInt(limit, 10)+
-		"&offset="+strconv.FormatInt(offset, 10)+"&sort="+sort+"&filter="+string(filterStr)+
-		"&interactions-filter="+strings.Join(interactionsFilter, ",")+"&include_id_modified="+
-		strconv.FormatBool(includeModified)+"&include_id_unmodified="+strconv.FormatBool(includeUnmodified), nil)
 	req.Header.Set("Authorization", token)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
-	}
 	return do[[]models.DeviceType](req)
 }
 
 func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
-	filterStr, err := json.Marshal(filter)
+	options := url.Values{
+		"limit":                 {strconv.FormatInt(limit, 10)},
+		"offset":                {strconv.FormatInt(offset, 10)},
+		"sort":                  {sort},
+		"include_id_modified":   {strconv.FormatBool(includeModified)},
+		"include_id_unmodified": {strconv.FormatBool(includeUnmodified)},
+	}
+	if len(filter) > 0 {
+		filterStr, err := json.Marshal(filter)
+		if err != nil {
+			return result, err, http.StatusBadRequest
+		}
+		options.Add("filter", string(filterStr))
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types?"+options.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types?limit="+strconv.FormatInt(limit, 10)+
-		"&offset="+strconv.FormatInt(offset, 10)+"&sort="+sort+"&filter="+string(filterStr)+
-		"&include_id_modified="+
-		strconv.FormatBool(includeModified)+"&include_id_unmodified="+strconv.FormatBool(includeUnmodified), nil)
 	req.Header.Set("Authorization", token)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
-	}
 	return do[[]models.DeviceType](req)
 }
 
