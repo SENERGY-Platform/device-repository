@@ -143,9 +143,11 @@ func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOption
 	if err != nil {
 		return result, total, err
 	}
-	total, err = this.hubCollection().CountDocuments(ctx, filter)
-	if err != nil {
-		return result, total, err
+	if withTotal {
+		total, err = this.hubCollection().CountDocuments(ctx, filter)
+		if err != nil {
+			return result, total, err
+		}
 	}
 	return result, total, err
 }

@@ -202,9 +202,11 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	if err != nil {
 		return result, total, err
 	}
-	total, err = this.deviceCollection().CountDocuments(ctx, filter)
-	if err != nil {
-		return result, total, err
+	if withTotal {
+		total, err = this.deviceCollection().CountDocuments(ctx, filter)
+		if err != nil {
+			return result, total, err
+		}
 	}
 	return result, total, err
 }
