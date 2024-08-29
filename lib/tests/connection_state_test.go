@@ -1198,6 +1198,36 @@ func TestConnectionStateHandling(t *testing.T) {
 					t.Errorf("%#v\n", result)
 				}
 			})
+			t.Run("sort display_name asc", func(t *testing.T) {
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{SortBy: "display_name"})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
+					return
+				}
+				expected := []models.ExtendedDevice{dx1, dx3, dx2} //by sort: 3 before 2
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("sort display_name desc", func(t *testing.T) {
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{SortBy: "display_name.desc"})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if total != 3 {
+					t.Error(total)
+					return
+				}
+				expected := []models.ExtendedDevice{dx2, dx3, dx1} //by sort: 3 before 2
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
 		})
 		t.Run("check extended device d1", func(t *testing.T) {
 			result, err, _ := c.ReadExtendedDevice(d1.Id, adminjwt, models.Read)

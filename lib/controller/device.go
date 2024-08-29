@@ -282,12 +282,6 @@ func (this *Controller) readDevice(id string) (result model.DeviceWithConnection
 }
 
 func (this *Controller) extendDevice(token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType) (models.ExtendedDevice, error) {
-	displayName := device.Name
-	for _, attr := range device.Attributes {
-		if attr.Key == "shared/nickname" && attr.Value != "" {
-			displayName = attr.Value
-		}
-	}
 	dtIndex := slices.IndexFunc(deviceTypes, func(deviceType models.DeviceType) bool {
 		return deviceType.Id == device.DeviceTypeId
 	})
@@ -302,7 +296,7 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 	return models.ExtendedDevice{
 		Device:          device.Device,
 		ConnectionState: device.ConnectionState,
-		DisplayName:     displayName,
+		DisplayName:     device.DisplayName,
 		DeviceTypeName:  deviceTypeName,
 		Shared:          requestingUser != device.OwnerId,
 		Permissions:     permissions,

@@ -645,6 +645,7 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 					Name:    "withOwner",
 					OwnerId: "withOwner",
 				},
+				DisplayName: "withOwner",
 			},
 			{
 				Device: models.Device{
@@ -653,6 +654,7 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 					Name:    "withOtherOwner",
 					OwnerId: "withOtherOwner",
 				},
+				DisplayName: "withOtherOwner",
 			},
 			{
 				Device: models.Device{
@@ -661,6 +663,7 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 					Name:    "withEmptyOwner",
 					OwnerId: "withEmptyOwner",
 				},
+				DisplayName: "withEmptyOwner",
 			},
 			{
 				Device: models.Device{
@@ -669,6 +672,7 @@ func TestDeviceOwnerMigrationWithMockProducer(t *testing.T) {
 					Name:    "withNullOwner",
 					OwnerId: "withNullOwner",
 				},
+				DisplayName: "withNullOwner",
 			},
 		}
 		for _, d := range expected {

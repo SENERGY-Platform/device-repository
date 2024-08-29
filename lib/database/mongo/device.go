@@ -45,6 +45,14 @@ func init() {
 		if err != nil {
 			return err
 		}
+		err = db.ensureIndex(collection, "devicedisplaynameindex", DeviceBson.DisplayName, true, false) //to support faster sort
+		if err != nil {
+			return err
+		}
+		err = db.ensureIndex(collection, "deviceconnectionstateindex", DeviceBson.ConnectionState, true, false) //to support faster sort
+		if err != nil {
+			return err
+		}
 		err = db.ensureIndex(collection, "devicedevicetypeindex", DeviceBson.DeviceTypeId, true, false)
 		if err != nil {
 			return err
@@ -53,8 +61,34 @@ func init() {
 		if err != nil {
 			return err
 		}
+		err = migrateDisplayName(db, collection)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
+}
+
+func migrateDisplayName(db *Mongo, collection *mongo.Collection) error {
+	ctx, _ := getTimeoutContext()
+	cursor, err := collection.Find(ctx, bson.M{DeviceBson.DisplayName: bson.M{"$exists": false}})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var device model.DeviceWithConnectionState
+		err := cursor.Decode(&device)
+		if err != nil {
+			return err
+		}
+		device.DisplayName = getDisplayName(device)
+		_, err = collection.UpdateOne(ctx, bson.M{DeviceBson.Id: device.Id}, device)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (this *Mongo) deviceCollection() *mongo.Collection {
@@ -78,8 +112,19 @@ func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.Devic
 }
 
 func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnectionState) error {
+	device.DisplayName = getDisplayName(device)
 	_, err := this.deviceCollection().ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, device, options.Replace().SetUpsert(true))
 	return err
+}
+
+func getDisplayName(device model.DeviceWithConnectionState) string {
+	displayName := device.Name
+	for _, attr := range device.Attributes {
+		if attr.Key == "shared/nickname" && attr.Value != "" {
+			displayName = attr.Value
+		}
+	}
+	return displayName
 }
 
 func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
@@ -139,7 +184,11 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {
-		filter[DeviceBson.Name] = bson.M{"$regex": regexp.QuoteMeta(search), "$options": "i"}
+		escapedSearch := regexp.QuoteMeta(search)
+		filter["$or"] = []interface{}{
+			bson.M{DeviceBson.Name: bson.M{"$regex": escapedSearch, "$options": "i"}},
+			bson.M{DeviceBson.DisplayName: bson.M{"$regex": escapedSearch, "$options": "i"}},
+		}
 	}
 	if listOptions.ConnectionState != nil {
 		filter[DeviceBson.ConnectionState] = listOptions.ConnectionState

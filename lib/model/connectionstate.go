@@ -20,7 +20,8 @@ import "github.com/SENERGY-Platform/models/go/models"
 
 type DeviceWithConnectionState struct {
 	models.Device   `bson:",inline"`
-	ConnectionState models.ConnectionState `json:"connection_state"`
+	ConnectionState models.ConnectionState `json:"connection_state" bson:"connection_state"`
+	DisplayName     string                 `json:"display_name" bson:"display_name"`
 }
 
 type HubWithConnectionState struct {
