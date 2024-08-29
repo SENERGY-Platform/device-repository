@@ -83,7 +83,7 @@ func migrateDisplayName(db *Mongo, collection *mongo.Collection) error {
 			return err
 		}
 		device.DisplayName = getDisplayName(device)
-		_, err = collection.UpdateOne(ctx, bson.M{DeviceBson.Id: device.Id}, device)
+		_, err = collection.ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, device, options.Replace().SetUpsert(true))
 		if err != nil {
 			return err
 		}
