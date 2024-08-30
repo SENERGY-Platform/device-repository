@@ -182,6 +182,12 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	if listOptions.DeviceTypeIds != nil {
 		filter[DeviceBson.DeviceTypeId] = bson.M{"$in": listOptions.DeviceTypeIds}
 	}
+	if listOptions.AttributeKeys != nil {
+		filter[DeviceBson.Attributes[0].Key] = bson.M{"$in": listOptions.AttributeKeys}
+	}
+	if listOptions.AttributeValues != nil {
+		filter[DeviceBson.Attributes[0].Value] = bson.M{"$in": listOptions.AttributeValues}
+	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {
 		escapedSearch := regexp.QuoteMeta(search)

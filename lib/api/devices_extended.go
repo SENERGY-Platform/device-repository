@@ -80,6 +80,23 @@ func ExtendedDeviceEndpoints(config config.Config, control Controller, router *h
 			}
 		}
 
+		attrKeysParam := request.URL.Query().Get("attr-keys")
+		if request.URL.Query().Has("attr-keys") {
+			if attrKeysParam != "" {
+				deviceListOptions.AttributeKeys = strings.Split(strings.TrimSpace(attrKeysParam), ",")
+			} else {
+				deviceListOptions.AttributeKeys = []string{}
+			}
+		}
+		attrValuesParam := request.URL.Query().Get("attr-values")
+		if request.URL.Query().Has("attr-values") {
+			if attrValuesParam != "" {
+				deviceListOptions.AttributeValues = strings.Split(strings.TrimSpace(attrValuesParam), ",")
+			} else {
+				deviceListOptions.AttributeValues = []string{}
+			}
+		}
+
 		deviceListOptions.Search = request.URL.Query().Get("search")
 		deviceListOptions.SortBy = request.URL.Query().Get("sort")
 		if deviceListOptions.SortBy == "" {

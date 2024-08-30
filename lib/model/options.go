@@ -27,6 +27,8 @@ type DeviceListOptions struct {
 	Offset          int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
 	SortBy          string                //default name.asc
 	Permission      models.PermissionFlag //defaults to read
+	AttributeKeys   []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	AttributeValues []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
 }
 
 type HubListOptions struct {

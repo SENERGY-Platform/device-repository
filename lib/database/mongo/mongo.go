@@ -206,6 +206,24 @@ func fillObjectWithItsBsonFieldNames(ptr interface{}, prefix []string) error {
 			}
 			objval.Field(i).Set(reflect.ValueOf([]string{strings.Join(append(prefix, tags.Name), ".")}))
 		}
+		if field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Struct {
+			tags, err := bsoncodec.DefaultStructTagParser.ParseStructTags(field)
+			if err != nil {
+				return err
+			}
+			element := reflect.New(objval.Field(i).Type().Elem())
+			if tags.Inline {
+				err = fillObjectWithItsBsonFieldNames(element.Interface(), prefix)
+			} else {
+				err = fillObjectWithItsBsonFieldNames(element.Interface(), append(prefix, tags.Name))
+			}
+			if err != nil {
+				return err
+			}
+			list := reflect.New(objval.Field(i).Type())
+			list = reflect.Append(list.Elem(), element.Elem())
+			objval.Field(i).Set(list)
+		}
 		if field.Type.Kind() == reflect.Struct {
 			tags, err := bsoncodec.DefaultStructTagParser.ParseStructTags(field)
 			if err != nil {
