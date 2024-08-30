@@ -74,6 +74,10 @@ func (db *DB) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, 
 	panic("implement me")
 }
 
+func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, err error) {
+	panic("implement me")
+}
+
 func (db *DB) GetDeviceTypesByServiceId(_ context.Context, serviceId string) (result []models.DeviceType, err error) {
 	for i := range db.deviceTypes {
 		for j := range db.deviceTypes[i].Services {

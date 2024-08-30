@@ -25,8 +25,6 @@ import (
 	"strings"
 )
 
-type HubListOptions = model.HubListOptions
-
 func (c *Client) ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {

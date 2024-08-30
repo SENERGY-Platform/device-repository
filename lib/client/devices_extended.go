@@ -53,6 +53,12 @@ func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptio
 	if options.Offset != 0 {
 		query.Set("offset", strconv.FormatInt(options.Offset, 10))
 	}
+	if options.AttributeKeys != nil {
+		query.Set("attr-keys", strings.Join(options.AttributeKeys, ","))
+	}
+	if options.AttributeValues != nil {
+		query.Set("attr-values", strings.Join(options.AttributeValues, ","))
+	}
 	queryString := ""
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()

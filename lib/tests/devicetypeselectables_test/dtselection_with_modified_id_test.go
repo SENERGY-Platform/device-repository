@@ -508,7 +508,6 @@ func TestDeviceTypeSelectablesV2WithModifiedIdNousA5T(t *testing.T) {
 }
 
 func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
-
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -674,6 +673,15 @@ func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
 
 	t.Run("sort name asc", testGetRequest(testenv.Userjwt, conf, "/device-types?sort=name.asc&interactions-filter=request&include_id_modified=true&filter="+url.QueryEscape(string(criteriaJson)), []models.DeviceType{dt, dtSg1, dtSg2}))
 	t.Run("sort name desc", testGetRequest(testenv.Userjwt, conf, "/device-types?sort=name.desc&interactions-filter=request&include_id_modified=true&filter="+url.QueryEscape(string(criteriaJson)), []models.DeviceType{dtSg2, dtSg1, dt}))
+
+	t.Run("v3 without modify", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(string(criteriaJson)), []models.DeviceType{dt}))
+	t.Run("v3 with modify v2", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?include-modified=true&criteria="+url.QueryEscape(string(criteriaJson)), []models.DeviceType{dt, dtSg1, dtSg2}))
+
+	t.Run("v3 modified only", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?include-modified=true&ignore-unmodified=true&criteria="+url.QueryEscape(string(criteriaJson)), []models.DeviceType{dtSg1, dtSg2}))
+	t.Run("v3 unfiltered modified only", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?include-modified=true&ignore-unmodified=true", []models.DeviceType{dtSg1, dtSg2}))
+
+	t.Run("v3 sort name asc", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?sort=name.asc&include-modified=true&criteria="+url.QueryEscape(string(criteriaJson)), []models.DeviceType{dt, dtSg1, dtSg2}))
+	t.Run("v3 sort name desc", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?sort=name.desc&include-modified=true&criteria="+url.QueryEscape(string(criteriaJson)), []models.DeviceType{dtSg2, dtSg1, dt}))
 
 }
 

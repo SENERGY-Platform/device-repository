@@ -76,6 +76,15 @@ func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int6
 	return this.modifyDeviceTypeList(temp, sort, includeModified, includeUnmodified)
 }
 
+func (this *Controller) ListDeviceTypesV3(token string, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	temp, err := this.db.ListDeviceTypesV3(ctx, listOptions)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return this.modifyDeviceTypeList(temp, listOptions.SortBy, listOptions.IncludeModified, !listOptions.IgnoreUnmodified)
+}
+
 func (this *Controller) ValidateDeviceType(dt models.DeviceType, options model.ValidationOptions) (err error, code int) {
 	if dt.Id == "" {
 		return errors.New("missing device-type id"), http.StatusBadRequest

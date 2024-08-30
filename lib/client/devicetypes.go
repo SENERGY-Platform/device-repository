@@ -86,6 +86,54 @@ func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort
 	return do[[]models.DeviceType](req)
 }
 
+func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOptions) (result []models.DeviceType, err error, errCode int) {
+	queryString := ""
+	query := url.Values{}
+	if options.Search != "" {
+		query.Set("search", options.Search)
+	}
+	if options.Ids != nil {
+		query.Set("ids", strings.Join(options.Ids, ","))
+	}
+	if options.SortBy != "" {
+		query.Set("sort", options.SortBy)
+	}
+	if options.Limit != 0 {
+		query.Set("limit", strconv.FormatInt(options.Limit, 10))
+	}
+	if options.Offset != 0 {
+		query.Set("offset", strconv.FormatInt(options.Offset, 10))
+	}
+	if options.AttributeKeys != nil {
+		query.Set("attr-keys", strings.Join(options.AttributeKeys, ","))
+	}
+	if options.AttributeValues != nil {
+		query.Set("attr-values", strings.Join(options.AttributeValues, ","))
+	}
+	if options.IncludeModified {
+		query.Set("include-modified", strconv.FormatBool(options.IncludeModified))
+	}
+	if options.IgnoreUnmodified {
+		query.Set("ignore-unmodified", strconv.FormatBool(options.IgnoreUnmodified))
+	}
+	if len(query) > 0 {
+		queryString = "?" + query.Encode()
+	}
+	if len(options.Criteria) > 0 {
+		filterStr, err := json.Marshal(options.Criteria)
+		if err != nil {
+			return result, err, http.StatusBadRequest
+		}
+		query.Add("criteria", string(filterStr))
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v3/device-types?"+queryString, nil)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[[]models.DeviceType](req)
+}
+
 type DeviceTypeValidationOptions = model.ValidationOptions
 
 func (c *Client) ValidateDeviceType(deviceType models.DeviceType, options model.ValidationOptions) (err error, code int) {

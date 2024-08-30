@@ -1084,6 +1084,11 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 	t.Run("matching", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{dt}))
 	t.Run("parent", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{dt}))
 	t.Run("child", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"child"}]`), []models.DeviceType{}))
+
+	t.Run("v3 matching", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{dt}))
+	t.Run("v3 parent", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{dt}))
+	t.Run("v3 child", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"child"}]`), []models.DeviceType{}))
+
 }
 
 func testGetRequest(token string, conf config.Config, path string, expected interface{}) func(t *testing.T) {

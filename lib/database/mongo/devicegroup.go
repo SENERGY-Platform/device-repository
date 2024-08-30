@@ -42,10 +42,6 @@ func init() {
 		if err != nil {
 			return err
 		}
-		serviceIdKey, err = getBsonFieldName(models.Service{}, serviceIdFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceGroupCollection)
 		err = db.ensureIndex(collection, "deviceGroupidindex", deviceGroupIdKey, true, true)
 		if err != nil {

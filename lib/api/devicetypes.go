@@ -51,6 +51,104 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 		return
 	})
 
+	router.GET("/v3"+resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		options := model.DeviceTypeListOptions{
+			Limit:  100,
+			Offset: 0,
+		}
+		var err error
+		limitParam := request.URL.Query().Get("limit")
+		if limitParam != "" {
+			options.Limit, err = strconv.ParseInt(limitParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse limit:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		offsetParam := request.URL.Query().Get("offset")
+		if offsetParam != "" {
+			options.Offset, err = strconv.ParseInt(offsetParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse offset:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		idsParam := request.URL.Query().Get("ids")
+		if request.URL.Query().Has("ids") {
+			if idsParam != "" {
+				options.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
+			} else {
+				options.Ids = []string{}
+			}
+		}
+
+		attrKeysParam := request.URL.Query().Get("attr-keys")
+		if request.URL.Query().Has("attr-keys") {
+			if attrKeysParam != "" {
+				options.AttributeKeys = strings.Split(strings.TrimSpace(attrKeysParam), ",")
+			} else {
+				options.AttributeKeys = []string{}
+			}
+		}
+		attrValuesParam := request.URL.Query().Get("attr-values")
+		if request.URL.Query().Has("attr-values") {
+			if attrValuesParam != "" {
+				options.AttributeValues = strings.Split(strings.TrimSpace(attrValuesParam), ",")
+			} else {
+				options.AttributeValues = []string{}
+			}
+		}
+
+		options.Search = request.URL.Query().Get("search")
+		options.SortBy = request.URL.Query().Get("sort")
+		if options.SortBy == "" {
+			options.SortBy = "name.asc"
+		}
+
+		includeModifiedStr := request.URL.Query().Get("include-modified")
+		if includeModifiedStr != "" {
+			options.IncludeModified, err = strconv.ParseBool(includeModifiedStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		ignoreUnmodified := request.URL.Query().Get("ignore-unmodified")
+		if ignoreUnmodified != "" {
+			options.IgnoreUnmodified, err = strconv.ParseBool(ignoreUnmodified)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		criteria := request.URL.Query().Get("criteria")
+		if criteria != "" {
+			criteriaList := []model.FilterCriteria{}
+			err = json.Unmarshal([]byte(criteria), &criteriaList)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			options.Criteria = criteriaList
+		}
+
+		result, err, code := control.ListDeviceTypesV3(util.GetAuthToken(request), options)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+
 	/*
 			query params:
 			- limit: number; default 100

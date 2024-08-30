@@ -18,9 +18,12 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
+	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -187,6 +190,27 @@ func TestMongoDeviceType(t *testing.T) {
 		return
 	}
 
+	var listDeviceTypesV2 = func(ctx context.Context, limit int64, offset int64, sort string, filterCriteria []model.FilterCriteria, includeModified bool) (result []models.DeviceType, err error) {
+		result, err = m.ListDeviceTypesV2(ctx, limit, offset, sort, filterCriteria, includeModified)
+		if err != nil {
+			return result, err
+		}
+		result2, err := m.ListDeviceTypesV3(ctx, model.DeviceTypeListOptions{
+			Limit:           limit,
+			Offset:          offset,
+			SortBy:          sort,
+			Criteria:        filterCriteria,
+			IncludeModified: includeModified,
+		})
+		if err != nil {
+			return result, err
+		}
+		if !reflect.DeepEqual(result, result2) {
+			return result, errors.New("result != ListDeviceTypesV3()")
+		}
+		return result, nil
+	}
+
 	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
 	result, err := m.ListDeviceTypes(timeout, 100, 0, "name.asc", nil, nil, false)
 	if err != nil {
@@ -218,7 +242,7 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
-	result, err = m.ListDeviceTypesV2(timeout, 100, 0, "name.asc", nil, false)
+	result, err = listDeviceTypesV2(timeout, 100, 0, "name.asc", nil, false)
 	if err != nil {
 		t.Error(err)
 		return
@@ -233,7 +257,7 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
-	result, err = m.ListDeviceTypesV2(timeout, 100, 0, "name.desc", nil, false)
+	result, err = listDeviceTypesV2(timeout, 100, 0, "name.desc", nil, false)
 	if err != nil {
 		t.Error(err)
 		return

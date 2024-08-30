@@ -45,6 +45,7 @@ type Database interface {
 	RemoveDeviceType(ctx context.Context, id string) error
 	ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []models.DeviceType, err error)
 	ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool) (result []models.DeviceType, err error)
+	ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, err error)
 	GetDeviceTypesByServiceId(ctx context.Context, serviceId string) ([]models.DeviceType, error)
 
 	GetDeviceTypeCriteriaByAspectIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error)

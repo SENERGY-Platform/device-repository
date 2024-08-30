@@ -30,6 +30,7 @@ import (
 	"net/http"
 	"reflect"
 	"runtime/debug"
+	"slices"
 	"strings"
 	"time"
 )
@@ -179,17 +180,22 @@ func getTimeoutContext() (context.Context, context.CancelFunc) {
 
 func getBsonFieldObject[T any]() T {
 	v := new(T)
-	err := fillObjectWithItsBsonFieldNames(v, nil)
+	err := fillObjectWithItsBsonFieldNames(v, nil, nil)
 	if err != nil {
 		panic(err)
 	}
 	return *v
 }
 
-func fillObjectWithItsBsonFieldNames(ptr interface{}, prefix []string) error {
+func fillObjectWithItsBsonFieldNames(ptr interface{}, prefix []string, done []string) error {
 	ptrval := reflect.ValueOf(ptr)
 	objval := reflect.Indirect(ptrval)
 	objecttype := objval.Type()
+	objTypeStr := objecttype.Name()
+	if slices.Contains(done, objTypeStr) {
+		return nil
+	}
+	done = append(done, objTypeStr)
 	for i := 0; i < objecttype.NumField(); i++ {
 		field := objecttype.Field(i)
 		if field.Type.Kind() == reflect.String {
@@ -213,9 +219,9 @@ func fillObjectWithItsBsonFieldNames(ptr interface{}, prefix []string) error {
 			}
 			element := reflect.New(objval.Field(i).Type().Elem())
 			if tags.Inline {
-				err = fillObjectWithItsBsonFieldNames(element.Interface(), prefix)
+				err = fillObjectWithItsBsonFieldNames(element.Interface(), prefix, done)
 			} else {
-				err = fillObjectWithItsBsonFieldNames(element.Interface(), append(prefix, tags.Name))
+				err = fillObjectWithItsBsonFieldNames(element.Interface(), append(prefix, tags.Name), done)
 			}
 			if err != nil {
 				return err
@@ -230,9 +236,9 @@ func fillObjectWithItsBsonFieldNames(ptr interface{}, prefix []string) error {
 				return err
 			}
 			if tags.Inline {
-				err = fillObjectWithItsBsonFieldNames(objval.Field(i).Addr().Interface(), prefix)
+				err = fillObjectWithItsBsonFieldNames(objval.Field(i).Addr().Interface(), prefix, done)
 			} else {
-				err = fillObjectWithItsBsonFieldNames(objval.Field(i).Addr().Interface(), append(prefix, tags.Name))
+				err = fillObjectWithItsBsonFieldNames(objval.Field(i).Addr().Interface(), append(prefix, tags.Name), done)
 			}
 			if err != nil {
 				return err

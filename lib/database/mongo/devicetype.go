@@ -25,53 +25,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"regexp"
 	"runtime/debug"
+	"slices"
 	"strings"
 )
 
-const deviceTypeIdFieldName = "Id"
-const deviceTypeNameFieldName = "Name"
-const deviceTypeServiceFieldName = "Services"
-const serviceIdFieldName = "Id"
-
-var deviceTypeIdKey string
-var deviceTypeNameKey string
-var serviceIdKey string
-var deviceTypeServicesKey string
-
-var deviceTypeByServicePath string
+var DeviceTypeBson = getBsonFieldObject[models.DeviceType]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceTypeIdKey, err = getBsonFieldName(models.DeviceType{}, deviceTypeIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeNameKey, err = getBsonFieldName(models.DeviceType{}, deviceTypeNameFieldName)
-		if err != nil {
-			return err
-		}
-		serviceIdKey, err = getBsonFieldName(models.Service{}, serviceIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeServicesKey, err = getBsonFieldName(models.DeviceType{}, deviceTypeServiceFieldName)
-		if err != nil {
-			return err
-		}
-		deviceTypeByServicePath = deviceTypeServicesKey + "." + serviceIdKey
 
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceTypeCollection)
-		err = db.ensureIndex(collection, "devicetypeidindex", deviceTypeIdKey, true, true)
+		err = db.ensureIndex(collection, "devicetypeidindex", DeviceTypeBson.Id, true, true)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "devicetypenameindex", deviceTypeNameKey, true, false)
+		err = db.ensureIndex(collection, "devicetypenameindex", DeviceTypeBson.Name, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "devicetypeserviceindex", deviceTypeByServicePath, true, false)
+		err = db.ensureIndex(collection, "devicetypeserviceindex", DeviceTypeBson.Services[0].Id, true, false)
 		if err != nil {
 			return err
 		}
@@ -84,7 +59,7 @@ func (this *Mongo) deviceTypeCollection() *mongo.Collection {
 }
 
 func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error) {
-	result := this.deviceTypeCollection().FindOne(ctx, bson.M{deviceTypeIdKey: id})
+	result := this.deviceTypeCollection().FindOne(ctx, bson.M{DeviceTypeBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return deviceType, false, nil
@@ -106,14 +81,14 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	opt.SetSkip(offset)
 
 	parts := strings.Split(sort, ".")
-	sortby := deviceTypeIdKey
+	sortby := DeviceTypeBson.Id
 	switch parts[0] {
 	case "id":
-		sortby = deviceTypeIdKey
+		sortby = DeviceTypeBson.Id
 	case "name":
-		sortby = deviceTypeNameKey
+		sortby = DeviceTypeBson.Name
 	default:
-		sortby = deviceTypeIdKey
+		sortby = DeviceTypeBson.Id
 	}
 	direction := int32(1)
 	if len(parts) > 1 && parts[1] == "desc" {
@@ -128,7 +103,7 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 		if err != nil {
 			return nil, err
 		}
-		filter = bson.M{deviceTypeIdKey: bson.M{"$in": deviceTypeIds}}
+		filter = bson.M{DeviceTypeBson.Id: bson.M{"$in": deviceTypeIds}}
 	}
 
 	cursor, err := this.deviceTypeCollection().Find(ctx, filter, opt)
@@ -160,14 +135,14 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 	opt.SetSkip(offset)
 
 	parts := strings.Split(sort, ".")
-	sortby := deviceTypeIdKey
+	sortby := DeviceTypeBson.Id
 	switch parts[0] {
 	case "id":
-		sortby = deviceTypeIdKey
+		sortby = DeviceTypeBson.Id
 	case "name":
-		sortby = deviceTypeNameKey
+		sortby = DeviceTypeBson.Name
 	default:
-		sortby = deviceTypeIdKey
+		sortby = DeviceTypeBson.Id
 	}
 	direction := int32(1)
 	if len(parts) > 1 && parts[1] == "desc" {
@@ -182,7 +157,7 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 		if err != nil {
 			return nil, err
 		}
-		filter = bson.M{deviceTypeIdKey: bson.M{"$in": deviceTypeIds}}
+		filter = bson.M{DeviceTypeBson.Id: bson.M{"$in": deviceTypeIds}}
 	} else if includeModified {
 		deviceTypeIds, err = this.filterDeviceTypeIdsByFilterCriteriaV2(ctx, nil, model.FilterCriteria{}, includeModified)
 		if err != nil {
@@ -210,6 +185,109 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 		result = addModifiedElements(result, deviceTypeIds)
 	}
 	return
+}
+
+func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, err error) {
+	result = []models.DeviceType{}
+
+	opt := options.Find()
+	if listOptions.Limit > 0 {
+		opt.SetLimit(listOptions.Limit)
+	}
+	if listOptions.Offset > 0 {
+		opt.SetSkip(listOptions.Offset)
+	}
+
+	if listOptions.SortBy == "" {
+		listOptions.SortBy = DeviceTypeBson.Name + ".asc"
+	}
+
+	sortby := listOptions.SortBy
+	sortby = strings.TrimSuffix(sortby, ".asc")
+	sortby = strings.TrimSuffix(sortby, ".desc")
+	switch sortby {
+	case "id":
+		sortby = DeviceTypeBson.Id
+	case "name":
+		sortby = DeviceTypeBson.Name
+	default:
+		sortby = DeviceTypeBson.Id
+	}
+
+	direction := int32(1)
+	if strings.HasSuffix(listOptions.SortBy, ".desc") {
+		direction = int32(-1)
+	}
+	opt.SetSort(bson.D{{sortby, direction}})
+
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[DeviceBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+
+	if listOptions.AttributeKeys != nil {
+		filter[DeviceBson.Attributes[0].Key] = bson.M{"$in": listOptions.AttributeKeys}
+	}
+	if listOptions.AttributeValues != nil {
+		filter[DeviceBson.Attributes[0].Value] = bson.M{"$in": listOptions.AttributeValues}
+	}
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		escapedSearch := regexp.QuoteMeta(search)
+		filter["$or"] = []interface{}{
+			bson.M{DeviceTypeBson.Name: bson.M{"$regex": escapedSearch, "$options": "i"}},
+			bson.M{DeviceTypeBson.Description: bson.M{"$regex": escapedSearch, "$options": "i"}},
+		}
+	}
+
+	var deviceTypeIdsWithModifier []interface{}
+	if len(listOptions.Criteria) > 0 {
+		deviceTypeIdsWithModifier, err = this.GetDeviceTypeIdsByFilterCriteriaV2(ctx, listOptions.Criteria, listOptions.IncludeModified)
+		if err != nil {
+			return nil, err
+		}
+		filter = bson.M{DeviceTypeBson.Id: bson.M{"$in": mergeDeviceIdFilter(deviceTypeIdsWithModifier, listOptions.Ids)}}
+	} else if listOptions.IncludeModified {
+		deviceTypeIdsWithModifier, err = this.filterDeviceTypeIdsByFilterCriteriaV2(ctx, nil, model.FilterCriteria{}, listOptions.IncludeModified)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	cursor, err := this.deviceTypeCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		deviceType := models.DeviceType{}
+		err = cursor.Decode(&deviceType)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, deviceType)
+	}
+	err = cursor.Err()
+	if err != nil {
+		return result, err
+	}
+	if listOptions.IncludeModified {
+		result = addModifiedElements(result, deviceTypeIdsWithModifier)
+	}
+	return
+}
+
+func mergeDeviceIdFilter(ids []interface{}, ids2 []string) []string {
+	result := []string{}
+	if ids == nil {
+		return ids2
+	}
+	for _, id := range ids {
+		idStr, ok := id.(string)
+		if ok && (ids2 == nil || slices.Contains(ids2, idStr)) {
+			result = append(result, idStr)
+		}
+	}
+	return result
 }
 
 func addModifiedElements(deviceTypes []models.DeviceType, ids []interface{}) (result []models.DeviceType) {
@@ -240,7 +318,7 @@ func addModifiedElements(deviceTypes []models.DeviceType, ids []interface{}) (re
 }
 
 func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceType) error {
-	_, err := this.deviceTypeCollection().ReplaceOne(ctx, bson.M{deviceTypeIdKey: deviceType.Id}, deviceType, options.Replace().SetUpsert(true))
+	_, err := this.deviceTypeCollection().ReplaceOne(ctx, bson.M{DeviceTypeBson.Id: deviceType.Id}, deviceType, options.Replace().SetUpsert(true))
 	if err != nil {
 		return err
 	}
@@ -252,7 +330,7 @@ func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceTy
 }
 
 func (this *Mongo) RemoveDeviceType(ctx context.Context, id string) error {
-	_, err := this.deviceTypeCollection().DeleteOne(ctx, bson.M{deviceTypeIdKey: id})
+	_, err := this.deviceTypeCollection().DeleteOne(ctx, bson.M{DeviceTypeBson.Id: id})
 	if err != nil {
 		return err
 	}
@@ -268,7 +346,7 @@ func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId stri
 	opt.SetLimit(2)
 	opt.SetSkip(0)
 
-	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{deviceTypeByServicePath: serviceId}, opt)
+	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{DeviceTypeBson.Services[0].Id: serviceId}, opt)
 	if err != nil {
 		return nil, err
 	}
