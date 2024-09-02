@@ -44,7 +44,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 		return result, err, http.StatusBadRequest
 	}
 	if options.Ids == nil {
-		if !jwtToken.IsAdmin() {
+		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
