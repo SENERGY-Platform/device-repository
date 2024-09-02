@@ -46,7 +46,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 
 	//check permissions
 	if options.Ids == nil {
-		if !jwtToken.IsAdmin() {
+		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
@@ -71,6 +71,9 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 	//handle and preserve id modifiers
 	pureIds := []string{}
 	pureIdToRawIds := map[string][]string{}
+	if ids == nil {
+		pureIds = nil
+	}
 	for _, id := range ids {
 		pureId, _ := idmodifier.SplitModifier(id)
 		if !slices.Contains(pureIds, pureId) {
@@ -85,6 +88,12 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 	devices, total, err := this.db.ListDevices(ctx, options, true)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
+	}
+
+	for _, device := range devices {
+		if len(pureIdToRawIds[device.Id]) == 0 {
+			pureIdToRawIds[device.Id] = []string{device.Id}
+		}
 	}
 
 	//get device-types for use in extendDevice()
@@ -170,7 +179,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 		return result, err, http.StatusBadRequest
 	}
 	if options.Ids == nil {
-		if !jwtToken.IsAdmin() {
+		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
@@ -194,6 +203,9 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 
 	pureIds := []string{}
 	pureIdToRawIds := map[string][]string{}
+	if ids == nil {
+		pureIds = nil
+	}
 	for _, id := range ids {
 		pureId, _ := idmodifier.SplitModifier(id)
 		if !slices.Contains(pureIds, pureId) {
@@ -208,6 +220,11 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 	devices, _, err := this.db.ListDevices(ctx, options, false)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
+	}
+	for _, device := range devices {
+		if len(pureIdToRawIds[device.Id]) == 0 {
+			pureIdToRawIds[device.Id] = []string{device.Id}
+		}
 	}
 	result = []models.Device{}
 	for _, device := range devices {

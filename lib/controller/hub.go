@@ -65,6 +65,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 			}
 		}
 	}
+	options.Ids = ids
 	ctx, _ := getTimeoutContext()
 	hubs, _, err := this.db.ListHubs(ctx, options, false)
 	if err != nil {
@@ -88,7 +89,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 		return result, total, err, http.StatusBadRequest
 	}
 	if options.Ids == nil {
-		if !jwtToken.IsAdmin() {
+		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
 			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
@@ -109,6 +110,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 			}
 		}
 	}
+	options.Ids = ids
 	ctx, _ := getTimeoutContext()
 	hubs, total, err := this.db.ListHubs(ctx, options, true)
 	if err != nil {

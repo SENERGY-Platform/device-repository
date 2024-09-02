@@ -222,14 +222,14 @@ func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.Devi
 
 	filter := bson.M{}
 	if listOptions.Ids != nil {
-		filter[DeviceBson.Id] = bson.M{"$in": listOptions.Ids}
+		filter[DeviceTypeBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
 
 	if listOptions.AttributeKeys != nil {
-		filter[DeviceBson.Attributes[0].Key] = bson.M{"$in": listOptions.AttributeKeys}
+		filter[DeviceTypeBson.Attributes[0].Key] = bson.M{"$in": listOptions.AttributeKeys}
 	}
 	if listOptions.AttributeValues != nil {
-		filter[DeviceBson.Attributes[0].Value] = bson.M{"$in": listOptions.AttributeValues}
+		filter[DeviceTypeBson.Attributes[0].Value] = bson.M{"$in": listOptions.AttributeValues}
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {
