@@ -69,7 +69,7 @@ func TestVariableValidation(t *testing.T) {
 		}
 	}()
 
-	ctrl, err := controller.New(conf, db, nil, nil)
+	ctrl, err := controller.New(conf, db, nil)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)

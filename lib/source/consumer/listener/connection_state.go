@@ -34,7 +34,7 @@ type ConnectionStateMessage struct {
 	Time      time.Time `json:"time"`
 }
 
-func DeviceConnectionStateListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
+func DeviceConnectionStateListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
 	return config.DeviceConnectionStateTopic, func(msg []byte) (err error) {
 		command := ConnectionStateMessage{}
 		err = json.Unmarshal(msg, &command)
@@ -46,7 +46,7 @@ func DeviceConnectionStateListenerFactory(config config.Config, control Controll
 	}, nil
 }
 
-func HubConnectionStateListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
+func HubConnectionStateListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
 	return config.HubConnectionStateTopic, func(msg []byte) (err error) {
 		command := ConnectionStateMessage{}
 		err = json.Unmarshal(msg, &command)

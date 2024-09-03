@@ -44,16 +44,20 @@ func init() {
 }
 
 type RightsEntry struct {
-	Kind          Kind     `json:"kind" bson:"kind"`
-	Id            string   `json:"id" bson:"id"`
-	AdminUsers    []string `json:"admin_users" bson:"admin_users"`
-	AdminGroups   []string `json:"admin_groups" bson:"admin_groups"`
-	ReadUsers     []string `json:"read_users" bson:"read_users"`
-	ReadGroups    []string `json:"read_groups" bson:"read_groups"`
-	WriteUsers    []string `json:"write_users" bson:"write_users"`
-	WriteGroups   []string `json:"write_groups" bson:"write_groups"`
-	ExecuteUsers  []string `json:"execute_users" bson:"execute_users"`
-	ExecuteGroups []string `json:"execute_groups" bson:"execute_groups"`
+	Kind                  Kind     `json:"kind" bson:"kind"`
+	Id                    string   `json:"id" bson:"id"`
+	AdminUsers            []string `json:"admin_users" bson:"admin_users"`
+	AdminGroups           []string `json:"admin_groups" bson:"admin_groups"`
+	AdminKeycloakGroups   []string `json:"admin_keycloak_groups" bson:"admin_keycloak_groups"`
+	ReadUsers             []string `json:"read_users" bson:"read_users"`
+	ReadGroups            []string `json:"read_groups" bson:"read_groups"`
+	ReadKeycloakGroups    []string `json:"read_keycloak_groups" bson:"read_keycloak_groups"`
+	WriteUsers            []string `json:"write_users" bson:"write_users"`
+	WriteGroups           []string `json:"write_groups" bson:"write_groups"`
+	WriteKeycloakGroups   []string `json:"write_keycloak_groups" bson:"write_keycloak_groups"`
+	ExecuteUsers          []string `json:"execute_users" bson:"execute_users"`
+	ExecuteGroups         []string `json:"execute_groups" bson:"execute_groups"`
+	ExecuteKeycloakGroups []string `json:"execute_keycloak_groups" bson:"execute_keycloak_groups"`
 }
 
 type Kind string
@@ -62,24 +66,13 @@ func (this *Mongo) rightsCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoRightsCollection)
 }
 
-func (this *Mongo) EnsureInitialRights(topic string, resourceId string, owner string) error {
+func (this *Mongo) RightsElementExists(topic string, resourceId string) (exists bool, err error) {
+	ctx, _ := getTimeoutContext()
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
-		return err
+		return false, err
 	}
-	ctx, _ := getTimeoutContext()
-	exists, err := this.rightsElementExists(ctx, kind, resourceId)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		element := this.getDefaultEntryPermissions(kind, owner)
-		element.Id = resourceId
-		element.Kind = kind
-		_, err = this.rightsCollection().InsertOne(ctx, element)
-		return err
-	}
-	return nil
+	return this.rightsElementExists(ctx, kind, resourceId)
 }
 
 func (this *Mongo) rightsElementExists(ctx context.Context, kind Kind, resourceId string) (exists bool, err error) {
@@ -228,7 +221,13 @@ func (this *Mongo) ListAccessibleResourceIds(token string, topic string, limit i
 	if err != nil {
 		return result, err
 	}
-	userId, groupIds := jwtToken.GetUserId(), jwtToken.GetRoles()
+	userId, groupIds, keycloakGroups := jwtToken.GetUserId(), jwtToken.GetRoles(), jwtToken.GetGroups()
+	if groupIds == nil {
+		groupIds = []string{}
+	}
+	if keycloakGroups == nil {
+		keycloakGroups = []string{}
+	}
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
 		return result, err
@@ -237,13 +236,29 @@ func (this *Mongo) ListAccessibleResourceIds(token string, topic string, limit i
 	permissionsFilter := bson.A{}
 	switch action {
 	case model.READ:
-		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ReadUsers[0]: userId}, bson.M{RightsEntryBson.ReadGroups[0]: bson.M{"$in": groupIds}}}})
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+			bson.M{RightsEntryBson.ReadUsers[0]: userId},
+			bson.M{RightsEntryBson.ReadGroups[0]: bson.M{"$in": groupIds}},
+			bson.M{RightsEntryBson.ReadKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+		}})
 	case model.WRITE:
-		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.WriteUsers[0]: userId}, bson.M{RightsEntryBson.WriteGroups[0]: bson.M{"$in": groupIds}}}})
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+			bson.M{RightsEntryBson.WriteUsers[0]: userId},
+			bson.M{RightsEntryBson.WriteGroups[0]: bson.M{"$in": groupIds}},
+			bson.M{RightsEntryBson.WriteKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+		}})
 	case model.EXECUTE:
-		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ExecuteUsers[0]: userId}, bson.M{RightsEntryBson.ExecuteGroups[0]: bson.M{"$in": groupIds}}}})
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+			bson.M{RightsEntryBson.ExecuteUsers[0]: userId},
+			bson.M{RightsEntryBson.ExecuteGroups[0]: bson.M{"$in": groupIds}},
+			bson.M{RightsEntryBson.ExecuteKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+		}})
 	case model.ADMINISTRATE:
-		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.AdminUsers[0]: userId}, bson.M{RightsEntryBson.AdminGroups[0]: bson.M{"$in": groupIds}}}})
+		permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+			bson.M{RightsEntryBson.AdminUsers[0]: userId},
+			bson.M{RightsEntryBson.AdminGroups[0]: bson.M{"$in": groupIds}},
+			bson.M{RightsEntryBson.AdminKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+		}})
 	default:
 		return []string{}, errors.New("invalid permissions parameter")
 	}
@@ -278,23 +293,45 @@ func (this *Mongo) ListAccessibleResourceIds(token string, topic string, limit i
 	return result, err
 }
 
-func (this *Mongo) ListResourcesByPermissions(topic string, userId string, groupIds []string, limit int64, offset int64, permissions ...model.AuthAction) (result []RightsEntry, err error) {
+func (this *Mongo) ListResourcesByPermissions(topic string, userId string, groupIds []string, keycloakGroups []string, limit int64, offset int64, permissions ...model.AuthAction) (result []RightsEntry, err error) {
 	kind, err := this.getInternalKind(topic)
 	if err != nil {
 		return result, err
+	}
+	if groupIds == nil {
+		groupIds = []string{}
+	}
+	if keycloakGroups == nil {
+		keycloakGroups = []string{}
 	}
 	result = []RightsEntry{}
 	permissionsFilter := bson.A{}
 	for _, r := range permissions {
 		switch r {
 		case model.READ:
-			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ReadUsers[0]: userId}, bson.M{RightsEntryBson.ReadGroups[0]: bson.M{"$in": groupIds}}}})
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+				bson.M{RightsEntryBson.ReadUsers[0]: userId},
+				bson.M{RightsEntryBson.ReadGroups[0]: bson.M{"$in": groupIds}},
+				bson.M{RightsEntryBson.ReadKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+			}})
 		case model.WRITE:
-			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.WriteUsers[0]: userId}, bson.M{RightsEntryBson.WriteGroups[0]: bson.M{"$in": groupIds}}}})
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+				bson.M{RightsEntryBson.WriteUsers[0]: userId},
+				bson.M{RightsEntryBson.WriteGroups[0]: bson.M{"$in": groupIds}},
+				bson.M{RightsEntryBson.WriteKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+			}})
 		case model.EXECUTE:
-			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.ExecuteUsers[0]: userId}, bson.M{RightsEntryBson.ExecuteGroups[0]: bson.M{"$in": groupIds}}}})
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+				bson.M{RightsEntryBson.ExecuteUsers[0]: userId},
+				bson.M{RightsEntryBson.ExecuteGroups[0]: bson.M{"$in": groupIds}},
+				bson.M{RightsEntryBson.ExecuteKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+			}})
 		case model.ADMINISTRATE:
-			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{bson.M{RightsEntryBson.AdminUsers[0]: userId}, bson.M{RightsEntryBson.AdminGroups[0]: bson.M{"$in": groupIds}}}})
+			permissionsFilter = append(permissionsFilter, bson.M{"$or": bson.A{
+				bson.M{RightsEntryBson.AdminUsers[0]: userId},
+				bson.M{RightsEntryBson.AdminGroups[0]: bson.M{"$in": groupIds}},
+				bson.M{RightsEntryBson.AdminKeycloakGroups[0]: bson.M{"$in": keycloakGroups}},
+			}})
 		default:
 			return []RightsEntry{}, errors.New("invalid permissions parameter")
 		}
@@ -386,21 +423,22 @@ func (this *Mongo) GetPermissionsInfo(token string, topic string, id string) (re
 func checkRights(token jwt.Token, element RightsEntry, right model.AuthAction) bool {
 	user := token.GetUserId()
 	groups := token.GetRoles()
+	keycloakGroups := token.GetGroups()
 	switch right {
 	case model.ADMINISTRATE:
-		if !slices.Contains(element.AdminUsers, user) && !containsAny(element.AdminGroups, groups) {
+		if !slices.Contains(element.AdminUsers, user) && !containsAny(element.AdminGroups, groups) && !containsAny(element.AdminKeycloakGroups, keycloakGroups) {
 			return false
 		}
 	case model.READ:
-		if !slices.Contains(element.ReadUsers, user) && !containsAny(element.ReadGroups, groups) {
+		if !slices.Contains(element.ReadUsers, user) && !containsAny(element.ReadGroups, groups) && !containsAny(element.ReadKeycloakGroups, keycloakGroups) {
 			return false
 		}
 	case model.WRITE:
-		if !slices.Contains(element.WriteUsers, user) && !containsAny(element.WriteGroups, groups) {
+		if !slices.Contains(element.WriteUsers, user) && !containsAny(element.WriteGroups, groups) && !containsAny(element.WriteKeycloakGroups, keycloakGroups) {
 			return false
 		}
 	case model.EXECUTE:
-		if !slices.Contains(element.ExecuteUsers, user) && !containsAny(element.ExecuteGroups, groups) {
+		if !slices.Contains(element.ExecuteUsers, user) && !containsAny(element.ExecuteGroups, groups) && !containsAny(element.ExecuteKeycloakGroups, keycloakGroups) {
 			return false
 		}
 	}
@@ -445,40 +483,20 @@ func (this *RightsEntry) setResourceRights(rights model.ResourceRights) {
 			this.ReadUsers = append(this.ReadUsers, user)
 		}
 	}
-}
-
-func (this *Mongo) getDefaultEntryPermissions(kind Kind, owner string) (entry RightsEntry) {
-	entry = RightsEntry{
-		AdminUsers:    []string{},
-		AdminGroups:   []string{},
-		ReadUsers:     []string{},
-		ReadGroups:    []string{},
-		WriteUsers:    []string{},
-		WriteGroups:   []string{},
-		ExecuteUsers:  []string{},
-		ExecuteGroups: []string{},
-	}
-	if owner != "" {
-		entry.AdminUsers = []string{owner}
-		entry.ReadUsers = []string{owner}
-		entry.WriteUsers = []string{owner}
-		entry.ExecuteUsers = []string{owner}
-	}
-	for group, rights := range this.config.InitialGroupRights[string(kind)] {
-		for _, right := range rights {
-			switch right {
-			case 'a':
-				entry.AdminGroups = append(entry.AdminGroups, group)
-			case 'r':
-				entry.ReadGroups = append(entry.ReadGroups, group)
-			case 'w':
-				entry.WriteGroups = append(entry.WriteGroups, group)
-			case 'x':
-				entry.ExecuteGroups = append(entry.AdminGroups, group)
-			}
+	for user, right := range rights.KeycloakGroupsRights {
+		if right.Administrate {
+			this.AdminKeycloakGroups = append(this.AdminKeycloakGroups, user)
+		}
+		if right.Execute {
+			this.ExecuteKeycloakGroups = append(this.ExecuteKeycloakGroups, user)
+		}
+		if right.Write {
+			this.WriteKeycloakGroups = append(this.WriteKeycloakGroups, user)
+		}
+		if right.Read {
+			this.ReadKeycloakGroups = append(this.ReadKeycloakGroups, user)
 		}
 	}
-	return
 }
 
 func (this *Mongo) getInternalKind(topic string) (Kind, error) {
@@ -495,8 +513,9 @@ func (this *Mongo) getInternalKind(topic string) (Kind, error) {
 
 func (this *RightsEntry) ToResourceRights() model.ResourceRights {
 	result := model.ResourceRights{
-		UserRights:  map[string]model.Right{},
-		GroupRights: map[string]model.Right{},
+		UserRights:           map[string]model.Right{},
+		GroupRights:          map[string]model.Right{},
+		KeycloakGroupsRights: map[string]model.Right{},
 	}
 	for _, user := range this.AdminUsers {
 		if _, ok := result.UserRights[user]; !ok {
@@ -564,5 +583,40 @@ func (this *RightsEntry) ToResourceRights() model.ResourceRights {
 		permissions.Execute = true
 		result.GroupRights[group] = permissions
 	}
+
+	result.KeycloakGroupsRights = map[string]model.Right{}
+	for _, group := range this.AdminKeycloakGroups {
+		if _, ok := result.KeycloakGroupsRights[group]; !ok {
+			result.KeycloakGroupsRights[group] = model.Right{}
+		}
+		permissions := result.KeycloakGroupsRights[group]
+		permissions.Administrate = true
+		result.KeycloakGroupsRights[group] = permissions
+	}
+	for _, group := range this.ReadKeycloakGroups {
+		if _, ok := result.KeycloakGroupsRights[group]; !ok {
+			result.KeycloakGroupsRights[group] = model.Right{}
+		}
+		permissions := result.KeycloakGroupsRights[group]
+		permissions.Read = true
+		result.KeycloakGroupsRights[group] = permissions
+	}
+	for _, group := range this.WriteKeycloakGroups {
+		if _, ok := result.KeycloakGroupsRights[group]; !ok {
+			result.KeycloakGroupsRights[group] = model.Right{}
+		}
+		permissions := result.KeycloakGroupsRights[group]
+		permissions.Write = true
+		result.KeycloakGroupsRights[group] = permissions
+	}
+	for _, group := range this.ExecuteKeycloakGroups {
+		if _, ok := result.KeycloakGroupsRights[group]; !ok {
+			result.KeycloakGroupsRights[group] = model.Right{}
+		}
+		permissions := result.KeycloakGroupsRights[group]
+		permissions.Execute = true
+		result.KeycloakGroupsRights[group] = permissions
+	}
+
 	return result
 }

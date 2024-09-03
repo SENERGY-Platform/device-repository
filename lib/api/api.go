@@ -19,6 +19,7 @@ package api
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/accesslog"
 	"github.com/julienschmidt/httprouter"
 	"log"
@@ -41,7 +42,8 @@ func Start(config config.Config, control Controller) (err error) {
 		e(config, control, router)
 	}
 	log.Println("add logging and cors")
-	corsHandler := util.NewCors(router)
+	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), router, "/permissions/")
+	corsHandler := util.NewCors(permForward)
 	logger := accesslog.New(corsHandler)
 	log.Println("listen on port", config.ServerPort)
 	go func() { log.Println(http.ListenAndServe(":"+config.ServerPort, logger)) }()

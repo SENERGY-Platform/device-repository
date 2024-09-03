@@ -97,16 +97,11 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 		return config, err
 	}
 
-	_, elasticIp, err := OpenSearch(ctx, wg)
+	_, permV2Ip, err := PermissionsV2(ctx, wg, config.MongoUrl)
 	if err != nil {
 		return config, err
 	}
-
-	_, permIp, err := PermSearch(ctx, wg, false, config.KafkaUrl, elasticIp)
-	if err != nil {
-		return config, err
-	}
-	config.PermissionsUrl = "http://" + permIp + ":8080"
+	config.PermissionsV2Url = "http://" + permV2Ip + ":8080"
 
 	time.Sleep(5 * time.Second)
 

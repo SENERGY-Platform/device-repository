@@ -27,7 +27,7 @@ func init() {
 	Factories = append(Factories, ProtocolListenerFactory)
 }
 
-func ProtocolListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
+func ProtocolListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
 	return config.ProtocolTopic, func(msg []byte) (err error) {
 		command := ProtocolCommand{}
 		err = json.Unmarshal(msg, &command)

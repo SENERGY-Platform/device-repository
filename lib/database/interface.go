@@ -23,7 +23,7 @@ import (
 )
 
 type Database interface {
-	RunStartupMigrations(model.MigrationPublisher) error
+	RunStartupMigrations() error
 	Disconnect()
 
 	GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error)
@@ -116,14 +116,7 @@ type Database interface {
 	CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error)
 	ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 
-	SecuritySink
 	Security
-}
-
-type SecuritySink interface {
-	EnsureInitialRights(resourceKind string, resourceId string, owner string) error
-	SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error
-	RemoveRights(topic string, id string) error
 }
 
 type Security interface {
@@ -132,4 +125,7 @@ type Security interface {
 	GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error)
 	ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) (result []string, err error)
 	GetPermissionsInfo(token string, topic string, id string) (requestingUser string, permissions models.Permissions, err error)
+	RightsElementExists(topic string, resourceId string) (exists bool, err error)
+	SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error
+	RemoveRights(topic string, id string) error
 }

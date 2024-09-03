@@ -22,4 +22,4 @@ import (
 
 type Listener func(msg []byte) (err error)
 
-var Factories = []func(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error){}
+var Factories = []func(config config.Config, control Controller) (topic string, listener Listener, err error){}

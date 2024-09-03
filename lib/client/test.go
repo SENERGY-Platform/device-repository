@@ -38,7 +38,6 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		FunctionTopic:                            "functions",
 		DeviceClassTopic:                         "device-classes",
 		LocationTopic:                            "locations",
-		SecurityImpl:                             config.DbSecurity,
 		Debug:                                    true,
 		DisableKafkaConsumer:                     false,
 		DisableHttpApi:                           false,
@@ -48,7 +47,7 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		LocalIdUniqueForOwner:                    true,
 	}
 	db = testdb.NewTestDB(conf)
-	ctrl, err = controller.New(conf, db, db, semantic_legacy.VoidProducerMock{})
+	ctrl, err = controller.New(conf, db, semantic_legacy.VoidProducerMock{})
 	if err != nil {
 		return nil, nil, err
 	}

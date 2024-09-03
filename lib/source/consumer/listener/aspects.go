@@ -24,18 +24,22 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
+	"log"
 )
 
 func init() {
 	Factories = append(Factories, AspectsListenerFactory)
 }
 
-func AspectsListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
+func AspectsListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
 	return config.AspectTopic, func(msg []byte) (err error) {
 		command := AspectCommand{}
 		err = json.Unmarshal(msg, &command)
 		if err != nil {
 			return
+		}
+		if config.Debug {
+			log.Printf("DEBUG: receive aspect command: %#v\n", command)
 		}
 		defer func() {
 			if err == nil {

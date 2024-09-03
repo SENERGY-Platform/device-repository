@@ -26,7 +26,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -1105,7 +1104,7 @@ func testGetRequest(token string, conf config.Config, path string, expected inte
 			return
 		}
 		if resp.StatusCode != http.StatusOK {
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			t.Error("unexpected response", path, resp.Status, resp.StatusCode, string(b))
 			return
 		}

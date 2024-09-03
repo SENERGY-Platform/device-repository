@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package mongo
+package controller
 
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
@@ -33,7 +34,7 @@ func TestSecurity(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	conf, err := config.Load("../../../config.json")
+	conf, err := config.Load("../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
@@ -46,7 +47,13 @@ func TestSecurity(t *testing.T) {
 	}
 
 	conf.MongoUrl = "mongodb://localhost:" + port
-	m, err := New(conf)
+	m, err := mongo.New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctrl, err := New(conf, m, nil)
 	if err != nil {
 		t.Error(err)
 		return
@@ -68,17 +75,17 @@ func TestSecurity(t *testing.T) {
 		adminGroup := "admin"
 
 		t.Run("initial rights", func(t *testing.T) {
-			err = m.EnsureInitialRights(topic, id1, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id1, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id2, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id2, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id3, secondUser)
+			err = ctrl.EnsureInitialRights(topic, id3, secondUser)
 			if err != nil {
 				t.Error(err)
 				return
@@ -522,17 +529,17 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("ensure initial rights (second init should change nothing)", func(t *testing.T) {
-			err = m.EnsureInitialRights(topic, id1, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id1, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id2, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id2, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id3, secondUser)
+			err = ctrl.EnsureInitialRights(topic, id3, secondUser)
 			if err != nil {
 				t.Error(err)
 				return
@@ -950,17 +957,17 @@ func TestSecurity(t *testing.T) {
 		adminGroup := "admin"
 
 		t.Run("initial rights", func(t *testing.T) {
-			err = m.EnsureInitialRights(topic, id1, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id1, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id2, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id2, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id3, secondUser)
+			err = ctrl.EnsureInitialRights(topic, id3, secondUser)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1378,17 +1385,17 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("ensure initial rights (second init should change nothing)", func(t *testing.T) {
-			err = m.EnsureInitialRights(topic, id1, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id1, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id2, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id2, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id3, secondUser)
+			err = ctrl.EnsureInitialRights(topic, id3, secondUser)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1806,17 +1813,17 @@ func TestSecurity(t *testing.T) {
 		adminGroup := "admin"
 
 		t.Run("initial rights", func(t *testing.T) {
-			err = m.EnsureInitialRights(topic, id1, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id1, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id2, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id2, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id3, secondUser)
+			err = ctrl.EnsureInitialRights(topic, id3, secondUser)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2234,17 +2241,17 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("ensure initial rights (second init should change nothing)", func(t *testing.T) {
-			err = m.EnsureInitialRights(topic, id1, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id1, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id2, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id2, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id3, secondUser)
+			err = ctrl.EnsureInitialRights(topic, id3, secondUser)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2661,27 +2668,27 @@ func TestSecurity(t *testing.T) {
 		adminGroup := "admin"
 
 		t.Run("initial rights", func(t *testing.T) {
-			err = m.EnsureInitialRights(topic, id1, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id1, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id2, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id2, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id3, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id3, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id4, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id4, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = m.EnsureInitialRights(topic, id5, ownerUser)
+			err = ctrl.EnsureInitialRights(topic, id5, ownerUser)
 			if err != nil {
 				t.Error(err)
 				return

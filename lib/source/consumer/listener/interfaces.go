@@ -49,6 +49,8 @@ type Controller interface {
 	SendDone(done donewait.DoneMsg) error
 	SetDeviceConnectionState(id string, connected bool) error
 	SetHubConnectionState(id string, connected bool) error
+
+	SecuritySink
 }
 
 type SecuritySink interface {

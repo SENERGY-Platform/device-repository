@@ -20,30 +20,50 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"time"
 )
 
-func New(config config.Config, db database.Database, security Security, producer Producer) (ctrl *Controller, err error) {
+func New(config config.Config, db database.Database, producer Producer) (ctrl *Controller, err error) {
 	ctrl = &Controller{
-		db:       db,
-		producer: producer,
-		security: security,
-		config:   config,
+		db:                  db,
+		producer:            producer,
+		config:              config,
+		permissionsV2Client: client.New(config.PermissionsV2Url),
+	}
+	if config.PermissionsV2Url != "" && config.PermissionsV2Url != "-" {
+		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+			Id:                  config.DeviceTopic,
+			PublishToKafkaTopic: config.DeviceTopic,
+		})
+		if err != nil {
+			return nil, err
+		}
+		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+			Id:                  config.HubTopic,
+			PublishToKafkaTopic: config.HubTopic,
+		})
+		if err != nil {
+			return nil, err
+		}
+		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+			Id:                  config.DeviceGroupTopic,
+			PublishToKafkaTopic: config.DeviceGroupTopic,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	return
 }
 
 type Controller struct {
-	db       database.Database
-	security Security
-	producer Producer
-	config   config.Config
+	db                  database.Database
+	producer            Producer
+	config              config.Config
+	permissionsV2Client client.Client
 }
 
 func getTimeoutContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 10*time.Second)
-}
-
-func (this *Controller) RunStartupMigrations() error {
-	return this.db.RunStartupMigrations(this.producer)
 }

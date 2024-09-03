@@ -27,7 +27,7 @@ func init() {
 	Factories = append(Factories, DeviceGroupListenerFactory)
 }
 
-func DeviceGroupListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
+func DeviceGroupListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
 	return config.DeviceGroupTopic, func(msg []byte) (err error) {
 		command := DeviceGroupCommand{}
 		err = json.Unmarshal(msg, &command)
@@ -45,11 +45,9 @@ func DeviceGroupListenerFactory(config config.Config, control Controller, securi
 		}()
 		switch command.Command {
 		case "PUT":
-			if securitySink != nil {
-				err = securitySink.EnsureInitialRights(config.DeviceGroupTopic, command.Id, command.Owner)
-				if err != nil {
-					return err
-				}
+			err = control.EnsureInitialRights(config.DeviceGroupTopic, command.Id, command.Owner)
+			if err != nil {
+				return err
 			}
 			return control.SetDeviceGroup(command.DeviceGroup, command.Owner)
 		case "DELETE":
@@ -57,15 +55,9 @@ func DeviceGroupListenerFactory(config config.Config, control Controller, securi
 			if err != nil {
 				return err
 			}
-			if securitySink != nil {
-				return securitySink.RemoveRights(config.DeviceGroupTopic, command.Id)
-			}
-			return nil
+			return control.RemoveRights(config.DeviceGroupTopic, command.Id)
 		case "RIGHTS":
-			if securitySink != nil && command.Rights != nil {
-				return securitySink.SetRights(config.DeviceGroupTopic, command.Id, *command.Rights)
-			}
-			return nil
+			return control.SetRights(config.DeviceGroupTopic, command.Id, *command.Rights)
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

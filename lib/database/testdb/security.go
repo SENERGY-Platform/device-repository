@@ -22,37 +22,17 @@ import (
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"slices"
-	"strings"
 )
 
-func (this *DB) EnsureInitialRights(resourceKind string, resourceId string, owner string) error {
+func (this *DB) RightsElementExists(topic string, resourceId string) (exists bool, err error) {
 	this.mux.Lock()
 	defer this.mux.Unlock()
-	_, err := this.getSecurityResource(resourceKind, resourceId, GetOptions{CheckPermission: false})
-	if errors.Is(err, ErrNotFound) {
-		err = nil
-		initialRights, ok := this.config.InitialGroupRights[resourceKind]
-		if ok {
-			resource := Resource{
-				Id:      resourceId,
-				TopicId: resourceKind,
-				ResourceRights: model.ResourceRights{
-					UserRights:  map[string]model.Right{owner: {Read: true, Write: true, Execute: true, Administrate: true}},
-					GroupRights: map[string]model.Right{},
-				},
-			}
-			for group, rights := range initialRights {
-				resource.GroupRights[group] = model.Right{
-					Read:         strings.Contains(rights, "r"),
-					Write:        strings.Contains(rights, "w"),
-					Execute:      strings.Contains(rights, "x"),
-					Administrate: strings.Contains(rights, "a"),
-				}
-			}
-			this.permissions = append(this.permissions, resource)
-		}
+	_, err = this.getSecurityResource(topic, resourceId, GetOptions{CheckPermission: false})
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return false, err
 	}
-	return err
+	exists = !errors.Is(err, ErrNotFound)
+	return exists, nil
 }
 
 func (this *DB) SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error {

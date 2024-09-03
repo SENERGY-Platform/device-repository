@@ -16,6 +16,11 @@
 
 package model
 
+import (
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	model2 "github.com/SENERGY-Platform/permissions-v2/pkg/model"
+)
+
 type ResourceRights struct {
 	UserRights           map[string]Right `json:"user_rights"`
 	GroupRights          map[string]Right `json:"group_rights"`
@@ -27,4 +32,37 @@ type Right struct {
 	Write        bool `json:"write"`
 	Execute      bool `json:"execute"`
 	Administrate bool `json:"administrate"`
+}
+
+func (this *ResourceRights) ToPermV2Permissions() client.ResourcePermissions {
+	result := client.ResourcePermissions{
+		UserPermissions:  map[string]model2.PermissionsMap{},
+		GroupPermissions: map[string]model2.PermissionsMap{},
+		RolePermissions:  map[string]model2.PermissionsMap{},
+	}
+	for k, v := range this.UserRights {
+		result.UserPermissions[k] = model2.PermissionsMap{
+			Read:         v.Read,
+			Write:        v.Write,
+			Execute:      v.Execute,
+			Administrate: v.Administrate,
+		}
+	}
+	for k, v := range this.GroupRights {
+		result.RolePermissions[k] = model2.PermissionsMap{
+			Read:         v.Read,
+			Write:        v.Write,
+			Execute:      v.Execute,
+			Administrate: v.Administrate,
+		}
+	}
+	for k, v := range this.KeycloakGroupsRights {
+		result.GroupPermissions[k] = model2.PermissionsMap{
+			Read:         v.Read,
+			Write:        v.Write,
+			Execute:      v.Execute,
+			Administrate: v.Administrate,
+		}
+	}
+	return result
 }

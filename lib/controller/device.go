@@ -49,7 +49,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
+			ids, err = this.db.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -57,7 +57,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err := this.security.CheckMultiple(token, this.config.DeviceTopic, options.Ids, permissionFlag)
+		idMap, err := this.db.CheckMultiple(token, this.config.DeviceTopic, options.Ids, permissionFlag)
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}
@@ -182,7 +182,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err = this.security.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
+			ids, err = this.db.ListAccessibleResourceIds(token, this.config.DeviceTopic, 0, 0, permissionFlag)
 			if err != nil {
 				return result, err, http.StatusInternalServerError
 			}
@@ -190,7 +190,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err := this.security.CheckMultiple(token, this.config.DeviceTopic, options.Ids, permissionFlag)
+		idMap, err := this.db.CheckMultiple(token, this.config.DeviceTopic, options.Ids, permissionFlag)
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
@@ -247,7 +247,7 @@ func (this *Controller) ReadDevice(id string, token string, action model.AuthAct
 		return result, err, errCode
 	}
 	result = temp.Device
-	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, id, action)
+	ok, err := this.db.CheckBool(token, this.config.DeviceTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -262,7 +262,7 @@ func (this *Controller) ReadExtendedDevice(id string, token string, action model
 	if err != nil {
 		return result, err, errCode
 	}
-	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, id, action)
+	ok, err := this.db.CheckBool(token, this.config.DeviceTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -306,7 +306,7 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 	if dtIndex >= 0 {
 		deviceTypeName = deviceTypes[dtIndex].Name
 	}
-	requestingUser, permissions, err := this.security.GetPermissionsInfo(token, this.config.DeviceTopic, device.Id)
+	requestingUser, permissions, err := this.db.GetPermissionsInfo(token, this.config.DeviceTopic, device.Id)
 	if err != nil {
 		return models.ExtendedDevice{}, err
 	}
@@ -329,7 +329,7 @@ func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, toke
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, device.Id, action)
+	ok, err := this.db.CheckBool(token, this.config.DeviceTopic, device.Id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -348,7 +348,7 @@ func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId stri
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(token, this.config.DeviceTopic, device.Id, action)
+	ok, err := this.db.CheckBool(token, this.config.DeviceTopic, device.Id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -404,7 +404,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 	}
 	if exists {
 		if device.OwnerId != original.OwnerId {
-			admins, err := this.security.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
+			admins, err := this.db.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
 			if errors.Is(err, model.PermissionCheckFailed) {
 				return errors.New("requesting user must have admin rights to change owner"), http.StatusBadRequest
 			}

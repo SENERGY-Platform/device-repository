@@ -22,9 +22,10 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
+	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/mocks"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io/ioutil"
 	"log"
@@ -346,7 +347,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	ctrl, err := controller.New(config.Config{}, dbMock, nil, nil)
+	ctrl, err := controller.New(config.Config{}, dbMock, nil)
 	if err != nil {
 		t.Error(err)
 		return
@@ -557,17 +558,29 @@ func testDeviceGroupValidation(ctrl *controller.Controller, group models.DeviceG
 }
 
 func TestDeviceGroupsDeviceFilter(t *testing.T) {
-	conf := config.Config{DeviceGroupTopic: "device-group"}
-	sec := mocks.NewSecurity()
-	ctrl, err := controller.New(conf, nil, sec, nil)
+	conf := config.Config{DeviceGroupTopic: "device-group", DeviceTopic: "devices"}
+	db := testdb.NewTestDB(conf)
+	ctrl, err := controller.New(conf, db, nil)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	sec.Set(conf.DeviceTopic, "d1", true)
-	sec.Set(conf.DeviceTopic, "d2", true)
-	sec.Set(conf.DeviceTopic, "d3", true)
+	err = db.SetRights(conf.DeviceTopic, "d1", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = db.SetRights(conf.DeviceTopic, "d2", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = db.SetRights(conf.DeviceTopic, "d3", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	t.Run("empty", testDeviceGroupsDeviceFilter(ctrl, models.DeviceGroup{
 		Id:   "id",
@@ -664,7 +677,7 @@ func testDeviceGroupsDeviceFilter(ctrl *controller.Controller, group models.Devi
 			return
 		}
 		if !reflect.DeepEqual(result, expectedResult) {
-			t.Error(result, expectedResult)
+			t.Errorf("\n%#v\n%#v\n", result, expectedResult)
 			return
 		}
 	}

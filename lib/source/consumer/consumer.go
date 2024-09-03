@@ -23,14 +23,20 @@ import (
 	"log"
 )
 
-func Start(ctx context.Context, config config.Config, control listener.Controller, securitySink listener.SecuritySink) (err error) {
+func Start(ctx context.Context, config config.Config, control listener.Controller) (err error) {
+	if config.Debug {
+		log.Println("DEBUG: start consumer")
+	}
 	topics := []string{}
 	handlerMap := map[string]listener.Listener{}
 	for _, factory := range listener.Factories {
-		topic, handler, err := factory(config, control, securitySink)
+		topic, handler, err := factory(config, control)
 		if err != nil {
 			log.Println("ERROR: listener.factory", topic, err)
 			return err
+		}
+		if config.Debug {
+			log.Println("DEBUG: consume", topic)
 		}
 		handlerMap[topic] = handler
 		topics = append(topics, topic)

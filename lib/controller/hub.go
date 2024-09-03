@@ -47,7 +47,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
+			ids, err = this.db.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
 			if err != nil {
 				return result, err, http.StatusInternalServerError
 			}
@@ -55,7 +55,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err := this.security.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
+		idMap, err := this.db.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
@@ -92,7 +92,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err = this.security.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
+			ids, err = this.db.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -100,7 +100,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err := this.security.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
+		idMap, err := this.db.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}
@@ -146,7 +146,7 @@ func (this *Controller) ReadExtendedHub(id string, token string, action model.Au
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(token, this.config.HubTopic, id, action)
+	ok, err := this.db.CheckBool(token, this.config.HubTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -161,7 +161,7 @@ func (this *Controller) ReadExtendedHub(id string, token string, action model.Au
 }
 
 func (this *Controller) extendHub(token string, hub model.HubWithConnectionState) (models.ExtendedHub, error) {
-	requestingUser, permissions, err := this.security.GetPermissionsInfo(token, this.config.HubTopic, hub.Id)
+	requestingUser, permissions, err := this.db.GetPermissionsInfo(token, this.config.HubTopic, hub.Id)
 	if err != nil {
 		return models.ExtendedHub{}, err
 	}
@@ -182,7 +182,7 @@ func (this *Controller) ReadHub(id string, token string, action model.AuthAction
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(token, this.config.HubTopic, id, action)
+	ok, err := this.db.CheckBool(token, this.config.HubTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -201,7 +201,7 @@ func (this *Controller) ListHubDeviceIds(id string, token string, action model.A
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(token, this.config.HubTopic, id, action)
+	ok, err := this.db.CheckBool(token, this.config.HubTopic, id, action)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -245,7 +245,7 @@ func (this *Controller) ValidateHub(token string, hub models.Hub) (err error, co
 	}
 	if exists {
 		if hub.OwnerId != original.OwnerId {
-			admins, err := this.security.GetAdminUsers(token, this.config.HubTopic, hub.Id)
+			admins, err := this.db.GetAdminUsers(token, this.config.HubTopic, hub.Id)
 			if errors.Is(err, model.PermissionCheckFailed) {
 				return errors.New("requesting user must have admin rights to change owner"), http.StatusBadRequest
 			}

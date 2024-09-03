@@ -31,6 +31,7 @@ import (
 
 type Config struct {
 	ServerPort                    string `json:"server_port"`
+	EnableSwaggerUi               bool   `json:"enable_swagger_ui"`
 	KafkaUrl                      string `json:"kafka_url"`
 	GroupId                       string `json:"group_id"`
 	DoneTopic                     string `json:"done_topic"`
@@ -47,8 +48,7 @@ type Config struct {
 	LocationTopic                 string `json:"location_topic"`
 	DeviceConnectionStateTopic    string `json:"device_connection_state_topic"`
 	HubConnectionStateTopic       string `json:"hub_connection_state_topic"`
-	PermissionsUrl                string `json:"permissions_url"`
-	SecurityImpl                  string `json:"security_impl"` // "db" || "permissions-search" || "" --> defaults to "permissions-search"
+	PermissionsV2Url              string `json:"permissions_v2_url"`
 	MongoUrl                      string `json:"mongo_url"`
 	MongoReplSet                  bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
 	MongoTable                    string `json:"mongo_table"`
@@ -73,15 +73,11 @@ type Config struct {
 	DeviceServiceGroupSelectionAllowNotFound     bool `json:"device_service_group_selection_allow_not_found"`
 	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
 
-	InitialGroupRights    map[string]map[string]string `json:"initial_group_rights"`
-	DisableRightsHandling bool                         `json:"disable_rights_handling"`
-	RunStartupMigrations  bool                         `json:"run_startup_migrations"`
+	InitialGroupRights   map[string]map[string]string `json:"initial_group_rights"`
+	RunStartupMigrations bool                         `json:"run_startup_migrations"`
 
 	LocalIdUniqueForOwner bool `json:"local_id_unique_for_owner"`
 }
-
-const DbSecurity = "db"
-const PermSearchSecurity = "permissions-search"
 
 func (this Config) HandleFatalError(v ...interface{}) {
 	if this.FatalErrHandler != nil {

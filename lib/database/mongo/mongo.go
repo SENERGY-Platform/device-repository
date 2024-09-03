@@ -44,15 +44,15 @@ var CreateCollections = []func(db *Mongo) error{}
 
 func New(conf config.Config) (*Mongo, error) {
 	ctx, _ := getTimeoutContext()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.MongoUrl), options.Client().SetReadConcern(readconcern.Majority()))
+	c, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.MongoUrl), options.Client().SetReadConcern(readconcern.Majority()))
 	if err != nil {
 		return nil, err
 	}
-	db := &Mongo{config: conf, client: client}
+	db := &Mongo{config: conf, client: c}
 	for _, creators := range CreateCollections {
 		err = creators(db)
 		if err != nil {
-			client.Disconnect(context.Background())
+			c.Disconnect(context.Background())
 			return nil, err
 		}
 	}

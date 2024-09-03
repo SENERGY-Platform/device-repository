@@ -87,13 +87,13 @@ func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...
 		log.Println("ERROR: unable to create docker env", err)
 		return conf, err
 	}
-	time.Sleep(1 * time.Second)
+	time.Sleep(5 * time.Second)
 	err = lib.Start(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
 		return conf, err
 	}
-	time.Sleep(1 * time.Second)
+	time.Sleep(5 * time.Second)
 	return conf, err
 }
 
@@ -107,7 +107,6 @@ func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 	conf.MongoReplSet = false
 	conf.Debug = true
 	conf.DisableKafkaConsumer = true
-	conf.SecurityImpl = config.DbSecurity
 
 	_, ip, err := docker.MongoDB(ctx, wg)
 	if err != nil {
@@ -150,7 +149,7 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 		}
 	}()
 
-	ctrl, err = controller.New(conf, db, db, controller.ErrorProducer{})
+	ctrl, err = controller.New(conf, db, controller.ErrorProducer{})
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)

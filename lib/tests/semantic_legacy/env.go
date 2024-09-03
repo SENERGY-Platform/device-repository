@@ -60,9 +60,7 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 		return config, ctrl, prod, err
 	}
 
-	config.SecurityImpl = "db"
-
-	ctrl, err = controller.New(config, db, db, VoidProducerMock{})
+	ctrl, err = controller.New(config, db, VoidProducerMock{})
 	if err != nil {
 		return config, ctrl, prod, err
 	}

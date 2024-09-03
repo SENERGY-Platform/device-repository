@@ -18,14 +18,11 @@ package lib
 
 import (
 	"context"
-	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
-	"github.com/SENERGY-Platform/device-repository/lib/com"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
-	"github.com/SENERGY-Platform/device-repository/lib/source/consumer/listener"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"log"
 	"sync"
@@ -54,19 +51,13 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 			wg.Done()
 		}
 	}()
-
-	var sec controller.Security
-	switch conf.SecurityImpl {
-	case config.DbSecurity:
-		sec = db
-	case "", config.PermSearchSecurity:
-		sec, err = com.NewSecurity(conf)
+	if conf.RunStartupMigrations && !conf.DisableKafkaConsumer {
+		err = db.RunStartupMigrations()
 		if err != nil {
-			log.Println("ERROR: unable to create permission handler", err)
+			db.Disconnect()
+			log.Println("ERROR: RunStartupMigrations()", err)
 			return err
 		}
-	default:
-		return errors.New("unknown security implementation: " + conf.SecurityImpl)
 	}
 
 	var p controller.Producer = controller.ErrorProducer{}
@@ -78,28 +69,15 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		}
 	}
 
-	ctrl, err := controller.New(conf, db, sec, p)
+	ctrl, err := controller.New(conf, db, p)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
 		return err
 	}
 
-	if conf.RunStartupMigrations && !conf.DisableKafkaConsumer {
-		err = ctrl.RunStartupMigrations()
-		if err != nil {
-			db.Disconnect()
-			log.Println("ERROR: RunStartupMigrations()", err)
-			return err
-		}
-	}
-
 	if !conf.DisableKafkaConsumer {
-		var secSink listener.SecuritySink = database.VoidSecSink{}
-		if !conf.DisableRightsHandling {
-			secSink = db
-		}
-		err = consumer.Start(ctx, conf, ctrl, secSink)
+		err = consumer.Start(ctx, conf, ctrl)
 		if err != nil {
 			log.Println("ERROR: unable to start source", err)
 			return err

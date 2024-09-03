@@ -30,6 +30,7 @@ type Security interface {
 	GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error)
 	ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) ([]string, error)
 	GetPermissionsInfo(token string, kind string, id string) (requestingUser string, permissions models.Permissions, err error)
+	RightsElementExists(topic string, resourceId string) (exists bool, err error)
 }
 
 type Producer interface {

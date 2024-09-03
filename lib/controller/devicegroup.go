@@ -42,7 +42,7 @@ func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDu
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.security.CheckBool(token, this.config.DeviceGroupTopic, id, model.READ)
+	ok, err := this.db.CheckBool(token, this.config.DeviceGroupTopic, id, model.READ)
 	if err != nil {
 		result = models.DeviceGroup{}
 		return result, err, http.StatusInternalServerError
@@ -72,7 +72,7 @@ func (this *Controller) FilterDevicesOfGroupByAccess(token string, group models.
 	if len(group.DeviceIds) == 0 {
 		return group, nil, http.StatusOK
 	}
-	access, err := this.security.CheckMultiple(token, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
+	access, err := this.db.CheckMultiple(token, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -96,7 +96,7 @@ func (this *Controller) CheckAccessToDevicesOfGroup(token string, group models.D
 	if len(group.DeviceIds) == 0 {
 		return nil, http.StatusOK
 	}
-	access, err := this.security.CheckMultiple(token, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
+	access, err := this.db.CheckMultiple(token, this.config.DeviceTopic, group.DeviceIds, model.EXECUTE)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

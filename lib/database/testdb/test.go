@@ -68,7 +68,7 @@ func NewTestDB(config config.Config) database.Database {
 
 func (db *DB) Disconnect() {}
 
-func (db *DB) RunStartupMigrations(producer model.MigrationPublisher) error {
+func (db *DB) RunStartupMigrations() error {
 	return nil
 }
 

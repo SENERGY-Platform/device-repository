@@ -27,7 +27,7 @@ func init() {
 	Factories = append(Factories, CharacteristicsListenerFactory)
 }
 
-func CharacteristicsListenerFactory(config config.Config, control Controller, securitySink SecuritySink) (topic string, listener Listener, err error) {
+func CharacteristicsListenerFactory(config config.Config, control Controller) (topic string, listener Listener, err error) {
 	return config.CharacteristicTopic, func(msg []byte) (err error) {
 		command := CharacteristicCommand{}
 		err = json.Unmarshal(msg, &command)
