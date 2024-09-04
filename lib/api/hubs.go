@@ -22,7 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"slices"
@@ -31,17 +30,14 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, HubEndpoints)
+	endpoints = append(endpoints, &HubEndpoints{})
 }
 
-func HubEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/hubs"
+type HubEndpoints struct{}
 
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *HubEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -62,8 +58,10 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 		}
 		return
 	})
+}
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *HubEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /hubs", func(writer http.ResponseWriter, request *http.Request) {
 		hubListOptions := model.HubListOptions{
 			Limit:  100,
 			Offset: 0,
@@ -133,15 +131,17 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 		}
 		return
 	})
+}
 
+func (this *HubEndpoints) GetDevices(config config.Config, router *http.ServeMux, control Controller) {
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
 	//use 'as' query parameter to decide if a list of device.Id or device.LocalId should be returned
 	//		default is LocalId
 	//		allowed values are 'id', 'local_id' and 'localId'
-	router.GET(resource+"/:id/devices", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+	router.HandleFunc("GET /hubs/{id}/devices", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -178,11 +178,13 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 		}
 		return
 	})
+}
 
+func (this *HubEndpoints) Head(config config.Config, router *http.ServeMux, control Controller) {
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
-	router.HEAD(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	router.HandleFunc("HEAD /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -191,13 +193,15 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 		if permission == models.UnsetPermissionFlag {
 			permission = model.READ
 		}
-		id := params.ByName("id")
+		id := request.PathValue("id")
 		_, _, errCode := control.ReadHub(id, util.GetAuthToken(request), permission)
 		writer.WriteHeader(errCode)
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *HubEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -220,5 +224,4 @@ func HubEndpoints(config config.Config, control Controller, router *httprouter.R
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
-
 }

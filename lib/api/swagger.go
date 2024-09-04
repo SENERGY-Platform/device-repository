@@ -19,7 +19,6 @@ package api
 import (
 	_ "github.com/SENERGY-Platform/device-repository/docs"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/julienschmidt/httprouter"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/swaggo/swag"
 	"net/http"
@@ -27,17 +26,19 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, Swagger)
+	endpoints = append(endpoints, &Swagger{})
 }
 
-func Swagger(config config.Config, control Controller, router *httprouter.Router) {
+type Swagger struct{}
+
+func (this *Swagger) Swagger(config config.Config, router *http.ServeMux, control Controller) {
 	if config.EnableSwaggerUi {
-		router.GET("/swagger/:any", func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		router.HandleFunc("GET /swagger/{pathname...}", func(res http.ResponseWriter, req *http.Request) {
 			httpSwagger.WrapHandler(res, req)
 		})
 	}
 
-	router.GET("/doc", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	router.HandleFunc("GET /doc", func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		doc, err := swag.ReadDoc("devicerepository")
 		if err != nil {

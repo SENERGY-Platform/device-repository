@@ -23,24 +23,23 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, AspectNodesEndpoints)
+	endpoints = append(endpoints, &AspectNodeEndpoints{})
 }
+
+type AspectNodeEndpoints struct{}
 
 type AspectNodeQuery struct {
 	Ids *[]string `json:"ids,omitempty"`
 }
 
-func AspectNodesEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/aspect-nodes"
-
-	router.POST("/query"+resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *AspectNodeEndpoints) Query(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /query/aspect-nodes", func(writer http.ResponseWriter, request *http.Request) {
 		query := AspectNodeQuery{}
 		err := json.NewDecoder(request.Body).Decode(&query)
 		if err != nil {
@@ -63,8 +62,10 @@ func AspectNodesEndpoints(config config.Config, control Controller, router *http
 		http.Error(writer, "no known query content found", http.StatusBadRequest)
 		return
 	})
+}
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *AspectNodeEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /aspect-nodes", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.AspectNode
 		var err error
 		var errCode int
@@ -112,9 +113,11 @@ func AspectNodesEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
+}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *AspectNodeEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /aspect-nodes/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetAspectNode(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -127,9 +130,11 @@ func AspectNodesEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
+}
 
-	router.GET(resource+"/:id/measuring-functions", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *AspectNodeEndpoints) GetMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /aspect-nodes/{id}/measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		ancestors := false
 		descendants := true
 		var err error
@@ -161,5 +166,4 @@ func AspectNodesEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
-
 }

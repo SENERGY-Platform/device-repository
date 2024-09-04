@@ -23,20 +23,19 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, AspectsEndpoints)
+	endpoints = append(endpoints, &AspectEndpoints{})
 }
 
-func AspectsEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/aspects"
+type AspectEndpoints struct{}
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *AspectEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /aspects", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.Aspect
 		var err error
 		var errCode int
@@ -84,9 +83,11 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 		}
 		return
 	})
+}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *AspectEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetAspect(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -99,8 +100,10 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *AspectEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /aspects", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -123,8 +126,10 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
+}
 
-	router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *AspectEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -134,7 +139,7 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		id := params.ByName("id")
+		id := request.PathValue("id")
 		err, code := control.ValidateAspectDelete(id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
@@ -142,9 +147,11 @@ func AspectsEndpoints(config config.Config, control Controller, router *httprout
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
+}
 
-	router.GET(resource+"/:id/measuring-functions", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *AspectEndpoints) GetMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /aspects/{id}/measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		ancestors := false
 		descendants := true
 		var err error

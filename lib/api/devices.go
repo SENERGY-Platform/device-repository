@@ -23,7 +23,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"slices"
@@ -32,17 +31,18 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceEndpoints)
+	endpoints = append(endpoints, &DeviceEndpoints{})
 }
 
-func DeviceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/devices"
+type DeviceEndpoints struct{}
 
-	//query-parameter:
-	//		- limit: number; default 100, will be ignored if 'ids' is set
-	//		- offset: number; default 0, will be ignored if 'ids' is set
-	//		- ids: filter by comma seperated id list
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /devices", func(writer http.ResponseWriter, request *http.Request) {
+		//query-parameter:
+		//		- limit: number; default 100, will be ignored if 'ids' is set
+		//		- offset: number; default 0, will be ignored if 'ids' is set
+		//		- ids: filter by comma seperated id list
+
 		deviceListOptions := model.DeviceListOptions{
 			Limit:  100,
 			Offset: 0,
@@ -137,16 +137,17 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 			log.Println("ERROR: unable to encode response", err)
 		}
 		return
-
 	})
+}
 
-	//use 'as=local_id' query parameter to search device by local_id
-	//		may use the 'owner_id' query parameter, which will default to the user/subject of the Auth-Token
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *DeviceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		//use 'as=local_id' query parameter to search device by local_id
+		//		may use the 'owner_id' query parameter, which will default to the user/subject of the Auth-Token
+		//use 'p' query parameter to limit selection to a permission;
+		//		used internally to guarantee that user has needed permission for the resource
+		//		example: 'p=x' guaranties the user has execution rights
+		id := request.PathValue("id")
 		as := request.URL.Query().Get("as")
 		ownerId := request.URL.Query().Get("owner_id")
 		if ownerId == "" {
@@ -183,8 +184,10 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /devices", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -207,5 +210,4 @@ func DeviceEndpoints(config config.Config, control Controller, router *httproute
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
-
 }

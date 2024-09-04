@@ -20,18 +20,18 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 )
 
 func init() {
-	endpoints = append(endpoints, QueryEndpoint)
+	endpoints = append(endpoints, &QueryEndpoint{})
 }
 
-func QueryEndpoint(config config.Config, control Controller, router *httprouter.Router) {
+type QueryEndpoint struct{}
 
-	router.POST("/query/used-in-device-type", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *QueryEndpoint) Query(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /query/used-in-device-type", func(writer http.ResponseWriter, request *http.Request) {
 		query := model.UsedInDeviceTypeQuery{}
 		err := json.NewDecoder(request.Body).Decode(&query)
 		if err != nil {

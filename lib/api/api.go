@@ -24,15 +24,15 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/accesslog"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"reflect"
-	"runtime"
 	"runtime/debug"
 )
 
-var endpoints = []func(config config.Config, control Controller, router *httprouter.Router){}
+type EndpointMethod = func(config config.Config, router *http.ServeMux, ctrl Controller)
+
+var endpoints = []interface{}{} //list of objects with EndpointMethod
 
 func Start(ctx context.Context, config config.Config, control Controller) (err error) {
 	log.Println("start api")
@@ -58,18 +58,49 @@ func Start(ctx context.Context, config config.Config, control Controller) (err e
 }
 
 func GetRouter(config config.Config, control Controller) http.Handler {
-	router := httprouter.New()
+	handler := GetRouterWithoutMiddleware(config, control)
+	log.Println("add permissions endpoints")
+	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), handler, "/permissions/")
+	log.Println("add cors")
+	corsHandler := util.NewCors(permForward)
+	log.Println("add logging")
+	logger := accesslog.New(corsHandler)
+	return logger
+}
+
+func GetRouterWithoutMiddleware(config config.Config, command Controller) http.Handler {
+	router := http.NewServeMux()
 	log.Println("add heart beat endpoint")
-	router.GET("/", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	router.HandleFunc("GET /", func(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusOK)
 	})
 	for _, e := range endpoints {
-		log.Println("add endpoints: " + runtime.FuncForPC(reflect.ValueOf(e).Pointer()).Name())
-		e(config, control, router)
+		for name, call := range getEndpointMethods(e) {
+			log.Println("add endpoint " + name)
+			call(config, router, command)
+		}
 	}
-	log.Println("add logging and cors")
-	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), router, "/permissions/")
-	corsHandler := util.NewCors(permForward)
-	logger := accesslog.New(corsHandler)
-	return logger
+	return router
+}
+
+func getEndpointMethods(e interface{}) map[string]func(config config.Config, router *http.ServeMux, ctrl Controller) {
+	result := map[string]EndpointMethod{}
+	objRef := reflect.ValueOf(e)
+	methodCount := objRef.NumMethod()
+	for i := 0; i < methodCount; i++ {
+		m := objRef.Method(i)
+		f, ok := m.Interface().(EndpointMethod)
+		if ok {
+			name := getTypeName(objRef.Type()) + "::" + objRef.Type().Method(i).Name
+			result[name] = f
+		}
+	}
+	return result
+}
+
+func getTypeName(t reflect.Type) (res string) {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t.Name()
 }

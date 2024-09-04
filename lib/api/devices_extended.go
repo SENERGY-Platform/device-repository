@@ -23,7 +23,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"slices"
@@ -32,13 +31,13 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, ExtendedDeviceEndpoints)
+	endpoints = append(endpoints, &ExtendedDeviceEndpoints{})
 }
 
-func ExtendedDeviceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/extended-devices"
+type ExtendedDeviceEndpoints struct{}
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /extended-devices", func(writer http.ResponseWriter, request *http.Request) {
 		deviceListOptions := model.DeviceListOptions{
 			Limit:  100,
 			Offset: 0,
@@ -133,16 +132,12 @@ func ExtendedDeviceEndpoints(config config.Config, control Controller, router *h
 			log.Println("ERROR: unable to encode response", err)
 		}
 		return
-
 	})
+}
 
-	//use 'as=local_id' query parameter to search device by local_id
-	//		may use the 'owner_id' query parameter, which will default to the user/subject of the Auth-Token
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *ExtendedDeviceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /extended-devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		as := request.URL.Query().Get("as")
 		ownerId := request.URL.Query().Get("owner_id")
 		if ownerId == "" {

@@ -19,20 +19,19 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 )
 
 func init() {
-	endpoints = append(endpoints, ServiceEndpoints)
+	endpoints = append(endpoints, &ServiceEndpoints{})
 }
 
-func ServiceEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/services"
+type ServiceEndpoints struct{}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *ServiceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /services/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetService(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -45,5 +44,4 @@ func ServiceEndpoints(config config.Config, control Controller, router *httprout
 		}
 		return
 	})
-
 }

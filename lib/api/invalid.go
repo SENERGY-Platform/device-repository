@@ -21,15 +21,16 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, InvalidElements)
+	endpoints = append(endpoints, &InvalidElements{})
 }
+
+type InvalidElements struct{}
 
 type ValidationError struct {
 	Id    string `json:"id"`
@@ -37,10 +38,8 @@ type ValidationError struct {
 	Error string `json:"error"`
 }
 
-func InvalidElements(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/invalid"
-
-	router.GET(resource+"/device-types", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *InvalidElements) DeviceTypes(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /invalid/device-types", func(writer http.ResponseWriter, request *http.Request) {
 		var err error
 		limitParam := request.URL.Query().Get("limit")
 		var limit int64 = 100
@@ -100,5 +99,4 @@ func InvalidElements(config config.Config, control Controller, router *httproute
 		}
 		return
 	})
-
 }

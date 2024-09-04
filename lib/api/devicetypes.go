@@ -22,7 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
@@ -30,14 +29,14 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceTypeEndpoints)
+	endpoints = append(endpoints, &DeviceTypeEndpoints{})
 }
 
-func DeviceTypeEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/device-types"
+type DeviceTypeEndpoints struct{}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *DeviceTypeEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.ReadDeviceType(id, util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -50,8 +49,10 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 		}
 		return
 	})
+}
 
-	router.GET("/v3"+resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceTypeEndpoints) ListV3(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /v3/device-types", func(writer http.ResponseWriter, request *http.Request) {
 		options := model.DeviceTypeListOptions{
 			Limit:  100,
 			Offset: 0,
@@ -148,7 +149,9 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 		}
 		return
 	})
+}
 
+func (this *DeviceTypeEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	/*
 			query params:
 			- limit: number; default 100
@@ -167,7 +170,7 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 					ignored if empty
 			- include_id_modified: bool; add service-group modified device-types to result
 	*/
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	router.HandleFunc("GET /device-types", func(writer http.ResponseWriter, request *http.Request) {
 		var err error
 		limitParam := request.URL.Query().Get("limit")
 		var limit int64 = 100
@@ -247,8 +250,10 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceTypeEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /device-types", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -276,5 +281,4 @@ func DeviceTypeEndpoints(config config.Config, control Controller, router *httpr
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
-
 }

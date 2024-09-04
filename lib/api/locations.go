@@ -24,21 +24,20 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, LocationEndpoints)
+	endpoints = append(endpoints, &LocationEndpoints{})
 }
 
-func LocationEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/locations"
+type LocationEndpoints struct{}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *LocationEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetLocation(id, util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -51,8 +50,10 @@ func LocationEndpoints(config config.Config, control Controller, router *httprou
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *LocationEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /locations", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

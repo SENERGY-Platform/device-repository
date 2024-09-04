@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
@@ -28,13 +27,13 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceTypeSelectableEndpoints)
+	endpoints = append(endpoints, &DeviceTypeSelectableEndpoints{})
 }
 
-func DeviceTypeSelectableEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/device-type-selectables"
+type DeviceTypeSelectableEndpoints struct{}
 
-	router.POST("/query"+resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceTypeSelectableEndpoints) Query(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /query/device-type-selectables", func(writer http.ResponseWriter, request *http.Request) {
 		query := []model.FilterCriteria{}
 		err := json.NewDecoder(request.Body).Decode(&query)
 		if err != nil {
@@ -70,8 +69,10 @@ func DeviceTypeSelectableEndpoints(config config.Config, control Controller, rou
 		}
 		return
 	})
+}
 
-	router.POST("/v2/query"+resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceTypeSelectableEndpoints) QueryV2(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /v2/query/device-type-selectables", func(writer http.ResponseWriter, request *http.Request) {
 		query := []model.FilterCriteria{}
 		err := json.NewDecoder(request.Body).Decode(&query)
 		if err != nil {

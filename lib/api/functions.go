@@ -24,22 +24,19 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, FunctionsEndpoints)
+	endpoints = append(endpoints, &FunctionsEndpoints{})
 }
 
-func FunctionsEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	controllingResource := "/controlling-functions"
-	measuringResource := "/measuring-functions"
-	functionsResource := "/functions"
+type FunctionsEndpoints struct{}
 
-	router.GET(controllingResource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *FunctionsEndpoints) ListControllingFunctions(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
 		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_CONTROLLING_FUNCTION)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -52,8 +49,10 @@ func FunctionsEndpoints(config config.Config, control Controller, router *httpro
 		}
 		return
 	})
+}
 
-	router.GET(measuringResource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *FunctionsEndpoints) ListMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
 		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_MEASURING_FUNCTION)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -66,9 +65,11 @@ func FunctionsEndpoints(config config.Config, control Controller, router *httpro
 		}
 		return
 	})
+}
 
-	router.GET(functionsResource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *FunctionsEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetFunction(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -81,8 +82,10 @@ func FunctionsEndpoints(config config.Config, control Controller, router *httpro
 		}
 		return
 	})
+}
 
-	router.PUT(functionsResource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *FunctionsEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /functions", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -106,8 +109,10 @@ func FunctionsEndpoints(config config.Config, control Controller, router *httpro
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
+}
 
-	router.DELETE(functionsResource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *FunctionsEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -117,7 +122,7 @@ func FunctionsEndpoints(config config.Config, control Controller, router *httpro
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		id := params.ByName("id")
+		id := request.PathValue("id")
 		err, code := control.ValidateFunctionDelete(id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)

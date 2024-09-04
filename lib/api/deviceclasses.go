@@ -23,20 +23,19 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceClassEndpoints)
+	endpoints = append(endpoints, &DeviceClassEndpoints{})
 }
 
-func DeviceClassEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/device-classes"
+type DeviceClassEndpoints struct{}
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceClassEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.DeviceClass
 		var err error
 		var errCode int
@@ -66,24 +65,11 @@ func DeviceClassEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
+}
 
-	router.GET(resource+"/:id/functions", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
-		result, err, errCode := control.GetDeviceClassesFunctions(id)
-		if err != nil {
-			http.Error(writer, err.Error(), errCode)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-		err = json.NewEncoder(writer).Encode(result)
-		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
-		}
-		return
-	})
-
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *DeviceClassEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetDeviceClass(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -96,9 +82,28 @@ func DeviceClassEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
+}
 
-	router.GET(resource+"/:id/controlling-functions", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *DeviceClassEndpoints) GetFunctions(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /device-classes/{id}/functions", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		result, err, errCode := control.GetDeviceClassesFunctions(id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+func (this *DeviceClassEndpoints) GetControllingFunctions(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /device-classes/{id}/controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetDeviceClassesControllingFunctions(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -111,8 +116,10 @@ func DeviceClassEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceClassEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -135,8 +142,10 @@ func DeviceClassEndpoints(config config.Config, control Controller, router *http
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
+}
 
-	router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceClassEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -146,7 +155,7 @@ func DeviceClassEndpoints(config config.Config, control Controller, router *http
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		id := params.ByName("id")
+		id := request.PathValue("id")
 		err, code := control.ValidateDeviceClassDelete(id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)

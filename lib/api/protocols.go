@@ -21,21 +21,20 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, ProtocolEndpoints)
+	endpoints = append(endpoints, &ProtocolEndpoints{})
 }
 
-func ProtocolEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/protocols"
+type ProtocolEndpoints struct{}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *ProtocolEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.ReadProtocol(id, util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -48,7 +47,9 @@ func ProtocolEndpoints(config config.Config, control Controller, router *httprou
 		}
 		return
 	})
+}
 
+func (this *ProtocolEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	/*
 			query params:
 			- limit: number; default 100
@@ -60,9 +61,8 @@ func ProtocolEndpoints(config config.Config, control Controller, router *httprou
 					?sort=name.asc
 					?sort=name
 	*/
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	router.HandleFunc("GET /protocols", func(writer http.ResponseWriter, request *http.Request) {
 		var err error
-
 		limitParam := request.URL.Query().Get("limit")
 		var limit int64 = 100
 		if limitParam != "" {
@@ -100,8 +100,10 @@ func ProtocolEndpoints(config config.Config, control Controller, router *httprou
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *ProtocolEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /protocols", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -124,5 +126,4 @@ func ProtocolEndpoints(config config.Config, control Controller, router *httprou
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
-
 }

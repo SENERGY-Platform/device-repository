@@ -21,22 +21,21 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, DeviceGroupEndpoints)
+	endpoints = append(endpoints, &DeviceGroupEndpoints{})
 }
 
-func DeviceGroupEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/device-groups"
+type DeviceGroupEndpoints struct{}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
-		
+func (this *DeviceGroupEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+
 		//ref https://bitnify.atlassian.net/browse/SNRGY-3027
 		filterGenericDuplicateCriteria := request.URL.Query().Get("filter_generic_duplicate_criteria") == "true"
 
@@ -53,8 +52,10 @@ func DeviceGroupEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *DeviceGroupEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /device-groups", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -82,5 +83,4 @@ func DeviceGroupEndpoints(config config.Config, control Controller, router *http
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
-
 }

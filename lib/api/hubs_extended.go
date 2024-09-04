@@ -22,7 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"slices"
@@ -31,17 +30,17 @@ import (
 )
 
 func init() {
-	endpoints = append(endpoints, ExtendedHubEndpoints)
+	endpoints = append(endpoints, &ExtendedHubEndpoints{})
 }
 
-func ExtendedHubEndpoints(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/extended-hubs"
+type ExtendedHubEndpoints struct{}
 
+func (this *ExtendedHubEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	//use 'p' query parameter to limit selection to a permission;
 	//		used internally to guarantee that user has needed permission for the resource
 	//		example: 'p=x' guaranties the user has execution rights
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+	router.HandleFunc("GET /extended-hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -62,8 +61,10 @@ func ExtendedHubEndpoints(config config.Config, control Controller, router *http
 		}
 		return
 	})
+}
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *ExtendedHubEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /extended-hubs", func(writer http.ResponseWriter, request *http.Request) {
 		hubListOptions := model.HubListOptions{
 			Limit:  100,
 			Offset: 0,

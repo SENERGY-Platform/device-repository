@@ -20,20 +20,19 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 func init() {
-	endpoints = append(endpoints, Characteristics)
+	endpoints = append(endpoints, &CharacteristicsEndpoints{})
 }
 
-func Characteristics(config config.Config, control Controller, router *httprouter.Router) {
-	resource := "/characteristics"
+type CharacteristicsEndpoints struct{}
 
-	router.GET(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *CharacteristicsEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /characteristics", func(writer http.ResponseWriter, request *http.Request) {
 		leafsOnly, err := strconv.ParseBool(request.URL.Query().Get("leafsOnly"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -55,9 +54,11 @@ func Characteristics(config config.Config, control Controller, router *httproute
 
 		return
 	})
+}
 
-	router.GET(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		id := params.ByName("id")
+func (this *CharacteristicsEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
 		result, err, errCode := control.GetCharacteristic(id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -70,8 +71,10 @@ func Characteristics(config config.Config, control Controller, router *httproute
 		}
 		return
 	})
+}
 
-	router.PUT(resource, func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *CharacteristicsEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /characteristics", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -94,8 +97,10 @@ func Characteristics(config config.Config, control Controller, router *httproute
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
+}
 
-	router.DELETE(resource+"/:id", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+func (this *CharacteristicsEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -105,7 +110,7 @@ func Characteristics(config config.Config, control Controller, router *httproute
 			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
 			return
 		}
-		id := params.ByName("id")
+		id := request.PathValue("id")
 		err, code := control.ValidateCharacteristicDelete(id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
