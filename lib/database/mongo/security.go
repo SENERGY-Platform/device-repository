@@ -111,6 +111,26 @@ func (this *Mongo) SetRights(topic string, resourceId string, rights model.Resou
 	return err
 }
 
+func (this *Mongo) GetRights(topic string, resourceId string) (rights model.ResourceRights, err error) {
+	ctx, _ := getTimeoutContext()
+	kind, err := this.getInternalKind(topic)
+	if err != nil {
+		return rights, err
+	}
+	result := this.rightsCollection().FindOne(ctx, bson.M{"kind": kind, "id": resourceId})
+	err = result.Err()
+	if err != nil {
+		return rights, err
+	}
+	entry := RightsEntry{}
+	err = result.Decode(&entry)
+	if err != nil {
+		return rights, err
+	}
+	rights = entry.ToResourceRights()
+	return rights, nil
+}
+
 func (this *Mongo) GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error) {
 	kind, err := this.getInternalKind(topic)
 	if err != nil {

@@ -154,7 +154,7 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 		}
 	}()
 
-	ctrl, err = controller.New(conf, db, controller.ErrorProducer{})
+	ctrl, err = controller.New(conf, db, controller.ErrorProducer{}, nil)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)

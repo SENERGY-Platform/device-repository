@@ -17,6 +17,9 @@
 package api
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
@@ -26,12 +29,35 @@ import (
 	"net/http"
 	"reflect"
 	"runtime"
+	"runtime/debug"
 )
 
 var endpoints = []func(config config.Config, control Controller, router *httprouter.Router){}
 
-func Start(config config.Config, control Controller) (err error) {
+func Start(ctx context.Context, config config.Config, control Controller) (err error) {
 	log.Println("start api")
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New(fmt.Sprint(r))
+		}
+	}()
+	router := GetRouter(config, control)
+	server := &http.Server{Addr: ":" + config.ServerPort, Handler: router}
+	go func() {
+		log.Println("listening on ", server.Addr)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			debug.PrintStack()
+			log.Fatal("FATAL:", err)
+		}
+	}()
+	go func() {
+		<-ctx.Done()
+		log.Println("api shutdown", server.Shutdown(context.Background()))
+	}()
+	return
+}
+
+func GetRouter(config config.Config, control Controller) http.Handler {
 	router := httprouter.New()
 	log.Println("add heart beat endpoint")
 	router.GET("/", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
@@ -45,7 +71,5 @@ func Start(config config.Config, control Controller) (err error) {
 	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), router, "/permissions/")
 	corsHandler := util.NewCors(permForward)
 	logger := accesslog.New(corsHandler)
-	log.Println("listen on port", config.ServerPort)
-	go func() { log.Println(http.ListenAndServe(":"+config.ServerPort, logger)) }()
-	return nil
+	return logger
 }

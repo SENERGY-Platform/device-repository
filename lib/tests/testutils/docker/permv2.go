@@ -18,13 +18,16 @@ package docker
 
 import (
 	"context"
+	"fmt"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"io"
 	"log"
+	"strings"
 	"sync"
 )
 
-func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string) (hostPort string, ipAddress string, err error) {
+func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string, kafkaUrl string) (hostPort string, ipAddress string, err error) {
 	log.Println("start permissions-v2")
 	c, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
@@ -32,6 +35,7 @@ func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string) (ho
 			Env: map[string]string{
 				"DEV_NOTIFIER_URL": "",
 				"MONGO_URL":        mongoUrl,
+				"KAFKA_URL":        kafkaUrl,
 			},
 			ExposedPorts:    []string{"8080/tcp"},
 			WaitingFor:      wait.ForListeningPort("8080/tcp"),
@@ -45,8 +49,20 @@ func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string) (ho
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		defer func() {
+			log.Println("DEBUG: remove container permissions-v2", c.Terminate(context.Background()))
+		}()
 		<-ctx.Done()
-		log.Println("DEBUG: remove container permissions-v2", c.Terminate(context.Background()))
+		reader, err := c.Logs(context.Background())
+		if err != nil {
+			log.Println("ERROR: unable to get container log")
+			return
+		}
+		buf := new(strings.Builder)
+		io.Copy(buf, reader)
+		fmt.Println("PERMISSIONS-V2 LOGS: ------------------------------------------")
+		fmt.Println(buf.String())
+		fmt.Println("\n---------------------------------------------------------------")
 	}()
 
 	ipAddress, err = c.ContainerIP(ctx)

@@ -60,7 +60,7 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 		return config, ctrl, prod, err
 	}
 
-	ctrl, err = controller.New(config, db, VoidProducerMock{})
+	ctrl, err = controller.New(config, db, VoidProducerMock{}, nil)
 	if err != nil {
 		return config, ctrl, prod, err
 	}

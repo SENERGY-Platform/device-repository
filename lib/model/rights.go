@@ -24,7 +24,7 @@ import (
 type ResourceRights struct {
 	UserRights           map[string]Right `json:"user_rights"`
 	GroupRights          map[string]Right `json:"group_rights"`
-	KeycloakGroupsRights map[string]Right `json:"keycloak_groups_rights"` //TODO
+	KeycloakGroupsRights map[string]Right `json:"keycloak_groups_rights"`
 }
 
 type Right struct {

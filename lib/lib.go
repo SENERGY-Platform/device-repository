@@ -24,6 +24,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
 	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"sync"
 )
@@ -69,7 +70,9 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		}
 	}
 
-	ctrl, err := controller.New(conf, db, p)
+	permClient := client.New(conf.PermissionsV2Url)
+
+	ctrl, err := controller.New(conf, db, p, permClient)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
@@ -85,7 +88,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 	}
 
 	if !conf.DisableHttpApi {
-		err = api.Start(conf, ctrl)
+		err = api.Start(ctx, conf, ctrl)
 		if err != nil {
 			log.Println("ERROR: unable to start api", err)
 			return err

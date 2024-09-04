@@ -54,7 +54,5 @@ type Controller interface {
 }
 
 type SecuritySink interface {
-	EnsureInitialRights(resourceKind string, resourceId string, owner string) error
 	SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error
-	RemoveRights(topic string, id string) error
 }

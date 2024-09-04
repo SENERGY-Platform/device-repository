@@ -24,12 +24,15 @@ import (
 	"time"
 )
 
-func New(config config.Config, db database.Database, producer Producer) (ctrl *Controller, err error) {
+func New(config config.Config, db database.Database, producer Producer, permClient client.Client) (ctrl *Controller, err error) {
+	if permClient == nil {
+		permClient = client.New(config.PermissionsV2Url)
+	}
 	ctrl = &Controller{
 		db:                  db,
 		producer:            producer,
 		config:              config,
-		permissionsV2Client: client.New(config.PermissionsV2Url),
+		permissionsV2Client: permClient,
 	}
 	if config.PermissionsV2Url != "" && config.PermissionsV2Url != "-" {
 		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{

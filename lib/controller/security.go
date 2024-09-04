@@ -21,6 +21,10 @@ import (
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 
+func (c *Controller) GetPermissionsClient() client.Client {
+	return c.permissionsV2Client
+}
+
 func (this *Controller) EnsureInitialRights(topic string, resourceId string, owner string) error {
 	exists, err := this.db.RightsElementExists(topic, resourceId)
 	if err != nil {

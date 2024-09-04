@@ -45,17 +45,9 @@ func DeviceGroupListenerFactory(config config.Config, control Controller) (topic
 		}()
 		switch command.Command {
 		case "PUT":
-			err = control.EnsureInitialRights(config.DeviceGroupTopic, command.Id, command.Owner)
-			if err != nil {
-				return err
-			}
 			return control.SetDeviceGroup(command.DeviceGroup, command.Owner)
 		case "DELETE":
-			err = control.DeleteDeviceGroup(command.Id)
-			if err != nil {
-				return err
-			}
-			return control.RemoveRights(config.DeviceGroupTopic, command.Id)
+			return control.DeleteDeviceGroup(command.Id)
 		case "RIGHTS":
 			return control.SetRights(config.DeviceGroupTopic, command.Id, *command.Rights)
 		}

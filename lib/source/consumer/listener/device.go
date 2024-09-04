@@ -45,17 +45,9 @@ func DeviceListenerFactory(config config.Config, control Controller) (topic stri
 		}()
 		switch command.Command {
 		case "PUT":
-			err = control.EnsureInitialRights(config.DeviceTopic, command.Id, command.Owner)
-			if err != nil {
-				return err
-			}
 			return control.SetDevice(command.Device, command.Owner)
 		case "DELETE":
-			err = control.DeleteDevice(command.Id)
-			if err != nil {
-				return err
-			}
-			return control.RemoveRights(config.DeviceTopic, command.Id)
+			return control.DeleteDevice(command.Id)
 		case "RIGHTS":
 			return control.SetRights(config.DeviceTopic, command.Id, *command.Rights)
 		}

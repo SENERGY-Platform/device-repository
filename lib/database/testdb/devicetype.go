@@ -37,7 +37,6 @@ func (db *DB) RemoveDeviceType(_ context.Context, id string) error {
 
 }
 func (db *DB) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []models.DeviceType, err error) {
-	// TODO filtering
 	// sort can be id or name with .asc or .desc
 	deviceTypes := maps.Values(db.deviceTypes)
 	if offset >= int64(len(deviceTypes)) {

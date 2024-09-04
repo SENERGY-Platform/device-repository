@@ -45,17 +45,9 @@ func HubListenerFactory(config config.Config, control Controller) (topic string,
 		}()
 		switch command.Command {
 		case "PUT":
-			err = control.EnsureInitialRights(config.HubTopic, command.Id, command.Owner)
-			if err != nil {
-				return err
-			}
 			return control.SetHub(command.Hub, command.Owner)
 		case "DELETE":
-			err = control.DeleteHub(command.Id)
-			if err != nil {
-				return err
-			}
-			return control.RemoveRights(config.HubTopic, command.Id)
+			return control.DeleteHub(command.Id)
 		case "RIGHTS":
 			return control.SetRights(config.HubTopic, command.Id, *command.Rights)
 		}

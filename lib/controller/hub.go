@@ -305,6 +305,10 @@ func (this *Controller) ValidateHubDevices(hub models.Hub) (err error, code int)
 /////////////////////////
 
 func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
+	err = this.EnsureInitialRights(this.config.HubTopic, hub.Id, owner)
+	if err != nil {
+		return err
+	}
 	if hub.Id == "" {
 		log.Println("ERROR: received hub without id")
 		return nil
@@ -389,5 +393,13 @@ func (this *Controller) SetHubConnectionState(id string, connected bool) error {
 
 func (this *Controller) DeleteHub(id string) error {
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveHub(ctx, id)
+	err := this.db.RemoveHub(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = this.RemoveRights(this.config.HubTopic, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

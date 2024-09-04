@@ -97,7 +97,7 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 		return config, err
 	}
 
-	_, permV2Ip, err := PermissionsV2(ctx, wg, config.MongoUrl)
+	_, permV2Ip, err := PermissionsV2(ctx, wg, config.MongoUrl, config.KafkaUrl)
 	if err != nil {
 		return config, err
 	}

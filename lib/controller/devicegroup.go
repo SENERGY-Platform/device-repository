@@ -307,11 +307,23 @@ func listContains(list []string, search string) bool {
 /////////////////////////
 
 func (this *Controller) SetDeviceGroup(deviceGroup models.DeviceGroup, owner string) (err error) {
+	err = this.EnsureInitialRights(this.config.DeviceGroupTopic, deviceGroup.Id, owner)
+	if err != nil {
+		return err
+	}
 	ctx, _ := getTimeoutContext()
 	return this.db.SetDeviceGroup(ctx, deviceGroup)
 }
 
 func (this *Controller) DeleteDeviceGroup(id string) error {
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveDeviceGroup(ctx, id)
+	err := this.db.RemoveDeviceGroup(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = this.RemoveRights(this.config.DeviceGroupTopic, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -476,6 +476,11 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 /////////////////////////
 
 func (this *Controller) SetDevice(device models.Device, owner string) (err error) {
+	err = this.EnsureInitialRights(this.config.DeviceTopic, device.Id, owner)
+	if err != nil {
+		return err
+	}
+
 	//prevent collision of local ids
 	//this if branch should be rarely needed if 2 devices are created at the same time with the same local_id (when the second device is validated before the creation of the first is finished)
 	ctx, _ := getTimeoutContext()
@@ -555,6 +560,10 @@ func (this *Controller) DeleteDevice(id string) error {
 			return err
 		}
 		return this.resetHubsForDeviceUpdate(old.Device)
+	}
+	err = this.RemoveRights(this.config.DeviceTopic, id)
+	if err != nil {
+		return err
 	}
 	return nil
 }

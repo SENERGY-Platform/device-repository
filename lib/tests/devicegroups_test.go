@@ -27,6 +27,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -347,7 +348,14 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	ctrl, err := controller.New(config.Config{}, dbMock, nil)
+
+	permClient, err := permclient.NewTestClient(ctx)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ctrl, err := controller.New(conf, dbMock, nil, permClient)
 	if err != nil {
 		t.Error(err)
 		return
@@ -395,7 +403,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 	err = ctrl.SetDevice(models.Device{
 		Id:           "did",
 		DeviceTypeId: "dt1",
-	}, "")
+	}, "testowner")
 	if err != nil {
 		t.Error(err)
 		return
@@ -560,7 +568,7 @@ func testDeviceGroupValidation(ctrl *controller.Controller, group models.DeviceG
 func TestDeviceGroupsDeviceFilter(t *testing.T) {
 	conf := config.Config{DeviceGroupTopic: "device-group", DeviceTopic: "devices"}
 	db := testdb.NewTestDB(conf)
-	ctrl, err := controller.New(conf, db, nil)
+	ctrl, err := controller.New(conf, db, nil, nil)
 	if err != nil {
 		t.Error(err)
 		return

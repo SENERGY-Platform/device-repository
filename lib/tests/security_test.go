@@ -14,18 +14,27 @@
  * limitations under the License.
  */
 
-package controller
+package tests
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/api"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
+	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"reflect"
+	"strconv"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestSecurity(t *testing.T) {
@@ -39,24 +48,183 @@ func TestSecurity(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	conf.Debug = true
 
-	port, _, err := docker.MongoDB(ctx, wg)
+	_, mongoIp, err := docker.MongoDB(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.MongoUrl = "mongodb://" + mongoIp + ":27017"
+
+	_, zkIp, err := docker.Zookeeper(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	zookeeperUrl := zkIp + ":2181"
+
+	conf.KafkaUrl, err = docker.Kafka(ctx, wg, zookeeperUrl)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	conf.MongoUrl = "mongodb://localhost:" + port
+	_, permV2Ip, err := docker.PermissionsV2(ctx, wg, conf.MongoUrl, conf.KafkaUrl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.PermissionsV2Url = "http://" + permV2Ip + ":8080"
+
 	m, err := mongo.New(conf)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	ctrl, err := New(conf, m, nil)
+	p, err := producer.New(conf)
 	if err != nil {
 		t.Error(err)
 		return
+	}
+
+	ctrl, err := controller.New(conf, m, p, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = consumer.Start(ctx, conf, ctrl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	whPort, err := docker.GetFreePort()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.ServerPort = strconv.Itoa(whPort)
+	err = api.Start(ctx, conf, ctrl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	deviceRepoClient := client.NewClient("http://localhost:" + conf.ServerPort)
+
+	setRights := func(resourceKind string, resourceId string, rights model.ResourceRights) error {
+		_, err, _ := deviceRepoClient.GetPermissionsClient().SetPermission(permclient.InternalAdminToken, resourceKind, resourceId, rights.ToPermV2Permissions())
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	checkBool := func(t *testing.T, token string, topic string, id string, action model.AuthAction) (allowed bool, err error) {
+		//what is in the db?
+		allowed, err = m.CheckBool(token, topic, id, action)
+		if err != nil {
+			t.Error(err)
+			return false, err
+		}
+		var perm permclient.Permission
+		switch action {
+		case model.READ:
+			perm = permclient.Read
+		case model.WRITE:
+			perm = permclient.Write
+		case model.EXECUTE:
+			perm = permclient.Execute
+		case model.ADMINISTRATE:
+			perm = permclient.Administrate
+		}
+
+		//what is in permissions-v2?
+		expected := allowed
+
+		jwtToken, err := jwt.Parse(token)
+		if err != nil {
+			t.Error(err)
+			return false, err
+		}
+		if jwtToken.IsAdmin() {
+			expected = true //admins may do everything in perm-v2
+		}
+
+		allowed2, err, _ := ctrl.GetPermissionsClient().CheckPermission(token, topic, id, perm)
+		if err != nil {
+			t.Error(err)
+			return false, err
+		}
+
+		if expected != allowed2 {
+			t.Error(topic, id, "expected != allowed2", expected, allowed2, jwtToken.IsAdmin())
+		}
+
+		//does api permissions embedding work?
+		allowed3, err, _ := deviceRepoClient.GetPermissionsClient().CheckPermission(token, topic, id, perm)
+		if err != nil {
+			t.Error(err)
+			return false, err
+		}
+		if expected != allowed3 {
+			t.Error(topic, id, "expected != allowed3", expected, allowed3, jwtToken.IsAdmin())
+		}
+		return allowed, nil
+	}
+
+	var checkMultiple = func(t *testing.T, token string, topic string, ids []string, action model.AuthAction) (result map[string]bool, err error) {
+		result, err = m.CheckMultiple(token, topic, ids, action)
+		if err != nil {
+			t.Error(err)
+			return result, err
+		}
+
+		expected := map[string]bool{}
+		jwtToken, err := jwt.Parse(token)
+		if err != nil {
+			t.Error(err)
+			return result, err
+		}
+		for key, value := range result {
+			if jwtToken.IsAdmin() {
+				expected[key] = true //admins may do everything in perm-v2
+			} else {
+				expected[key] = value
+			}
+		}
+
+		var perm permclient.Permission
+		switch action {
+		case model.READ:
+			perm = permclient.Read
+		case model.WRITE:
+			perm = permclient.Write
+		case model.EXECUTE:
+			perm = permclient.Execute
+		case model.ADMINISTRATE:
+			perm = permclient.Administrate
+		}
+		result2, err, _ := ctrl.GetPermissionsClient().CheckMultiplePermissions(token, topic, ids, perm)
+		if err != nil {
+			t.Error(err)
+			return result, err
+		}
+		if !reflect.DeepEqual(expected, result2) {
+			t.Error(topic, ids, "expected != result2", expected, result2, jwtToken.IsAdmin())
+		}
+		result3, err, _ := deviceRepoClient.GetPermissionsClient().CheckMultiplePermissions(token, topic, ids, perm)
+		if err != nil {
+			t.Error(err)
+			return result, err
+		}
+		if !reflect.DeepEqual(expected, result3) {
+			t.Error(topic, ids, "expected != result3", expected, result3, jwtToken.IsAdmin())
+		}
+		return result, nil
 	}
 
 	t.Run("test device rights", func(t *testing.T) {
@@ -93,7 +261,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -102,7 +270,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -111,7 +279,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -120,7 +288,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -133,7 +301,7 @@ func TestSecurity(t *testing.T) {
 
 		t.Run("check rights with modified id", func(t *testing.T) {
 			modId := id1 + idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {"sg1"}})
-			allowed, err := m.CheckBool(ownerToken, topic, modId, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, modId, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -143,7 +311,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(ownerToken, topic, []string{modId}, model.READ)
+			allowedMap, err := checkMultiple(t, ownerToken, topic, []string{modId}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -158,7 +326,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -167,7 +335,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -176,7 +344,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -185,7 +353,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -197,7 +365,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -206,7 +374,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -215,7 +383,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -224,7 +392,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -236,7 +404,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -250,7 +418,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -264,7 +432,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -280,7 +448,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("update rights", func(t *testing.T) {
-			err = m.SetRights(topic, id1, model.ResourceRights{
+			err = setRights(topic, id1, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -294,7 +462,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id2, model.ResourceRights{
+			err = setRights(topic, id2, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -306,7 +474,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id3, model.ResourceRights{
+			err = setRights(topic, id3, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -318,7 +486,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id4, model.ResourceRights{
+			err = setRights(topic, id4, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -332,10 +500,11 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
+			time.Sleep(10 * time.Second)
 		})
 
 		t.Run("check rights with owner after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -344,7 +513,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -353,7 +522,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -362,7 +531,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -372,7 +541,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -384,7 +553,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -393,7 +562,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -402,7 +571,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -411,7 +580,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -421,7 +590,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -433,7 +602,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -442,7 +611,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -451,7 +620,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -460,7 +629,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -470,7 +639,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -482,7 +651,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after update", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -497,7 +666,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -512,7 +681,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -547,7 +716,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -556,7 +725,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -565,7 +734,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -574,7 +743,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -584,7 +753,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -596,7 +765,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -605,7 +774,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -614,7 +783,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -623,7 +792,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -633,7 +802,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -645,7 +814,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -654,7 +823,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -663,7 +832,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -672,7 +841,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -682,7 +851,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -694,7 +863,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after ensure", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -709,7 +878,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -724,7 +893,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -741,7 +910,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("delete id2", func(t *testing.T) {
-			err = m.RemoveRights(topic, id2)
+			err = ctrl.DeleteDevice(id2)
 			if err != nil {
 				t.Error(err)
 				return
@@ -749,7 +918,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -758,7 +927,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -767,7 +936,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -776,7 +945,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -786,7 +955,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -798,7 +967,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -807,7 +976,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -816,7 +985,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -825,7 +994,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -835,7 +1004,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -847,7 +1016,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -856,7 +1025,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -865,7 +1034,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -874,7 +1043,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -884,7 +1053,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -896,7 +1065,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after delete", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -910,7 +1079,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -924,7 +1093,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -975,7 +1144,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -984,7 +1153,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -993,7 +1162,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1002,7 +1171,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1014,7 +1183,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1023,7 +1192,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1032,7 +1201,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1041,7 +1210,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1053,7 +1222,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1062,7 +1231,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1071,7 +1240,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1080,7 +1249,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1092,7 +1261,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1106,7 +1275,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1120,7 +1289,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1136,7 +1305,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("update rights", func(t *testing.T) {
-			err = m.SetRights(topic, id1, model.ResourceRights{
+			err = setRights(topic, id1, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -1150,7 +1319,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id2, model.ResourceRights{
+			err = setRights(topic, id2, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -1162,7 +1331,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id3, model.ResourceRights{
+			err = setRights(topic, id3, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -1174,7 +1343,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id4, model.ResourceRights{
+			err = setRights(topic, id4, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -1188,10 +1357,11 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
+			time.Sleep(10 * time.Second)
 		})
 
 		t.Run("check rights with owner after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1200,7 +1370,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1209,7 +1379,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1218,7 +1388,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1228,7 +1398,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1240,7 +1410,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1249,7 +1419,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1258,7 +1428,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1267,7 +1437,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1277,7 +1447,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1289,7 +1459,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1298,7 +1468,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1307,7 +1477,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1316,7 +1486,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1326,7 +1496,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1338,7 +1508,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after update", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1353,7 +1523,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1368,7 +1538,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1403,7 +1573,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1412,7 +1582,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1421,7 +1591,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1430,7 +1600,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1440,7 +1610,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1452,7 +1622,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1461,7 +1631,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1470,7 +1640,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1479,7 +1649,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1489,7 +1659,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1501,7 +1671,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1510,7 +1680,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1519,7 +1689,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1528,7 +1698,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1538,7 +1708,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1550,7 +1720,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after ensure", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1565,7 +1735,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1580,7 +1750,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1597,7 +1767,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("delete id2", func(t *testing.T) {
-			err = m.RemoveRights(topic, id2)
+			err = ctrl.DeleteHub(id2)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1605,7 +1775,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1614,7 +1784,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1623,7 +1793,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1632,7 +1802,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1642,7 +1812,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1654,7 +1824,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1663,7 +1833,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1672,7 +1842,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1681,7 +1851,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1691,7 +1861,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1703,7 +1873,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1712,7 +1882,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1721,7 +1891,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1730,7 +1900,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1740,7 +1910,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1752,7 +1922,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after delete", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1766,7 +1936,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1780,7 +1950,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1831,7 +2001,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1840,7 +2010,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1849,7 +2019,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1858,7 +2028,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1870,7 +2040,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1879,7 +2049,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1888,7 +2058,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1897,7 +2067,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1909,7 +2079,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1918,7 +2088,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1927,7 +2097,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1936,7 +2106,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1948,7 +2118,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1962,7 +2132,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1976,7 +2146,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1992,7 +2162,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("update rights", func(t *testing.T) {
-			err = m.SetRights(topic, id1, model.ResourceRights{
+			err = setRights(topic, id1, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -2006,7 +2176,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id2, model.ResourceRights{
+			err = setRights(topic, id2, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -2018,7 +2188,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id3, model.ResourceRights{
+			err = setRights(topic, id3, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -2030,7 +2200,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id4, model.ResourceRights{
+			err = setRights(topic, id4, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: true, Execute: true, Administrate: true},
@@ -2044,10 +2214,11 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
+			time.Sleep(10 * time.Second)
 		})
 
 		t.Run("check rights with owner after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2056,7 +2227,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2065,7 +2236,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2074,7 +2245,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2084,7 +2255,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2096,7 +2267,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2105,7 +2276,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2114,7 +2285,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2123,7 +2294,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2133,7 +2304,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2145,7 +2316,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after update", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2154,7 +2325,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2163,7 +2334,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2172,7 +2343,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2182,7 +2353,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2194,7 +2365,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after update", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2209,7 +2380,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2224,7 +2395,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2259,7 +2430,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2268,7 +2439,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2277,7 +2448,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2286,7 +2457,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2296,7 +2467,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2308,7 +2479,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2317,7 +2488,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2326,7 +2497,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2335,7 +2506,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2345,7 +2516,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2357,7 +2528,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after ensure", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2366,7 +2537,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2375,7 +2546,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2384,7 +2555,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2394,7 +2565,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2406,7 +2577,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after ensure", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2421,7 +2592,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2436,7 +2607,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2453,7 +2624,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("delete id2", func(t *testing.T) {
-			err = m.RemoveRights(topic, id2)
+			err = ctrl.DeleteDeviceGroup(id2)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2461,7 +2632,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with owner after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(ownerToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, ownerToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2470,7 +2641,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2479,7 +2650,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2488,7 +2659,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(ownerToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2498,7 +2669,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(ownerToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, ownerToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2510,7 +2681,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with second user after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2519,7 +2690,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2528,7 +2699,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2537,7 +2708,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2547,7 +2718,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2559,7 +2730,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check rights with admin after delete", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2568,7 +2739,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2577,7 +2748,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2586,7 +2757,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2596,7 +2767,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id5, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id5, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2608,7 +2779,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check multiple after delete", func(t *testing.T) {
-			allowed, err := m.CheckMultiple(ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err := checkMultiple(t, ownerToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2622,7 +2793,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2636,7 +2807,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
+			allowed, err = checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4, id5}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2696,7 +2867,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("update rights", func(t *testing.T) {
-			err = m.SetRights(topic, id1, model.ResourceRights{
+			err = setRights(topic, id1, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: true, Write: false, Execute: false, Administrate: false},
@@ -2710,7 +2881,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id2, model.ResourceRights{
+			err = setRights(topic, id2, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: false, Write: true, Execute: false, Administrate: false},
@@ -2724,7 +2895,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id3, model.ResourceRights{
+			err = setRights(topic, id3, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: false, Write: false, Execute: true, Administrate: false},
@@ -2738,7 +2909,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			err = m.SetRights(topic, id4, model.ResourceRights{
+			err = setRights(topic, id4, model.ResourceRights{
 				UserRights: map[string]model.Right{
 					ownerUser:  {Read: true, Write: true, Execute: true, Administrate: true},
 					secondUser: {Read: false, Write: false, Execute: false, Administrate: true},
@@ -2752,10 +2923,11 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
+			time.Sleep(10 * time.Second)
 		})
 
 		t.Run("check user read", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2764,7 +2936,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2773,7 +2945,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2782,7 +2954,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2792,7 +2964,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowedMap, err := checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2808,7 +2980,7 @@ func TestSecurity(t *testing.T) {
 			}
 		})
 		t.Run("check admin read", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.READ)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2817,7 +2989,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2826,7 +2998,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2835,7 +3007,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.READ)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2845,7 +3017,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
+			allowedMap, err := checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4}, model.READ)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2862,7 +3034,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check user write", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.WRITE)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2871,7 +3043,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.WRITE)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2881,7 +3053,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.WRITE)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2890,7 +3062,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.WRITE)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2900,7 +3072,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4}, model.WRITE)
+			allowedMap, err := checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4}, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2916,7 +3088,7 @@ func TestSecurity(t *testing.T) {
 			}
 		})
 		t.Run("check admin write", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.WRITE)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2925,7 +3097,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.WRITE)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2935,7 +3107,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.WRITE)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2944,7 +3116,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.WRITE)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2954,7 +3126,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4}, model.WRITE)
+			allowedMap, err := checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4}, model.WRITE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2971,7 +3143,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check user execute", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.EXECUTE)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2980,7 +3152,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.EXECUTE)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2990,7 +3162,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.EXECUTE)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3000,7 +3172,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.EXECUTE)
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3010,7 +3182,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4}, model.EXECUTE)
+			allowedMap, err := checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4}, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3026,7 +3198,7 @@ func TestSecurity(t *testing.T) {
 			}
 		})
 		t.Run("check admin execute", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.EXECUTE)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3035,7 +3207,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.EXECUTE)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3045,7 +3217,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.EXECUTE)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3055,7 +3227,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.EXECUTE)
+			allowed, err = checkBool(t, adminToken, topic, id4, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3065,7 +3237,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4}, model.EXECUTE)
+			allowedMap, err := checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4}, model.EXECUTE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3082,7 +3254,7 @@ func TestSecurity(t *testing.T) {
 		})
 
 		t.Run("check user administrate", func(t *testing.T) {
-			allowed, err := m.CheckBool(secondUserToken, topic, id1, model.ADMINISTRATE)
+			allowed, err := checkBool(t, secondUserToken, topic, id1, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3091,17 +3263,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(secondUserToken, topic, id2, model.ADMINISTRATE)
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			if allowed {
-				t.Error("expected not allowed")
-				return
-			}
-
-			allowed, err = m.CheckBool(secondUserToken, topic, id3, model.ADMINISTRATE)
+			allowed, err = checkBool(t, secondUserToken, topic, id2, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3111,7 +3273,17 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(secondUserToken, topic, id4, model.ADMINISTRATE)
+			allowed, err = checkBool(t, secondUserToken, topic, id3, model.ADMINISTRATE)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if allowed {
+				t.Error("expected not allowed")
+				return
+			}
+
+			allowed, err = checkBool(t, secondUserToken, topic, id4, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3121,7 +3293,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(secondUserToken, topic, []string{id1, id2, id3, id4}, model.ADMINISTRATE)
+			allowedMap, err := checkMultiple(t, secondUserToken, topic, []string{id1, id2, id3, id4}, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3137,7 +3309,7 @@ func TestSecurity(t *testing.T) {
 			}
 		})
 		t.Run("check admin administrate", func(t *testing.T) {
-			allowed, err := m.CheckBool(adminToken, topic, id1, model.ADMINISTRATE)
+			allowed, err := checkBool(t, adminToken, topic, id1, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3146,17 +3318,7 @@ func TestSecurity(t *testing.T) {
 				t.Error("expected not allowed")
 				return
 			}
-			allowed, err = m.CheckBool(adminToken, topic, id2, model.ADMINISTRATE)
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			if allowed {
-				t.Error("expected not allowed")
-				return
-			}
-
-			allowed, err = m.CheckBool(adminToken, topic, id3, model.ADMINISTRATE)
+			allowed, err = checkBool(t, adminToken, topic, id2, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3166,7 +3328,17 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowed, err = m.CheckBool(adminToken, topic, id4, model.ADMINISTRATE)
+			allowed, err = checkBool(t, adminToken, topic, id3, model.ADMINISTRATE)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if allowed {
+				t.Error("expected not allowed")
+				return
+			}
+
+			allowed, err = checkBool(t, adminToken, topic, id4, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return
@@ -3176,7 +3348,7 @@ func TestSecurity(t *testing.T) {
 				return
 			}
 
-			allowedMap, err := m.CheckMultiple(adminToken, topic, []string{id1, id2, id3, id4}, model.ADMINISTRATE)
+			allowedMap, err := checkMultiple(t, adminToken, topic, []string{id1, id2, id3, id4}, model.ADMINISTRATE)
 			if err != nil {
 				t.Error(err)
 				return

@@ -17,11 +17,13 @@
 package client
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 
 func NewTestClient() (ctrl Interface, db database.Database, err error) {
@@ -47,7 +49,12 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		LocalIdUniqueForOwner:                    true,
 	}
 	db = testdb.NewTestDB(conf)
-	ctrl, err = controller.New(conf, db, semantic_legacy.VoidProducerMock{})
+
+	permclient, err := client.NewTestClient(context.Background())
+	if err != nil {
+		return nil, nil, err
+	}
+	ctrl, err = controller.New(conf, db, semantic_legacy.VoidProducerMock{}, permclient)
 	if err != nil {
 		return nil, nil, err
 	}

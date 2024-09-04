@@ -21,13 +21,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
+	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 )
 
-type Interface = api.Controller
+type Interface interface {
+	api.Controller
+	GetPermissionsClient() permissions.Client
+}
 
 type Client struct {
 	baseUrl string
@@ -75,6 +79,10 @@ func doWithTotalInResult[T any](req *http.Request) (result T, total int64, err e
 		return result, total, err, http.StatusInternalServerError
 	}
 	return
+}
+
+func (c *Client) GetPermissionsClient() permissions.Client {
+	return permissions.New(c.baseUrl + "/permissions")
 }
 
 func (c *Client) validateWithToken(token string, path string, e interface{}) (err error, code int) {

@@ -68,7 +68,7 @@ func TestConceptValidation(t *testing.T) {
 		}
 	}()
 
-	ctrl, err := controller.New(conf, db, nil)
+	ctrl, err := controller.New(conf, db, nil, nil)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
