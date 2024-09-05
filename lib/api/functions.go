@@ -35,6 +35,19 @@ func init() {
 
 type FunctionsEndpoints struct{}
 
+// ListControllingFunctions godoc
+// @Summary      list controlling-functions
+// @Description  list controlling-functions
+// @Tags         list, controlling-functions, functions
+// @Produce      json
+// @Security Bearer
+// @Success      200 {array}  models.Function
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /controlling-functions [GET]
 func (this *FunctionsEndpoints) ListControllingFunctions(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
 		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_CONTROLLING_FUNCTION)
@@ -51,6 +64,19 @@ func (this *FunctionsEndpoints) ListControllingFunctions(config config.Config, r
 	})
 }
 
+// ListMeasuringFunctions godoc
+// @Summary      list measuring-functions
+// @Description  list measuring-functions
+// @Tags         list, measuring-functions, functions
+// @Produce      json
+// @Security Bearer
+// @Success      200 {array}  models.Function
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /measuring-functions [GET]
 func (this *FunctionsEndpoints) ListMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
 		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_MEASURING_FUNCTION)
@@ -67,6 +93,20 @@ func (this *FunctionsEndpoints) ListMeasuringFunctions(config config.Config, rou
 	})
 }
 
+// Get godoc
+// @Summary      get function
+// @Description  get function
+// @Tags         get, functions
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Function Id"
+// @Success      200 {object}  models.DeviceClass
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /functions/{id} [GET]
 func (this *FunctionsEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -84,6 +124,18 @@ func (this *FunctionsEndpoints) Get(config config.Config, router *http.ServeMux,
 	})
 }
 
+// Validate godoc
+// @Summary      validate function
+// @Description  validate function
+// @Tags         validate, functions
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.Function true "Function to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /functions [PUT]
 func (this *FunctionsEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /functions", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
@@ -111,6 +163,17 @@ func (this *FunctionsEndpoints) Validate(config config.Config, router *http.Serv
 	})
 }
 
+// ValidateDelete godoc
+// @Summary      validate function delete
+// @Description  validate if function may be deleted
+// @Tags         validate, functions
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        id path string true "Function Id"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /functions/{id} [DELETE]
 func (this *FunctionsEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))

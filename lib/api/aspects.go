@@ -34,6 +34,22 @@ func init() {
 
 type AspectEndpoints struct{}
 
+// List godoc
+// @Summary      list aspects
+// @Description  list aspects
+// @Tags         list, aspects
+// @Produce      json
+// @Security Bearer
+// @Param        function query string false "filter; only 'measuring-function' is a valid value; if set, returns aspects used in combination with measuring-functions"
+// @Param        ancestors query bool false "filter; in combination with 'function'; if true, returns also ancestor nodes of matching aspects"
+// @Param        descendants query bool false "filter; in combination with 'function'; if true, returns also descendant nodes of matching aspects"
+// @Success      200 {array}  models.Aspect
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspects [GET]
 func (this *AspectEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspects", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.Aspect
@@ -85,6 +101,20 @@ func (this *AspectEndpoints) List(config config.Config, router *http.ServeMux, c
 	})
 }
 
+// Get godoc
+// @Summary      get aspect
+// @Description  get aspect
+// @Tags         get, aspects
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Aspect Id"
+// @Success      200 {object}  models.Aspect
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspects/{id} [GET]
 func (this *AspectEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -102,6 +132,18 @@ func (this *AspectEndpoints) Get(config config.Config, router *http.ServeMux, co
 	})
 }
 
+// Validate godoc
+// @Summary      validate aspect
+// @Description  validate aspect
+// @Tags         validate, aspects
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.Aspect true "Aspect to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /aspects [PUT]
 func (this *AspectEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /aspects", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
@@ -128,6 +170,17 @@ func (this *AspectEndpoints) Validate(config config.Config, router *http.ServeMu
 	})
 }
 
+// ValidateDelete godoc
+// @Summary      validate aspect delete
+// @Description  validate if aspect may be deleted
+// @Tags         validate, aspects
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        id path string true "Aspect Id"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /aspects/{id} [DELETE]
 func (this *AspectEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
@@ -149,6 +202,22 @@ func (this *AspectEndpoints) ValidateDelete(config config.Config, router *http.S
 	})
 }
 
+// GetMeasuringFunctions godoc
+// @Summary      list aspect measuring-functions
+// @Description  list measuring-functions used in combination with this aspect
+// @Tags         list, aspects, functions
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Aspect Id"
+// @Success      200 {array}  models.Function
+// @Param        ancestors query bool false "filter; if true, returns also functions used in combination with ancestors of the input aspect"
+// @Param        descendants query bool false "filter; if true, returns also functions used in combination with descendants of the input aspect"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspects/{id}/measuring-functions [GET]
 func (this *AspectEndpoints) GetMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspects/{id}/measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")

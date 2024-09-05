@@ -36,13 +36,30 @@ func init() {
 
 type DeviceEndpoints struct{}
 
+// List godoc
+// @Summary      list devices
+// @Description  list devices
+// @Tags         list, devices
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        device-type-ids query string false "filter; comma-seperated list"
+// @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
+// @Success      200 {array}  models.Device
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices [GET]
 func (this *DeviceEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /devices", func(writer http.ResponseWriter, request *http.Request) {
-		//query-parameter:
-		//		- limit: number; default 100, will be ignored if 'ids' is set
-		//		- offset: number; default 0, will be ignored if 'ids' is set
-		//		- ids: filter by comma seperated id list
-
 		deviceListOptions := model.DeviceListOptions{
 			Limit:  100,
 			Offset: 0,
@@ -140,13 +157,25 @@ func (this *DeviceEndpoints) List(config config.Config, router *http.ServeMux, c
 	})
 }
 
+// Get godoc
+// @Summary      get device
+// @Description  get device
+// @Tags         get, devices
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Id"
+// @Param        as query string false "interprets the id as local_id if as=='local_id'"
+// @Param        owner_id query string false "default requesting user; used in combination with local_id (as=='local_id') to identify the device"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200 {object}  models.Device
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices/{id} [GET]
 func (this *DeviceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		//use 'as=local_id' query parameter to search device by local_id
-		//		may use the 'owner_id' query parameter, which will default to the user/subject of the Auth-Token
-		//use 'p' query parameter to limit selection to a permission;
-		//		used internally to guarantee that user has needed permission for the resource
-		//		example: 'p=x' guaranties the user has execution rights
 		id := request.PathValue("id")
 		as := request.URL.Query().Get("as")
 		ownerId := request.URL.Query().Get("owner_id")
@@ -186,6 +215,18 @@ func (this *DeviceEndpoints) Get(config config.Config, router *http.ServeMux, co
 	})
 }
 
+// Validate godoc
+// @Summary      validate device
+// @Description  validate device
+// @Tags         validate, devices
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.Device true "Device to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /devices [PUT]
 func (this *DeviceEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /devices", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))

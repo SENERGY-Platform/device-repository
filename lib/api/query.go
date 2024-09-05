@@ -30,6 +30,19 @@ func init() {
 
 type QueryEndpoint struct{}
 
+// Query godoc
+// @Summary      query used-in-device-type
+// @Description  query used-in-device-type
+// @Tags         query, device-types
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body model.UsedInDeviceTypeQuery true "filter"
+// @Success      200 {object}  model.UsedInDeviceTypeResponse
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /query/used-in-device-type [POST]
 func (this *QueryEndpoint) Query(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /query/used-in-device-type", func(writer http.ResponseWriter, request *http.Request) {
 		query := model.UsedInDeviceTypeQuery{}

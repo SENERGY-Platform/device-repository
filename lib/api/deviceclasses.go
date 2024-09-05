@@ -34,6 +34,20 @@ func init() {
 
 type DeviceClassEndpoints struct{}
 
+// List godoc
+// @Summary      list device-classes
+// @Description  list device-classes
+// @Tags         list, device-classes
+// @Produce      json
+// @Security Bearer
+// @Param        function query string false "filter; only 'controlling-function' is a valid value; if set, returns device-classes used in combination with controlling-function"
+// @Success      200 {array}  models.DeviceClass
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-classes [GET]
 func (this *DeviceClassEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.DeviceClass
@@ -67,6 +81,20 @@ func (this *DeviceClassEndpoints) List(config config.Config, router *http.ServeM
 	})
 }
 
+// Get godoc
+// @Summary      get device-class
+// @Description  get device-class
+// @Tags         get, device-classes
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Class Id"
+// @Success      200 {object}  models.DeviceClass
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-classes/{id} [GET]
 func (this *DeviceClassEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -84,6 +112,20 @@ func (this *DeviceClassEndpoints) Get(config config.Config, router *http.ServeMu
 	})
 }
 
+// GetFunctions godoc
+// @Summary      list device-class functions
+// @Description  list functions used in combination with this device-class
+// @Tags         list, device-classes, functions
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Class Id"
+// @Success      200 {array}  models.Function
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-classes/{id}/functions [GET]
 func (this *DeviceClassEndpoints) GetFunctions(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}/functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -101,6 +143,20 @@ func (this *DeviceClassEndpoints) GetFunctions(config config.Config, router *htt
 	})
 }
 
+// GetControllingFunctions godoc
+// @Summary      list device-class functions
+// @Description  list controlling-functions used in combination with this device-class
+// @Tags         list, device-classes, functions
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Class Id"
+// @Success      200 {array}  models.Function
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-classes/{id}/controlling-functions [GET]
 func (this *DeviceClassEndpoints) GetControllingFunctions(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}/controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -118,6 +174,18 @@ func (this *DeviceClassEndpoints) GetControllingFunctions(config config.Config, 
 	})
 }
 
+// Validate godoc
+// @Summary      validate device-class
+// @Description  validate device-class
+// @Tags         validate, device-classes
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.DeviceClass true "Device-Class to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /device-classes [PUT]
 func (this *DeviceClassEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
@@ -144,6 +212,17 @@ func (this *DeviceClassEndpoints) Validate(config config.Config, router *http.Se
 	})
 }
 
+// ValidateDelete godoc
+// @Summary      validate device-class delete
+// @Description  validate if device-class may be deleted
+// @Tags         validate, device-classes
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        id path string true "DeviceClass Id"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /device-classes/{id} [DELETE]
 func (this *DeviceClassEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))

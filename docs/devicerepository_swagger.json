@@ -1,9 +1,2479 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "title": "Device-Repository API",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "0.1"
     },
+    "basePath": "/",
     "paths": {
+        "/aspect-nodes": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list aspect-nodes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "aspect-nodes",
+                    "aspects"
+                ],
+                "summary": "list aspect-nodes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter; only 'measuring-function' is a valid value; if set, returns aspect-nodes used in combination with measuring-functions",
+                        "name": "function",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; in combination with 'function'; if true, returns also ancestor nodes of matching nodes",
+                        "name": "ancestors",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; in combination with 'function'; if true, returns also descendant nodes of matching nodes",
+                        "name": "descendants",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AspectNode"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/aspect-nodes/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get aspect-node",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "aspect-nodes",
+                    "aspects"
+                ],
+                "summary": "get aspect-node",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect-Node Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AspectNode"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/aspect-nodes/{id}/measuring-functions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list measuring-functions used in combination with this aspect-node",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "aspect-nodes",
+                    "aspects",
+                    "functions"
+                ],
+                "summary": "list aspect-node measuring-functions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect-Node Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with ancestors of the input aspect-node",
+                        "name": "ancestors",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with descendants of the input aspect-node",
+                        "name": "descendants",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/aspects": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list aspects",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "aspects"
+                ],
+                "summary": "list aspects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter; only 'measuring-function' is a valid value; if set, returns aspects used in combination with measuring-functions",
+                        "name": "function",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; in combination with 'function'; if true, returns also ancestor nodes of matching aspects",
+                        "name": "ancestors",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; in combination with 'function'; if true, returns also descendant nodes of matching aspects",
+                        "name": "descendants",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Aspect"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate aspect",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "aspects"
+                ],
+                "summary": "validate aspect",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Aspect to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Aspect"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/aspects/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get aspect",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "aspects"
+                ],
+                "summary": "get aspect",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Aspect"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate if aspect may be deleted",
+                "tags": [
+                    "validate",
+                    "aspects"
+                ],
+                "summary": "validate aspect delete",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not a delete but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Aspect Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/aspects/{id}/measuring-functions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list measuring-functions used in combination with this aspect",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "aspects",
+                    "functions"
+                ],
+                "summary": "list aspect measuring-functions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with ancestors of the input aspect",
+                        "name": "ancestors",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with descendants of the input aspect",
+                        "name": "descendants",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/characteristics": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list characteristics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "characteristics"
+                ],
+                "summary": "list characteristics",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "default=true; filter; return only characteristics that have no sub-characteristics",
+                        "name": "leafsOnly",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Characteristic"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate characteristic",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "characteristics"
+                ],
+                "summary": "validate characteristic",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Characteristic to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Characteristic"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/characteristics/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get characteristic",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "characteristics"
+                ],
+                "summary": "get characteristic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Characteristic Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Characteristic"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate if characteristic may be deleted",
+                "tags": [
+                    "validate",
+                    "characteristics"
+                ],
+                "summary": "validate characteristic delete",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not a delete but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Characteristics Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/concepts": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate concept",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "concepts"
+                ],
+                "summary": "validate concept",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Concept to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Concept"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/concepts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get concept",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "concepts"
+                ],
+                "summary": "get concept",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Concepts Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "default=false; true -\u003e returns models.ConceptWithCharacteristics; false -\u003e returns models.Concept",
+                        "name": "sub-class",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ConceptWithCharacteristics"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate if concept may be deleted",
+                "tags": [
+                    "validate",
+                    "concepts"
+                ],
+                "summary": "validate concepts delete",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not a delete but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Concepts Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/controlling-functions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list controlling-functions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "controlling-functions",
+                    "functions"
+                ],
+                "summary": "list controlling-functions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-classes": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list device-classes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "device-classes"
+                ],
+                "summary": "list device-classes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter; only 'controlling-function' is a valid value; if set, returns device-classes used in combination with controlling-function",
+                        "name": "function",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DeviceClass"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate device-class",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "device-classes"
+                ],
+                "summary": "validate device-class",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Device-Class to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DeviceClass"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-classes/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get device-class",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "device-classes"
+                ],
+                "summary": "get device-class",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Class Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeviceClass"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate if device-class may be deleted",
+                "tags": [
+                    "validate",
+                    "device-classes"
+                ],
+                "summary": "validate device-class delete",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not a delete but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DeviceClass Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-classes/{id}/controlling-functions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list controlling-functions used in combination with this device-class",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "device-classes",
+                    "functions"
+                ],
+                "summary": "list device-class functions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Class Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-classes/{id}/functions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list functions used in combination with this device-class",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "device-classes",
+                    "functions"
+                ],
+                "summary": "list device-class functions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Class Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-groups": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate device-group",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "device-groups"
+                ],
+                "summary": "validate device-group",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "DeviceGroup to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DeviceGroup"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-groups/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get device-group",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "device-groups"
+                ],
+                "summary": "get device-group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Group Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "remove criteria that are more generalized variations of already listed criteria (ref SNRGY-3027)",
+                        "name": "filter_generic_duplicate_criteria",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeviceGroup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-types": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate device-type",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "device-types"
+                ],
+                "summary": "validate device-type",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Device-Type to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DeviceType"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/device-types/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get device-type",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "device-types"
+                ],
+                "summary": "get device-type",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device-Type Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeviceType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/devices": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list devices",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "devices"
+                ],
+                "summary": "list devices",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list",
+                        "name": "device-type-ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "name": "attr-keys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "name": "attr-values",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "filter; valid values are 'online', 'offline' and an empty string for unknown states",
+                        "name": "connection-state",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Device"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate device",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "devices"
+                ],
+                "summary": "validate device",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Device to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Device"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/devices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get device",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "devices"
+                ],
+                "summary": "get device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "interprets the id as local_id if as=='local_id'",
+                        "name": "as",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default requesting user; used in combination with local_id (as=='local_id') to identify the device",
+                        "name": "owner_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Device"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/extended-devices": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list extended-device",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "devices",
+                    "extended-devices"
+                ],
+                "summary": "list extended-device",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list",
+                        "name": "device-type-ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "name": "attr-keys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "name": "attr-values",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "filter; valid values are 'online', 'offline' and an empty string for unknown states",
+                        "name": "connection-state",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ExtendedDevice"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/extended-devices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get extended-device",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "devices",
+                    "extended-devices"
+                ],
+                "summary": "get extended-device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "interprets the id as local_id if as=='local_id'",
+                        "name": "as",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default requesting user; used in combination with local_id (as=='local_id') to identify the device",
+                        "name": "owner_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Device"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/extended-hubs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list extended-hubs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "hubs",
+                    "extended-hubs"
+                ],
+                "summary": "list extended-hubs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "filter; valid values are 'online', 'offline' and an empty string for unknown states",
+                        "name": "connection-state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ExtendedHub"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/extended-hubs/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get extended-hubs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "hubs",
+                    "extended-hubs"
+                ],
+                "summary": "get extended-hubs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hub Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ExtendedHub"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/functions": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate location",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "locations"
+                ],
+                "summary": "validate location",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Location to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Location"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/functions/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get function",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "functions"
+                ],
+                "summary": "get function",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Function Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DeviceClass"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate if function may be deleted",
+                "tags": [
+                    "validate",
+                    "functions"
+                ],
+                "summary": "validate function delete",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not a delete but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Function Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/hubs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list hubs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "hubs"
+                ],
+                "summary": "list hubs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "filter; valid values are 'online', 'offline' and an empty string for unknown states",
+                        "name": "connection-state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Hub"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate hub",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "hubs"
+                ],
+                "summary": "validate hub",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Hub to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Hub"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/hubs/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get hub",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "hubs"
+                ],
+                "summary": "get hub",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hub Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Hub"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "head": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "head hub",
+                "tags": [
+                    "head",
+                    "hubs"
+                ],
+                "summary": "head hub",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hub Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/hubs/{id}/devices": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get device ids of hub",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "hubs",
+                    "devices"
+                ],
+                "summary": "get device ids of hub",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hub Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'local_id'; valid values 'local_id', 'localId', 'id'; selects if device ids or device local-ids should be returned",
+                        "name": "as",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/invalid/device-type": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate existing device-types",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "device-types"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100; limit of checked device-types not of returned errors",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "allow none leaf aspect nodes in device-types",
+                        "name": "allow_none_leaf_aspect_nodes_in_device_types",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.ValidationError"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/locations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get location",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "locations"
+                ],
+                "summary": "get location",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Location"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/measuring-functions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list measuring-functions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "measuring-functions",
+                    "functions"
+                ],
+                "summary": "list measuring-functions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/permissions/accessible/{topic}": {
             "get": {
                 "security": [
@@ -851,9 +3321,614 @@
                     }
                 }
             }
+        },
+        "/protocols": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get protocol",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "protocols"
+                ],
+                "summary": "get protocol",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Protocol"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate protocol",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "protocols"
+                ],
+                "summary": "validate protocol",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Location to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Protocol"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/protocols/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get protocol",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "protocols"
+                ],
+                "summary": "get protocol",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Protocol Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Protocol"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/query/aspect-nodes": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "query aspect-nodes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "query",
+                    "aspect-nodes"
+                ],
+                "summary": "query aspect-nodes",
+                "parameters": [
+                    {
+                        "description": "AspectNodeQuery",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.AspectNodeQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AspectNode"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/query/device-type-selectables": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate device-type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "device-types"
+                ],
+                "summary": "validate device-type",
+                "parameters": [
+                    {
+                        "description": "filtered by criteria",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.FilterCriteria"
+                            }
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "prefix added to variable paths",
+                        "name": "path-prefix",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "'event', 'request', 'event+request'",
+                        "name": "interactions-filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "include id-modified device-types",
+                        "name": "include_id_modified",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.DeviceTypeSelectable"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/query/used-in-device-type": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "query used-in-device-type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "query",
+                    "device-types"
+                ],
+                "summary": "query used-in-device-type",
+                "parameters": [
+                    {
+                        "description": "filter",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UsedInDeviceTypeQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.UsedInDeviceTypeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/services/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get service",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "get",
+                    "services"
+                ],
+                "summary": "get service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Service"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v2/query/device-type-selectables": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate device-type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "validate",
+                    "device-types"
+                ],
+                "summary": "validate device-type",
+                "parameters": [
+                    {
+                        "description": "filtered by criteria",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.FilterCriteria"
+                            }
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "prefix added to variable paths",
+                        "name": "path-prefix",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "toggle if filter criteria is 'and' or 'or' combination",
+                        "name": "services_must_match_all_criteria",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "include id-modified device-types",
+                        "name": "include_id_modified",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.DeviceTypeSelectable"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v3/device-types": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list device-types",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "device-types"
+                ],
+                "summary": "list device-types",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "name": "attr-keys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "name": "attr-values",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "include id-modified device-types",
+                        "name": "include-modified",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "no unmodified device-types",
+                        "name": "ignore-unmodified",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; json encoded []model.FilterCriteria",
+                        "name": "criteria",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DeviceType"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "api.AspectNodeQuery": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "api.ValidationError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "model.ComputedPermissions": {
             "type": "object",
             "properties": {
@@ -874,6 +3949,84 @@
                 }
             }
         },
+        "model.Configurable": {
+            "type": "object",
+            "properties": {
+                "aspect_node": {
+                    "$ref": "#/definitions/models.AspectNode"
+                },
+                "characteristic_id": {
+                    "type": "string"
+                },
+                "function_id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.Type"
+                },
+                "value": {}
+            }
+        },
+        "model.DeviceTypeReference": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "used_in": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ServiceReference"
+                    }
+                }
+            }
+        },
+        "model.DeviceTypeSelectable": {
+            "type": "object",
+            "properties": {
+                "device_type_id": {
+                    "type": "string"
+                },
+                "service_path_options": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/model.ServicePathOption"
+                        }
+                    }
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Service"
+                    }
+                }
+            }
+        },
+        "model.FilterCriteria": {
+            "type": "object",
+            "properties": {
+                "aspect_id": {
+                    "type": "string"
+                },
+                "device_class_id": {
+                    "type": "string"
+                },
+                "function_id": {
+                    "type": "string"
+                },
+                "interaction": {
+                    "$ref": "#/definitions/models.Interaction"
+                }
+            }
+        },
         "model.PermissionsMap": {
             "type": "object",
             "properties": {
@@ -888,6 +4041,20 @@
                 },
                 "write": {
                     "type": "boolean"
+                }
+            }
+        },
+        "model.RefInDeviceTypeResponseElement": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "used_in": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DeviceTypeReference"
+                    }
                 }
             }
         },
@@ -943,6 +4110,62 @@
                 }
             }
         },
+        "model.ServicePathOption": {
+            "type": "object",
+            "properties": {
+                "aspect_node": {
+                    "$ref": "#/definitions/models.AspectNode"
+                },
+                "characteristic_id": {
+                    "type": "string"
+                },
+                "configurables": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Configurable"
+                    }
+                },
+                "function_id": {
+                    "type": "string"
+                },
+                "interaction": {
+                    "$ref": "#/definitions/models.Interaction"
+                },
+                "is_controlling_function": {
+                    "type": "boolean"
+                },
+                "is_void": {
+                    "type": "boolean"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "service_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.Type"
+                },
+                "value": {}
+            }
+        },
+        "model.ServiceReference": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "used_in": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.VariableReference"
+                    }
+                }
+            }
+        },
         "model.Topic": {
             "type": "object",
             "properties": {
@@ -966,6 +4189,744 @@
                     "type": "string"
                 }
             }
+        },
+        "model.UsedInDeviceTypeQuery": {
+            "type": "object",
+            "properties": {
+                "count_by": {
+                    "description": "\"\"|\"device-type\"|\"service\"|\"variable\": selects what is counted; defaults to \"device-type\"",
+                    "type": "string"
+                },
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "resource": {
+                    "description": "\"aspects\"|\"functions\"|\"device-classes\"|\"characteristics\"",
+                    "type": "string"
+                },
+                "with": {
+                    "description": "\"\"|\"device-type\"|\"service\"|\"variable\": selects how deep the result \"used_in\" is set; defaults to \"device-type\"",
+                    "type": "string"
+                }
+            }
+        },
+        "model.UsedInDeviceTypeResponse": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/model.RefInDeviceTypeResponseElement"
+            }
+        },
+        "model.VariableReference": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Aspect": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sub_aspects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Aspect"
+                    }
+                }
+            }
+        },
+        "models.AspectNode": {
+            "type": "object",
+            "properties": {
+                "ancestor_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "child_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "descendent_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "root_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Attribute": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "origin": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Characteristic": {
+            "type": "object",
+            "properties": {
+                "allowed_values": {
+                    "type": "array",
+                    "items": {}
+                },
+                "display_unit": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "max_value": {},
+                "min_value": {},
+                "name": {
+                    "type": "string"
+                },
+                "sub_characteristics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Characteristic"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/models.Type"
+                },
+                "value": {}
+            }
+        },
+        "models.Concept": {
+            "type": "object",
+            "properties": {
+                "base_characteristic_id": {
+                    "type": "string"
+                },
+                "characteristic_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "conversions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ConverterExtension"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ConceptWithCharacteristics": {
+            "type": "object",
+            "properties": {
+                "base_characteristic_id": {
+                    "type": "string"
+                },
+                "characteristics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Characteristic"
+                    }
+                },
+                "conversions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ConverterExtension"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Content": {
+            "type": "object",
+            "properties": {
+                "content_variable": {
+                    "$ref": "#/definitions/models.ContentVariable"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "protocol_segment_id": {
+                    "type": "string"
+                },
+                "serialization": {
+                    "$ref": "#/definitions/models.Serialization"
+                }
+            }
+        },
+        "models.ContentVariable": {
+            "type": "object",
+            "properties": {
+                "aspect_id": {
+                    "type": "string"
+                },
+                "characteristic_id": {
+                    "type": "string"
+                },
+                "function_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_void": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "omit_empty": {
+                    "type": "boolean"
+                },
+                "serialization_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sub_content_variables": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContentVariable"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/models.Type"
+                },
+                "unit_reference": {
+                    "type": "string"
+                },
+                "value": {}
+            }
+        },
+        "models.ConverterExtension": {
+            "type": "object",
+            "properties": {
+                "distance": {
+                    "type": "integer"
+                },
+                "formula": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "placeholder_name": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Device": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "device_type_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "local_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DeviceClass": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DeviceGroup": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "criteria": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceGroupFilterCriteria"
+                    }
+                },
+                "criteria_short": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DeviceGroupFilterCriteria": {
+            "type": "object",
+            "properties": {
+                "aspect_id": {
+                    "type": "string"
+                },
+                "device_class_id": {
+                    "type": "string"
+                },
+                "function_id": {
+                    "type": "string"
+                },
+                "interaction": {
+                    "$ref": "#/definitions/models.Interaction"
+                }
+            }
+        },
+        "models.DeviceType": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "device_class_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "service_groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ServiceGroup"
+                    }
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Service"
+                    }
+                }
+            }
+        },
+        "models.ExtendedDevice": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "connection_state": {
+                    "type": "string"
+                },
+                "device_type_id": {
+                    "type": "string"
+                },
+                "device_type_name": {
+                    "description": "computed on request, not stored",
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "local_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "description": "computed on request, not stored",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Permissions"
+                        }
+                    ]
+                },
+                "shared": {
+                    "description": "computed on request, not stored",
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.ExtendedHub": {
+            "type": "object",
+            "properties": {
+                "connection_state": {
+                    "type": "string"
+                },
+                "device_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_local_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "description": "computed on request, not stored",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Permissions"
+                        }
+                    ]
+                },
+                "shared": {
+                    "description": "computed on request, not stored",
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Function": {
+            "type": "object",
+            "properties": {
+                "concept_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rdf_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Hub": {
+            "type": "object",
+            "properties": {
+                "device_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_local_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Interaction": {
+            "type": "string",
+            "enum": [
+                "event",
+                "request",
+                "event+request"
+            ],
+            "x-enum-varnames": [
+                "EVENT",
+                "REQUEST",
+                "EVENT_AND_REQUEST"
+            ]
+        },
+        "models.Location": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "device_group_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Permissions": {
+            "type": "object",
+            "properties": {
+                "administrate": {
+                    "type": "boolean"
+                },
+                "execute": {
+                    "type": "boolean"
+                },
+                "read": {
+                    "type": "boolean"
+                },
+                "write": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Protocol": {
+            "type": "object",
+            "properties": {
+                "constraints": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "handler": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "protocol_segments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProtocolSegment"
+                    }
+                }
+            }
+        },
+        "models.ProtocolSegment": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Serialization": {
+            "type": "string",
+            "enum": [
+                "xml",
+                "json",
+                "plain-text"
+            ],
+            "x-enum-varnames": [
+                "XML",
+                "JSON",
+                "PlainText"
+            ]
+        },
+        "models.Service": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inputs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Content"
+                    }
+                },
+                "interaction": {
+                    "$ref": "#/definitions/models.Interaction"
+                },
+                "local_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outputs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Content"
+                    }
+                },
+                "protocol_id": {
+                    "type": "string"
+                },
+                "service_group_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ServiceGroup": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Type": {
+            "type": "string",
+            "enum": [
+                "https://schema.org/Text",
+                "https://schema.org/Integer",
+                "https://schema.org/Float",
+                "https://schema.org/Boolean",
+                "https://schema.org/ItemList",
+                "https://schema.org/StructuredValue"
+            ],
+            "x-enum-varnames": [
+                "String",
+                "Integer",
+                "Float",
+                "Boolean",
+                "List",
+                "Structure"
+            ]
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

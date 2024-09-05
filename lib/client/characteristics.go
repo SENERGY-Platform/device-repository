@@ -19,10 +19,11 @@ package client
 import (
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+	"strconv"
 )
 
-func (c *Client) GetLeafCharacteristics() (result []models.Characteristic, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/characteristics?leafsOnly=true", nil)
+func (c *Client) GetCharacteristics(leafsOnly bool) (result []models.Characteristic, err error, errCode int) {
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/characteristics?leafsOnly="+strconv.FormatBool(leafsOnly), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}

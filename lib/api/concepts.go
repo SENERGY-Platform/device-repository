@@ -31,10 +31,35 @@ func init() {
 
 type ConceptEndpoints struct{}
 
+// Get godoc
+// @Summary      get concept
+// @Description  get concept
+// @Tags         get, concepts
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Concepts Id"
+// @Param        sub-class query bool false "default=false; true -> returns models.ConceptWithCharacteristics; false -> returns models.Concept"
+// @Success      200 {object}  models.Concept
+// @Success      200 {object}  models.ConceptWithCharacteristics
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /concepts/{id} [GET]
 func (this *ConceptEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /concepts/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		subClass, err := strconv.ParseBool(request.URL.Query().Get("sub-class"))
+		subClassStr := request.URL.Query().Get("sub-class")
+		subClass := false
+		var err error
+		if subClassStr != "" {
+			subClass, err = strconv.ParseBool(subClassStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
 		resultConceptWithCharacteristics := models.ConceptWithCharacteristics{}
 		resultConcept := models.Concept{}
 		errCode := 0
@@ -60,6 +85,18 @@ func (this *ConceptEndpoints) Get(config config.Config, router *http.ServeMux, c
 	})
 }
 
+// Validate godoc
+// @Summary      validate concept
+// @Description  validate concept
+// @Tags         validate, concepts
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.Concept true "Concept to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /concepts [PUT]
 func (this *ConceptEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /concepts", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
@@ -86,6 +123,17 @@ func (this *ConceptEndpoints) Validate(config config.Config, router *http.ServeM
 	})
 }
 
+// ValidateDelete godoc
+// @Summary      validate concepts delete
+// @Description  validate if concept may be deleted
+// @Tags         validate, concepts
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        id path string true "Concepts Id"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /concepts/{id} [DELETE]
 func (this *ConceptEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /concepts/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))

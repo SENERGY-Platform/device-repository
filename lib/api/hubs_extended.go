@@ -35,10 +35,22 @@ func init() {
 
 type ExtendedHubEndpoints struct{}
 
+// Get godoc
+// @Summary      get extended-hubs
+// @Description  get extended-hubs
+// @Tags         get, hubs, extended-hubs
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Hub Id"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200 {object}  models.ExtendedHub
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /extended-hubs/{id} [GET]
 func (this *ExtendedHubEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
 	router.HandleFunc("GET /extended-hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
@@ -63,6 +75,27 @@ func (this *ExtendedHubEndpoints) Get(config config.Config, router *http.ServeMu
 	})
 }
 
+// List godoc
+// @Summary      list extended-hubs
+// @Description  list extended-hubs
+// @Tags         list, hubs, extended-hubs
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200 {array}  models.ExtendedHub
+// @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /extended-hubs [GET]
 func (this *ExtendedHubEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-hubs", func(writer http.ResponseWriter, request *http.Request) {
 		hubListOptions := model.HubListOptions{

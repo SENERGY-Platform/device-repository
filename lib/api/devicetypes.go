@@ -34,6 +34,20 @@ func init() {
 
 type DeviceTypeEndpoints struct{}
 
+// Get godoc
+// @Summary      get device-type
+// @Description  get device-type
+// @Tags         get, device-types
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device-Type Id"
+// @Success      200 {object}  models.DeviceType
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-types/{id} [GET]
 func (this *DeviceTypeEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -51,6 +65,29 @@ func (this *DeviceTypeEndpoints) Get(config config.Config, router *http.ServeMux
 	})
 }
 
+// ListV3 godoc
+// @Summary      list device-types
+// @Description  list device-types
+// @Tags         list, device-types
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        include-modified query bool false "include id-modified device-types"
+// @Param        ignore-unmodified query bool false "no unmodified device-types"
+// @Param        criteria query string false "filter; json encoded []model.FilterCriteria"
+// @Success      200 {array}  models.DeviceType
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /v3/device-types [GET]
 func (this *DeviceTypeEndpoints) ListV3(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v3/device-types", func(writer http.ResponseWriter, request *http.Request) {
 		options := model.DeviceTypeListOptions{
@@ -151,6 +188,7 @@ func (this *DeviceTypeEndpoints) ListV3(config config.Config, router *http.Serve
 	})
 }
 
+// deprecated
 func (this *DeviceTypeEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	/*
 			query params:
@@ -252,6 +290,18 @@ func (this *DeviceTypeEndpoints) List(config config.Config, router *http.ServeMu
 	})
 }
 
+// Validate godoc
+// @Summary      validate device-type
+// @Description  validate device-type
+// @Tags         validate, device-types
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.DeviceType true "Device-Type to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /device-types [PUT]
 func (this *DeviceTypeEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-types", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))

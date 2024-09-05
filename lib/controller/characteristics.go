@@ -33,13 +33,15 @@ func (this *Controller) DeleteCharacteristic(id string) error {
 	return this.db.RemoveCharacteristic(ctx, id)
 }
 
-func (this *Controller) GetLeafCharacteristics() (result []models.Characteristic, err error, code int) {
+func (this *Controller) GetCharacteristics(leafsOnly bool) (result []models.Characteristic, err error, code int) {
 	ctx, _ := getTimeoutContext()
-	temp, err := this.db.ListAllCharacteristics(ctx)
+	result, err = this.db.ListAllCharacteristics(ctx)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	result = getLeafCharacteristics(temp)
+	if leafsOnly {
+		result = getLeafCharacteristics(result)
+	}
 	return result, nil, http.StatusOK
 }
 

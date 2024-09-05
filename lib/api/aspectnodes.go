@@ -38,6 +38,21 @@ type AspectNodeQuery struct {
 	Ids *[]string `json:"ids,omitempty"`
 }
 
+// Query godoc
+// @Summary      query aspect-nodes
+// @Description  query aspect-nodes
+// @Tags         query, aspect-nodes
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body AspectNodeQuery true "AspectNodeQuery"
+// @Success      200 {array}  models.AspectNode
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /query/aspect-nodes [POST]
 func (this *AspectNodeEndpoints) Query(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /query/aspect-nodes", func(writer http.ResponseWriter, request *http.Request) {
 		query := AspectNodeQuery{}
@@ -64,6 +79,22 @@ func (this *AspectNodeEndpoints) Query(config config.Config, router *http.ServeM
 	})
 }
 
+// List godoc
+// @Summary      list aspect-nodes
+// @Description  list aspect-nodes
+// @Tags         list, aspect-nodes, aspects
+// @Produce      json
+// @Security Bearer
+// @Param        function query string false "filter; only 'measuring-function' is a valid value; if set, returns aspect-nodes used in combination with measuring-functions"
+// @Param        ancestors query bool false "filter; in combination with 'function'; if true, returns also ancestor nodes of matching nodes"
+// @Param        descendants query bool false "filter; in combination with 'function'; if true, returns also descendant nodes of matching nodes"
+// @Success      200 {array}  models.AspectNode
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspect-nodes [GET]
 func (this *AspectNodeEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-nodes", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.AspectNode
@@ -115,6 +146,20 @@ func (this *AspectNodeEndpoints) List(config config.Config, router *http.ServeMu
 	})
 }
 
+// Get godoc
+// @Summary      get aspect-node
+// @Description  get aspect-node
+// @Tags         get, aspect-nodes, aspects
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Aspect-Node Id"
+// @Success      200 {object}  models.AspectNode
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspect-nodes/{id} [GET]
 func (this *AspectNodeEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-nodes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -132,7 +177,23 @@ func (this *AspectNodeEndpoints) Get(config config.Config, router *http.ServeMux
 	})
 }
 
-func (this *AspectNodeEndpoints) GetMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
+// ListMeasuringFunctions godoc
+// @Summary      list aspect-node measuring-functions
+// @Description  list measuring-functions used in combination with this aspect-node
+// @Tags         list, aspect-nodes, aspects, functions
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Aspect-Node Id"
+// @Success      200 {array}  models.Function
+// @Param        ancestors query bool false "filter; if true, returns also functions used in combination with ancestors of the input aspect-node"
+// @Param        descendants query bool false "filter; if true, returns also functions used in combination with descendants of the input aspect-node"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspect-nodes/{id}/measuring-functions [GET]
+func (this *AspectNodeEndpoints) ListMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-nodes/{id}/measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		ancestors := false

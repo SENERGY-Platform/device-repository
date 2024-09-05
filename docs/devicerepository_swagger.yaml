@@ -1,4 +1,21 @@
+basePath: /
 definitions:
+  api.AspectNodeQuery:
+    properties:
+      ids:
+        items:
+          type: string
+        type: array
+    type: object
+  api.ValidationError:
+    properties:
+      error:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   model.ComputedPermissions:
     properties:
       administrate:
@@ -12,6 +29,57 @@ definitions:
       write:
         type: boolean
     type: object
+  model.Configurable:
+    properties:
+      aspect_node:
+        $ref: '#/definitions/models.AspectNode'
+      characteristic_id:
+        type: string
+      function_id:
+        type: string
+      path:
+        type: string
+      type:
+        $ref: '#/definitions/models.Type'
+      value: {}
+    type: object
+  model.DeviceTypeReference:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      used_in:
+        items:
+          $ref: '#/definitions/model.ServiceReference'
+        type: array
+    type: object
+  model.DeviceTypeSelectable:
+    properties:
+      device_type_id:
+        type: string
+      service_path_options:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/model.ServicePathOption'
+          type: array
+        type: object
+      services:
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+    type: object
+  model.FilterCriteria:
+    properties:
+      aspect_id:
+        type: string
+      device_class_id:
+        type: string
+      function_id:
+        type: string
+      interaction:
+        $ref: '#/definitions/models.Interaction'
+    type: object
   model.PermissionsMap:
     properties:
       administrate:
@@ -22,6 +90,15 @@ definitions:
         type: boolean
       write:
         type: boolean
+    type: object
+  model.RefInDeviceTypeResponseElement:
+    properties:
+      count:
+        type: integer
+      used_in:
+        items:
+          $ref: '#/definitions/model.DeviceTypeReference'
+        type: array
     type: object
   model.Resource:
     properties:
@@ -57,6 +134,43 @@ definitions:
           $ref: '#/definitions/model.PermissionsMap'
         type: object
     type: object
+  model.ServicePathOption:
+    properties:
+      aspect_node:
+        $ref: '#/definitions/models.AspectNode'
+      characteristic_id:
+        type: string
+      configurables:
+        items:
+          $ref: '#/definitions/model.Configurable'
+        type: array
+      function_id:
+        type: string
+      interaction:
+        $ref: '#/definitions/models.Interaction'
+      is_controlling_function:
+        type: boolean
+      is_void:
+        type: boolean
+      path:
+        type: string
+      service_id:
+        type: string
+      type:
+        $ref: '#/definitions/models.Type'
+      value: {}
+    type: object
+  model.ServiceReference:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      used_in:
+        items:
+          $ref: '#/definitions/model.VariableReference'
+        type: array
+    type: object
   model.Topic:
     properties:
       default_permissions:
@@ -73,9 +187,2124 @@ definitions:
       publish_to_kafka_topic:
         type: string
     type: object
+  model.UsedInDeviceTypeQuery:
+    properties:
+      count_by:
+        description: '""|"device-type"|"service"|"variable": selects what is counted;
+          defaults to "device-type"'
+        type: string
+      ids:
+        items:
+          type: string
+        type: array
+      resource:
+        description: '"aspects"|"functions"|"device-classes"|"characteristics"'
+        type: string
+      with:
+        description: '""|"device-type"|"service"|"variable": selects how deep the
+          result "used_in" is set; defaults to "device-type"'
+        type: string
+    type: object
+  model.UsedInDeviceTypeResponse:
+    additionalProperties:
+      $ref: '#/definitions/model.RefInDeviceTypeResponseElement'
+    type: object
+  model.VariableReference:
+    properties:
+      id:
+        type: string
+      path:
+        type: string
+    type: object
+  models.Aspect:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      sub_aspects:
+        items:
+          $ref: '#/definitions/models.Aspect'
+        type: array
+    type: object
+  models.AspectNode:
+    properties:
+      ancestor_ids:
+        items:
+          type: string
+        type: array
+      child_ids:
+        items:
+          type: string
+        type: array
+      descendent_ids:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      root_id:
+        type: string
+    type: object
+  models.Attribute:
+    properties:
+      key:
+        type: string
+      origin:
+        type: string
+      value:
+        type: string
+    type: object
+  models.Characteristic:
+    properties:
+      allowed_values:
+        items: {}
+        type: array
+      display_unit:
+        type: string
+      id:
+        type: string
+      max_value: {}
+      min_value: {}
+      name:
+        type: string
+      sub_characteristics:
+        items:
+          $ref: '#/definitions/models.Characteristic'
+        type: array
+      type:
+        $ref: '#/definitions/models.Type'
+      value: {}
+    type: object
+  models.Concept:
+    properties:
+      base_characteristic_id:
+        type: string
+      characteristic_ids:
+        items:
+          type: string
+        type: array
+      conversions:
+        items:
+          $ref: '#/definitions/models.ConverterExtension'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.ConceptWithCharacteristics:
+    properties:
+      base_characteristic_id:
+        type: string
+      characteristics:
+        items:
+          $ref: '#/definitions/models.Characteristic'
+        type: array
+      conversions:
+        items:
+          $ref: '#/definitions/models.ConverterExtension'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Content:
+    properties:
+      content_variable:
+        $ref: '#/definitions/models.ContentVariable'
+      id:
+        type: string
+      protocol_segment_id:
+        type: string
+      serialization:
+        $ref: '#/definitions/models.Serialization'
+    type: object
+  models.ContentVariable:
+    properties:
+      aspect_id:
+        type: string
+      characteristic_id:
+        type: string
+      function_id:
+        type: string
+      id:
+        type: string
+      is_void:
+        type: boolean
+      name:
+        type: string
+      omit_empty:
+        type: boolean
+      serialization_options:
+        items:
+          type: string
+        type: array
+      sub_content_variables:
+        items:
+          $ref: '#/definitions/models.ContentVariable'
+        type: array
+      type:
+        $ref: '#/definitions/models.Type'
+      unit_reference:
+        type: string
+      value: {}
+    type: object
+  models.ConverterExtension:
+    properties:
+      distance:
+        type: integer
+      formula:
+        type: string
+      from:
+        type: string
+      placeholder_name:
+        type: string
+      to:
+        type: string
+    type: object
+  models.Device:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      device_type_id:
+        type: string
+      id:
+        type: string
+      local_id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+    type: object
+  models.DeviceClass:
+    properties:
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        type: string
+    type: object
+  models.DeviceGroup:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      criteria:
+        items:
+          $ref: '#/definitions/models.DeviceGroupFilterCriteria'
+        type: array
+      criteria_short:
+        items:
+          type: string
+        type: array
+      device_ids:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        type: string
+    type: object
+  models.DeviceGroupFilterCriteria:
+    properties:
+      aspect_id:
+        type: string
+      device_class_id:
+        type: string
+      function_id:
+        type: string
+      interaction:
+        $ref: '#/definitions/models.Interaction'
+    type: object
+  models.DeviceType:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      description:
+        type: string
+      device_class_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      service_groups:
+        items:
+          $ref: '#/definitions/models.ServiceGroup'
+        type: array
+      services:
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+    type: object
+  models.ExtendedDevice:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      connection_state:
+        type: string
+      device_type_id:
+        type: string
+      device_type_name:
+        description: computed on request, not stored
+        type: string
+      display_name:
+        type: string
+      id:
+        type: string
+      local_id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      permissions:
+        allOf:
+        - $ref: '#/definitions/models.Permissions'
+        description: computed on request, not stored
+      shared:
+        description: computed on request, not stored
+        type: boolean
+    type: object
+  models.ExtendedHub:
+    properties:
+      connection_state:
+        type: string
+      device_ids:
+        items:
+          type: string
+        type: array
+      device_local_ids:
+        items:
+          type: string
+        type: array
+      hash:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      permissions:
+        allOf:
+        - $ref: '#/definitions/models.Permissions'
+        description: computed on request, not stored
+      shared:
+        description: computed on request, not stored
+        type: boolean
+    type: object
+  models.Function:
+    properties:
+      concept_id:
+        type: string
+      description:
+        type: string
+      display_name:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      rdf_type:
+        type: string
+    type: object
+  models.Hub:
+    properties:
+      device_ids:
+        items:
+          type: string
+        type: array
+      device_local_ids:
+        items:
+          type: string
+        type: array
+      hash:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+    type: object
+  models.Interaction:
+    enum:
+    - event
+    - request
+    - event+request
+    type: string
+    x-enum-varnames:
+    - EVENT
+    - REQUEST
+    - EVENT_AND_REQUEST
+  models.Location:
+    properties:
+      description:
+        type: string
+      device_group_ids:
+        items:
+          type: string
+        type: array
+      device_ids:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Permissions:
+    properties:
+      administrate:
+        type: boolean
+      execute:
+        type: boolean
+      read:
+        type: boolean
+      write:
+        type: boolean
+    type: object
+  models.Protocol:
+    properties:
+      constraints:
+        items:
+          type: string
+        type: array
+      handler:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      protocol_segments:
+        items:
+          $ref: '#/definitions/models.ProtocolSegment'
+        type: array
+    type: object
+  models.ProtocolSegment:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Serialization:
+    enum:
+    - xml
+    - json
+    - plain-text
+    type: string
+    x-enum-varnames:
+    - XML
+    - JSON
+    - PlainText
+  models.Service:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      description:
+        type: string
+      id:
+        type: string
+      inputs:
+        items:
+          $ref: '#/definitions/models.Content'
+        type: array
+      interaction:
+        $ref: '#/definitions/models.Interaction'
+      local_id:
+        type: string
+      name:
+        type: string
+      outputs:
+        items:
+          $ref: '#/definitions/models.Content'
+        type: array
+      protocol_id:
+        type: string
+      service_group_key:
+        type: string
+    type: object
+  models.ServiceGroup:
+    properties:
+      description:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Type:
+    enum:
+    - https://schema.org/Text
+    - https://schema.org/Integer
+    - https://schema.org/Float
+    - https://schema.org/Boolean
+    - https://schema.org/ItemList
+    - https://schema.org/StructuredValue
+    type: string
+    x-enum-varnames:
+    - String
+    - Integer
+    - Float
+    - Boolean
+    - List
+    - Structure
 info:
   contact: {}
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Device-Repository API
+  version: "0.1"
 paths:
+  /aspect-nodes:
+    get:
+      description: list aspect-nodes
+      parameters:
+      - description: filter; only 'measuring-function' is a valid value; if set, returns
+          aspect-nodes used in combination with measuring-functions
+        in: query
+        name: function
+        type: string
+      - description: filter; in combination with 'function'; if true, returns also
+          ancestor nodes of matching nodes
+        in: query
+        name: ancestors
+        type: boolean
+      - description: filter; in combination with 'function'; if true, returns also
+          descendant nodes of matching nodes
+        in: query
+        name: descendants
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AspectNode'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list aspect-nodes
+      tags:
+      - list
+      - aspect-nodes
+      - aspects
+  /aspect-nodes/{id}:
+    get:
+      description: get aspect-node
+      parameters:
+      - description: Aspect-Node Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AspectNode'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get aspect-node
+      tags:
+      - get
+      - aspect-nodes
+      - aspects
+  /aspect-nodes/{id}/measuring-functions:
+    get:
+      description: list measuring-functions used in combination with this aspect-node
+      parameters:
+      - description: Aspect-Node Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: filter; if true, returns also functions used in combination with
+          ancestors of the input aspect-node
+        in: query
+        name: ancestors
+        type: boolean
+      - description: filter; if true, returns also functions used in combination with
+          descendants of the input aspect-node
+        in: query
+        name: descendants
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list aspect-node measuring-functions
+      tags:
+      - list
+      - aspect-nodes
+      - aspects
+      - functions
+  /aspects:
+    get:
+      description: list aspects
+      parameters:
+      - description: filter; only 'measuring-function' is a valid value; if set, returns
+          aspects used in combination with measuring-functions
+        in: query
+        name: function
+        type: string
+      - description: filter; in combination with 'function'; if true, returns also
+          ancestor nodes of matching aspects
+        in: query
+        name: ancestors
+        type: boolean
+      - description: filter; in combination with 'function'; if true, returns also
+          descendant nodes of matching aspects
+        in: query
+        name: descendants
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Aspect'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list aspects
+      tags:
+      - list
+      - aspects
+    put:
+      consumes:
+      - application/json
+      description: validate aspect
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Aspect to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Aspect'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate aspect
+      tags:
+      - validate
+      - aspects
+  /aspects/{id}:
+    delete:
+      description: validate if aspect may be deleted
+      parameters:
+      - description: must be true; reminder, that this is not a delete but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Aspect Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate aspect delete
+      tags:
+      - validate
+      - aspects
+    get:
+      description: get aspect
+      parameters:
+      - description: Aspect Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Aspect'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get aspect
+      tags:
+      - get
+      - aspects
+  /aspects/{id}/measuring-functions:
+    get:
+      description: list measuring-functions used in combination with this aspect
+      parameters:
+      - description: Aspect Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: filter; if true, returns also functions used in combination with
+          ancestors of the input aspect
+        in: query
+        name: ancestors
+        type: boolean
+      - description: filter; if true, returns also functions used in combination with
+          descendants of the input aspect
+        in: query
+        name: descendants
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list aspect measuring-functions
+      tags:
+      - list
+      - aspects
+      - functions
+  /characteristics:
+    get:
+      description: list characteristics
+      parameters:
+      - description: default=true; filter; return only characteristics that have no
+          sub-characteristics
+        in: query
+        name: leafsOnly
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Characteristic'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list characteristics
+      tags:
+      - list
+      - characteristics
+    put:
+      consumes:
+      - application/json
+      description: validate characteristic
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Characteristic to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Characteristic'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate characteristic
+      tags:
+      - validate
+      - characteristics
+  /characteristics/{id}:
+    delete:
+      description: validate if characteristic may be deleted
+      parameters:
+      - description: must be true; reminder, that this is not a delete but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Characteristics Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate characteristic delete
+      tags:
+      - validate
+      - characteristics
+    get:
+      description: get characteristic
+      parameters:
+      - description: Characteristic Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Characteristic'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get characteristic
+      tags:
+      - get
+      - characteristics
+  /concepts:
+    put:
+      consumes:
+      - application/json
+      description: validate concept
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Concept to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Concept'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate concept
+      tags:
+      - validate
+      - concepts
+  /concepts/{id}:
+    delete:
+      description: validate if concept may be deleted
+      parameters:
+      - description: must be true; reminder, that this is not a delete but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Concepts Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate concepts delete
+      tags:
+      - validate
+      - concepts
+    get:
+      description: get concept
+      parameters:
+      - description: Concepts Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: default=false; true -> returns models.ConceptWithCharacteristics;
+          false -> returns models.Concept
+        in: query
+        name: sub-class
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ConceptWithCharacteristics'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get concept
+      tags:
+      - get
+      - concepts
+  /controlling-functions:
+    get:
+      description: list controlling-functions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list controlling-functions
+      tags:
+      - list
+      - controlling-functions
+      - functions
+  /device-classes:
+    get:
+      description: list device-classes
+      parameters:
+      - description: filter; only 'controlling-function' is a valid value; if set,
+          returns device-classes used in combination with controlling-function
+        in: query
+        name: function
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DeviceClass'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list device-classes
+      tags:
+      - list
+      - device-classes
+    put:
+      consumes:
+      - application/json
+      description: validate device-class
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Device-Class to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceClass'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device-class
+      tags:
+      - validate
+      - device-classes
+  /device-classes/{id}:
+    delete:
+      description: validate if device-class may be deleted
+      parameters:
+      - description: must be true; reminder, that this is not a delete but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: DeviceClass Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device-class delete
+      tags:
+      - validate
+      - device-classes
+    get:
+      description: get device-class
+      parameters:
+      - description: Device Class Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceClass'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get device-class
+      tags:
+      - get
+      - device-classes
+  /device-classes/{id}/controlling-functions:
+    get:
+      description: list controlling-functions used in combination with this device-class
+      parameters:
+      - description: Device Class Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list device-class functions
+      tags:
+      - list
+      - device-classes
+      - functions
+  /device-classes/{id}/functions:
+    get:
+      description: list functions used in combination with this device-class
+      parameters:
+      - description: Device Class Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list device-class functions
+      tags:
+      - list
+      - device-classes
+      - functions
+  /device-groups:
+    put:
+      consumes:
+      - application/json
+      description: validate device-group
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: DeviceGroup to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceGroup'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device-group
+      tags:
+      - validate
+      - device-groups
+  /device-groups/{id}:
+    get:
+      description: get device-group
+      parameters:
+      - description: Device Group Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: remove criteria that are more generalized variations of already
+          listed criteria (ref SNRGY-3027)
+        in: query
+        name: filter_generic_duplicate_criteria
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceGroup'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get device-group
+      tags:
+      - get
+      - device-groups
+  /device-types:
+    put:
+      consumes:
+      - application/json
+      description: validate device-type
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Device-Type to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceType'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device-type
+      tags:
+      - validate
+      - device-types
+  /device-types/{id}:
+    get:
+      description: get device-type
+      parameters:
+      - description: Device-Type Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceType'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get device-type
+      tags:
+      - get
+      - device-types
+  /devices:
+    get:
+      description: list devices
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      - description: filter; comma-seperated list
+        in: query
+        name: device-type-ids
+        type: string
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute key that is in the given list
+        in: query
+        name: attr-keys
+        type: string
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute value that is in the given list
+        in: query
+        name: attr-values
+        type: string
+      - description: filter; valid values are 'online', 'offline' and an empty string
+          for unknown states
+        in: query
+        name: connection-state
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Device'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list devices
+      tags:
+      - list
+      - devices
+    put:
+      consumes:
+      - application/json
+      description: validate device
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Device to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Device'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device
+      tags:
+      - validate
+      - devices
+  /devices/{id}:
+    get:
+      description: get device
+      parameters:
+      - description: Device Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: interprets the id as local_id if as=='local_id'
+        in: query
+        name: as
+        type: string
+      - description: default requesting user; used in combination with local_id (as=='local_id')
+          to identify the device
+        in: query
+        name: owner_id
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get device
+      tags:
+      - get
+      - devices
+  /extended-devices:
+    get:
+      description: list extended-device
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      - description: filter; comma-seperated list
+        in: query
+        name: device-type-ids
+        type: string
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute key that is in the given list
+        in: query
+        name: attr-keys
+        type: string
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute value that is in the given list
+        in: query
+        name: attr-values
+        type: string
+      - description: filter; valid values are 'online', 'offline' and an empty string
+          for unknown states
+        in: query
+        name: connection-state
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.ExtendedDevice'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list extended-device
+      tags:
+      - list
+      - devices
+      - extended-devices
+  /extended-devices/{id}:
+    get:
+      description: get extended-device
+      parameters:
+      - description: Device Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: interprets the id as local_id if as=='local_id'
+        in: query
+        name: as
+        type: string
+      - description: default requesting user; used in combination with local_id (as=='local_id')
+          to identify the device
+        in: query
+        name: owner_id
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get extended-device
+      tags:
+      - get
+      - devices
+      - extended-devices
+  /extended-hubs:
+    get:
+      description: list extended-hubs
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      - description: filter; valid values are 'online', 'offline' and an empty string
+          for unknown states
+        in: query
+        name: connection-state
+        type: integer
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.ExtendedHub'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list extended-hubs
+      tags:
+      - list
+      - hubs
+      - extended-hubs
+  /extended-hubs/{id}:
+    get:
+      description: get extended-hubs
+      parameters:
+      - description: Hub Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ExtendedHub'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get extended-hubs
+      tags:
+      - get
+      - hubs
+      - extended-hubs
+  /functions:
+    put:
+      consumes:
+      - application/json
+      description: validate location
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Location to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Location'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate location
+      tags:
+      - validate
+      - locations
+  /functions/{id}:
+    delete:
+      description: validate if function may be deleted
+      parameters:
+      - description: must be true; reminder, that this is not a delete but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Function Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate function delete
+      tags:
+      - validate
+      - functions
+    get:
+      description: get function
+      parameters:
+      - description: Function Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceClass'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get function
+      tags:
+      - get
+      - functions
+  /hubs:
+    get:
+      description: list hubs
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      - description: filter; valid values are 'online', 'offline' and an empty string
+          for unknown states
+        in: query
+        name: connection-state
+        type: integer
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Hub'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list hubs
+      tags:
+      - list
+      - hubs
+    put:
+      consumes:
+      - application/json
+      description: validate hub
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Hub to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Hub'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate hub
+      tags:
+      - validate
+      - hubs
+  /hubs/{id}:
+    get:
+      description: get hub
+      parameters:
+      - description: Hub Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Hub'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get hub
+      tags:
+      - get
+      - hubs
+    head:
+      description: head hub
+      parameters:
+      - description: Hub Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: head hub
+      tags:
+      - head
+      - hubs
+  /hubs/{id}/devices:
+    get:
+      description: get device ids of hub
+      parameters:
+      - description: Hub Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: default 'local_id'; valid values 'local_id', 'localId', 'id';
+          selects if device ids or device local-ids should be returned
+        in: query
+        name: as
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get device ids of hub
+      tags:
+      - get
+      - hubs
+      - devices
+  /invalid/device-type:
+    get:
+      description: validate existing device-types
+      parameters:
+      - description: default 100; limit of checked device-types not of returned errors
+        in: query
+        name: limit
+        type: integer
+      - description: default 0
+        in: query
+        name: offset
+        type: integer
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: allow none leaf aspect nodes in device-types
+        in: query
+        name: allow_none_leaf_aspect_nodes_in_device_types
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.ValidationError'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      tags:
+      - validate
+      - device-types
+  /locations/{id}:
+    get:
+      description: get location
+      parameters:
+      - description: Location Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Location'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get location
+      tags:
+      - get
+      - locations
+  /measuring-functions:
+    get:
+      description: list measuring-functions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list measuring-functions
+      tags:
+      - list
+      - measuring-functions
+      - functions
   /permissions/accessible/{topic}:
     get:
       description: list accessible resource ids
@@ -630,4 +2859,385 @@ paths:
       - check
       - list
       - query
+  /protocols:
+    get:
+      description: get protocol
+      parameters:
+      - description: default 100
+        in: query
+        name: limit
+        type: integer
+      - description: default 0
+        in: query
+        name: offset
+        type: integer
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Protocol'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get protocol
+      tags:
+      - get
+      - protocols
+    put:
+      consumes:
+      - application/json
+      description: validate protocol
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Location to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Protocol'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate protocol
+      tags:
+      - validate
+      - protocols
+  /protocols/{id}:
+    get:
+      description: get protocol
+      parameters:
+      - description: Protocol Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Protocol'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get protocol
+      tags:
+      - get
+      - protocols
+  /query/aspect-nodes:
+    post:
+      consumes:
+      - application/json
+      description: query aspect-nodes
+      parameters:
+      - description: AspectNodeQuery
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/api.AspectNodeQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AspectNode'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: query aspect-nodes
+      tags:
+      - query
+      - aspect-nodes
+  /query/device-type-selectables:
+    post:
+      consumes:
+      - application/json
+      description: validate device-type
+      parameters:
+      - description: filtered by criteria
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/model.FilterCriteria'
+          type: array
+      - description: prefix added to variable paths
+        in: query
+        name: path-prefix
+        type: string
+      - description: '''event'', ''request'', ''event+request'''
+        in: query
+        name: interactions-filter
+        type: string
+      - description: include id-modified device-types
+        in: query
+        name: include_id_modified
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.DeviceTypeSelectable'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device-type
+      tags:
+      - validate
+      - device-types
+  /query/used-in-device-type:
+    post:
+      consumes:
+      - application/json
+      description: query used-in-device-type
+      parameters:
+      - description: filter
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.UsedInDeviceTypeQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UsedInDeviceTypeResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: query used-in-device-type
+      tags:
+      - query
+      - device-types
+  /services/{id}:
+    get:
+      description: get service
+      parameters:
+      - description: Service Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Service'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get service
+      tags:
+      - get
+      - services
+  /v2/query/device-type-selectables:
+    post:
+      consumes:
+      - application/json
+      description: validate device-type
+      parameters:
+      - description: filtered by criteria
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/model.FilterCriteria'
+          type: array
+      - description: prefix added to variable paths
+        in: query
+        name: path-prefix
+        type: string
+      - description: toggle if filter criteria is 'and' or 'or' combination
+        in: query
+        name: services_must_match_all_criteria
+        type: boolean
+      - description: include id-modified device-types
+        in: query
+        name: include_id_modified
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.DeviceTypeSelectable'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device-type
+      tags:
+      - validate
+      - device-types
+  /v3/device-types:
+    get:
+      description: list device-types
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute key that is in the given list
+        in: query
+        name: attr-keys
+        type: string
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute value that is in the given list
+        in: query
+        name: attr-values
+        type: string
+      - description: include id-modified device-types
+        in: query
+        name: include-modified
+        type: boolean
+      - description: no unmodified device-types
+        in: query
+        name: ignore-unmodified
+        type: boolean
+      - description: filter; json encoded []model.FilterCriteria
+        in: query
+        name: criteria
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DeviceType'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list device-types
+      tags:
+      - list
+      - device-types
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

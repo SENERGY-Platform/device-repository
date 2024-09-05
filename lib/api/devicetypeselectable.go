@@ -32,6 +32,24 @@ func init() {
 
 type DeviceTypeSelectableEndpoints struct{}
 
+// Query godoc
+// @Summary      validate device-type
+// @Description  validate device-type
+// @Tags         validate, device-types
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []model.FilterCriteria true "filtered by criteria"
+// @Param        path-prefix query string false "prefix added to variable paths"
+// @Param        interactions-filter query string false "'event', 'request', 'event+request'"
+// @Param        include_id_modified query bool false "include id-modified device-types"
+// @Success      200 {array}  model.DeviceTypeSelectable
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /query/device-type-selectables [POST]
 func (this *DeviceTypeSelectableEndpoints) Query(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /query/device-type-selectables", func(writer http.ResponseWriter, request *http.Request) {
 		query := []model.FilterCriteria{}
@@ -71,6 +89,24 @@ func (this *DeviceTypeSelectableEndpoints) Query(config config.Config, router *h
 	})
 }
 
+// QueryV2 godoc
+// @Summary      validate device-type
+// @Description  validate device-type
+// @Tags         validate, device-types
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []model.FilterCriteria true "filtered by criteria"
+// @Param        path-prefix query string false "prefix added to variable paths"
+// @Param        services_must_match_all_criteria query bool false "toggle if filter criteria is 'and' or 'or' combination"
+// @Param        include_id_modified query bool false "include id-modified device-types"
+// @Success      200 {array}  model.DeviceTypeSelectable
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /v2/query/device-type-selectables [POST]
 func (this *DeviceTypeSelectableEndpoints) QueryV2(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /v2/query/device-type-selectables", func(writer http.ResponseWriter, request *http.Request) {
 		query := []model.FilterCriteria{}

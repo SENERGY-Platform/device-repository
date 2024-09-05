@@ -57,6 +57,16 @@ func Start(ctx context.Context, config config.Config, control Controller) (err e
 	return
 }
 
+// GetRouter doc
+// @title         Device-Repository API
+// @version       0.1
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath  /
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 func GetRouter(config config.Config, control Controller) http.Handler {
 	handler := GetRouterWithoutMiddleware(config, control)
 	log.Println("add permissions endpoints")

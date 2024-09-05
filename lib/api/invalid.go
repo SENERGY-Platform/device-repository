@@ -38,6 +38,23 @@ type ValidationError struct {
 	Error string `json:"error"`
 }
 
+// DeviceTypes godoc
+// @Summary
+// @Description  validate existing device-types
+// @Tags         validate, device-types
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100; limit of checked device-types not of returned errors"
+// @Param        offset query integer false "default 0"
+// @Param        sort query string false "default name.asc"
+// @Param        allow_none_leaf_aspect_nodes_in_device_types query string false "allow none leaf aspect nodes in device-types"
+// @Success      200 {array}  ValidationError
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /invalid/device-type [GET]
 func (this *InvalidElements) DeviceTypes(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /invalid/device-types", func(writer http.ResponseWriter, request *http.Request) {
 		var err error

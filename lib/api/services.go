@@ -29,6 +29,20 @@ func init() {
 
 type ServiceEndpoints struct{}
 
+// Get godoc
+// @Summary      get service
+// @Description  get service
+// @Tags         get, services
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Service Id"
+// @Success      200 {object}  models.Service
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /services/{id} [GET]
 func (this *ServiceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /services/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")

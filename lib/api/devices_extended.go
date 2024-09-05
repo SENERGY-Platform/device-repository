@@ -36,6 +36,29 @@ func init() {
 
 type ExtendedDeviceEndpoints struct{}
 
+// List godoc
+// @Summary      list extended-device
+// @Description  list extended-device
+// @Tags         list, devices, extended-devices
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        device-type-ids query string false "filter; comma-seperated list"
+// @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
+// @Success      200 {array}  models.ExtendedDevice
+// @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /extended-devices [GET]
 func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-devices", func(writer http.ResponseWriter, request *http.Request) {
 		deviceListOptions := model.DeviceListOptions{
@@ -135,6 +158,23 @@ func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.Ser
 	})
 }
 
+// Get godoc
+// @Summary      get extended-device
+// @Description  get extended-device
+// @Tags         get, devices, extended-devices
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Id"
+// @Param        as query string false "interprets the id as local_id if as=='local_id'"
+// @Param        owner_id query string false "default requesting user; used in combination with local_id (as=='local_id') to identify the device"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200 {object}  models.Device
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /extended-devices/{id} [GET]
 func (this *ExtendedDeviceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")

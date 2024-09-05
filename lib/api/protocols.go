@@ -32,6 +32,20 @@ func init() {
 
 type ProtocolEndpoints struct{}
 
+// Get godoc
+// @Summary      get protocol
+// @Description  get protocol
+// @Tags         get, protocols
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Protocol Id"
+// @Success      200 {object}  models.Protocol
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /protocols/{id} [GET]
 func (this *ProtocolEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -49,18 +63,23 @@ func (this *ProtocolEndpoints) Get(config config.Config, router *http.ServeMux, 
 	})
 }
 
+// List godoc
+// @Summary      get protocol
+// @Description  get protocol
+// @Tags         get, protocols
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100"
+// @Param        offset query integer false "default 0"
+// @Param        sort query string false "default name.asc"
+// @Success      200 {array}  models.Protocol
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /protocols [GET]
 func (this *ProtocolEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
-	/*
-			query params:
-			- limit: number; default 100
-		    - offset: number; default 0
-			- sort: <field>[.<direction>]; optional;
-				- field: 'name', 'id'; defined at github.com/SENERGY-Platform/device-repository/lib/database/mongo/protocol.go ListProtocols()
-				- direction: 'asc' || 'desc'; optional
-				- examples:
-					?sort=name.asc
-					?sort=name
-	*/
 	router.HandleFunc("GET /protocols", func(writer http.ResponseWriter, request *http.Request) {
 		var err error
 		limitParam := request.URL.Query().Get("limit")
@@ -102,6 +121,18 @@ func (this *ProtocolEndpoints) List(config config.Config, router *http.ServeMux,
 	})
 }
 
+// Validate godoc
+// @Summary      validate protocol
+// @Description  validate protocol
+// @Tags         validate, protocols
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.Protocol true "Location to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /protocols [PUT]
 func (this *ProtocolEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /protocols", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))

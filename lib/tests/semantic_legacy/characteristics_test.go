@@ -245,7 +245,7 @@ func testReadCharacteristic3(con *controller.Controller) func(t *testing.T) {
 
 func testReadAllCharacteristic(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristics, err, _ := con.GetLeafCharacteristics()
+		characteristics, err, _ := con.GetCharacteristics(true)
 
 		if err == nil {
 			if len(characteristics) != 3 {

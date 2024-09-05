@@ -35,6 +35,21 @@ func init() {
 
 type HubEndpoints struct{}
 
+// Get godoc
+// @Summary      get hub
+// @Description  get hub
+// @Tags         get, hubs
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Hub Id"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200 {object}  models.Hub
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs/{id} [GET]
 func (this *HubEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -60,6 +75,26 @@ func (this *HubEndpoints) Get(config config.Config, router *http.ServeMux, contr
 	})
 }
 
+// List godoc
+// @Summary      list hubs
+// @Description  list hubs
+// @Tags         list, hubs
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200 {array}  models.Hub
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs [GET]
 func (this *HubEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /hubs", func(writer http.ResponseWriter, request *http.Request) {
 		hubListOptions := model.HubListOptions{
@@ -133,13 +168,23 @@ func (this *HubEndpoints) List(config config.Config, router *http.ServeMux, cont
 	})
 }
 
+// GetDevices godoc
+// @Summary      get device ids of hub
+// @Description  get device ids of hub
+// @Tags         get, hubs, devices
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Hub Id"
+// @Param        as query string false "default 'local_id'; valid values 'local_id', 'localId', 'id'; selects if device ids or device local-ids should be returned"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200 {array}  string
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs/{id}/devices [GET]
 func (this *HubEndpoints) GetDevices(config config.Config, router *http.ServeMux, control Controller) {
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
-	//use 'as' query parameter to decide if a list of device.Id or device.LocalId should be returned
-	//		default is LocalId
-	//		allowed values are 'id', 'local_id' and 'localId'
 	router.HandleFunc("GET /hubs/{id}/devices", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
@@ -180,10 +225,21 @@ func (this *HubEndpoints) GetDevices(config config.Config, router *http.ServeMux
 	})
 }
 
+// Head godoc
+// @Summary      head hub
+// @Description  head hub
+// @Tags         head, hubs
+// @Security Bearer
+// @Param        id path string true "Hub Id"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs/{id} [HEAD]
 func (this *HubEndpoints) Head(config config.Config, router *http.ServeMux, control Controller) {
-	//use 'p' query parameter to limit selection to a permission;
-	//		used internally to guarantee that user has needed permission for the resource
-	//		example: 'p=x' guaranties the user has execution rights
 	router.HandleFunc("HEAD /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
 		if err != nil {
@@ -200,7 +256,44 @@ func (this *HubEndpoints) Head(config config.Config, router *http.ServeMux, cont
 	})
 }
 
+// Validate godoc
+// @Summary      validate hub
+// @Description  validate hub
+// @Tags         validate, hubs
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.Hub true "Hub to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /hubs [PUT]
 func (this *HubEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /hubs", func(writer http.ResponseWriter, request *http.Request) {
+		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if !dryRun {
+			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
+			return
+		}
+		hub := models.Hub{}
+		err = json.NewDecoder(request.Body).Decode(&hub)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		err, code := control.ValidateHub(util.GetAuthToken(request), hub)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		writer.WriteHeader(http.StatusOK)
+	})
+
+	//legacy
 	router.HandleFunc("PUT /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {

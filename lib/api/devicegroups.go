@@ -32,6 +32,21 @@ func init() {
 
 type DeviceGroupEndpoints struct{}
 
+// Get godoc
+// @Summary      get device-group
+// @Description  get device-group
+// @Tags         get, device-groups
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Group Id"
+// @Param        filter_generic_duplicate_criteria query bool false "remove criteria that are more generalized variations of already listed criteria (ref SNRGY-3027)"
+// @Success      200 {object}  models.DeviceGroup
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-groups/{id} [GET]
 func (this *DeviceGroupEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -54,6 +69,18 @@ func (this *DeviceGroupEndpoints) Get(config config.Config, router *http.ServeMu
 	})
 }
 
+// Validate godoc
+// @Summary      validate device-group
+// @Description  validate device-group
+// @Tags         validate, device-groups
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.DeviceGroup true "DeviceGroup to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /device-groups [PUT]
 func (this *DeviceGroupEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-groups", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))

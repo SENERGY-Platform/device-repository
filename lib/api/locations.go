@@ -35,6 +35,20 @@ func init() {
 
 type LocationEndpoints struct{}
 
+// Get godoc
+// @Summary      get location
+// @Description  get location
+// @Tags         get, locations
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Location Id"
+// @Success      200 {object}  models.Location
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /locations/{id} [GET]
 func (this *LocationEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
@@ -52,6 +66,18 @@ func (this *LocationEndpoints) Get(config config.Config, router *http.ServeMux, 
 	})
 }
 
+// Validate godoc
+// @Summary      validate location
+// @Description  validate location
+// @Tags         validate, locations
+// @Accept       json
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        message body models.Location true "Location to be validated"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /functions [PUT]
 func (this *LocationEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /locations", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
