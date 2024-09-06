@@ -101,8 +101,8 @@ func (this *Mongo) runPermissionsV2Migration() (err error) {
 			}
 			if len(ids) >= 10 {
 				log.Printf("skip permissions-v2 %v migration (topic already exists with at least 10 entries in permissions-v2)", topic)
+				continue
 			}
-			continue
 		}
 		if err != nil && code != http.StatusNotFound {
 			debug.PrintStack()
@@ -133,6 +133,7 @@ func (this *Mongo) runPermissionsV2Migration() (err error) {
 				debug.PrintStack()
 				return err
 			}
+			log.Printf("migration: queue %v %v\n", topic, entry.Id)
 			workerChan <- entry
 		}
 		err = cursor.Err()
