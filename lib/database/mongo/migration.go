@@ -47,6 +47,7 @@ func (this *Mongo) runPermissionsV2Migration() (err error) {
 		return nil
 	}
 	log.Println("start permissions-v2 migration")
+	defer log.Println("finish permissions-v2 migration")
 	c := client.New(this.config.PermissionsV2Url)
 	topics := []string{this.config.DeviceTopic, this.config.DeviceGroupTopic, this.config.HubTopic}
 
@@ -87,6 +88,9 @@ func (this *Mongo) runPermissionsV2Migration() (err error) {
 	}
 
 	for _, topic := range topics {
+		if topic == "" || topic == "-" {
+			continue
+		}
 		log.Printf("start permissions-v2 %v migration", topic)
 		_, err, code := c.GetTopic(client.InternalAdminToken, topic)
 		if err == nil && code == http.StatusOK {
@@ -104,7 +108,7 @@ func (this *Mongo) runPermissionsV2Migration() (err error) {
 			debug.PrintStack()
 			return err
 		}
-		_, err, _ = c.SetTopic(client.InternalAdminToken, client.Topic{Id: topic})
+		_, err, _ = c.SetTopic(client.InternalAdminToken, client.Topic{Id: topic, PublishToKafkaTopic: topic})
 		if err != nil {
 			debug.PrintStack()
 			return err
@@ -121,6 +125,7 @@ func (this *Mongo) runPermissionsV2Migration() (err error) {
 			debug.PrintStack()
 			return err
 		}
+		defer cursor.Close(context.Background())
 		for cursor.Next(context.Background()) {
 			entry := RightsEntry{}
 			err = cursor.Decode(&entry)

@@ -88,6 +88,7 @@ func (this *Mongo) GetHubsByDeviceId(ctx context.Context, id string) (hubs []mod
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(ctx) {
 		hub := model.HubWithConnectionState{}
 		err = cursor.Decode(&hub)

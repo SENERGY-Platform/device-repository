@@ -79,6 +79,7 @@ func (this *Mongo) ListAllAspects(ctx context.Context) (result []models.Aspect, 
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	result = []models.Aspect{}
 	for cursor.Next(context.Background()) {
 		aspect := models.Aspect{}
@@ -126,6 +127,7 @@ func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancesto
 			return nil, err
 		}
 	}
+	defer cursor.Close(context.Background())
 	result = []models.Aspect{}
 	for cursor.Next(context.Background()) {
 		aspect := models.Aspect{}

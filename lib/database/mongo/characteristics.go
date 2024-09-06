@@ -80,6 +80,7 @@ func (this *Mongo) ListAllCharacteristics(ctx context.Context) (result []models.
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		characteristic := models.Characteristic{}
 		err = cursor.Decode(&characteristic)
@@ -100,6 +101,7 @@ func (this *Mongo) getCharacteristicsByIds(ctx context.Context, ids []string) (r
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		characteristic := models.Characteristic{}
 		err = cursor.Decode(&characteristic)

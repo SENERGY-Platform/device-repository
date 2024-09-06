@@ -220,6 +220,7 @@ func (this *Mongo) CheckMultiple(token string, topic string, ids []string, actio
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	result = map[string]bool{}
 	for cursor.Next(context.Background()) {
 		element := RightsEntry{}
@@ -300,6 +301,7 @@ func (this *Mongo) ListAccessibleResourceIds(token string, topic string, limit i
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		element := RightsEntry{}
 		err = cursor.Decode(&element)
@@ -373,6 +375,7 @@ func (this *Mongo) ListResourcesByPermissions(topic string, userId string, group
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		element := RightsEntry{}
 		err = cursor.Decode(&element)

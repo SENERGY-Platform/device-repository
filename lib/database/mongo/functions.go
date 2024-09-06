@@ -100,6 +100,7 @@ func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (
 		return nil, err
 	}
 	result = []models.Function{}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		function := models.Function{}
 		err = cursor.Decode(&function)
@@ -145,6 +146,7 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	result = []models.Function{}
 	for cursor.Next(context.Background()) {
 		function := models.Function{}
@@ -170,6 +172,7 @@ func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class stri
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	result = []models.Function{}
 	for cursor.Next(context.Background()) {
 		function := models.Function{}
@@ -196,6 +199,7 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	result = []models.Function{}
 	for cursor.Next(context.Background()) {
 		function := models.Function{}

@@ -207,6 +207,7 @@ func (this *Mongo) GetDeviceTypeCriteriaByAspectIds(ctx context.Context, ids []s
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		dtCriteria := model.DeviceTypeCriteria{}
 		err = cursor.Decode(&dtCriteria)
@@ -230,6 +231,7 @@ func (this *Mongo) GetDeviceTypeCriteriaByFunctionIds(ctx context.Context, ids [
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		dtCriteria := model.DeviceTypeCriteria{}
 		err = cursor.Decode(&dtCriteria)
@@ -253,6 +255,7 @@ func (this *Mongo) GetDeviceTypeCriteriaByDeviceClassIds(ctx context.Context, id
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		dtCriteria := model.DeviceTypeCriteria{}
 		err = cursor.Decode(&dtCriteria)
@@ -276,6 +279,7 @@ func (this *Mongo) GetDeviceTypeCriteriaByCharacteristicIds(ctx context.Context,
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		dtCriteria := model.DeviceTypeCriteria{}
 		err = cursor.Decode(&dtCriteria)
@@ -329,6 +333,7 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		dtCriteria := model.DeviceTypeCriteria{}
 		err = cursor.Decode(&dtCriteria)
@@ -353,6 +358,7 @@ func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId stri
 	if err != nil {
 		return result, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		dtCriteria := model.DeviceTypeCriteria{}
 		err = cursor.Decode(&dtCriteria)

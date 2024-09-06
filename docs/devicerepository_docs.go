@@ -2566,6 +2566,13 @@ const docTemplatedevicerepository = `{
                 "summary": "lists resource ids in topic",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Topic Id",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "limits size of result; 0 means unlimited",
                         "name": "limit",

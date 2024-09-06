@@ -100,6 +100,7 @@ func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64,
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		protocol := models.Protocol{}
 		err = cursor.Decode(&protocol)

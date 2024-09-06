@@ -64,16 +64,7 @@ func (this *Mongo) CreateId() string {
 }
 
 func readCursorResult[T any](ctx context.Context, cursor *mongo.Cursor) (result []T, err error, code int) {
-	result = []T{}
-	for cursor.Next(ctx) {
-		element := new(T)
-		err = cursor.Decode(element)
-		if err != nil {
-			return result, err, http.StatusInternalServerError
-		}
-		result = append(result, *element)
-	}
-	err = cursor.Err()
+	err = cursor.All(ctx, &result)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

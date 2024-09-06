@@ -110,6 +110,7 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)
@@ -169,6 +170,7 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)
@@ -258,6 +260,7 @@ func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.Devi
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)
@@ -350,6 +353,7 @@ func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId stri
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)

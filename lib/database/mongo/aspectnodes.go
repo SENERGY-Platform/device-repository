@@ -112,6 +112,7 @@ func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []models.Aspe
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	result = []models.AspectNode{}
 	for cursor.Next(context.Background()) {
 		aspectNode := models.AspectNode{}
@@ -148,6 +149,7 @@ func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, anc
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	result = []models.AspectNode{}
 	for cursor.Next(context.Background()) {
 		aspectNode := models.AspectNode{}
@@ -173,6 +175,7 @@ func (this *Mongo) ListAspectNodesByIdList(ctx context.Context, ids []string) (r
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	result = []models.AspectNode{}
 	for cursor.Next(context.Background()) {
 		aspectNode := models.AspectNode{}

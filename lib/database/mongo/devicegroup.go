@@ -96,6 +96,7 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, limit int64, offset int
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceGroup := models.DeviceGroup{}
 		err = cursor.Decode(&deviceGroup)
