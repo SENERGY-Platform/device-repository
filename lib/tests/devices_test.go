@@ -47,12 +47,15 @@ import (
 //TODO: test permissions-v2 integration
 
 var device1id = "urn:infai:ses:device:1"
+var generatedDeviceGroup1Id = "urn:infai:ses:device-group:1"
 var device1lid = "lid1"
 var device1name = uuid.NewString()
 var device2id = "urn:infai:ses:device:2"
+var generatedDeviceGroup2Id = "urn:infai:ses:device-group:2"
 var device2lid = "lid2"
 var device2name = uuid.NewString()
 var device3id = "urn:infai:ses:device:3"
+var generatedDeviceGroup3Id = "urn:infai:ses:device-group:3"
 var device3lid = "lid3"
 var device3name = uuid.NewString()
 

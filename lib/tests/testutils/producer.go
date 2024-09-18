@@ -180,6 +180,11 @@ func (this *Publisher) PublishDeviceGroup(dg models.DeviceGroup, userId string) 
 	return this.PublishDeviceGroupCommand(cmd)
 }
 
+func (this *Publisher) PublishDeviceGroupDelete(id string, userId string) (err error) {
+	cmd := DeviceGroupCommand{Command: "DELETE", Id: id, Owner: userId}
+	return this.PublishDeviceGroupCommand(cmd)
+}
+
 func (this *Publisher) PublishDeviceGroupCommand(cmd DeviceGroupCommand) error {
 	if this.config.Debug {
 		log.Println("DEBUG: produce", cmd)
@@ -238,6 +243,11 @@ func (this *Publisher) PublishDeviceTypeCommand(cmd DeviceTypeCommand) error {
 
 func (this *Publisher) PublishDevice(device models.Device, userId string) (err error) {
 	cmd := DeviceCommand{Command: "PUT", Id: device.Id, Device: device, Owner: userId}
+	return this.PublishDeviceCommand(cmd)
+}
+
+func (this *Publisher) PublishDeviceDelete(id string, userId string) (err error) {
+	cmd := DeviceCommand{Command: "DELETE", Id: id, Owner: userId}
 	return this.PublishDeviceCommand(cmd)
 }
 

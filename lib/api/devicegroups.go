@@ -98,12 +98,7 @@ func (this *DeviceGroupEndpoints) Validate(config config.Config, router *http.Se
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDeviceGroup(group)
-		if err != nil {
-			http.Error(writer, err.Error(), code)
-			return
-		}
-		err, code = control.CheckAccessToDevicesOfGroup(util.GetAuthToken(request), group)
+		err, code := control.ValidateDeviceGroup(util.GetAuthToken(request), group)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -135,7 +130,7 @@ func (this *DeviceGroupEndpoints) ValidateDelete(config config.Config, router *h
 			return
 		}
 		id := request.PathValue("id")
-		err, code := control.ValidateDeviceGroupDelete(id)
+		err, code := control.ValidateDeviceGroupDelete(util.GetAuthToken(request), id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

@@ -554,7 +554,7 @@ func testDeviceGroupValidation(ctrl *controller.Controller, group models.DeviceG
 				t.Error(r, "\n", string(debug.Stack()))
 			}
 		}()
-		err, code := ctrl.ValidateDeviceGroup(group)
+		err, code := ctrl.ValidateDeviceGroup(adminjwt, group)
 		if (err != nil) != expectError {
 			t.Error(expectError, err)
 			return

@@ -17,8 +17,6 @@
 package client
 
 import (
-	"bytes"
-	"encoding/json"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )
@@ -36,27 +34,10 @@ func (c *Client) ReadDeviceGroup(id string, token string, filterGenericDuplicate
 	return do[models.DeviceGroup](req)
 }
 
-func (c *Client) ValidateDeviceGroup(deviceGroup models.DeviceGroup) (err error, code int) {
-	return c.CheckAccessToDevicesOfGroup("", deviceGroup)
+func (c *Client) ValidateDeviceGroup(token string, deviceGroup models.DeviceGroup) (err error, code int) {
+	return c.validateWithToken(token, "/device-groups", deviceGroup)
 }
 
-func (c *Client) CheckAccessToDevicesOfGroup(token string, group models.DeviceGroup) (err error, code int) {
-	b, err := json.Marshal(group)
-	if err != nil {
-		return err, http.StatusInternalServerError
-	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/device-groups?dry-run=true", bytes.NewBuffer(b))
-	req.Header.Set("Authorization", token)
-	if err != nil {
-		return err, http.StatusInternalServerError
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err, http.StatusInternalServerError
-	}
-	return nil, resp.StatusCode
-}
-
-func (c *Client) ValidateDeviceGroupDelete(id string) (err error, code int) {
-	return c.validateDelete("/device-groups/" + id)
+func (c *Client) ValidateDeviceGroupDelete(token string, id string) (err error, code int) {
+	return c.validateDeleteWithToken(token, "/device-groups/"+id)
 }

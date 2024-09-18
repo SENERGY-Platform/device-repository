@@ -123,29 +123,54 @@ func (c *Client) validateWithOptions(path string, e interface{}, options url.Val
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	optQuery := options.Encode()
-	if optQuery != "" {
-		optQuery = "&" + optQuery
-	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+path+"?dry-run=true", bytes.NewBuffer(b))
+	options.Set("dry-run", "true")
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+path+"?"+options.Encode(), bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
+	}
+	if resp.StatusCode >= 300 {
+		temp, _ := io.ReadAll(resp.Body)
+		err = fmt.Errorf("unexpected statuscode %v: %v", resp.StatusCode, string(temp))
+		return err, resp.StatusCode
 	}
 	return nil, resp.StatusCode
 }
 
 func (c *Client) validateDelete(path string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+path+"?dry-run=true", nil)
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+path+"?dry-run=true", nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
+	}
+	if resp.StatusCode >= 300 {
+		temp, _ := io.ReadAll(resp.Body)
+		err = fmt.Errorf("unexpected statuscode %v: %v", resp.StatusCode, string(temp))
+		return err, resp.StatusCode
+	}
+	return nil, resp.StatusCode
+}
+
+func (c *Client) validateDeleteWithToken(token string, path string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+path+"?dry-run=true", nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if resp.StatusCode >= 300 {
+		temp, _ := io.ReadAll(resp.Body)
+		err = fmt.Errorf("unexpected statuscode %v: %v", resp.StatusCode, string(temp))
+		return err, resp.StatusCode
 	}
 	return nil, resp.StatusCode
 }

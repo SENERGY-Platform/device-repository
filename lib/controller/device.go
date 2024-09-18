@@ -564,6 +564,10 @@ func (this *Controller) DeleteDevice(id string) error {
 	if err != nil {
 		return err
 	}
+	err = this.RemoveGeneratedDeviceGroup(id, old.OwnerId)
+	if err != nil {
+		return err
+	}
 	if exists {
 		ctx, _ := getTimeoutContext()
 		err := this.db.RemoveDevice(ctx, id)
@@ -571,10 +575,6 @@ func (this *Controller) DeleteDevice(id string) error {
 			return err
 		}
 		return this.resetHubsForDeviceUpdate(old.Device)
-	}
-	err = this.RemoveGeneratedDeviceGroup(id, old.OwnerId)
-	if err != nil {
-		return err
 	}
 	err = this.RemoveRights(this.config.DeviceTopic, id)
 	if err != nil {
