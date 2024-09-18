@@ -40,10 +40,24 @@ type Producer interface {
 	PublishHub(hub models.Hub, userId string) (err error)
 	PublishAspectDelete(id string, owner string) error
 	PublishAspectUpdate(aspect models.Aspect, owner string) error
+	PublishDeviceGroupDelete(id string, owner string) error
+	PublishDeviceGroup(element models.DeviceGroup, owner string) error
 	SendDone(msg donewait.DoneMsg) error
 }
 
 type ErrorProducer struct{}
+
+func (this ErrorProducer) PublishDeviceGroupDelete(id string, owner string) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
+
+func (this ErrorProducer) PublishDeviceGroup(element models.DeviceGroup, owner string) (err error) {
+	err = errors.New("no producer usage expected")
+	log.Println("ERROR:", err)
+	return err
+}
 
 func (this ErrorProducer) PublishDevice(element models.Device, userId string) (err error) {
 	err = errors.New("no producer usage expected")

@@ -50,6 +50,7 @@ type Controller interface {
 
 	ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int)
 	ValidateDeviceGroup(deviceGroup models.DeviceGroup) (err error, code int)
+	ValidateDeviceGroupDelete(id string) (err error, code int)
 	CheckAccessToDevicesOfGroup(token string, group models.DeviceGroup) (err error, code int)
 
 	ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int)

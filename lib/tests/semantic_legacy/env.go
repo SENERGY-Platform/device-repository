@@ -21,11 +21,9 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
 	"log"
 	"strconv"
 	"sync"
@@ -73,32 +71,4 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 	return config, ctrl, prod, err
 }
 
-type VoidProducerMock struct{}
-
-func (v VoidProducerMock) PublishDevice(element models.Device, userId string) error {
-	panic("implement me")
-}
-
-func (v VoidProducerMock) PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error) {
-	panic("implement me")
-}
-
-func (v VoidProducerMock) SendDone(msg donewait.DoneMsg) error {
-	return nil
-}
-
-func (v VoidProducerMock) PublishAspectDelete(id string, owner string) error {
-	panic("implement me")
-}
-
-func (v VoidProducerMock) PublishAspectUpdate(aspect models.Aspect, owner string) error {
-	panic("implement me")
-}
-
-func (v VoidProducerMock) PublishDeviceDelete(id string, owner string) error {
-	panic("implement me")
-}
-
-func (v VoidProducerMock) PublishHub(hub models.Hub, userId string) (err error) {
-	panic("implement me")
-}
+type VoidProducerMock = testenv.VoidProducerMock

@@ -9,7 +9,7 @@ require (
 
 require (
 	github.com/IBM/sarama v1.43.3
-	github.com/SENERGY-Platform/models/go v0.0.0-20240829060132-21bc8cc47937
+	github.com/SENERGY-Platform/models/go v0.0.0-20240918081258-d61489cadbb1
 	github.com/SENERGY-Platform/permission-search v0.0.22
 	github.com/SENERGY-Platform/permissions-v2 v0.0.26
 	github.com/SENERGY-Platform/service-commons v0.0.0-20240813072046-91b3195dd8fc

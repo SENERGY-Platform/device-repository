@@ -523,6 +523,13 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 			}
 		}
 
+		if !exists {
+			err = this.CreateGeneratedDeviceGroup(device)
+			if err != nil {
+				return err
+			}
+		}
+
 		connectionState := models.ConnectionStateUnknown
 		if exists {
 			connectionState = old.ConnectionState
@@ -530,10 +537,14 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 
 		//save device
 		ctx, _ = getTimeoutContext()
-		return this.db.SetDevice(ctx, model.DeviceWithConnectionState{
+		err = this.db.SetDevice(ctx, model.DeviceWithConnectionState{
 			Device:          device,
 			ConnectionState: connectionState,
 		})
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
 }
@@ -560,6 +571,10 @@ func (this *Controller) DeleteDevice(id string) error {
 			return err
 		}
 		return this.resetHubsForDeviceUpdate(old.Device)
+	}
+	err = this.RemoveGeneratedDeviceGroup(id, old.OwnerId)
+	if err != nil {
+		return err
 	}
 	err = this.RemoveRights(this.config.DeviceTopic, id)
 	if err != nil {

@@ -942,6 +942,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 					t.Error(err)
 					return
 				}
+				time.Sleep(time.Second)
 				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "20",
@@ -977,6 +978,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 					t.Error(err)
 					return
 				}
+				time.Sleep(time.Second)
 				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser,
 					LocalId:      testenv.TestTokenUser,

@@ -24,6 +24,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -355,7 +356,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		return
 	}
 
-	ctrl, err := controller.New(conf, dbMock, nil, permClient)
+	ctrl, err := controller.New(conf, dbMock, testenv.VoidProducerMock{}, permClient)
 	if err != nil {
 		t.Error(err)
 		return

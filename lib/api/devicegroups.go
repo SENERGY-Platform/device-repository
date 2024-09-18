@@ -111,3 +111,35 @@ func (this *DeviceGroupEndpoints) Validate(config config.Config, router *http.Se
 		writer.WriteHeader(http.StatusOK)
 	})
 }
+
+// ValidateDelete godoc
+// @Summary      validate device-group delete
+// @Description  validate if device-group may be deleted
+// @Tags         validate, device-groups
+// @Security Bearer
+// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        id path string true "Device-Group Id"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /device-groups/{id} [DELETE]
+func (this *DeviceGroupEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if !dryRun {
+			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
+			return
+		}
+		id := request.PathValue("id")
+		err, code := control.ValidateDeviceGroupDelete(id)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		writer.WriteHeader(http.StatusOK)
+	})
+}

@@ -56,3 +56,7 @@ func (c *Client) CheckAccessToDevicesOfGroup(token string, group models.DeviceGr
 	}
 	return nil, resp.StatusCode
 }
+
+func (c *Client) ValidateDeviceGroupDelete(id string) (err error, code int) {
+	return c.validateDelete("/device-groups/" + id)
+}
