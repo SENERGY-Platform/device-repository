@@ -152,6 +152,14 @@ func TestGeneratedDeviceGroups(t *testing.T) {
 			t.Errorf("%#v", dg1.Criteria)
 			return
 		}
+		if !reflect.DeepEqual(dg1.Attributes, []models.Attribute{{
+			Key:    "platform/generated",
+			Value:  "true",
+			Origin: "device-repository",
+		}}) {
+			t.Error(dg1.Attributes)
+			return
+		}
 	})
 
 	var dg2 models.DeviceGroup

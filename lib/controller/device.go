@@ -513,6 +513,9 @@ func (this *Controller) SetDevice(device models.Device, owner string) (err error
 		}
 		if exists && old.LocalId != device.LocalId {
 			err = this.resetHubsForDeviceUpdate(old.Device)
+			if err != nil {
+				return err
+			}
 		}
 
 		if device.OwnerId == "" {

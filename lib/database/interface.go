@@ -18,12 +18,13 @@ package database
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 )
 
 type Database interface {
-	RunStartupMigrations() error
+	RunStartupMigrations(methods mongo.GeneratedDeviceGroupMigrationMethods) error
 	Disconnect()
 
 	GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error)

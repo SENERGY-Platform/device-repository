@@ -19,6 +19,7 @@ package testdb
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
@@ -68,7 +69,7 @@ func NewTestDB(config config.Config) database.Database {
 
 func (db *DB) Disconnect() {}
 
-func (db *DB) RunStartupMigrations() error {
+func (db *DB) RunStartupMigrations(methods mongo.GeneratedDeviceGroupMigrationMethods) error {
 	return nil
 }
 

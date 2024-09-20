@@ -18,16 +18,13 @@ package tests
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
-	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/source/util"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"reflect"
 	"sync"
@@ -35,7 +32,7 @@ import (
 	"time"
 )
 
-func TestPermissionMigration(t *testing.T) {
+func TestGeneratedDeviceGroupMigration(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -96,94 +93,65 @@ func TestPermissionMigration(t *testing.T) {
 		return
 	}
 
-	permissions := map[string]model.ResourceRights{
-		"1": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: false, Execute: false, Administrate: true}},
-			GroupRights:          nil,
-			KeycloakGroupsRights: nil,
+	//models.URN_PREFIX + "device-group:" + strings.TrimPrefix(deviceId, models.URN_PREFIX+"device:")
+	devices := []model.DeviceWithConnectionState{
+		{
+			Device: models.Device{
+				Id:           models.URN_PREFIX + "device:1",
+				LocalId:      "1",
+				Name:         "1",
+				DeviceTypeId: "dt1",
+				OwnerId:      userid,
+			},
 		},
-		"2": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: false, Administrate: true}},
-			GroupRights:          nil,
-			KeycloakGroupsRights: nil,
+		{
+			Device: models.Device{
+				Id:           models.URN_PREFIX + "device:2",
+				LocalId:      "2",
+				Name:         "2",
+				DeviceTypeId: "dt1",
+				OwnerId:      userid,
+			},
 		},
-		"3": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          nil,
-			KeycloakGroupsRights: nil,
+		{
+			Device: models.Device{
+				Id:           models.URN_PREFIX + "device:3",
+				LocalId:      "3",
+				Name:         "3",
+				DeviceTypeId: "dt1",
+				OwnerId:      userid,
+			},
 		},
-		"4": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          nil,
-			KeycloakGroupsRights: nil,
-		},
-		"5": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: false, Execute: false, Administrate: false}},
-			KeycloakGroupsRights: nil,
-		},
-		"6": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: true, Execute: false, Administrate: false}},
-			KeycloakGroupsRights: nil,
-		},
-		"7": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: true, Execute: true, Administrate: false}},
-			KeycloakGroupsRights: nil,
-		},
-		"8": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: true, Execute: true, Administrate: true}},
-			KeycloakGroupsRights: nil,
-		},
-		"9": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: true, Execute: true, Administrate: true}},
-			KeycloakGroupsRights: map[string]model.Right{"kcg": {Read: true, Write: false, Execute: false, Administrate: false}},
-		},
-		"10": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: true, Execute: true, Administrate: true}},
-			KeycloakGroupsRights: map[string]model.Right{"kcg": {Read: true, Write: true, Execute: false, Administrate: false}},
-		},
-		"11": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: true, Execute: true, Administrate: true}},
-			KeycloakGroupsRights: map[string]model.Right{"kcg": {Read: true, Write: true, Execute: true, Administrate: false}},
-		},
-		"12": {
-			UserRights:           map[string]model.Right{"user": {Read: true, Write: true, Execute: true, Administrate: true}},
-			GroupRights:          map[string]model.Right{"group": {Read: true, Write: true, Execute: true, Administrate: true}},
-			KeycloakGroupsRights: map[string]model.Right{"kcg": {Read: true, Write: true, Execute: true, Administrate: true}},
+		{
+			Device: models.Device{
+				Id:           models.URN_PREFIX + "device:4",
+				LocalId:      "4",
+				Name:         "4n",
+				DeviceTypeId: "dt1",
+				OwnerId:      userid,
+			},
 		},
 	}
-
-	devices := []model.DeviceWithConnectionState{}
-	hubs := []model.HubWithConnectionState{}
-	deviceGroups := []models.DeviceGroup{}
-	for istr := range permissions {
-		devices = append(devices, model.DeviceWithConnectionState{
-			Device: models.Device{
-				Id:           istr,
-				LocalId:      istr,
-				Name:         istr,
-				DeviceTypeId: "dt",
-				OwnerId:      "owner",
-			},
-			DisplayName: istr,
-		})
-		hubs = append(hubs, model.HubWithConnectionState{
-			Hub: models.Hub{
-				Id:      istr,
-				Name:    istr,
-				OwnerId: "owner",
-			},
-		})
-		deviceGroups = append(deviceGroups, models.DeviceGroup{
-			Id:   istr,
-			Name: istr,
-		})
+	deviceGroups := []models.DeviceGroup{
+		{
+			Id:   models.URN_PREFIX + "device-group:unrelated1",
+			Name: "unrelated1",
+		},
+		{
+			Id:        models.URN_PREFIX + "device-group:unrelated2",
+			Name:      "unrelated2",
+			DeviceIds: []string{models.URN_PREFIX + "device:1"},
+		},
+		{
+			Id:        models.URN_PREFIX + "device-group:2",
+			Name:      "2_group",
+			DeviceIds: []string{models.URN_PREFIX + "device:1"},
+		},
+		{
+			Id:        models.URN_PREFIX + "device-group:3",
+			Name:      "3_group",
+			DeviceIds: []string{},
+		},
 	}
 
 	t.Run("init", func(t *testing.T) {
@@ -201,20 +169,10 @@ func TestPermissionMigration(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			err = db.SetRights(conf.DeviceTopic, device.Id, permissions[device.Id])
-			if err != nil {
-				t.Error(err)
-				return
-			}
-		}
-		for _, hub := range hubs {
-			timeout, _ := getTimeoutContext()
-			err = db.SetHub(timeout, hub)
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			err = db.SetRights(conf.HubTopic, hub.Id, permissions[hub.Id])
+			err = db.SetRights(conf.DeviceTopic, device.Id, model.ResourceRights{
+				UserRights:  map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}},
+				GroupRights: map[string]model.Right{"admin": {Read: true, Write: true, Execute: true, Administrate: true}},
+			})
 			if err != nil {
 				t.Error(err)
 				return
@@ -227,7 +185,10 @@ func TestPermissionMigration(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			err = db.SetRights(conf.DeviceGroupTopic, dg.Id, permissions[dg.Id])
+			err = db.SetRights(conf.DeviceGroupTopic, dg.Id, model.ResourceRights{
+				UserRights:  map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}},
+				GroupRights: map[string]model.Right{"admin": {Read: true, Write: true, Execute: true, Administrate: true}},
+			})
 			if err != nil {
 				t.Error(err)
 				return
@@ -235,30 +196,9 @@ func TestPermissionMigration(t *testing.T) {
 		}
 	})
 
-	var db *mongo.Mongo
 	t.Run("migrate", func(t *testing.T) {
 		conf.PermissionsV2Url = "http://" + permV2Ip + ":8080"
-		db, err = mongo.New(conf)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		err = db.RunStartupMigrations()
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		p, err := producer.New(conf)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		ctrl, err := controller.New(conf, db, p, nil)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		err = consumer.Start(ctx, conf, ctrl)
+		err = lib.Start(ctx, wg, conf)
 		if err != nil {
 			t.Error(err)
 			return
@@ -266,60 +206,65 @@ func TestPermissionMigration(t *testing.T) {
 	})
 
 	t.Run("check", func(t *testing.T) {
-		time.Sleep(2 * time.Second)
-		permv2 := client.New(conf.PermissionsV2Url)
-
-		f := func(t *testing.T, topic string) {
-			permList, err, _ := permv2.ListResourcesWithAdminPermission(client.InternalAdminToken, topic, client.ListOptions{})
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			if len(permList) != len(permissions) {
-				t.Error(len(permList), len(permissions))
-				return
-			}
-			for _, perm := range permList {
-				expectedRaw, ok := permissions[perm.Id]
-				if !ok {
-					t.Error("unexpected permission id", perm.Id)
-					return
-				}
-				if expectedRaw.KeycloakGroupsRights == nil {
-					expectedRaw.KeycloakGroupsRights = map[string]model.Right{}
-				}
-				if expectedRaw.GroupRights == nil {
-					expectedRaw.GroupRights = map[string]model.Right{}
-				}
-				expected := expectedRaw.ToPermV2Permissions()
-				if !reflect.DeepEqual(perm.ResourcePermissions, expected) {
-					t.Errorf("\n%#v\n%#v\n", expected, perm.ResourcePermissions)
-					return
-				}
-
-				actualDbEntry, err := db.GetRights(topic, perm.Id)
-				if err != nil {
-					t.Error(err)
-					return
-				}
-				if !reflect.DeepEqual(actualDbEntry, expectedRaw) {
-					t.Errorf("\n%#v\n%#v\n", expectedRaw, actualDbEntry)
-					return
-				}
-			}
+		time.Sleep(10 * time.Second)
+		db, err := mongo.New(conf)
+		if err != nil {
+			t.Error(err)
+			return
 		}
-
-		t.Run("check devices", func(t *testing.T) {
-			f(t, conf.DeviceTopic)
-		})
-
-		t.Run("check hubs", func(t *testing.T) {
-			f(t, conf.HubTopic)
-		})
-
-		t.Run("check device-groups", func(t *testing.T) {
-			f(t, conf.DeviceGroupTopic)
-		})
+		defer db.Disconnect()
+		list, err := db.ListDeviceGroups(ctx, 100, 0, "name.asc")
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := []models.DeviceGroup{
+			{
+				Id:        models.URN_PREFIX + "device-group:1",
+				Name:      "1_group",
+				DeviceIds: []string{models.URN_PREFIX + "device:1"},
+				Attributes: []models.Attribute{{
+					Key:    "platform/generated",
+					Value:  "true",
+					Origin: "device-repository",
+				}},
+				AutoGeneratedByDevice: models.URN_PREFIX + "device:1",
+			},
+			{
+				Id:        models.URN_PREFIX + "device-group:2",
+				Name:      "2_group",
+				DeviceIds: []string{models.URN_PREFIX + "device:1"},
+			},
+			{
+				Id:        models.URN_PREFIX + "device-group:3",
+				Name:      "3_group",
+				DeviceIds: []string{},
+			},
+			{
+				Id:        models.URN_PREFIX + "device-group:4",
+				Name:      "4n_group",
+				DeviceIds: []string{models.URN_PREFIX + "device:4"},
+				Attributes: []models.Attribute{{
+					Key:    "platform/generated",
+					Value:  "true",
+					Origin: "device-repository",
+				}},
+				AutoGeneratedByDevice: models.URN_PREFIX + "device:4",
+			},
+			{
+				Id:   models.URN_PREFIX + "device-group:unrelated1",
+				Name: "unrelated1",
+			},
+			{
+				Id:        models.URN_PREFIX + "device-group:unrelated2",
+				Name:      "unrelated2",
+				DeviceIds: []string{models.URN_PREFIX + "device:1"},
+			},
+		}
+		if !reflect.DeepEqual(list, expected) {
+			t.Errorf("len(list)=%v len(expected)==%v\n%#v\n%#v\n", len(list), len(expected), list, expected)
+			return
+		}
 	})
 
 }

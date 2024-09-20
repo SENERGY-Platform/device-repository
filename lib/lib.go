@@ -52,14 +52,6 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 			wg.Done()
 		}
 	}()
-	if conf.RunStartupMigrations && !conf.DisableKafkaConsumer {
-		err = db.RunStartupMigrations()
-		if err != nil {
-			db.Disconnect()
-			log.Println("ERROR: RunStartupMigrations()", err)
-			return err
-		}
-	}
 
 	var p controller.Producer = controller.ErrorProducer{}
 	if !conf.DisableKafkaConsumer {
@@ -77,6 +69,15 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
 		return err
+	}
+
+	if conf.RunStartupMigrations && !conf.DisableKafkaConsumer {
+		err = db.RunStartupMigrations(ctrl)
+		if err != nil {
+			db.Disconnect()
+			log.Println("ERROR: RunStartupMigrations()", err)
+			return err
+		}
 	}
 
 	if !conf.DisableKafkaConsumer {

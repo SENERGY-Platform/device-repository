@@ -18,131 +18,61 @@ package mongo
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
-	"net/http"
 	"runtime/debug"
-	"sync"
-	"time"
 )
 
-func (this *Mongo) RunStartupMigrations() error {
+func (this *Mongo) RunStartupMigrations(helper GeneratedDeviceGroupMigrationMethods) error {
 	if !this.config.RunStartupMigrations {
 		log.Println("INFO: skip startup migration because config.RunStartupMigrations=false")
 		return nil
 	}
-	err := this.runPermissionsV2Migration()
+	err := this.runDeviceGroupMigration(helper)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (this *Mongo) runPermissionsV2Migration() (err error) {
-	if this.config.PermissionsV2Url == "" || this.config.PermissionsV2Url == "-" {
-		log.Println("skip permissions-v2 migration because PermissionsV2Url is not configured")
-		return nil
+type GeneratedDeviceGroupMigrationMethods interface {
+	DeviceIdToGeneratedDeviceGroupId(deviceId string) string
+	CreateGeneratedDeviceGroup(device models.Device) (err error)
+}
+
+func (this *Mongo) runDeviceGroupMigration(helper GeneratedDeviceGroupMigrationMethods) error {
+	log.Println("start runDeviceGroupMigration()")
+	cursor, err := this.deviceCollection().Find(context.Background(), bson.M{})
+	if err != nil {
+		return err
 	}
-	log.Println("start permissions-v2 migration")
-	defer log.Println("finish permissions-v2 migration")
-	c := client.New(this.config.PermissionsV2Url)
-	topics := []string{this.config.DeviceTopic, this.config.DeviceGroupTopic, this.config.HubTopic}
-
-	workerChan := make(chan RightsEntry, 100)
-	wg := &sync.WaitGroup{}
-	mux := sync.Mutex{}
-
-	deviceKind, _ := this.getInternalKind(this.config.DeviceTopic)
-	deviceGroupKind, _ := this.getInternalKind(this.config.DeviceGroupTopic)
-	hubKind, _ := this.getInternalKind(this.config.HubTopic)
-
-	for range 10 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for entry := range workerChan {
-				topic := this.config.DeviceTopic
-				if entry.Kind == deviceKind {
-					topic = this.config.DeviceTopic
-				}
-				if entry.Kind == deviceGroupKind {
-					topic = this.config.DeviceGroupTopic
-				}
-				if entry.Kind == hubKind {
-					topic = this.config.HubTopic
-				}
-				temp := entry.ToResourceRights()
-				log.Printf("migration: send %v %v permissions to permissions-v2\n", topic, entry.Id)
-				_, temperr, _ := c.SetPermission(client.InternalAdminToken, topic, entry.Id, temp.ToPermV2Permissions())
-				if temperr != nil {
-					mux.Lock()
-					defer mux.Unlock()
-					err = errors.Join(err, fmt.Errorf("%w: %v", temperr, entry.Id))
-					return
-				}
-			}
-		}()
-	}
-
-	for _, topic := range topics {
-		if topic == "" || topic == "-" {
-			continue
+	defer cursor.Close(context.Background())
+	for cursor.Next(context.Background()) {
+		if cursor.Err() != nil {
+			debug.PrintStack()
+			return cursor.Err()
 		}
-		log.Printf("start permissions-v2 %v migration", topic)
-		_, err, code := c.GetTopic(client.InternalAdminToken, topic)
-		if err == nil && code == http.StatusOK {
-			ids, err, _ := c.AdminListResourceIds(client.InternalAdminToken, topic, client.ListOptions{Limit: 10})
+		var device models.Device
+		err = cursor.Decode(&device)
+		if err != nil {
+			debug.PrintStack()
+			return err
+		}
+		id := helper.DeviceIdToGeneratedDeviceGroupId(device.Id)
+		_, exists, err := this.GetDeviceGroup(context.Background(), id)
+		if err != nil {
+			debug.PrintStack()
+			return err
+		}
+		if !exists {
+			log.Printf("generate device-group for %v %v\n", device.Id, device.Name)
+			err = helper.CreateGeneratedDeviceGroup(device)
 			if err != nil {
 				debug.PrintStack()
 				return err
 			}
-			if len(ids) >= 10 {
-				log.Printf("skip permissions-v2 %v migration (topic already exists with at least 10 entries in permissions-v2)", topic)
-				continue
-			}
-		}
-		if err != nil && code != http.StatusNotFound {
-			debug.PrintStack()
-			return err
-		}
-		_, err, _ = c.SetTopic(client.InternalAdminToken, client.Topic{Id: topic, PublishToKafkaTopic: topic})
-		if err != nil {
-			debug.PrintStack()
-			return err
-		}
-
-		kind, err := this.getInternalKind(topic)
-		if err != nil {
-			debug.PrintStack()
-			return err
-		}
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		cursor, err := this.rightsCollection().Find(ctx, bson.M{"kind": kind})
-		if err != nil {
-			debug.PrintStack()
-			return err
-		}
-		defer cursor.Close(context.Background())
-		for cursor.Next(context.Background()) {
-			entry := RightsEntry{}
-			err = cursor.Decode(&entry)
-			if err != nil {
-				debug.PrintStack()
-				return err
-			}
-			log.Printf("migration: queue %v %v\n", topic, entry.Id)
-			workerChan <- entry
-		}
-		err = cursor.Err()
-		if err != nil {
-			debug.PrintStack()
-			return err
 		}
 	}
-	close(workerChan)
-	wg.Wait()
-	return err
+	return nil
 }
