@@ -25,6 +25,8 @@ import (
 	"strings"
 )
 
+var STRICT = true
+
 func (db *DB) GetDeviceType(_ context.Context, id string) (deviceType models.DeviceType, exists bool, err error) {
 	return get(id, db.deviceTypes)
 }
@@ -70,11 +72,99 @@ func (db *DB) ListDeviceTypes(ctx context.Context, limit int64, offset int64, so
 }
 
 func (db *DB) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool) (result []models.DeviceType, err error) {
-	panic("implement me")
+	if STRICT && (filter != nil || includeModified) {
+		panic("implement me")
+	}
+	deviceTypes := maps.Values(db.deviceTypes)
+	if offset >= int64(len(deviceTypes)) {
+		return []models.DeviceType{}, nil
+	}
+
+	parts := strings.Split(sort, ".")
+	desc := parts[1] == "desc"
+	switch parts[0] {
+	case "name":
+		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) int {
+			if desc {
+				return strings.Compare(a.Name, b.Name)
+			}
+			return strings.Compare(a.Name, b.Name) * -1
+		})
+	default:
+	case "id":
+		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) int {
+			if desc {
+				return strings.Compare(a.Id, b.Id)
+			}
+			return strings.Compare(a.Id, b.Id) * -1
+		})
+	}
+	if offset >= int64(len(deviceTypes)) {
+		return []models.DeviceType{}, nil
+	}
+
+	return deviceTypes[offset:min(len(deviceTypes), int(offset+limit))], nil
 }
 
 func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, err error) {
-	panic("implement me")
+	if STRICT && (listOptions.Criteria != nil ||
+		listOptions.IncludeModified ||
+		listOptions.IgnoreUnmodified ||
+		listOptions.AttributeValues != nil ||
+		listOptions.Search != "") {
+		panic("implement me")
+	}
+	deviceTypes := maps.Values(db.deviceTypes)
+	if listOptions.Offset >= int64(len(deviceTypes)) {
+		return []models.DeviceType{}, nil
+	}
+
+	filteredDts := []models.DeviceType{}
+	for _, dt := range deviceTypes {
+		if listOptions.AttributeKeys != nil && !checkAttrKeyFilter(dt.Attributes, listOptions.AttributeKeys) {
+			continue
+		}
+		if listOptions.Ids != nil && !slices.Contains(listOptions.Ids, dt.Id) {
+			continue
+		}
+		filteredDts = append(filteredDts, dt)
+	}
+	if listOptions.Offset >= int64(len(filteredDts)) {
+		return []models.DeviceType{}, nil
+	}
+
+	parts := strings.Split(listOptions.SortBy, ".")
+	desc := parts[1] == "desc"
+	switch parts[0] {
+	case "name":
+		slices.SortFunc(filteredDts, func(a, b models.DeviceType) int {
+			if desc {
+				return strings.Compare(a.Name, b.Name)
+			}
+			return strings.Compare(a.Name, b.Name) * -1
+		})
+	default:
+	case "id":
+		slices.SortFunc(filteredDts, func(a, b models.DeviceType) int {
+			if desc {
+				return strings.Compare(a.Id, b.Id)
+			}
+			return strings.Compare(a.Id, b.Id) * -1
+		})
+	}
+
+	return filteredDts[listOptions.Offset:min(len(filteredDts), int(listOptions.Offset+listOptions.Limit))], nil
+}
+
+func checkAttrKeyFilter(list []models.Attribute, keys []string) bool {
+	for _, key := range keys {
+		if !slices.ContainsFunc(list, func(attribute models.Attribute) bool {
+			return attribute.Key == key
+		}) {
+			return false
+		}
+	}
+	return true
 }
 
 func (db *DB) GetDeviceTypesByServiceId(_ context.Context, serviceId string) (result []models.DeviceType, err error) {
