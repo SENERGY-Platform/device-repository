@@ -46,7 +46,7 @@ func (db *DB) ListDeviceTypes(ctx context.Context, limit int64, offset int64, so
 	}
 
 	parts := strings.Split(sort, ".")
-	desc := parts[1] == "desc"
+	desc := len(parts) > 1 && parts[1] == "desc"
 	switch parts[0] {
 	case "name":
 		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) int {
@@ -81,7 +81,7 @@ func (db *DB) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, 
 	}
 
 	parts := strings.Split(sort, ".")
-	desc := parts[1] == "desc"
+	desc := len(parts) > 1 && parts[1] == "desc"
 	switch parts[0] {
 	case "name":
 		slices.SortFunc(deviceTypes, func(a, b models.DeviceType) int {
@@ -134,7 +134,7 @@ func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTyp
 	}
 
 	parts := strings.Split(listOptions.SortBy, ".")
-	desc := parts[1] == "desc"
+	desc := len(parts) > 1 && parts[1] == "desc"
 	switch parts[0] {
 	case "name":
 		slices.SortFunc(filteredDts, func(a, b models.DeviceType) int {
