@@ -27,9 +27,9 @@ type Controller interface {
 	ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
 	ValidateDevice(token string, device models.Device) (err error, code int)
 
-	ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int)
-	ReadExtendedDevice(id string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int)
-	ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int)
+	ListExtendedDevices(token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int)
+	ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int)
+	ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int)
 
 	ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int)
 	ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int)

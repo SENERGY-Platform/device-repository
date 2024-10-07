@@ -400,6 +400,8 @@ definitions:
         items:
           $ref: '#/definitions/models.Attribute'
         type: array
+      auto_generated_by_device:
+        type: string
       criteria:
         items:
           $ref: '#/definitions/models.DeviceGroupFilterCriteria'
@@ -461,6 +463,10 @@ definitions:
         type: array
       connection_state:
         type: string
+      device_type:
+        allOf:
+        - $ref: '#/definitions/models.DeviceType'
+        description: optional
       device_type_id:
         type: string
       device_type_name:
@@ -1447,6 +1453,32 @@ paths:
       - validate
       - device-groups
   /device-groups/{id}:
+    delete:
+      description: validate if device-group may be deleted
+      parameters:
+      - description: must be true; reminder, that this is not a delete but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Device-Group Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate device-group delete
+      tags:
+      - validate
+      - device-groups
     get:
       description: get device-group
       parameters:
@@ -1692,6 +1724,10 @@ paths:
     get:
       description: list extended-device
       parameters:
+      - description: if true, result contains full device-type
+        in: query
+        name: fulldt
+        type: boolean
       - description: default 100, will be ignored if 'ids' is set
         in: query
         name: limit
@@ -1784,6 +1820,10 @@ paths:
         in: query
         name: p
         type: string
+      - description: if true, result contains full device-type
+        in: query
+        name: fulldt
+        type: boolean
       produces:
       - application/json
       responses:

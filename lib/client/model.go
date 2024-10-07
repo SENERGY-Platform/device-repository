@@ -27,6 +27,7 @@ const EXECUTE = model.EXECUTE
 const ADMINISTRATE = model.ADMINISTRATE
 
 type DeviceListOptions = model.DeviceListOptions
+type ExtendedDeviceListOptions = model.ExtendedDeviceListOptions
 type HubListOptions = model.HubListOptions
 type DeviceTypeListOptions = model.DeviceTypeListOptions
 

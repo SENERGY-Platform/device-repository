@@ -9,8 +9,8 @@ require (
 
 require (
 	github.com/IBM/sarama v1.43.3
-	github.com/SENERGY-Platform/models/go v0.0.0-20240918081258-d61489cadbb1
-	github.com/SENERGY-Platform/permission-search v0.0.22
+	github.com/SENERGY-Platform/models/go v0.0.0-20241007061544-de7132ae94e4
+	github.com/SENERGY-Platform/permission-search v0.0.23
 	github.com/SENERGY-Platform/permissions-v2 v0.0.26
 	github.com/SENERGY-Platform/service-commons v0.0.0-20240813072046-91b3195dd8fc
 	github.com/google/uuid v1.6.0

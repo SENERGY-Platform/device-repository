@@ -1238,6 +1238,46 @@ const docTemplatedevicerepository = `{
                         "description": "Internal Server Error"
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "validate if device-group may be deleted",
+                "tags": [
+                    "validate",
+                    "device-groups"
+                ],
+                "summary": "validate device-group delete",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not a delete but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Device-Group Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
             }
         },
         "/device-types": {
@@ -1569,6 +1609,12 @@ const docTemplatedevicerepository = `{
                 "summary": "list extended-device",
                 "parameters": [
                     {
+                        "type": "boolean",
+                        "description": "if true, result contains full device-type",
+                        "name": "fulldt",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "default 100, will be ignored if 'ids' is set",
                         "name": "limit",
@@ -1698,6 +1744,12 @@ const docTemplatedevicerepository = `{
                         "type": "string",
                         "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
                         "name": "p",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if true, result contains full device-type",
+                        "name": "fulldt",
                         "in": "query"
                     }
                 ],
@@ -4524,6 +4576,9 @@ const docTemplatedevicerepository = `{
                         "$ref": "#/definitions/models.Attribute"
                     }
                 },
+                "auto_generated_by_device": {
+                    "type": "string"
+                },
                 "criteria": {
                     "type": "array",
                     "items": {
@@ -4616,6 +4671,14 @@ const docTemplatedevicerepository = `{
                 },
                 "connection_state": {
                     "type": "string"
+                },
+                "device_type": {
+                    "description": "optional",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.DeviceType"
+                        }
+                    ]
                 },
                 "device_type_id": {
                     "type": "string"

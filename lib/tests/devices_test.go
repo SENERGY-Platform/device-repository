@@ -202,7 +202,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list none extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{}})
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -224,7 +224,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list all extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -246,7 +246,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt1 extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -268,7 +268,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt2 extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -290,7 +290,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt1+dt2 extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
+		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -344,6 +344,21 @@ func TestDeviceQuery(t *testing.T) {
 			Execute:      true,
 			Administrate: true,
 		},
+	}
+
+	dx1wdt := models.ExtendedDevice{
+		Device:          d1,
+		ConnectionState: models.ConnectionStateUnknown,
+		DisplayName:     d1.Name,
+		DeviceTypeName:  devicetype1name,
+		Shared:          false,
+		Permissions: models.Permissions{
+			Read:         true,
+			Write:        true,
+			Execute:      true,
+			Administrate: true,
+		},
+		DeviceType: &models.DeviceType{Id: devicetype1id, Name: devicetype1name},
 	}
 
 	err = producer.PublishDevice(d1, userid)
@@ -413,6 +428,50 @@ func TestDeviceQuery(t *testing.T) {
 	}
 
 	time.Sleep(10 * time.Second)
+
+	t.Run("check fulldt query param", func(t *testing.T) {
+		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		t.Run("ReadExtendedDevice", func(t *testing.T) {
+			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read, true)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := dx1wdt
+			if !reflect.DeepEqual(result, expected) {
+				if result.DeviceType != nil {
+					t.Errorf("%#v\n", *result.DeviceType)
+				}
+				t.Errorf("%#v\n", result)
+			}
+		})
+		t.Run("ReadExtendedDeviceByLocalId", func(t *testing.T) {
+			result, err, _ := c.ReadExtendedDeviceByLocalId(userid, d1.LocalId, userjwt, models.Read, true)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := dx1wdt
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+
+		t.Run("ListExtendedDevices", func(t *testing.T) {
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{
+				Ids:    []string{d1.Id},
+				FullDt: true,
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{dx1wdt}
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("%#v\n", result)
+			}
+		})
+	})
 
 	t.Run("not existing", func(t *testing.T) {
 		testDeviceReadNotFound(t, conf, false, "foobar")
@@ -503,7 +562,7 @@ func TestDeviceQuery(t *testing.T) {
 	t.Run("test list extended-devices", func(t *testing.T) {
 		c := client.NewClient("http://localhost:" + conf.ServerPort)
 		t.Run("list none", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Ids: []string{}})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Ids: []string{}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -514,7 +573,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list all", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid"})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -528,7 +587,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list limit/offset", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -543,7 +602,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list ids all", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -558,7 +617,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list ids d1, d3", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
+			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return

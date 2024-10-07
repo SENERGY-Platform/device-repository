@@ -224,7 +224,7 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check with unknown connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -239,7 +239,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -254,7 +254,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -269,7 +269,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
 					return
@@ -284,7 +284,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -299,7 +299,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -314,7 +314,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -330,7 +330,7 @@ func TestConnectionStateHandling(t *testing.T) {
 			})
 		})
 		t.Run("check extended device d1", func(t *testing.T) {
-			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read)
+			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -548,7 +548,7 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check with set connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -563,7 +563,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -578,7 +578,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -593,7 +593,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
 					return
@@ -608,7 +608,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -623,7 +623,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -638,7 +638,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -654,7 +654,7 @@ func TestConnectionStateHandling(t *testing.T) {
 			})
 		})
 		t.Run("check extended device d1", func(t *testing.T) {
-			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read)
+			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -840,7 +840,7 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check with updated connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -855,7 +855,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -870,7 +870,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -885,7 +885,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
 					return
@@ -900,7 +900,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -915,7 +915,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -930,7 +930,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(userjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -946,7 +946,7 @@ func TestConnectionStateHandling(t *testing.T) {
 			})
 		})
 		t.Run("check extended device d1", func(t *testing.T) {
-			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read)
+			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1079,7 +1079,7 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("check as admin", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
 			t.Run("list all", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1094,7 +1094,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list online", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1109,7 +1109,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list offline", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateOffline})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateOffline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1124,7 +1124,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("list unknown", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{ConnectionState: client.ConnectionStateUnknown})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1139,7 +1139,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'd1'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "d1"})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{Search: "d1"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1154,7 +1154,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search 'a d'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a d"})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{Search: "a d"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1169,7 +1169,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("search online 'a'", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{Search: "a", ConnectionState: client.ConnectionStateOnline})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1184,7 +1184,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("pagination", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{Limit: 1, Offset: 1})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{Limit: 1, Offset: 1})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1199,7 +1199,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("sort display_name asc", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{SortBy: "display_name"})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "display_name"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1214,7 +1214,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 			})
 			t.Run("sort display_name desc", func(t *testing.T) {
-				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.DeviceListOptions{SortBy: "display_name.desc"})
+				result, total, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "display_name.desc"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1230,7 +1230,7 @@ func TestConnectionStateHandling(t *testing.T) {
 			})
 		})
 		t.Run("check extended device d1", func(t *testing.T) {
-			result, err, _ := c.ReadExtendedDevice(d1.Id, adminjwt, models.Read)
+			result, err, _ := c.ReadExtendedDevice(d1.Id, adminjwt, models.Read, false)
 			if err != nil {
 				t.Error(err)
 				return

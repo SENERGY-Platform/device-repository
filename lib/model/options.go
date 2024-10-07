@@ -31,6 +31,35 @@ type DeviceListOptions struct {
 	AttributeValues []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
 }
 
+type ExtendedDeviceListOptions struct {
+	Ids             []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	DeviceTypeIds   []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
+	ConnectionState *models.ConnectionState //filter
+	Search          string
+	Limit           int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset          int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy          string                //default name.asc
+	Permission      models.PermissionFlag //defaults to read
+	AttributeKeys   []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	AttributeValues []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	FullDt          bool                  //if true, result contains full device-type
+}
+
+func (this ExtendedDeviceListOptions) ToDeviceListOptions() DeviceListOptions {
+	return DeviceListOptions{
+		Ids:             this.Ids,
+		DeviceTypeIds:   this.DeviceTypeIds,
+		ConnectionState: this.ConnectionState,
+		Search:          this.Search,
+		Limit:           this.Limit,
+		Offset:          this.Offset,
+		SortBy:          this.SortBy,
+		Permission:      this.Permission,
+		AttributeKeys:   this.AttributeKeys,
+		AttributeValues: this.AttributeValues,
+	}
+}
+
 type HubListOptions struct {
 	Ids             []string                ///filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
 	ConnectionState *models.ConnectionState //filter

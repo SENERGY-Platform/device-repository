@@ -42,6 +42,7 @@ type ExtendedDeviceEndpoints struct{}
 // @Tags         list, devices, extended-devices
 // @Produce      json
 // @Security Bearer
+// @Param        fulldt query bool false "if true, result contains full device-type"
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
 // @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
 // @Param        search query string false "filter"
@@ -61,9 +62,10 @@ type ExtendedDeviceEndpoints struct{}
 // @Router       /extended-devices [GET]
 func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-devices", func(writer http.ResponseWriter, request *http.Request) {
-		deviceListOptions := model.DeviceListOptions{
+		deviceListOptions := model.ExtendedDeviceListOptions{
 			Limit:  100,
 			Offset: 0,
+			FullDt: request.URL.Query().Get("fulldt") == "true",
 		}
 		var err error
 		limitParam := request.URL.Query().Get("limit")
@@ -168,6 +170,7 @@ func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.Ser
 // @Param        as query string false "interprets the id as local_id if as=='local_id'"
 // @Param        owner_id query string false "default requesting user; used in combination with local_id (as=='local_id') to identify the device"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Param        fulldt query bool false "if true, result contains full device-type"
 // @Success      200 {object}  models.Device
 // @Failure      400
 // @Failure      401
@@ -196,12 +199,13 @@ func (this *ExtendedDeviceEndpoints) Get(config config.Config, router *http.Serv
 		if permission == models.UnsetPermissionFlag {
 			permission = model.READ
 		}
+		fulldt := request.URL.Query().Get("fulldt") == "true"
 		var result models.ExtendedDevice
 		var errCode int
 		if as == "local_id" {
-			result, err, errCode = control.ReadExtendedDeviceByLocalId(ownerId, id, util.GetAuthToken(request), permission)
+			result, err, errCode = control.ReadExtendedDeviceByLocalId(ownerId, id, util.GetAuthToken(request), permission, fulldt)
 		} else {
-			result, err, errCode = control.ReadExtendedDevice(id, util.GetAuthToken(request), permission)
+			result, err, errCode = control.ReadExtendedDevice(id, util.GetAuthToken(request), permission, fulldt)
 		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

@@ -27,7 +27,7 @@ import (
 
 const extendedDevicePath = "extended-devices"
 
-func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
+func (c *Client) ListExtendedDevices(token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
 		query.Set("p", string(options.Permission))
@@ -59,6 +59,9 @@ func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptio
 	if options.AttributeValues != nil {
 		query.Set("attr-values", strings.Join(options.AttributeValues, ","))
 	}
+	if options.FullDt {
+		query.Set("fulldt", "true")
+	}
 	queryString := ""
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
@@ -71,10 +74,13 @@ func (c *Client) ListExtendedDevices(token string, options model.DeviceListOptio
 	return doWithTotalInResult[[]models.ExtendedDevice](req)
 }
 
-func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
+func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
+	}
+	if fullDt {
+		query.Set("fulldt", "true")
 	}
 	queryString := ""
 	if len(query) > 0 {
@@ -88,13 +94,16 @@ func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAc
 	return do[models.ExtendedDevice](req)
 }
 
-func (c *Client) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
+func (c *Client) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
 	}
 	query.Set("as", "local_id")
 	query.Set("owner_id", ownerId)
+	if fullDt {
+		query.Set("fulldt", "true")
+	}
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+"/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError

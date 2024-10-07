@@ -33,7 +33,7 @@ import (
 //		api
 /////////////////////////
 
-func (this *Controller) ListExtendedDevices(token string, options model.DeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
+func (this *Controller) ListExtendedDevices(token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
 	ids := []string{}
 	permissionFlag := options.Permission
 	if permissionFlag == models.UnsetPermissionFlag {
@@ -85,7 +85,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 	options.Ids = pureIds
 
 	ctx, _ := getTimeoutContext()
-	devices, total, err := this.db.ListDevices(ctx, options, true)
+	devices, total, err := this.db.ListDevices(ctx, options.ToDeviceListOptions(), true)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
@@ -146,7 +146,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.DeviceLi
 					return
 				}
 				d.Device = modDevice
-				extendedDevice, extendErr := this.extendDevice(token, d, deviceTypes)
+				extendedDevice, extendErr := this.extendDevice(token, d, deviceTypes, options.FullDt)
 				if extendErr != nil {
 					mux.Lock()
 					defer mux.Unlock()
@@ -257,7 +257,7 @@ func (this *Controller) ReadDevice(id string, token string, action model.AuthAct
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ReadExtendedDevice(id string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
+func (this *Controller) ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
 	temp, err, errCode := this.readDevice(id)
 	if err != nil {
 		return result, err, errCode
@@ -271,7 +271,7 @@ func (this *Controller) ReadExtendedDevice(id string, token string, action model
 	}
 	ctx, _ := getTimeoutContext()
 	dt, _, _ := this.db.GetDeviceType(ctx, temp.DeviceTypeId)
-	result, err = this.extendDevice(token, temp, []models.DeviceType{dt})
+	result, err = this.extendDevice(token, temp, []models.DeviceType{dt}, fullDt)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -298,13 +298,18 @@ func (this *Controller) readDevice(id string) (result model.DeviceWithConnection
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) extendDevice(token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType) (models.ExtendedDevice, error) {
+func (this *Controller) extendDevice(token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType, fullDt bool) (models.ExtendedDevice, error) {
 	dtIndex := slices.IndexFunc(deviceTypes, func(deviceType models.DeviceType) bool {
 		return deviceType.Id == device.DeviceTypeId
 	})
+	var dtp *models.DeviceType
 	deviceTypeName := ""
 	if dtIndex >= 0 {
-		deviceTypeName = deviceTypes[dtIndex].Name
+		dt := deviceTypes[dtIndex]
+		if fullDt {
+			dtp = &dt
+		}
+		deviceTypeName = dt.Name
 	}
 	requestingUser, permissions, err := this.db.GetPermissionsInfo(token, this.config.DeviceTopic, device.Id)
 	if err != nil {
@@ -317,6 +322,7 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 		DeviceTypeName:  deviceTypeName,
 		Shared:          requestingUser != device.OwnerId,
 		Permissions:     permissions,
+		DeviceType:      dtp,
 	}, err
 }
 
@@ -339,7 +345,7 @@ func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, toke
 	return device.Device, nil, http.StatusOK
 }
 
-func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.ExtendedDevice, err error, errCode int) {
+func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	device, exists, err := this.db.GetDeviceByLocalId(ctx, ownerId, localId)
 	if err != nil {
@@ -356,7 +362,7 @@ func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId stri
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
 	dt, _, _ := this.db.GetDeviceType(ctx, device.DeviceTypeId)
-	result, err = this.extendDevice(token, device, []models.DeviceType{dt})
+	result, err = this.extendDevice(token, device, []models.DeviceType{dt}, fullDt)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -403,6 +409,9 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 		return err, http.StatusInternalServerError
 	}
 	if exists {
+		if original.DeviceTypeId != device.DeviceTypeId {
+			return errors.New("device type id mismatch"), http.StatusBadRequest
+		}
 		if device.OwnerId != original.OwnerId {
 			admins, err := this.db.GetAdminUsers(token, this.config.DeviceTopic, device.Id)
 			if errors.Is(err, model.PermissionCheckFailed) {
