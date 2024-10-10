@@ -47,6 +47,20 @@ func (db *DB) GetDeviceByLocalId(_ context.Context, ownerId string, localId stri
 	return model.DeviceWithConnectionState{}, false, err
 }
 
+func (db *DB) DeviceLocalIdsToIds(ctx context.Context, owner string, localIds []string) (ids []string, err error) {
+	ids = []string{}
+	for _, lid := range localIds {
+		device, exists, err := db.GetDeviceByLocalId(ctx, owner, lid)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
+			ids = append(ids, device.Id)
+		}
+	}
+	return ids, nil
+}
+
 func (db *DB) ListDevices(ctx context.Context, options model.DeviceListOptions, withTotal bool) (devices []model.DeviceWithConnectionState, total int64, err error) {
 	devices = []model.DeviceWithConnectionState{}
 	var r *regexp.Regexp

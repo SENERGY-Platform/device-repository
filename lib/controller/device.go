@@ -44,6 +44,18 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 		return result, total, err, http.StatusBadRequest
 	}
 
+	if options.Owner == "" {
+		options.Owner = jwtToken.GetUserId()
+	}
+
+	if options.LocalIds != nil {
+		ctx, _ := getTimeoutContext()
+		options.Ids, err = this.db.DeviceLocalIdsToIds(ctx, options.Owner, options.LocalIds)
+		if err != nil {
+			return result, total, err, http.StatusInternalServerError
+		}
+	}
+
 	//check permissions
 	if options.Ids == nil {
 		if jwtToken.IsAdmin() {
@@ -178,6 +190,19 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
+
+	if options.Owner == "" {
+		options.Owner = jwtToken.GetUserId()
+	}
+
+	if options.LocalIds != nil {
+		ctx, _ := getTimeoutContext()
+		options.Ids, err = this.db.DeviceLocalIdsToIds(ctx, options.Owner, options.LocalIds)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+	}
+
 	if options.Ids == nil {
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter

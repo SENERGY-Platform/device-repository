@@ -38,6 +38,12 @@ func (c *Client) ListExtendedDevices(token string, options model.ExtendedDeviceL
 	if options.Ids != nil {
 		query.Set("ids", strings.Join(options.Ids, ","))
 	}
+	if options.LocalIds != nil {
+		query.Set("local_ids", strings.Join(options.LocalIds, ","))
+	}
+	if options.Owner != "" {
+		query.Set("owner", options.Owner)
+	}
 	if options.DeviceTypeIds != nil {
 		query.Set("device-type-ids", strings.Join(options.DeviceTypeIds, ","))
 	}

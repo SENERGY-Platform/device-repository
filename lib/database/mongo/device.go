@@ -217,6 +217,36 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	return result, total, err
 }
 
+func (this *Mongo) DeviceLocalIdsToIds(ctx context.Context, owner string, localIds []string) (ids []string, err error) {
+	cursor, err := this.deviceCollection().Find(ctx, bson.M{DeviceBson.LocalId: bson.M{"$in": localIds}, DeviceBson.OwnerId: owner})
+	if err != nil {
+		return ids, err
+	}
+	defer cursor.Close(ctx)
+	err = cursor.Err()
+	if err != nil {
+		return ids, err
+	}
+	ids = []string{}
+	for cursor.Next(ctx) {
+		err = cursor.Err()
+		if err != nil {
+			return ids, err
+		}
+		device := models.Device{}
+		err = cursor.Decode(&device)
+		if err != nil {
+			return ids, err
+		}
+		ids = append(ids, device.Id)
+	}
+	err = cursor.Err()
+	if err != nil {
+		return ids, err
+	}
+	return ids, nil
+}
+
 func (this *Mongo) SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error {
 	_, err := this.deviceCollection().UpdateOne(ctx, bson.M{
 		DeviceBson.Id: id,

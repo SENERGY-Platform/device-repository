@@ -33,6 +33,7 @@ type Database interface {
 	RemoveDevice(ctx context.Context, id string) error
 	GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error)
 	SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error
+	DeviceLocalIdsToIds(ctx context.Context, owner string, localIds []string) ([]string, error)
 
 	GetHub(ctx context.Context, id string) (hub model.HubWithConnectionState, exists bool, err error)
 	ListHubs(ctx context.Context, options model.HubListOptions, withTotal bool) (hubs []model.HubWithConnectionState, total int64, err error)

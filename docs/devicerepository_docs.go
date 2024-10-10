@@ -1426,6 +1426,18 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
+                        "description": "in combination with owner; fills ids filter; comma-seperated list",
+                        "name": "local_ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "used in combination with local_ids to fill ids filter; defaults to requesting user",
+                        "name": "owner",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "filter; comma-seperated list",
                         "name": "device-type-ids",
                         "in": "query"
@@ -1642,6 +1654,18 @@ const docTemplatedevicerepository = `{
                         "type": "string",
                         "description": "filter; ignores limit/offset; comma-seperated list",
                         "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "in combination with owner; fills ids filter; comma-seperated list",
+                        "name": "local_ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "used in combination with local_ids to fill ids filter; defaults to requesting user",
+                        "name": "owner",
                         "in": "query"
                     },
                     {

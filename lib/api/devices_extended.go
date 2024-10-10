@@ -48,6 +48,8 @@ type ExtendedDeviceEndpoints struct{}
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
 // @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        local_ids query string false "in combination with owner; fills ids filter; comma-seperated list"
+// @Param        owner query string false "used in combination with local_ids to fill ids filter; defaults to requesting user"
 // @Param        device-type-ids query string false "filter; comma-seperated list"
 // @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
 // @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
@@ -94,6 +96,17 @@ func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.Ser
 				deviceListOptions.Ids = []string{}
 			}
 		}
+
+		localIdsParam := request.URL.Query().Get("local_ids")
+		if request.URL.Query().Has("local_ids") {
+			if localIdsParam != "" {
+				deviceListOptions.LocalIds = strings.Split(strings.TrimSpace(localIdsParam), ",")
+			} else {
+				deviceListOptions.LocalIds = []string{}
+			}
+		}
+
+		deviceListOptions.Owner = request.URL.Query().Get("owner")
 
 		deviceTypeIdsParam := request.URL.Query().Get("device-type-ids")
 		if request.URL.Query().Has("device-type-ids") {

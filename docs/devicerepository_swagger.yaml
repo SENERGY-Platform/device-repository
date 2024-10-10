@@ -1601,6 +1601,16 @@ paths:
         in: query
         name: ids
         type: string
+      - description: in combination with owner; fills ids filter; comma-seperated
+          list
+        in: query
+        name: local_ids
+        type: string
+      - description: used in combination with local_ids to fill ids filter; defaults
+          to requesting user
+        in: query
+        name: owner
+        type: string
       - description: filter; comma-seperated list
         in: query
         name: device-type-ids
@@ -1747,6 +1757,16 @@ paths:
       - description: filter; ignores limit/offset; comma-seperated list
         in: query
         name: ids
+        type: string
+      - description: in combination with owner; fills ids filter; comma-seperated
+          list
+        in: query
+        name: local_ids
+        type: string
+      - description: used in combination with local_ids to fill ids filter; defaults
+          to requesting user
+        in: query
+        name: owner
         type: string
       - description: filter; comma-seperated list
         in: query
