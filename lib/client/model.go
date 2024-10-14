@@ -30,6 +30,12 @@ type DeviceListOptions = model.DeviceListOptions
 type ExtendedDeviceListOptions = model.ExtendedDeviceListOptions
 type HubListOptions = model.HubListOptions
 type DeviceTypeListOptions = model.DeviceTypeListOptions
+type DeviceGroupListOptions = model.DeviceGroupListOptions
+type FilterCriteria = model.FilterCriteria
+
+var Event = models.EVENT
+var Request = models.REQUEST
+var EventAndRequest = models.EVENT_AND_REQUEST
 
 var connectionStateOnline = models.ConnectionStateOnline
 var ConnectionStateOnline = &connectionStateOnline

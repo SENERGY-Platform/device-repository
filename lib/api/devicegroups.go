@@ -45,7 +45,9 @@ type DeviceGroupEndpoints struct{}
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
 // @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
-// @Param        ignore_generated query bool false "filter; remove generated groups from result"
+// @Param        ignore-generated query bool false "filter; remove generated groups from result"
+// @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
 // @Param        criteria query string false "filter; json encoded []model.FilterCriteria"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
 // @Success      200 {array}  models.DeviceGroup
@@ -96,7 +98,7 @@ func (this *DeviceGroupEndpoints) List(config config.Config, router *http.ServeM
 			deviceGroupListOptions.SortBy = "name.asc"
 		}
 
-		if request.URL.Query().Has("ignore_generated") {
+		if request.URL.Query().Has("ignore-generated") {
 			deviceGroupListOptions.IgnoreGenerated, err = strconv.ParseBool(request.URL.Query().Get("ignore_generated"))
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -113,6 +115,23 @@ func (this *DeviceGroupEndpoints) List(config config.Config, router *http.ServeM
 				return
 			}
 			deviceGroupListOptions.Criteria = criteriaList
+		}
+
+		attrKeysParam := request.URL.Query().Get("attr-keys")
+		if request.URL.Query().Has("attr-keys") {
+			if attrKeysParam != "" {
+				deviceGroupListOptions.AttributeKeys = strings.Split(strings.TrimSpace(attrKeysParam), ",")
+			} else {
+				deviceGroupListOptions.AttributeKeys = []string{}
+			}
+		}
+		attrValuesParam := request.URL.Query().Get("attr-values")
+		if request.URL.Query().Has("attr-values") {
+			if attrValuesParam != "" {
+				deviceGroupListOptions.AttributeValues = strings.Split(strings.TrimSpace(attrValuesParam), ",")
+			} else {
+				deviceGroupListOptions.AttributeValues = []string{}
+			}
 		}
 
 		deviceGroupListOptions.Permission, err = model.GetPermissionFlagFromQuery(request.URL.Query())

@@ -19,11 +19,13 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/resources"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
@@ -35,10 +37,151 @@ import (
 	"net/url"
 	"reflect"
 	"runtime/debug"
+	"slices"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 )
+
+func TestListDeviceGroups(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	publisher, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	for _, dg := range resources.DeviceGroupExamples {
+		err = publisher.PublishDeviceGroup(dg, Userid)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+	time.Sleep(5 * time.Second)
+
+	all := resources.DeviceGroupExamples
+	slices.SortFunc(all, func(a, b models.DeviceGroup) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	reverse := make([]models.DeviceGroup, len(all))
+	copy(reverse, all)
+	slices.Reverse(reverse)
+
+	rollo := []models.DeviceGroup{}
+	for _, dg := range all {
+		if strings.Contains(strings.ToLower(dg.Name), "rollo") {
+			rollo = append(rollo, dg)
+		}
+	}
+
+	rollosFenster := []models.DeviceGroup{}
+	for _, dg := range all {
+		if strings.Contains(strings.ToLower(dg.Name), "rollos") {
+			rollosFenster = append(rollosFenster, dg)
+		}
+	}
+
+	f := func(options model.DeviceGroupListOptions, expectedTotal int64, expectedGroups []models.DeviceGroup) func(t *testing.T) {
+		return func(t *testing.T) {
+			t.Helper()
+			actualGroups, actualTotal, err, _ := client.NewClient("http://localhost:"+conf.ServerPort).ListDeviceGroups(Userjwt, options)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if actualTotal != expectedTotal {
+				t.Errorf("total=%v, expected=%v", actualTotal, expectedTotal)
+			}
+			if len(actualGroups) != len(expectedGroups) {
+				t.Errorf("len(actualGroups)=%v,  len(expectedGroups)=%v", len(actualGroups), len(expectedGroups))
+			}
+			if !reflect.DeepEqual(actualGroups, expectedGroups) {
+				t.Errorf("\na=%#v\ne=%#v\n", actualGroups, expectedGroups)
+			}
+		}
+	}
+
+	t.Run("limit 5 offset 5 sort name.asc", f(client.DeviceGroupListOptions{
+		Limit:  5,
+		Offset: 5,
+		SortBy: "name.asc",
+	}, 30, all[5:10]))
+
+	t.Run("limit 5 offset 5 sort name.desc", f(client.DeviceGroupListOptions{
+		Limit:  5,
+		Offset: 5,
+		SortBy: "name.desc",
+	}, 30, reverse[5:10]))
+
+	t.Run("search 'rollo'", f(client.DeviceGroupListOptions{
+		Search: "rollo",
+		SortBy: "name.asc",
+	}, 14, rollo))
+
+	t.Run("criteria measuring unctionf", f(client.DeviceGroupListOptions{
+		SortBy: "name.asc",
+		Criteria: []client.FilterCriteria{
+			{
+				Interaction: client.Event,
+				FunctionId:  "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+				AspectId:    "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+			},
+		},
+	}, 14, rollo))
+
+	t.Run("criteria controlling function", f(client.DeviceGroupListOptions{
+		SortBy: "name.asc",
+		Criteria: []client.FilterCriteria{
+			{
+				Interaction:   client.Request,
+				FunctionId:    "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+				DeviceClassId: "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43",
+			},
+		},
+	}, 3, rollosFenster))
+
+	t.Run("criteria combined", f(client.DeviceGroupListOptions{
+		SortBy: "name.asc",
+		Criteria: []client.FilterCriteria{
+			{
+				Interaction: client.Event,
+				FunctionId:  "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+				AspectId:    "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+			},
+			{
+				Interaction:   client.Request,
+				FunctionId:    "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+				DeviceClassId: "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43",
+			},
+		},
+	}, 3, rollosFenster))
+
+	t.Run("criteria event and request", f(client.DeviceGroupListOptions{
+		SortBy: "name.asc",
+		Criteria: []client.FilterCriteria{
+			{
+				Interaction: client.Event,
+				FunctionId:  "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+				AspectId:    "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+			},
+			{
+				Interaction:   client.EventAndRequest,
+				FunctionId:    "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+				DeviceClassId: "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43",
+			},
+		},
+	}, 14, rollo))
+}
 
 type aspectNodeProviderMock struct {
 	result []models.AspectNode

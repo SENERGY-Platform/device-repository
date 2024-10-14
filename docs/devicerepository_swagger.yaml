@@ -1448,8 +1448,18 @@ paths:
         type: string
       - description: filter; remove generated groups from result
         in: query
-        name: ignore_generated
+        name: ignore-generated
         type: boolean
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute key that is in the given list
+        in: query
+        name: attr-keys
+        type: string
+      - description: filter; comma-seperated list; lists elements only if they have
+          an attribute value that is in the given list
+        in: query
+        name: attr-values
+        type: string
       - description: filter; json encoded []model.FilterCriteria
         in: query
         name: criteria

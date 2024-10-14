@@ -1,0 +1,3092 @@
+[
+    {
+        "id": "urn:infai:ses:device-group:0f916d14-7d7b-45f3-b3d3-968b472c801d",
+        "name": "0xa4c138398dae7070_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:0f916d14-7d7b-45f3-b3d3-968b472c801d"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:0f916d14-7d7b-45f3-b3d3-968b472c801d"
+    },
+    {
+        "id": "urn:infai:ses:device-group:4d761d1a-5296-46c8-ab7c-8c0738e2490e",
+        "name": "0xa4c138a001ebad7a_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:4d761d1a-5296-46c8-ab7c-8c0738e2490e"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:4d761d1a-5296-46c8-ab7c-8c0738e2490e"
+    },
+    {
+        "id": "urn:infai:ses:device-group:dd32c70a-5948-4ffa-a143-699d3928ed2a",
+        "name": "0xa4c138baa25d2a2f_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:dd32c70a-5948-4ffa-a143-699d3928ed2a"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__event",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__request"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:dd32c70a-5948-4ffa-a143-699d3928ed2a"
+    },
+    {
+        "id": "urn:infai:ses:device-group:585f00c8-5f07-40dd-b4a6-c4633dc0f540",
+        "name": "Arbeitszimmer",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:1cae07c7-db1e-4b6b-936e-7d4d1e874b39",
+            "urn:infai:ses:device:732748b9-6e70-4756-b49f-d325388c74df",
+            "urn:infai:ses:device:8cc3b88b-1bc1-45b5-80ba-808d13167ae7"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:bad56e84-3df9-41ff-aa46-df83b8323787",
+        "name": "Batteriegeräte",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:6854c3b6-b271-47d2-a727-560138ff2ee0",
+            "urn:infai:ses:device:79fa231c-45d9-4266-b5fb-2c051bfd8c0d",
+            "urn:infai:ses:device:4d761d1a-5296-46c8-ab7c-8c0738e2490e",
+            "urn:infai:ses:device:0f916d14-7d7b-45f3-b3d3-968b472c801d",
+            "urn:infai:ses:device:dd32c70a-5948-4ffa-a143-699d3928ed2a",
+            "urn:infai:ses:device:aa613418-d99e-41fd-935d-089d354bfab3",
+            "urn:infai:ses:device:174a1c3b-26d1-4389-99ab-5b6cf808e180",
+            "urn:infai:ses:device:a01e3202-3254-416f-b619-dd17e6047eb4",
+            "urn:infai:ses:device:1905ca36-8ecc-491a-9297-7167fc6ad955",
+            "urn:infai:ses:device:96bb9e75-a497-4bae-99db-2324abf2144f",
+            "urn:infai:ses:device:d4069c2b-b50f-4a4a-853c-cc743a405ce6",
+            "urn:infai:ses:device:4d72b755-e003-437d-a77e-875849ee2209",
+            "urn:infai:ses:device:67c364f2-9d33-429b-b96f-76ebf9ee0482",
+            "urn:infai:ses:device:ccad2a21-dc07-49f9-bf08-be39ade79d41",
+            "urn:infai:ses:device:2cba9be3-e9fd-4e55-a1b2-70888411110b",
+            "urn:infai:ses:device:9410c882-3cd3-4141-bb7a-5e274c50547b",
+            "urn:infai:ses:device:f204ef81-6d44-4392-9368-52b83a5cb58d",
+            "urn:infai:ses:device:550e97ed-50d5-4e2f-ba07-bc2c7f19ef12",
+            "urn:infai:ses:device:683ab0d3-c9a8-45d1-a8b8-1225eeefb05c",
+            "urn:infai:ses:device:46ed39b6-6407-4e61-a40c-76e156ea6eeb",
+            "urn:infai:ses:device:7c6bc4f5-bb85-4acb-bab5-3c0393d73073"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:291a7dd3-e427-4f8d-b937-1db11d90a770",
+        "name": "Einzelverbraucher",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:1cae07c7-db1e-4b6b-936e-7d4d1e874b39",
+            "urn:infai:ses:device:229ad0db-b68c-4122-b86f-29b5b5792ab6",
+            "urn:infai:ses:device:8cc3b88b-1bc1-45b5-80ba-808d13167ae7",
+            "urn:infai:ses:device:afe403f1-0413-48ca-a822-fab71c7d0456",
+            "urn:infai:ses:device:732748b9-6e70-4756-b49f-d325388c74df",
+            "urn:infai:ses:device:53496037-5b8b-4b98-bb0d-47278279a54d",
+            "urn:infai:ses:device:fedacc31-783c-4ce4-a115-4d9ee352df33",
+            "urn:infai:ses:device:dfee2961-fd00-46fc-b8b5-d1c9a0061972",
+            "urn:infai:ses:device:f4f8f468-7e0e-4d66-9446-439a24dde9dd",
+            "urn:infai:ses:device:f5543003-7811-44ab-8d13-bd592958ffa4",
+            "urn:infai:ses:device:8cd40260-b5fd-4664-9c56-54eac91e4b2b",
+            "urn:infai:ses:device:f5f4d553-9f8f-48c8-8b38-233b72fdfe6d",
+            "urn:infai:ses:device:d4029d1d-3220-456d-bcf5-ddd0f2419e0d",
+            "urn:infai:ses:device:26c8e4af-3034-4067-8e23-c79ad41e9aa7",
+            "urn:infai:ses:device:d97f9c3f-982b-4ba6-91bd-5f60b07e297c",
+            "urn:infai:ses:device:ebece2d3-126e-4edb-89ad-73bfd61f90f8",
+            "urn:infai:ses:device:279940de-0ed8-4907-ac70-dc0680cd1a4e",
+            "urn:infai:ses:device:9826c94c-4cb8-4f12-a1bd-7705b04f0f48"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:49df8430-0cf6-40f5-8d00-998800acc27a",
+        "name": "Fensterkontakte",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:90f05fa4-b765-4998-a09c-448f83a5e8c5",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:68151635-3299-4f95-a33e-c8cce2ac4213",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:531efa86-f476-4c9f-8181-8753b7fb938c",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:90f05fa4-b765-4998-a09c-448f83a5e8c5",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:531efa86-f476-4c9f-8181-8753b7fb938c",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:68151635-3299-4f95-a33e-c8cce2ac4213",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:6854c3b6-b271-47d2-a727-560138ff2ee0"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:90f05fa4-b765-4998-a09c-448f83a5e8c5_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__request",
+            "urn:infai:ses:measuring-function:68151635-3299-4f95-a33e-c8cce2ac4213_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:531efa86-f476-4c9f-8181-8753b7fb938c_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:90f05fa4-b765-4998-a09c-448f83a5e8c5_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__request",
+            "urn:infai:ses:measuring-function:531efa86-f476-4c9f-8181-8753b7fb938c_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__request",
+            "urn:infai:ses:measuring-function:68151635-3299-4f95-a33e-c8cce2ac4213_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:b4af0e0e-4114-4e24-ba59-20050810a9cb",
+        "name": "Guten Morgen",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:8cc3b88b-1bc1-45b5-80ba-808d13167ae7$service_group_selection=90ab05ce-76fe-40dc-8ecd-9ff4ad0e3172",
+            "urn:infai:ses:device:732748b9-6e70-4756-b49f-d325388c74df$service_group_selection=c832e717-7252-4a61-9cf2-a6f90bcac7ad"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba__event",
+            "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:c4cd479d-8f56-49d7-bbe3-5b56e2807c85",
+        "name": "Leckagesensoren",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc",
+                "aspect_id": "urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:4d761d1a-5296-46c8-ab7c-8c0738e2490e",
+            "urn:infai:ses:device:0f916d14-7d7b-45f3-b3d3-968b472c801d",
+            "urn:infai:ses:device:dd32c70a-5948-4ffa-a143-699d3928ed2a"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:2c377c78-97ce-45f5-ae57-9b9c725f48dc_urn:infai:ses:aspect:b8b3b549-3b01-4604-a727-20aa528c21c9__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:eaab26c7-f918-4e98-bf1b-04f044be5c4e_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:7cb00a2c-873a-4a12-bc27-99f7fea0abbe",
+        "name": "Leisten",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:1cae07c7-db1e-4b6b-936e-7d4d1e874b39",
+            "urn:infai:ses:device:229ad0db-b68c-4122-b86f-29b5b5792ab6",
+            "urn:infai:ses:device:732748b9-6e70-4756-b49f-d325388c74df",
+            "urn:infai:ses:device:53496037-5b8b-4b98-bb0d-47278279a54d",
+            "urn:infai:ses:device:8cc3b88b-1bc1-45b5-80ba-808d13167ae7",
+            "urn:infai:ses:device:afe403f1-0413-48ca-a822-fab71c7d0456"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba__event",
+            "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:4dff52cf-0551-4fe6-bfe5-5ce50e2c50e6",
+        "name": "PIR EG",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27",
+                "aspect_id": "urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3",
+                "aspect_id": "urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27",
+                "aspect_id": "urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3",
+                "aspect_id": "urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:aa613418-d99e-41fd-935d-089d354bfab3",
+            "urn:infai:ses:device:174a1c3b-26d1-4389-99ab-5b6cf808e180"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request",
+            "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27_urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3_urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9__request",
+            "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27_urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3_urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:084275a9-a113-4494-a9e2-2a6e0b5c3b7c",
+        "name": "PIR OG",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3",
+                "aspect_id": "urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27",
+                "aspect_id": "urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3",
+                "aspect_id": "urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27",
+                "aspect_id": "urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:a01e3202-3254-416f-b619-dd17e6047eb4",
+            "urn:infai:ses:device:1905ca36-8ecc-491a-9297-7167fc6ad955"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__request",
+            "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3_urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__request",
+            "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27_urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6__request",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:64dfd53a-f288-40f7-a3ef-a6a7f7c8a7c3_urn:infai:ses:aspect:b10a703a-ba7c-4518-b08f-4056782404e9__event",
+            "urn:infai:ses:measuring-function:d7bd8d39-92f7-49da-9dd9-5445c45f2e27_urn:infai:ses:aspect:a7470d73-dde3-41fc-92bd-f16bb28f2da6__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__request"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:647481bd-b5a3-4383-9b47-5f008c55d584",
+        "name": "Rollo Anbau_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:647481bd-b5a3-4383-9b47-5f008c55d584"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:647481bd-b5a3-4383-9b47-5f008c55d584"
+    },
+    {
+        "id": "urn:infai:ses:device-group:af7544b1-59d4-437b-8e4f-acb101eb0071",
+        "name": "Rollo Anni_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:af7544b1-59d4-437b-8e4f-acb101eb0071"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:af7544b1-59d4-437b-8e4f-acb101eb0071"
+    },
+    {
+        "id": "urn:infai:ses:device-group:beafd2e8-cf79-4ffc-84b4-179bb8d42a8a",
+        "name": "Rollo Arbeitszimmer_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:beafd2e8-cf79-4ffc-84b4-179bb8d42a8a"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:beafd2e8-cf79-4ffc-84b4-179bb8d42a8a"
+    },
+    {
+        "id": "urn:infai:ses:device-group:09319633-30d0-4d3a-8fb3-4cc6279e6aa4",
+        "name": "Rollo Balkontür_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:09319633-30d0-4d3a-8fb3-4cc6279e6aa4"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:09319633-30d0-4d3a-8fb3-4cc6279e6aa4"
+    },
+    {
+        "id": "urn:infai:ses:device-group:12eb8fa5-9009-4c05-9aee-a35279047e4a",
+        "name": "Rollo Gast_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:12eb8fa5-9009-4c05-9aee-a35279047e4a"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:12eb8fa5-9009-4c05-9aee-a35279047e4a"
+    },
+    {
+        "id": "urn:infai:ses:device-group:0e1390ae-98be-469b-8de6-c8022cd0d5a5",
+        "name": "Rollo Küche links_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:0e1390ae-98be-469b-8de6-c8022cd0d5a5"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:0e1390ae-98be-469b-8de6-c8022cd0d5a5"
+    },
+    {
+        "id": "urn:infai:ses:device-group:c69a2a66-9d53-4feb-a4b8-39d189e5e766",
+        "name": "Rollo Küche rechts_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:c69a2a66-9d53-4feb-a4b8-39d189e5e766"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:c69a2a66-9d53-4feb-a4b8-39d189e5e766"
+    },
+    {
+        "id": "urn:infai:ses:device-group:104d7f07-3e98-4d5f-8287-8f4c85a9a9d2",
+        "name": "Rollo Schlafzimmer_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:104d7f07-3e98-4d5f-8287-8f4c85a9a9d2"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:104d7f07-3e98-4d5f-8287-8f4c85a9a9d2"
+    },
+    {
+        "id": "urn:infai:ses:device-group:28893804-9966-4fd2-9082-a679d8064fb4",
+        "name": "Rollo Terassentür_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:28893804-9966-4fd2-9082-a679d8064fb4"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:28893804-9966-4fd2-9082-a679d8064fb4"
+    },
+    {
+        "id": "urn:infai:ses:device-group:9ca86db0-e9a3-40f2-84e9-5e6864ffa4be",
+        "name": "Rollo Wohnzimmer Seite_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:9ca86db0-e9a3-40f2-84e9-5e6864ffa4be"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:9ca86db0-e9a3-40f2-84e9-5e6864ffa4be"
+    },
+    {
+        "id": "urn:infai:ses:device-group:74f284b7-c23b-4af7-aa2e-f38f01a17c59",
+        "name": "Rollo Wohnzimmer Straße_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:74f284b7-c23b-4af7-aa2e-f38f01a17c59"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": "urn:infai:ses:device:74f284b7-c23b-4af7-aa2e-f38f01a17c59"
+    },
+    {
+        "id": "urn:infai:ses:device-group:6ac4bd76-2c7f-4ccf-b8a5-e4000e1d55d7",
+        "name": "Rollos Fenster EG",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:beafd2e8-cf79-4ffc-84b4-179bb8d42a8a",
+            "urn:infai:ses:device:9ca86db0-e9a3-40f2-84e9-5e6864ffa4be",
+            "urn:infai:ses:device:74f284b7-c23b-4af7-aa2e-f38f01a17c59",
+            "urn:infai:ses:device:0e1390ae-98be-469b-8de6-c8022cd0d5a5",
+            "urn:infai:ses:device:c69a2a66-9d53-4feb-a4b8-39d189e5e766"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_request"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:c69f8882-aa33-4a70-a457-9faa7604a7f0",
+        "name": "Rollos Fenster Komplett",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:647481bd-b5a3-4383-9b47-5f008c55d584",
+            "urn:infai:ses:device:af7544b1-59d4-437b-8e4f-acb101eb0071",
+            "urn:infai:ses:device:beafd2e8-cf79-4ffc-84b4-179bb8d42a8a",
+            "urn:infai:ses:device:12eb8fa5-9009-4c05-9aee-a35279047e4a",
+            "urn:infai:ses:device:0e1390ae-98be-469b-8de6-c8022cd0d5a5",
+            "urn:infai:ses:device:c69a2a66-9d53-4feb-a4b8-39d189e5e766",
+            "urn:infai:ses:device:104d7f07-3e98-4d5f-8287-8f4c85a9a9d2",
+            "urn:infai:ses:device:9ca86db0-e9a3-40f2-84e9-5e6864ffa4be",
+            "urn:infai:ses:device:74f284b7-c23b-4af7-aa2e-f38f01a17c59"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_request"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:ac1d8c65-4a5d-4931-8660-bc9f830efc45",
+        "name": "Rollos Fenster OG",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d",
+                "aspect_id": "urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d",
+                "aspect_id": "urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36",
+                "aspect_id": "urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:647481bd-b5a3-4383-9b47-5f008c55d584",
+            "urn:infai:ses:device:af7544b1-59d4-437b-8e4f-acb101eb0071",
+            "urn:infai:ses:device:12eb8fa5-9009-4c05-9aee-a35279047e4a",
+            "urn:infai:ses:device:104d7f07-3e98-4d5f-8287-8f4c85a9a9d2"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b__event",
+            "urn:infai:ses:measuring-function:2d3bfb18-dc87-4cec-b51c-c5e552e1443d_urn:infai:ses:aspect:448786a9-700a-4028-9a99-11cd09d5a999__event",
+            "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2__urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43_request",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:e4a736ff-803d-49f2-86fc-3980647e884e__event",
+            "urn:infai:ses:measuring-function:fc7fe14f-d865-471d-8914-f19ebfa28d4d_urn:infai:ses:aspect:61a92096-a553-43bc-a526-d0b4d3f6cbe4__event",
+            "urn:infai:ses:measuring-function:97aa3103-995a-4bd2-95f0-ab8f34e9ae36_urn:infai:ses:aspect:380317fc-dec5-4262-837d-2cde9a47f072__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:34a258ea-0a43-49b6-abdc-d89b56a864fa",
+        "name": "Shelly PV (Tasmota)_group",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:fdc999eb-d366-44e8-9d24-bfd48d5fece1",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:34a258ea-0a43-49b6-abdc-d89b56a864fa"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:fdc999eb-d366-44e8-9d24-bfd48d5fece1__event"
+        ],
+        "attributes": null,
+        "auto_generated_by_device": "urn:infai:ses:device:34a258ea-0a43-49b6-abdc-d89b56a864fa"
+    },
+    {
+        "id": "urn:infai:ses:device-group:d3ed10b4-bbb0-4e3e-b0b1-83e65871d826",
+        "name": "Shellys",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
+                "aspect_id": "",
+                "device_class_id": "urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:8cd40260-b5fd-4664-9c56-54eac91e4b2b",
+            "urn:infai:ses:device:26c8e4af-3034-4067-8e23-c79ad41e9aa7",
+            "urn:infai:ses:device:9826c94c-4cb8-4f12-a1bd-7705b04f0f48",
+            "urn:infai:ses:device:d4029d1d-3220-456d-bcf5-ddd0f2419e0d",
+            "urn:infai:ses:device:d97f9c3f-982b-4ba6-91bd-5f60b07e297c",
+            "urn:infai:ses:device:ebece2d3-126e-4edb-89ad-73bfd61f90f8",
+            "urn:infai:ses:device:f5f4d553-9f8f-48c8-8b38-233b72fdfe6d"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:77dbfd2c-770a-4c0c-bc5a-c2dcda878107_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9__urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250_request",
+            "urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:b8791b17-cf01-467f-87cf-da2271fffb6d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event",
+            "urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:2842f6a2-28a8-425e-be6e-215b486b77ad",
+        "name": "Stromnetz",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "request",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
+                "aspect_id": "urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:f5543003-7811-44ab-8d13-bd592958ffa4",
+            "urn:infai:ses:device:2ac5436e-5538-4eb3-a448-2d77de68e915$service_group_selection=c3b8fc33-1899-4595-a6fc-eb85ff24a0de"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__request",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__request",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__request",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__event",
+            "urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__request",
+            "urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:412a48ad-3a80-46f7-8b99-408c4b9c3528__request",
+            "urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0_urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    },
+    {
+        "id": "urn:infai:ses:device-group:fdea576d-252a-429a-8c1a-d27714ccc260",
+        "name": "Temperatur \u0026 Luftfeuchte",
+        "image": "",
+        "criteria": [
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b",
+                "aspect_id": "urn:infai:ses:aspect:f65876d6-77db-4123-b38b-f0eef5169378",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b",
+                "aspect_id": "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:53bb96e5-1fb1-4409-89a6-ae6c7332eae4",
+                "aspect_id": "urn:infai:ses:aspect:f65876d6-77db-4123-b38b-f0eef5169378",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:53bb96e5-1fb1-4409-89a6-ae6c7332eae4",
+                "aspect_id": "urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91",
+                "device_class_id": ""
+            },
+            {
+                "interaction": "event",
+                "function_id": "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d",
+                "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                "device_class_id": ""
+            }
+        ],
+        "device_ids": [
+            "urn:infai:ses:device:67c364f2-9d33-429b-b96f-76ebf9ee0482",
+            "urn:infai:ses:device:7c6bc4f5-bb85-4acb-bab5-3c0393d73073",
+            "urn:infai:ses:device:ccad2a21-dc07-49f9-bf08-be39ade79d41"
+        ],
+        "criteria_short": [
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:d4625151-ce27-4620-9b7e-93ded78484f8__event",
+            "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b_urn:infai:ses:aspect:f65876d6-77db-4123-b38b-f0eef5169378__event",
+            "urn:infai:ses:measuring-function:f2769eb9-b6ad-4f7e-bd28-e4ea043d2f8b_urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6__event",
+            "urn:infai:ses:measuring-function:53bb96e5-1fb1-4409-89a6-ae6c7332eae4_urn:infai:ses:aspect:f65876d6-77db-4123-b38b-f0eef5169378__event",
+            "urn:infai:ses:measuring-function:53bb96e5-1fb1-4409-89a6-ae6c7332eae4_urn:infai:ses:aspect:a14c5efb-b0b6-46c3-982e-9fded75b5ab6__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:81936bcb-3625-4054-9f88-8934ee63d3ca__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:0f2601d9-9bd0-4861-90a3-8ee5d6a52d91__event",
+            "urn:infai:ses:measuring-function:00549f18-88b5-44c7-adb1-f558e8d53d1d_urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32__event"
+        ],
+        "attributes": [],
+        "auto_generated_by_device": ""
+    }
+]

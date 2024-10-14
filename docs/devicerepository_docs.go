@@ -1187,7 +1187,19 @@ const docTemplatedevicerepository = `{
                     {
                         "type": "boolean",
                         "description": "filter; remove generated groups from result",
-                        "name": "ignore_generated",
+                        "name": "ignore-generated",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "name": "attr-keys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "name": "attr-values",
                         "in": "query"
                     },
                     {
