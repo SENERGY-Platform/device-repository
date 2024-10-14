@@ -49,6 +49,7 @@ type Controller interface {
 	GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int)
 
 	ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int)
+	ListDeviceGroups(token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int)
 	ValidateDeviceGroup(token string, deviceGroup models.DeviceGroup) (err error, code int)
 	ValidateDeviceGroupDelete(token string, id string) (err error, code int)
 

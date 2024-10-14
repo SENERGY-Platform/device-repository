@@ -53,6 +53,7 @@ type DeviceEndpoints struct{}
 // @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
 // @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
 // @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
+// @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
 // @Success      200 {array}  models.Device
 // @Failure      400
 // @Failure      401

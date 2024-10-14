@@ -18,32 +18,28 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
 	"strings"
 )
 
-const deviceGroupIdFieldName = "Id"
-const deviceGroupNameFieldName = "Name"
+var DeviceGroupBson = getBsonFieldObject[models.DeviceGroup]()
 
-var deviceGroupIdKey string
-var deviceGroupNameKey string
+var deviceGroupCriteriaShortKey string
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceGroupIdKey, err = getBsonFieldName(models.DeviceGroup{}, deviceGroupIdFieldName)
-		if err != nil {
-			return err
-		}
-		deviceGroupNameKey, err = getBsonFieldName(models.DeviceGroup{}, deviceGroupNameFieldName)
+		deviceGroupCriteriaShortKey, err = getBsonFieldName(models.DeviceGroup{}, "CriteriaShort")
 		if err != nil {
 			return err
 		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceGroupCollection)
-		err = db.ensureIndex(collection, "deviceGroupidindex", deviceGroupIdKey, true, true)
+		err = db.ensureIndex(collection, "deviceGroupidindex", DeviceGroupBson.Id, true, true)
 		if err != nil {
 			return err
 		}
@@ -56,7 +52,7 @@ func (this *Mongo) deviceGroupCollection() *mongo.Collection {
 }
 
 func (this *Mongo) GetDeviceGroup(ctx context.Context, id string) (deviceGroup models.DeviceGroup, exists bool, err error) {
-	result := this.deviceGroupCollection().FindOne(ctx, bson.M{deviceGroupIdKey: id})
+	result := this.deviceGroupCollection().FindOne(ctx, bson.M{DeviceGroupBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return deviceGroup, false, nil
@@ -71,20 +67,20 @@ func (this *Mongo) GetDeviceGroup(ctx context.Context, id string) (deviceGroup m
 	return deviceGroup, true, err
 }
 
-func (this *Mongo) ListDeviceGroups(ctx context.Context, limit int64, offset int64, sort string) (result []models.DeviceGroup, err error) {
+func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error) {
 	opt := options.Find()
-	opt.SetLimit(limit)
-	opt.SetSkip(offset)
+	opt.SetLimit(listOptions.Limit)
+	opt.SetSkip(listOptions.Offset)
 
-	parts := strings.Split(sort, ".")
-	sortby := deviceGroupIdKey
+	parts := strings.Split(listOptions.SortBy, ".")
+	sortby := DeviceGroupBson.Id
 	switch parts[0] {
 	case "id":
-		sortby = deviceGroupIdKey
+		sortby = DeviceGroupBson.Id
 	case "name":
-		sortby = deviceGroupNameKey
+		sortby = DeviceGroupBson.Name
 	default:
-		sortby = deviceGroupIdKey
+		sortby = DeviceGroupBson.Id
 	}
 	direction := int32(1)
 	if len(parts) > 1 && parts[1] == "desc" {
@@ -92,29 +88,55 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, limit int64, offset int
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	cursor, err := this.deviceGroupCollection().Find(ctx, bson.M{}, opt)
-	if err != nil {
-		return nil, err
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[DeviceGroupBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
-	defer cursor.Close(context.Background())
-	for cursor.Next(context.Background()) {
-		deviceGroup := models.DeviceGroup{}
-		err = cursor.Decode(&deviceGroup)
-		if err != nil {
-			return nil, err
+
+	if listOptions.IgnoreGenerated {
+		filter[DeviceGroupBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		escapedSearch := regexp.QuoteMeta(search)
+		filter[DeviceGroupBson.Name] = bson.M{"$regex": escapedSearch, "$options": "i"}
+	}
+
+	if listOptions.Criteria != nil {
+		criteriaFilter := []bson.M{}
+		for _, c := range listOptions.Criteria {
+			criteriaFilter = append(criteriaFilter, bson.M{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
+				Interaction:   c.Interaction,
+				FunctionId:    c.FunctionId,
+				AspectId:      c.AspectId,
+				DeviceClassId: c.DeviceClassId,
+			}.Short()})
 		}
-		result = append(result, deviceGroup)
+		filter["$and"] = criteriaFilter
 	}
-	err = cursor.Err()
-	return
+
+	cursor, err := this.deviceGroupCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return nil, 0, err
+	}
+	err = cursor.All(ctx, &result)
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err = this.deviceCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, total, nil
 }
 
 func (this *Mongo) SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup) error {
-	_, err := this.deviceGroupCollection().ReplaceOne(ctx, bson.M{deviceGroupIdKey: deviceGroup.Id}, deviceGroup, options.Replace().SetUpsert(true))
+	_, err := this.deviceGroupCollection().ReplaceOne(ctx, bson.M{DeviceGroupBson.Id: deviceGroup.Id}, deviceGroup, options.Replace().SetUpsert(true))
 	return err
 }
 
 func (this *Mongo) RemoveDeviceGroup(ctx context.Context, id string) error {
-	_, err := this.deviceGroupCollection().DeleteOne(ctx, bson.M{deviceGroupIdKey: id})
+	_, err := this.deviceGroupCollection().DeleteOne(ctx, bson.M{DeviceGroupBson.Id: id})
 	return err
 }

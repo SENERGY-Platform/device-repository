@@ -213,7 +213,11 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 			return
 		}
 		defer db.Disconnect()
-		list, err := db.ListDeviceGroups(ctx, 100, 0, "name.asc")
+		list, _, err := db.ListDeviceGroups(ctx, model.DeviceGroupListOptions{
+			Limit:  100,
+			Offset: 0,
+			SortBy: "name.asc",
+		})
 		if err != nil {
 			t.Error(err)
 			return

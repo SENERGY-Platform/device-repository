@@ -63,7 +63,7 @@ type Database interface {
 	GetDeviceGroup(ctx context.Context, id string) (deviceGroup models.DeviceGroup, exists bool, err error)
 	SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup) error
 	RemoveDeviceGroup(ctx context.Context, id string) error
-	ListDeviceGroups(ctx context.Context, limit int64, offset int64, sort string) (result []models.DeviceGroup, err error)
+	ListDeviceGroups(ctx context.Context, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error)
 
 	GetProtocol(ctx context.Context, id string) (result models.Protocol, exists bool, err error)
 	ListProtocols(ctx context.Context, limit int64, offset int64, sort string) ([]models.Protocol, error)

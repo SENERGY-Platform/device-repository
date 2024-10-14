@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"log"
 	"net/http"
 	"slices"
@@ -32,6 +33,49 @@ import (
 /////////////////////////
 
 const FilterDevicesOfGroupByAccess = true
+
+func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
+	ids := []string{}
+	permissionFlag := options.Permission
+	if permissionFlag == models.UnsetPermissionFlag {
+		permissionFlag = models.Read
+	}
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, total, err, http.StatusBadRequest
+	}
+
+	//check permissions
+	if options.Ids == nil {
+		if jwtToken.IsAdmin() {
+			ids = nil //no auth check for admins -> no id filter
+		} else {
+			ids, err = this.db.ListAccessibleResourceIds(token, this.config.DeviceGroupTopic, 0, 0, permissionFlag)
+			if err != nil {
+				return result, total, err, http.StatusInternalServerError
+			}
+		}
+	} else {
+		options.Limit = 0
+		options.Offset = 0
+		idMap, err := this.db.CheckMultiple(token, this.config.DeviceGroupTopic, options.Ids, permissionFlag)
+		if err != nil {
+			return result, total, err, http.StatusInternalServerError
+		}
+		for id, ok := range idMap {
+			if ok {
+				ids = append(ids, id)
+			}
+		}
+	}
+
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListDeviceGroups(ctx, options)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
+}
 
 func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
 	ctx, _ := getTimeoutContext()

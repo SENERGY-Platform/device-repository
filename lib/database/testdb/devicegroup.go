@@ -18,6 +18,7 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"golang.org/x/exp/maps"
 )
@@ -34,6 +35,6 @@ func (db *DB) RemoveDeviceGroup(_ context.Context, id string) error {
 	return del(id, db.deviceGroups)
 }
 
-func (db *DB) ListDeviceGroups(_ context.Context, limit int64, offset int64, sort string) (result []models.DeviceGroup, err error) {
-	return maps.Values(db.deviceGroups), nil
+func (db *DB) ListDeviceGroups(_ context.Context, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error) {
+	return maps.Values(db.deviceGroups), int64(len(db.deviceGroups)), nil
 }
