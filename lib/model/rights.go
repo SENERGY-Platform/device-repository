@@ -66,3 +66,36 @@ func (this *ResourceRights) ToPermV2Permissions() client.ResourcePermissions {
 	}
 	return result
 }
+
+func ResourceRightsFromPermission(perm model2.ResourcePermissions) ResourceRights {
+	result := ResourceRights{
+		UserRights:           map[string]Right{},
+		KeycloakGroupsRights: map[string]Right{},
+		GroupRights:          map[string]Right{},
+	}
+	for k, v := range perm.UserPermissions {
+		result.UserRights[k] = Right{
+			Read:         v.Read,
+			Write:        v.Write,
+			Execute:      v.Execute,
+			Administrate: v.Administrate,
+		}
+	}
+	for k, v := range perm.GroupPermissions {
+		result.KeycloakGroupsRights[k] = Right{
+			Read:         v.Read,
+			Write:        v.Write,
+			Execute:      v.Execute,
+			Administrate: v.Administrate,
+		}
+	}
+	for k, v := range perm.RolePermissions {
+		result.GroupRights[k] = Right{
+			Read:         v.Read,
+			Write:        v.Write,
+			Execute:      v.Execute,
+			Administrate: v.Administrate,
+		}
+	}
+	return result
+}
