@@ -31,7 +31,6 @@
     "mongo_device_class_collection": "deviceclass",
     "mongo_function_collection": "functions",
     "mongo_location_collection": "locations",
-    "mongo_repl_set": true,
     "kafka_url": "kafka-broker-url:9092",
     "group_id": "device-repository",
     "debug": false,
@@ -40,6 +39,7 @@
     "http_client_timeout": "30s",
     "device_service_group_selection_allow_not_found": true,
     "allow_none_leaf_aspect_nodes_in_device_types_default": true,
+    "generate_device_group_for_device": true,
 
     "run_startup_migrations": true,
 

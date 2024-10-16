@@ -44,7 +44,6 @@ func TestKafkaRetry(t *testing.T) {
 		return
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 
 	_, zkIp, err := docker.Zookeeper(ctx, wg)

@@ -75,7 +75,6 @@ func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...
 		return conf, err
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 
 	for _, f := range cm {
@@ -104,7 +103,6 @@ func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 		return
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 	conf.DisableKafkaConsumer = true
 

@@ -906,7 +906,6 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 		return
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 	conf.LocalIdUniqueForOwner = true
 	whPort, err := docker.GetFreePort()
@@ -972,7 +971,6 @@ func TestDeviceLocalIdOwnerConstraintPermissionsSearch(t *testing.T) {
 		return
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 	conf.LocalIdUniqueForOwner = true
 	conf, err = docker.NewEnv(ctx, wg, conf)

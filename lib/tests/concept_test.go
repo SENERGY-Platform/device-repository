@@ -36,7 +36,6 @@ func TestConceptValidation(t *testing.T) {
 		return
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 
 	wg := &sync.WaitGroup{}

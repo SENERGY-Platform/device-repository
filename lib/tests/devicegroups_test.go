@@ -479,7 +479,6 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		return
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf, err = docker.NewEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)

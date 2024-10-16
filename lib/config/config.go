@@ -50,7 +50,6 @@ type Config struct {
 	HubConnectionStateTopic       string `json:"hub_connection_state_topic"`
 	PermissionsV2Url              string `json:"permissions_v2_url"`
 	MongoUrl                      string `json:"mongo_url"`
-	MongoReplSet                  bool   `json:"mongo_repl_set"` //set true if mongodb is configured as replication set or mongos and is able to handle transactions
 	MongoTable                    string `json:"mongo_table"`
 	MongoRightsCollection         string `json:"mongo_rights_collection"`
 	MongoDeviceCollection         string `json:"mongo_device_collection"`
@@ -76,7 +75,8 @@ type Config struct {
 	InitialGroupRights   map[string]map[string]string `json:"initial_group_rights"`
 	RunStartupMigrations bool                         `json:"run_startup_migrations"`
 
-	LocalIdUniqueForOwner bool `json:"local_id_unique_for_owner"`
+	LocalIdUniqueForOwner        bool `json:"local_id_unique_for_owner"`
+	GenerateDeviceGroupForDevice bool `json:"generate_device_group_for_device"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {

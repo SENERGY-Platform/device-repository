@@ -25,6 +25,9 @@ import (
 )
 
 func (this *Controller) CreateGeneratedDeviceGroup(device models.Device) (err error) {
+	if !this.config.GenerateDeviceGroupForDevice {
+		return nil
+	}
 	virtualDgId := this.DeviceIdToGeneratedDeviceGroupId(device.Id)
 	dg := models.DeviceGroup{
 		Id:                    virtualDgId,

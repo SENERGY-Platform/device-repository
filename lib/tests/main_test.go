@@ -86,7 +86,6 @@ func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf 
 		return conf, err
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 	conf, err = docker.NewEnv(ctx, wg, conf)
 	if err != nil {
@@ -110,7 +109,6 @@ func createMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 		return
 	}
 	conf.FatalErrHandler = t.Fatal
-	conf.MongoReplSet = false
 	conf.Debug = true
 	conf.DisableKafkaConsumer = true
 
