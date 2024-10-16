@@ -75,8 +75,8 @@ type Config struct {
 	InitialGroupRights   map[string]map[string]string `json:"initial_group_rights"`
 	RunStartupMigrations bool                         `json:"run_startup_migrations"`
 
-	LocalIdUniqueForOwner        bool `json:"local_id_unique_for_owner"`
-	GenerateDeviceGroupForDevice bool `json:"generate_device_group_for_device"`
+	LocalIdUniqueForOwner               bool `json:"local_id_unique_for_owner"`
+	SkipDeviceGroupGenerationFromDevice bool `json:"skip_device_group_generation_from_device"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {

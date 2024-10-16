@@ -39,7 +39,7 @@
     "http_client_timeout": "30s",
     "device_service_group_selection_allow_not_found": true,
     "allow_none_leaf_aspect_nodes_in_device_types_default": true,
-    "generate_device_group_for_device": true,
+    "skip_device_group_generation_from_device": false,
 
     "run_startup_migrations": true,
 
