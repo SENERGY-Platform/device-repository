@@ -99,7 +99,7 @@ func (this *DeviceGroupEndpoints) List(config config.Config, router *http.ServeM
 		}
 
 		if request.URL.Query().Has("ignore-generated") {
-			deviceGroupListOptions.IgnoreGenerated, err = strconv.ParseBool(request.URL.Query().Get("ignore_generated"))
+			deviceGroupListOptions.IgnoreGenerated, err = strconv.ParseBool(request.URL.Query().Get("ignore-generated"))
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				return
