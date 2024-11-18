@@ -33,6 +33,15 @@ type DeviceListOptions struct {
 	AttributeValues []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
 }
 
+type LocationListOptions struct {
+	Ids        []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	Search     string
+	Limit      int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset     int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy     string                //default name.asc
+	Permission models.PermissionFlag //defaults to read
+}
+
 type ExtendedDeviceListOptions struct {
 	Ids             []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
 	LocalIds        []string                //filter; in combination with owner; fills ids filter; comma-seperated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;

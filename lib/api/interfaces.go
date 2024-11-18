@@ -96,5 +96,6 @@ type Controller interface {
 
 	GetLocation(id string, token string) (location models.Location, err error, errCode int)
 	ValidateLocation(location models.Location) (err error, code int)
+	ListLocations(token string, options model.LocationListOptions) (result []models.Location, total int64, err error, errCode int)
 	GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int)
 }

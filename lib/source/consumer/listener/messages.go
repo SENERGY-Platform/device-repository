@@ -95,8 +95,9 @@ type FunctionCommand struct {
 }
 
 type LocationCommand struct {
-	Command  string          `json:"command"`
-	Id       string          `json:"id"`
-	Owner    string          `json:"owner"`
-	Location models.Location `json:"location"`
+	Command  string                `json:"command"`
+	Id       string                `json:"id"`
+	Owner    string                `json:"owner"`
+	Location models.Location       `json:"location"`
+	Rights   *model.ResourceRights `json:"rights,omitempty"`
 }

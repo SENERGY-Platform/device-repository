@@ -6,6 +6,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sort"
@@ -54,7 +55,7 @@ func testProduceLocation(producer *producer.Producer, location models.Location) 
 
 func testLocationRead(con *controller.Controller, id string, expectedLocation *models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err, code := con.GetLocation(id, "")
+		result, err, code := con.GetLocation(id, testenv.AdminToken)
 		if err != nil {
 			if expectedLocation != nil {
 				t.Error(code, err)

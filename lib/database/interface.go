@@ -110,6 +110,7 @@ type Database interface {
 	SetLocation(ctx context.Context, location models.Location) error
 	RemoveLocation(ctx context.Context, id string) error
 	GetLocation(ctx context.Context, id string) (result models.Location, exists bool, err error)
+	ListLocations(ctx context.Context, options model.LocationListOptions) ([]models.Location, int64, error)
 
 	AspectIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 	FunctionIsUsed(ctx context.Context, id string) (result bool, where []string, err error)

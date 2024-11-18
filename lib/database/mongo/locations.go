@@ -18,25 +18,22 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
+	"strings"
 )
 
-const locationIdFieldName = "Id"
-
-var locationIdKey string
+var LocationBson = getBsonFieldObject[models.Location]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		locationIdKey, err = getBsonFieldName(models.Location{}, locationIdFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoLocationCollection)
-		err = db.ensureIndex(collection, "locationidindex", locationIdKey, true, true)
+		err = db.ensureIndex(collection, "locationidindex", LocationBson.Id, true, true)
 		if err != nil {
 			return err
 		}
@@ -49,7 +46,7 @@ func (this *Mongo) locationCollection() *mongo.Collection {
 }
 
 func (this *Mongo) GetLocation(ctx context.Context, id string) (location models.Location, exists bool, err error) {
-	result := this.locationCollection().FindOne(ctx, bson.M{locationIdKey: id})
+	result := this.locationCollection().FindOne(ctx, bson.M{LocationBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return location, false, nil
@@ -65,11 +62,62 @@ func (this *Mongo) GetLocation(ctx context.Context, id string) (location models.
 }
 
 func (this *Mongo) SetLocation(ctx context.Context, location models.Location) error {
-	_, err := this.locationCollection().ReplaceOne(ctx, bson.M{locationIdKey: location.Id}, location, options.Replace().SetUpsert(true))
+	_, err := this.locationCollection().ReplaceOne(ctx, bson.M{LocationBson.Id: location.Id}, location, options.Replace().SetUpsert(true))
 	return err
 }
 
 func (this *Mongo) RemoveLocation(ctx context.Context, id string) error {
-	_, err := this.locationCollection().DeleteOne(ctx, bson.M{locationIdKey: id})
+	_, err := this.locationCollection().DeleteOne(ctx, bson.M{LocationBson.Id: id})
 	return err
+}
+
+func (this *Mongo) ListLocations(ctx context.Context, listOptions model.LocationListOptions) (result []models.Location, total int64, err error) {
+	opt := options.Find()
+	if listOptions.Limit > 0 {
+		opt.SetLimit(listOptions.Limit)
+	}
+	if listOptions.Offset > 0 {
+		opt.SetSkip(listOptions.Offset)
+	}
+
+	if listOptions.SortBy == "" {
+		listOptions.SortBy = LocationBson.Name + ".asc"
+	}
+
+	sortby := listOptions.SortBy
+	sortby = strings.TrimSuffix(sortby, ".asc")
+	sortby = strings.TrimSuffix(sortby, ".desc")
+
+	direction := int32(1)
+	if strings.HasSuffix(listOptions.SortBy, ".desc") {
+		direction = int32(-1)
+	}
+	opt.SetSort(bson.D{{sortby, direction}})
+
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[LocationBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		escapedSearch := regexp.QuoteMeta(search)
+		filter["$or"] = []interface{}{
+			bson.M{LocationBson.Name: bson.M{"$regex": escapedSearch, "$options": "i"}},
+			bson.M{LocationBson.Description: bson.M{"$regex": escapedSearch, "$options": "i"}},
+		}
+	}
+
+	cursor, err := this.locationCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return result, total, err
+	}
+	result, err, _ = readCursorResult[models.Location](ctx, cursor)
+	if err != nil {
+		return result, total, err
+	}
+	total, err = this.locationCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return result, total, err
+	}
+	return result, total, err
 }

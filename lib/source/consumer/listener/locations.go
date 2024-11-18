@@ -52,7 +52,7 @@ func LocationsListenerFactory(config config.Config, control Controller) (topic s
 		case "DELETE":
 			return control.DeleteLocation(command.Id)
 		case "RIGHTS":
-			return nil
+			return control.SetRights(config.LocationTopic, command.Id, *command.Rights)
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, nil

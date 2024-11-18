@@ -184,11 +184,14 @@ func (this *Mongo) getRights(kind Kind, id string) (rights RightsEntry, err erro
 }
 
 func (this *Mongo) CheckBool(token string, topic string, id string, action model.AuthAction) (allowed bool, err error) {
-	kind, err := this.getInternalKind(topic)
+	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return false, err
 	}
-	jwtToken, err := jwt.Parse(token)
+	if jwtToken.IsAdmin() {
+		return true, nil
+	}
+	kind, err := this.getInternalKind(topic)
 	if err != nil {
 		return false, err
 	}
@@ -530,6 +533,8 @@ func (this *Mongo) getInternalKind(topic string) (Kind, error) {
 		return "device-groups", nil
 	case this.config.HubTopic:
 		return "hubs", nil
+	case this.config.LocationTopic:
+		return "locations", nil
 	}
 	return "", errors.New("unknown topic to rights entry kind mapping: " + topic)
 }

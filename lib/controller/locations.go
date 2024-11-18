@@ -21,12 +21,17 @@ import (
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
 func (this *Controller) SetLocation(location models.Location, owner string) error {
+	err := this.EnsureInitialRights(this.config.LocationTopic, location.Id, owner)
+	if err != nil {
+		return err
+	}
 	ctx, _ := getTimeoutContext()
 	return this.db.SetLocation(ctx, location)
 }
@@ -37,6 +42,13 @@ func (this *Controller) DeleteLocation(id string) error {
 }
 
 func (this *Controller) GetLocation(id string, token string) (result models.Location, err error, code int) {
+	ok, err := this.db.CheckBool(token, this.config.LocationTopic, id, model.READ)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !ok {
+		return result, errors.New("access denied"), http.StatusForbidden
+	}
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetLocation(ctx, id)
 	if err != nil {
@@ -74,4 +86,51 @@ func (this *Controller) ValidateLocation(location models.Location) (err error, c
 		}
 	}
 	return nil, http.StatusOK
+}
+
+func (this *Controller) ListLocations(token string, options model.LocationListOptions) (result []models.Location, total int64, err error, errCode int) {
+	ids := []string{}
+	permissionFlag := options.Permission
+	if permissionFlag == models.UnsetPermissionFlag {
+		permissionFlag = models.Read
+	}
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, total, err, http.StatusBadRequest
+	}
+
+	if options.Ids == nil {
+		if jwtToken.IsAdmin() {
+			ids = nil //no auth check for admins -> no id filter
+		} else {
+			ids, err = this.db.ListAccessibleResourceIds(token, this.config.LocationTopic, 0, 0, permissionFlag)
+			if err != nil {
+				return result, total, err, http.StatusInternalServerError
+			}
+			if len(ids) == 0 {
+				ids = []string{}
+			}
+		}
+	} else {
+		options.Limit = 0
+		options.Offset = 0
+		idMap, err := this.db.CheckMultiple(token, this.config.LocationTopic, options.Ids, permissionFlag)
+		if err != nil {
+			return result, total, err, http.StatusInternalServerError
+		}
+		for id, ok := range idMap {
+			if ok {
+				ids = append(ids, id)
+			}
+		}
+	}
+	options.Ids = ids
+
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListLocations(ctx, options)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+
+	return result, total, nil, http.StatusOK
 }

@@ -111,6 +111,20 @@ func TestListDeviceGroups(t *testing.T) {
 		}
 	}
 
+	t.Run("other user may not access", func(t *testing.T) {
+		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort).ListDeviceGroups(SecondOwnerToken, client.DeviceGroupListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 0 {
+			t.Error("second owner should not get access", total)
+		}
+		if len(actual) != 0 {
+			t.Error("second owner should not get access", len(actual))
+		}
+	})
+
 	t.Run("limit 5 offset 5 sort name.asc", f(client.DeviceGroupListOptions{
 		Limit:  5,
 		Offset: 5,

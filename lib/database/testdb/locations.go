@@ -18,7 +18,11 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"regexp"
+	"slices"
+	"strings"
 )
 
 func (db *DB) SetLocation(_ context.Context, location models.Location) error {
@@ -29,4 +33,60 @@ func (db *DB) RemoveLocation(_ context.Context, id string) error {
 }
 func (db *DB) GetLocation(_ context.Context, id string) (result models.Location, exists bool, err error) {
 	return get(id, db.locations)
+}
+
+func (db *DB) ListLocations(ctx context.Context, options model.LocationListOptions) (locations []models.Location, total int64, err error) {
+	locations = []models.Location{}
+	var r *regexp.Regexp
+	if options.Search != "" {
+		r, err = regexp.Compile("(?i)" + regexp.QuoteMeta(options.Search))
+		if err != nil {
+			return nil, total, err
+		}
+
+	}
+	for _, location := range db.locations {
+		if options.Ids != nil && !slices.Contains(options.Ids, location.Id) {
+			continue
+		}
+		if options.Search != "" && r != nil {
+			if !r.MatchString(location.Name) {
+				continue
+			}
+		}
+		locations = append(locations, location)
+	}
+	if options.SortBy == "" {
+		options.SortBy = "name.asc"
+	}
+	sortby := options.SortBy
+	sortby = strings.TrimSuffix(sortby, ".asc")
+	sortby = strings.TrimSuffix(sortby, ".desc")
+
+	direction := 1
+	if strings.HasSuffix(options.SortBy, ".desc") {
+		direction = -1
+	}
+	slices.SortFunc(locations, func(a, b models.Location) int {
+		afield := a.Name
+		bfield := b.Name
+		if sortby == "id" {
+			afield = a.Id
+			bfield = b.Id
+		}
+		return strings.Compare(afield, bfield) * direction
+	})
+
+	total = int64(len(locations))
+	if options.Limit > 0 || options.Offset > 0 {
+		if options.Offset >= int64(len(locations)) {
+			return []models.Location{}, total, nil
+		}
+		if (options.Limit + options.Offset) >= int64(len(locations)) {
+			return locations[options.Offset:], total, nil
+		}
+		return locations[options.Offset : options.Limit+options.Offset], total, nil
+	}
+
+	return locations, total, nil
 }

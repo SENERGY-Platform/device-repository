@@ -1867,6 +1867,11 @@ paths:
         in: query
         name: connection-state
         type: integer
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
       produces:
       - application/json
       responses:
@@ -2384,6 +2389,65 @@ paths:
       tags:
       - validate
       - device-types
+  /locations:
+    get:
+      description: list location
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.Location'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list location
+      tags:
+      - list
+      - locations
+      - locations
   /locations/{id}:
     get:
       description: get location

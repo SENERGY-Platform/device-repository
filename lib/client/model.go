@@ -32,6 +32,7 @@ type HubListOptions = model.HubListOptions
 type DeviceTypeListOptions = model.DeviceTypeListOptions
 type DeviceGroupListOptions = model.DeviceGroupListOptions
 type FilterCriteria = model.FilterCriteria
+type LocationListOptions = model.LocationListOptions
 
 var Event = models.EVENT
 var Request = models.REQUEST

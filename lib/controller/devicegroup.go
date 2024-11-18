@@ -54,6 +54,9 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
+			if len(ids) == 0 {
+				ids = []string{}
+			}
 		}
 	} else {
 		options.Limit = 0
@@ -68,6 +71,7 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 			}
 		}
 	}
+	options.Ids = ids
 
 	ctx, _ := getTimeoutContext()
 	result, total, err = this.db.ListDeviceGroups(ctx, options)

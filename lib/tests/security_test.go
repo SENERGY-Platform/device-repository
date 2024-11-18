@@ -397,8 +397,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -616,8 +616,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -625,8 +625,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -644,8 +644,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -828,8 +828,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -837,8 +837,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -856,8 +856,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -1030,8 +1030,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -1039,8 +1039,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -1058,8 +1058,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -1254,8 +1254,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -1473,8 +1473,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -1482,8 +1482,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -1501,8 +1501,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -1685,8 +1685,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -1694,8 +1694,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -1713,8 +1713,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -1887,8 +1887,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -1896,8 +1896,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -1915,8 +1915,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -2084,8 +2084,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id2, model.READ)
@@ -2093,8 +2093,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -2102,8 +2102,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -2111,8 +2111,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -2330,8 +2330,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -2339,8 +2339,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -2358,8 +2358,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -2542,8 +2542,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -2551,8 +2551,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -2570,8 +2570,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -2744,8 +2744,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -2753,8 +2753,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -2772,8 +2772,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 		})
@@ -2994,8 +2994,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id3, model.READ)
@@ -3003,8 +3003,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.READ)
@@ -3012,8 +3012,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 
@@ -3093,8 +3093,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id2, model.WRITE)
@@ -3112,8 +3112,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id4, model.WRITE)
@@ -3121,8 +3121,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 
@@ -3203,8 +3203,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id2, model.EXECUTE)
@@ -3212,8 +3212,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 
@@ -3232,8 +3232,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 
@@ -3314,8 +3314,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 			allowed, err = checkBool(t, adminToken, topic, id2, model.ADMINISTRATE)
@@ -3323,8 +3323,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 
@@ -3333,8 +3333,8 @@ func TestSecurity(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if allowed {
-				t.Error("expected not allowed")
+			if !allowed {
+				t.Error("expected allowed")
 				return
 			}
 
