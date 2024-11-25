@@ -79,6 +79,7 @@ func (this *Mongo) ListAllDeviceClasses(ctx context.Context) (result []models.De
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceClass := models.DeviceClass{}
 		err = cursor.Decode(&deviceClass)
@@ -103,6 +104,7 @@ func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceClass := models.DeviceClass{}
 		err = cursor.Decode(&deviceClass)
