@@ -114,7 +114,8 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 		if !slices.ContainsFunc(deviceTypes, func(deviceType models.DeviceType) bool {
 			return deviceType.Id == device.DeviceTypeId
 		}) {
-			dt, exists, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
+			pureDtId, _ := idmodifier.SplitModifier(device.DeviceTypeId)
+			dt, exists, err := this.db.GetDeviceType(ctx, pureDtId)
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -295,7 +296,8 @@ func (this *Controller) ReadExtendedDevice(id string, token string, action model
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
 	ctx, _ := getTimeoutContext()
-	dt, _, _ := this.db.GetDeviceType(ctx, temp.DeviceTypeId)
+	pureDtId, _ := idmodifier.SplitModifier(temp.DeviceTypeId)
+	dt, _, _ := this.db.GetDeviceType(ctx, pureDtId)
 	result, err = this.extendDevice(token, temp, []models.DeviceType{dt}, fullDt)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -323,19 +325,28 @@ func (this *Controller) readDevice(id string) (result model.DeviceWithConnection
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) extendDevice(token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType, fullDt bool) (models.ExtendedDevice, error) {
-	dtIndex := slices.IndexFunc(deviceTypes, func(deviceType models.DeviceType) bool {
-		return deviceType.Id == device.DeviceTypeId
-	})
+func (this *Controller) extendDevice(token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType, fullDt bool) (result models.ExtendedDevice, err error) {
 	var dtp *models.DeviceType
 	deviceTypeName := ""
-	if dtIndex >= 0 {
-		dt := deviceTypes[dtIndex]
-		if fullDt {
-			dtp = &dt
+	for _, dt := range deviceTypes {
+		pure, modifier := idmodifier.SplitModifier(device.DeviceTypeId)
+		if dt.Id == pure {
+			selectedDt := dt
+			if len(modifier) > 0 {
+				selectedDt.Id = device.DeviceTypeId //modifyDeviceType() does not modify id
+				selectedDt, err, _ = this.modifyDeviceType(selectedDt, modifier)
+				if err != nil {
+					return models.ExtendedDevice{}, err
+				}
+			}
+			if fullDt {
+				dtp = &selectedDt
+			}
+			deviceTypeName = selectedDt.Name
+			break
 		}
-		deviceTypeName = dt.Name
 	}
+
 	requestingUser, permissions, err := this.db.GetPermissionsInfo(token, this.config.DeviceTopic, device.Id)
 	if err != nil {
 		return models.ExtendedDevice{}, err
@@ -343,7 +354,7 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 	return models.ExtendedDevice{
 		Device:          device.Device,
 		ConnectionState: device.ConnectionState,
-		DisplayName:     device.DisplayName,
+		DisplayName:     getDeviceDisplayName(device.Device),
 		DeviceTypeName:  deviceTypeName,
 		Shared:          requestingUser != device.OwnerId,
 		Permissions:     permissions,
@@ -386,7 +397,8 @@ func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId stri
 	if !ok {
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
-	dt, _, _ := this.db.GetDeviceType(ctx, device.DeviceTypeId)
+	pureDtId, _ := idmodifier.SplitModifier(device.DeviceTypeId)
+	dt, _, _ := this.db.GetDeviceType(ctx, pureDtId)
 	result, err = this.extendDevice(token, device, []models.DeviceType{dt}, fullDt)
 	if err != nil {
 		return result, err, http.StatusInternalServerError

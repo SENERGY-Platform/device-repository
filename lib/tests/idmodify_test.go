@@ -18,6 +18,7 @@ package tests
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
@@ -229,5 +230,77 @@ func TestModifiedDevice(t *testing.T) {
 
 	t.Run("testDeviceTypeRead", func(t *testing.T) {
 		testDeviceTypeRead(t, conf, dtModified, dtModifiedUnknown)
+	})
+
+	t.Run("extended modified device 1", func(t *testing.T) {
+		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort).ReadExtendedDevice(d1Modified.Id, userjwt, client.READ, true)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if actual.Name != d1Modified.Name {
+			t.Errorf("got %s, want %s", actual.Name, d1Modified.Name)
+			return
+		}
+		if actual.DeviceTypeId != d1Modified.DeviceTypeId {
+			t.Errorf("got %s, want %s", actual.DeviceTypeId, d1Modified.DeviceTypeId)
+			return
+		}
+		if actual.DisplayName != d1Modified.Name {
+			t.Errorf("got %s, want %s", actual.DisplayName, d1Modified.Name)
+			return
+		}
+		if actual.DeviceTypeName != dtModified.Name {
+			t.Errorf("got %s, want %s", actual.DeviceTypeName, dtModified.Name)
+			return
+		}
+		if actual.DeviceTypeId != d1Modified.DeviceTypeId {
+			t.Errorf("\na=%s\ne=%s", actual.DeviceTypeId, d1Modified.DeviceTypeId)
+			return
+		}
+		if actual.DeviceType.Id != d1Modified.DeviceTypeId {
+			t.Errorf("\na=%s\ne=%s", actual.DeviceType.Id, d1Modified.DeviceTypeId)
+			return
+		}
+		if actual.DeviceType.Id != dtModified.Id {
+			t.Errorf("\na=%s\ne=%s", actual.DeviceType.Id, dtModified.Id)
+			return
+		}
+		if actual.DeviceType.Name != dtModified.Name {
+			t.Errorf("got %s, want %s", actual.DeviceType.Name, dtModified.Name)
+			return
+		}
+	})
+
+	t.Run("extended modified device 2", func(t *testing.T) {
+		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort).ReadExtendedDevice(d2Modified.Id, userjwt, client.READ, true)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if actual.Name != d2Modified.Name {
+			t.Errorf("got %s, want %s", actual.Name, d2Modified.Name)
+			return
+		}
+		if actual.DeviceTypeId != d2Modified.DeviceTypeId {
+			t.Errorf("got %s, want %s", actual.DeviceTypeId, d2Modified.DeviceTypeId)
+			return
+		}
+		if actual.DisplayName != d2Modified.Attributes[0].Value {
+			t.Errorf("got %s, want %s", actual.DisplayName, d2Modified.Attributes[0].Value)
+			return
+		}
+		if actual.DeviceTypeName != dtModified.Name {
+			t.Errorf("got %s, want %s", actual.DeviceTypeName, dtModified.Name)
+			return
+		}
+		if actual.DeviceType.Id != d2Modified.DeviceTypeId {
+			t.Errorf("got %s, want %s", actual.DeviceTypeId, d2Modified.DeviceTypeId)
+			return
+		}
+		if actual.DeviceType.Name != dtModified.Name {
+			t.Errorf("got %s, want %s", actual.DeviceType.Name, dtModified.Name)
+			return
+		}
 	})
 }
