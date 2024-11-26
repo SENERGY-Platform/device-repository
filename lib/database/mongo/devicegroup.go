@@ -116,7 +116,7 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.Devic
 	if listOptions.Criteria != nil {
 		criteriaFilter := []bson.M{}
 		for _, c := range listOptions.Criteria {
-			if c.Interaction == models.EVENT_AND_REQUEST || c.Interaction == "" {
+			if c.Interaction == "" {
 				criteriaFilter = append(criteriaFilter, bson.M{"$or": []bson.M{
 					{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
 						Interaction:   models.REQUEST,
@@ -130,7 +130,25 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.Devic
 						AspectId:      c.AspectId,
 						DeviceClassId: c.DeviceClassId,
 					}.Short()},
+					{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
+						FunctionId:    c.FunctionId,
+						AspectId:      c.AspectId,
+						DeviceClassId: c.DeviceClassId,
+					}.Short()},
 				}})
+			} else if c.Interaction == models.EVENT_AND_REQUEST {
+				criteriaFilter = append(criteriaFilter, bson.M{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
+					Interaction:   models.REQUEST,
+					FunctionId:    c.FunctionId,
+					AspectId:      c.AspectId,
+					DeviceClassId: c.DeviceClassId,
+				}.Short()})
+				criteriaFilter = append(criteriaFilter, bson.M{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
+					Interaction:   models.EVENT,
+					FunctionId:    c.FunctionId,
+					AspectId:      c.AspectId,
+					DeviceClassId: c.DeviceClassId,
+				}.Short()})
 			} else {
 				criteriaFilter = append(criteriaFilter, bson.M{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
 					Interaction:   c.Interaction,

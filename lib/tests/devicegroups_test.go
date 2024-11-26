@@ -180,7 +180,7 @@ func TestListDeviceGroups(t *testing.T) {
 		},
 	}, 3, rollosFenster))
 
-	t.Run("criteria event and request", f(client.DeviceGroupListOptions{
+	t.Run("criteria event or request", f(client.DeviceGroupListOptions{
 		SortBy: "name.asc",
 		Criteria: []client.FilterCriteria{
 			{
@@ -189,7 +189,6 @@ func TestListDeviceGroups(t *testing.T) {
 				AspectId:    "urn:infai:ses:aspect:191929d8-f9df-4bcb-8c43-ccd22e06817b",
 			},
 			{
-				Interaction:   client.EventAndRequest,
 				FunctionId:    "urn:infai:ses:controlling-function:73b66ece-d4a6-41c1-b94d-9c8e41f013b2",
 				DeviceClassId: "urn:infai:ses:device-class:e8886926-ef3a-456c-a0f2-0373effb5e43",
 			},
