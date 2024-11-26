@@ -116,9 +116,6 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 	if options.IgnoreUnmodified {
 		query.Set("ignore-unmodified", strconv.FormatBool(options.IgnoreUnmodified))
 	}
-	if len(query) > 0 {
-		queryString = "?" + query.Encode()
-	}
 	if len(options.Criteria) > 0 {
 		filterStr, err := json.Marshal(options.Criteria)
 		if err != nil {
@@ -126,7 +123,10 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 		}
 		query.Add("criteria", string(filterStr))
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v3/device-types?"+queryString, nil)
+	if len(query) > 0 {
+		queryString = "?" + query.Encode()
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v3/device-types"+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
