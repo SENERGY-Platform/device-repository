@@ -136,6 +136,13 @@ func (this *Mongo) ListHubs(ctx context.Context, listOptions model.HubListOption
 		filter[HubBson.ConnectionState] = listOptions.ConnectionState
 	}
 
+	if listOptions.LocalDeviceId != "" {
+		filter[HubBson.DeviceLocalIds[0]] = listOptions.LocalDeviceId
+	}
+	if listOptions.OwnerId != "" {
+		filter[HubBson.OwnerId] = listOptions.OwnerId
+	}
+
 	cursor, err := this.hubCollection().Find(ctx, filter, opt)
 	if err != nil {
 		return result, total, err

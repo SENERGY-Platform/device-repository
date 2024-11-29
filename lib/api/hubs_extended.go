@@ -130,6 +130,9 @@ func (this *ExtendedHubEndpoints) List(config config.Config, router *http.ServeM
 			}
 		}
 
+		hubListOptions.LocalDeviceId = request.URL.Query().Get("local-device-id")
+		hubListOptions.OwnerId = request.URL.Query().Get("owner")
+
 		hubListOptions.Search = request.URL.Query().Get("search")
 		hubListOptions.SortBy = request.URL.Query().Get("sort")
 		if hubListOptions.SortBy == "" {

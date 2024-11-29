@@ -66,6 +66,12 @@ func (c *Client) ListHubs(token string, options model.HubListOptions) (result []
 	if options.Offset != 0 {
 		query.Set("offset", strconv.FormatInt(options.Offset, 10))
 	}
+	if options.LocalDeviceId != "" {
+		query.Set("local-device-id", options.LocalDeviceId)
+	}
+	if options.OwnerId != "" {
+		query.Set("owner", options.OwnerId)
+	}
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}

@@ -25,7 +25,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -158,7 +157,7 @@ func testHubRead(t *testing.T, conf config.Config, expectedHubs ...models.Hub) {
 			return
 		}
 		if resp.StatusCode != http.StatusOK {
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 			return
 		}
@@ -189,7 +188,7 @@ func testHubDeviceRead(t *testing.T, conf config.Config, hub models.Hub, expecte
 			return result, err
 		}
 		if resp.StatusCode != http.StatusOK {
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 			return result, errors.New(fmt.Sprint("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b)))
 		}

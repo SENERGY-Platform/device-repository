@@ -341,6 +341,36 @@ func TestConnectionStateHandling(t *testing.T) {
 			}
 		})
 		t.Run("check extended hub list", func(t *testing.T) {
+			t.Run("filter hub by device local id", func(t *testing.T) {
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{LocalDeviceId: d1.LocalId})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
+					return
+				}
+				expected := []models.ExtendedHub{hx1}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
+			t.Run("filter hub by device local id and owner", func(t *testing.T) {
+				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{LocalDeviceId: d3.LocalId, OwnerId: d3.OwnerId})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if total != 1 {
+					t.Error(total)
+					return
+				}
+				expected := []models.ExtendedHub{hx3}
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("%#v\n", result)
+				}
+			})
 			t.Run("list all", func(t *testing.T) {
 				result, total, err, _ := c.ListExtendedHubs(userjwt, client.HubListOptions{})
 				if err != nil {

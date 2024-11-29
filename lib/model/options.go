@@ -81,6 +81,8 @@ type HubListOptions struct {
 	Offset          int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
 	SortBy          string                //default name.asc
 	Permission      models.PermissionFlag //defaults to read
+	LocalDeviceId   string                //filter; list hubs if they contain the device-id
+	OwnerId         string                //only used in combination with LocalDeviceId; defaults to requesting user
 }
 
 type DeviceTypeListOptions struct {

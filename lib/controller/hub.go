@@ -66,6 +66,11 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 		}
 	}
 	options.Ids = ids
+
+	if options.LocalDeviceId != "" && options.OwnerId == "" {
+		options.OwnerId = jwtToken.GetUserId()
+	}
+
 	ctx, _ := getTimeoutContext()
 	hubs, _, err := this.db.ListHubs(ctx, options, false)
 	if err != nil {
@@ -111,6 +116,11 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 		}
 	}
 	options.Ids = ids
+
+	if options.LocalDeviceId != "" && options.OwnerId == "" {
+		options.OwnerId = jwtToken.GetUserId()
+	}
+
 	ctx, _ := getTimeoutContext()
 	hubs, total, err := this.db.ListHubs(ctx, options, true)
 	if err != nil {
