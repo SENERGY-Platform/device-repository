@@ -46,3 +46,5 @@ var ConnectionStateOffline = &connectionStateOffline
 
 var connectionStateUnknown = models.ConnectionStateUnknown
 var ConnectionStateUnknown = &connectionStateUnknown
+
+type DeviceWithConnectionState = model.DeviceWithConnectionState
