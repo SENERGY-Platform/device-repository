@@ -109,7 +109,7 @@ func (this *LocationEndpoints) Validate(config config.Config, router *http.Serve
 // List godoc
 // @Summary      list location
 // @Description  list location
-// @Tags         list, locations, locations
+// @Tags         list, locations
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
