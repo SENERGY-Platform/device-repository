@@ -35,6 +35,15 @@ func (this *Controller) DeleteFunction(id string) error {
 	return this.db.RemoveFunction(ctx, id)
 }
 
+func (this *Controller) ListFunctions(options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListFunctions(ctx, options)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
+}
+
 func (this *Controller) GetFunctionsByType(rdfType string) (result []models.Function, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()

@@ -18,7 +18,10 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"slices"
+	"strings"
 )
 
 func (db *DB) SetFunction(_ context.Context, function models.Function) error {
@@ -30,6 +33,18 @@ func (db *DB) GetFunction(_ context.Context, id string) (result models.Function,
 func (db *DB) RemoveFunction(_ context.Context, id string) error {
 	return del(id, db.functions)
 }
+
+func (db *DB) ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error) {
+	for _, f := range db.functions {
+		if (options.RdfType == "" || f.RdfType == options.RdfType) &&
+			(options.Search == "" || strings.Contains(strings.ToLower(f.Name), strings.ToLower(options.Search))) &&
+			(options.Ids == nil || slices.Contains(options.Ids, f.Id)) {
+			result = append(result, f)
+		}
+	}
+	return
+}
+
 func (db *DB) ListAllFunctionsByType(_ context.Context, rdfType string) (result []models.Function, err error) {
 	for _, f := range db.functions {
 		if f.RdfType == rdfType {

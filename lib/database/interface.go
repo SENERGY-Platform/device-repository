@@ -99,6 +99,7 @@ type Database interface {
 	ListAllDeviceClassesUsedWithControllingFunctions(ctx context.Context) ([]models.DeviceClass, error) //returns all device-classes used in combination with controlling functions
 	GetDeviceClass(ctx context.Context, id string) (result models.DeviceClass, exists bool, err error)
 
+	ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error)
 	SetFunction(ctx context.Context, function models.Function) error
 	GetFunction(ctx context.Context, id string) (result models.Function, exists bool, err error)
 	RemoveFunction(ctx context.Context, id string) error

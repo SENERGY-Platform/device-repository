@@ -18,45 +18,30 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
+	"strings"
 )
 
-const functionIdFieldName = "Id"
-const functionRdfTypeFieldName = "RdfType"
-const functionConceptFieldName = "ConceptId"
-
-var functionIdKey string
-var functionRdfTypeKey string
-var functionConceptKey string
+var FunctionBson = getBsonFieldObject[models.Function]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		functionIdKey, err = getBsonFieldName(models.Function{}, functionIdFieldName)
-		if err != nil {
-			return err
-		}
-		functionRdfTypeKey, err = getBsonFieldName(models.Function{}, functionRdfTypeFieldName)
-		if err != nil {
-			return err
-		}
-		functionConceptKey, err = getBsonFieldName(models.Function{}, functionConceptFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoFunctionCollection)
-		err = db.ensureIndex(collection, "functionidindex", functionIdKey, true, true)
+		err = db.ensureIndex(collection, "functionidindex", FunctionBson.Id, true, true)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "functionrdftypeindex", functionRdfTypeKey, true, false)
+		err = db.ensureIndex(collection, "functionrdftypeindex", FunctionBson.RdfType, true, false)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "functionconceptindex", functionConceptKey, true, false)
+		err = db.ensureIndex(collection, "functionconceptindex", FunctionBson.ConceptId, true, false)
 		if err != nil {
 			return err
 		}
@@ -68,8 +53,61 @@ func (this *Mongo) functionCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoFunctionCollection)
 }
 
+func (this *Mongo) ListFunctions(ctx context.Context, listOptions model.FunctionListOptions) (result []models.Function, total int64, err error) {
+	opt := options.Find()
+	opt.SetLimit(listOptions.Limit)
+	opt.SetSkip(listOptions.Offset)
+
+	parts := strings.Split(listOptions.SortBy, ".")
+	sortby := FunctionBson.Id
+	switch parts[0] {
+	case "id":
+		sortby = FunctionBson.Id
+	case "name":
+		sortby = FunctionBson.Name
+	default:
+		sortby = FunctionBson.Id
+	}
+	direction := int32(1)
+	if len(parts) > 1 && parts[1] == "desc" {
+		direction = int32(-1)
+	}
+	opt.SetSort(bson.D{{sortby, direction}})
+
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[FunctionBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	if listOptions.RdfType != "" {
+		filter[FunctionBson.RdfType] = listOptions.RdfType
+	}
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		escapedSearch := regexp.QuoteMeta(search)
+		filter["$or"] = []interface{}{
+			bson.M{FunctionBson.Name: bson.M{"$regex": escapedSearch, "$options": "i"}},
+			bson.M{FunctionBson.DisplayName: bson.M{"$regex": escapedSearch, "$options": "i"}},
+			bson.M{FunctionBson.Description: bson.M{"$regex": escapedSearch, "$options": "i"}},
+		}
+	}
+
+	cursor, err := this.functionCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return nil, 0, err
+	}
+	err = cursor.All(ctx, &result)
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err = this.functionCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, total, nil
+}
+
 func (this *Mongo) GetFunction(ctx context.Context, id string) (function models.Function, exists bool, err error) {
-	result := this.functionCollection().FindOne(ctx, bson.M{functionIdKey: id})
+	result := this.functionCollection().FindOne(ctx, bson.M{FunctionBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return function, false, nil
@@ -85,17 +123,17 @@ func (this *Mongo) GetFunction(ctx context.Context, id string) (function models.
 }
 
 func (this *Mongo) SetFunction(ctx context.Context, function models.Function) error {
-	_, err := this.functionCollection().ReplaceOne(ctx, bson.M{functionIdKey: function.Id}, function, options.Replace().SetUpsert(true))
+	_, err := this.functionCollection().ReplaceOne(ctx, bson.M{FunctionBson.Id: function.Id}, function, options.Replace().SetUpsert(true))
 	return err
 }
 
 func (this *Mongo) RemoveFunction(ctx context.Context, id string) error {
-	_, err := this.functionCollection().DeleteOne(ctx, bson.M{functionIdKey: id})
+	_, err := this.functionCollection().DeleteOne(ctx, bson.M{FunctionBson.Id: id})
 	return err
 }
 
 func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (result []models.Function, err error) {
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionRdfTypeKey: rdfType}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{FunctionBson.RdfType: rdfType}, options.Find().SetSort(bson.D{{FunctionBson.Id, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +180,7 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{FunctionBson.Id: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{FunctionBson.Id, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +206,7 @@ func (this *Mongo) ListAllFunctionsByDeviceClass(ctx context.Context, class stri
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{FunctionBson.Id: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{FunctionBson.Id, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +233,7 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.functionCollection().Find(ctx, bson.M{functionIdKey: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{functionIdKey, 1}}))
+	cursor, err := this.functionCollection().Find(ctx, bson.M{FunctionBson.Id: bson.M{"$in": functionIds}}, options.Find().SetSort(bson.D{{FunctionBson.Id, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +253,7 @@ func (this *Mongo) ListAllControllingFunctionsByDeviceClass(ctx context.Context,
 
 func (this *Mongo) ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
-		functionConceptKey: id,
+		FunctionBson.ConceptId: id,
 	}
 	temp := this.functionCollection().FindOne(ctx, filter)
 	err = temp.Err()

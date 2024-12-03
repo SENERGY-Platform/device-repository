@@ -52,6 +52,68 @@ func TestFunction(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	t.Run("testReadControllingFunction", testReadControllingFunction(ctrl))
 	t.Run("testReadMeasuringFunction", testReadMeasuringFunction(ctrl))
+	t.Run("list functions", func(t *testing.T) {
+		t.Run("list all", func(t *testing.T) {
+			_, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if total != 6 {
+				t.Error(total)
+				return
+			}
+		})
+		t.Run("find humidity", func(t *testing.T) {
+			list, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{Search: "humidity"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if total != 1 {
+				t.Error(total)
+				return
+			}
+			if list[0].Id != "urn:infai:ses:measuring-function:467" {
+				t.Error(list[0].Id)
+				return
+			}
+		})
+		t.Run("list controlling", func(t *testing.T) {
+			list, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if total != 3 {
+				t.Error(total)
+				return
+			}
+			for _, function := range list {
+				if function.RdfType != model.SES_ONTOLOGY_CONTROLLING_FUNCTION {
+					t.Error(function)
+					return
+				}
+			}
+		})
+		t.Run("list measuring", func(t *testing.T) {
+			list, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if total != 3 {
+				t.Error(total)
+				return
+			}
+			for _, function := range list {
+				if function.RdfType != model.SES_ONTOLOGY_MEASURING_FUNCTION {
+					t.Error(function)
+					return
+				}
+			}
+		})
+	})
 	t.Run("testFunctionDelete", testFunctionDelete(prod))
 }
 

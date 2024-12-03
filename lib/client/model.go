@@ -33,6 +33,10 @@ type DeviceTypeListOptions = model.DeviceTypeListOptions
 type DeviceGroupListOptions = model.DeviceGroupListOptions
 type FilterCriteria = model.FilterCriteria
 type LocationListOptions = model.LocationListOptions
+type FunctionListOptions = model.FunctionListOptions
+
+const SES_ONTOLOGY_CONTROLLING_FUNCTION = model.SES_ONTOLOGY_CONTROLLING_FUNCTION
+const SES_ONTOLOGY_MEASURING_FUNCTION = model.SES_ONTOLOGY_MEASURING_FUNCTION
 
 var Event = models.EVENT
 var Request = models.REQUEST

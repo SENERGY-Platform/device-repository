@@ -89,6 +89,7 @@ type Controller interface {
 	ValidateDeviceClass(deviceclass models.DeviceClass) (err error, code int)
 	ValidateDeviceClassDelete(id string) (err error, code int)
 
+	ListFunctions(options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int)
 	GetFunctionsByType(rdfType string) (result []models.Function, err error, errCode int)
 	GetFunction(id string) (result models.Function, err error, errCode int)
 	ValidateFunction(function models.Function) (err error, code int)
