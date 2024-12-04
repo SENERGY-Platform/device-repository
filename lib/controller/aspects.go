@@ -120,6 +120,15 @@ func (this *Controller) GetAspects() (result []models.Aspect, err error, code in
 	return
 }
 
+func (this *Controller) ListAspects(listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListAspects(ctx, listOptions)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
+}
+
 func (this *Controller) GetAspect(id string) (result models.Aspect, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	result, exists, err := this.db.GetAspect(ctx, id)

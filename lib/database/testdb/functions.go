@@ -42,7 +42,12 @@ func (db *DB) ListFunctions(ctx context.Context, options model.FunctionListOptio
 			result = append(result, f)
 		}
 	}
-	return
+	limit := options.Limit
+	offset := options.Offset
+	if offset >= int64(len(result)) {
+		return []models.Function{}, int64(len(result)), nil
+	}
+	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
 }
 
 func (db *DB) ListAllFunctionsByType(_ context.Context, rdfType string) (result []models.Function, err error) {

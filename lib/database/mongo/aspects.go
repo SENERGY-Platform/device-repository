@@ -18,25 +18,22 @@ package mongo
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
+	"strings"
 )
 
-const aspectIdFieldName = "Id"
-
-var aspectIdKey string
+var AspectBson = getBsonFieldObject[models.Aspect]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		aspectIdKey, err = getBsonFieldName(models.Aspect{}, aspectIdFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoAspectCollection)
-		err = db.ensureIndex(collection, "aspectidindex", aspectIdKey, true, true)
+		err = db.ensureIndex(collection, "aspectidindex", AspectBson.Id, true, true)
 		if err != nil {
 			return err
 		}
@@ -48,8 +45,54 @@ func (this *Mongo) aspectCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoAspectCollection)
 }
 
+func (this *Mongo) ListAspects(ctx context.Context, listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error) {
+	opt := options.Find()
+	opt.SetLimit(listOptions.Limit)
+	opt.SetSkip(listOptions.Offset)
+
+	parts := strings.Split(listOptions.SortBy, ".")
+	sortby := AspectBson.Id
+	switch parts[0] {
+	case "id":
+		sortby = AspectBson.Id
+	case "name":
+		sortby = AspectBson.Name
+	default:
+		sortby = AspectBson.Id
+	}
+	direction := int32(1)
+	if len(parts) > 1 && parts[1] == "desc" {
+		direction = int32(-1)
+	}
+	opt.SetSort(bson.D{{sortby, direction}})
+
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[AspectBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		escapedSearch := regexp.QuoteMeta(search)
+		filter[AspectBson.Name] = bson.M{"$regex": escapedSearch, "$options": "i"}
+	}
+
+	cursor, err := this.aspectCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return nil, 0, err
+	}
+	err = cursor.All(ctx, &result)
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err = this.aspectCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, total, nil
+}
+
 func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect models.Aspect, exists bool, err error) {
-	result := this.aspectCollection().FindOne(ctx, bson.M{aspectIdKey: id})
+	result := this.aspectCollection().FindOne(ctx, bson.M{AspectBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return aspect, false, nil
@@ -65,17 +108,17 @@ func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect models.Aspe
 }
 
 func (this *Mongo) SetAspect(ctx context.Context, aspect models.Aspect) error {
-	_, err := this.aspectCollection().ReplaceOne(ctx, bson.M{aspectIdKey: aspect.Id}, aspect, options.Replace().SetUpsert(true))
+	_, err := this.aspectCollection().ReplaceOne(ctx, bson.M{AspectBson.Id: aspect.Id}, aspect, options.Replace().SetUpsert(true))
 	return err
 }
 
 func (this *Mongo) RemoveAspect(ctx context.Context, id string) error {
-	_, err := this.aspectCollection().DeleteOne(ctx, bson.M{aspectIdKey: id})
+	_, err := this.aspectCollection().DeleteOne(ctx, bson.M{AspectBson.Id: id})
 	return err
 }
 
 func (this *Mongo) ListAllAspects(ctx context.Context) (result []models.Aspect, err error) {
-	cursor, err := this.aspectCollection().Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{aspectIdKey, 1}}))
+	cursor, err := this.aspectCollection().Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +148,7 @@ func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancesto
 	var cursor *mongo.Cursor
 	if ancestors || descendants {
 		or := bson.A{
-			bson.D{{aspectNodeIdKey, bson.M{"$in": aspectIds}}},
+			bson.D{{AspectNodeBson.Id, bson.M{"$in": aspectIds}}},
 		}
 		if ancestors {
 			or = append(or, bson.D{{aspectNodeAncestorIdsKey, bson.M{"$in": aspectIds}}})
@@ -113,16 +156,16 @@ func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancesto
 		if descendants {
 			or = append(or, bson.D{{aspectNodeDescendentIdsKey, bson.M{"$in": aspectIds}}})
 		}
-		rootIds, err := this.aspectNodeCollection().Distinct(ctx, aspectNodeRootIdKey, bson.D{{"$or", or}})
+		rootIds, err := this.aspectNodeCollection().Distinct(ctx, AspectNodeBson.RootId, bson.D{{"$or", or}})
 		if err != nil {
 			return nil, err
 		}
-		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": rootIds}}, options.Find().SetSort(bson.D{{aspectIdKey, 1}}))
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{AspectBson.Id: bson.M{"$in": rootIds}}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		cursor, err = this.aspectCollection().Find(ctx, bson.M{aspectIdKey: bson.M{"$in": aspectIds}}, options.Find().SetSort(bson.D{{aspectIdKey, 1}}))
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{AspectBson.Id: bson.M{"$in": aspectIds}}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
 		if err != nil {
 			return nil, err
 		}

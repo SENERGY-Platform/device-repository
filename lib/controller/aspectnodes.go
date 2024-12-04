@@ -19,6 +19,7 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )
@@ -55,6 +56,15 @@ func CreateAspectNodes(db database.Database, aspect models.Aspect, rootId string
 		DescendentIds: descendents,
 	})
 	return append(descendents, aspect.Id), err
+}
+
+func (this *Controller) ListAspectNodes(listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListAspectNodes(ctx, listOptions)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
 }
 
 func (this *Controller) GetAspectNode(id string) (result models.AspectNode, err error, code int) {

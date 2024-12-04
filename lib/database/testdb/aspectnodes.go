@@ -18,9 +18,27 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"golang.org/x/exp/maps"
+	"slices"
+	"strings"
 )
+
+func (db *DB) ListAspectNodes(ctx context.Context, options model.AspectListOptions) (result []models.AspectNode, total int64, err error) {
+	for _, aspectNode := range db.aspectNodes {
+		if (options.Search == "" || strings.Contains(strings.ToLower(aspectNode.Name), strings.ToLower(options.Search))) &&
+			(options.Ids == nil || slices.Contains(options.Ids, aspectNode.Id)) {
+			result = append(result, aspectNode)
+		}
+	}
+	limit := options.Limit
+	offset := options.Offset
+	if offset >= int64(len(result)) {
+		return []models.AspectNode{}, int64(len(result)), nil
+	}
+	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
+}
 
 func (db *DB) AddAspectNode(_ context.Context, node models.AspectNode) error {
 	return set(node.Id, db.aspectNodes, node)

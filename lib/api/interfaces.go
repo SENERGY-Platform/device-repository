@@ -59,12 +59,14 @@ type Controller interface {
 
 	GetService(id string) (result models.Service, err error, code int)
 
+	ListAspects(listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int)
 	GetAspects() ([]models.Aspect, error, int)
 	GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 	GetAspect(id string) (models.Aspect, error, int)
 	ValidateAspect(aspect models.Aspect) (err error, code int)
 	ValidateAspectDelete(id string) (err error, code int)
 
+	ListAspectNodes(listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int)
 	GetAspectNode(id string) (models.AspectNode, error, int)
 	GetAspectNodes() ([]models.AspectNode, error, int)
 	GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)

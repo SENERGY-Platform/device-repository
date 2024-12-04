@@ -70,12 +70,14 @@ type Database interface {
 	SetProtocol(ctx context.Context, protocol models.Protocol) error
 	RemoveProtocol(ctx context.Context, id string) error
 
+	ListAspects(ctx context.Context, listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error)
 	GetAspect(ctx context.Context, id string) (result models.Aspect, exists bool, err error)
 	SetAspect(ctx context.Context, aspect models.Aspect) error
 	RemoveAspect(ctx context.Context, id string) error
 	ListAllAspects(ctx context.Context) ([]models.Aspect, error)
 	ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error) //returns all aspects used in combination with measuring functions
 
+	ListAspectNodes(ctx context.Context, listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error)
 	SetAspectNode(ctx context.Context, node models.AspectNode) error
 	RemoveAspectNodesByRootId(ctx context.Context, id string) error
 	GetAspectNode(ctx context.Context, id string) (result models.AspectNode, exists bool, err error)

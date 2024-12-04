@@ -209,15 +209,16 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "list aspects",
+                "description": "deprecated list aspects",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "list",
-                    "aspects"
+                    "aspects",
+                    "deprecated"
                 ],
-                "summary": "list aspects",
+                "summary": "deprecated list aspects",
                 "parameters": [
                     {
                         "type": "string",
@@ -4084,6 +4085,170 @@ const docTemplatedevicerepository = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.Service"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v2/aspect-nodes": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list aspect-nodes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "aspect-nodes"
+                ],
+                "summary": "list aspect-nodes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AspectNode"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v2/aspects": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list aspects",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "aspects"
+                ],
+                "summary": "list aspects",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Aspect"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
                         }
                     },
                     "400": {

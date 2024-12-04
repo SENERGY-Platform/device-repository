@@ -17,10 +17,41 @@
 package client
 
 import (
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 )
+
+func (c *Client) ListAspects(options model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int) {
+	queryString := ""
+	query := url.Values{}
+	if options.Search != "" {
+		query.Set("search", options.Search)
+	}
+	if options.Ids != nil {
+		query.Set("ids", strings.Join(options.Ids, ","))
+	}
+	if options.SortBy != "" {
+		query.Set("sort", options.SortBy)
+	}
+	if options.Limit != 0 {
+		query.Set("limit", strconv.FormatInt(options.Limit, 10))
+	}
+	if options.Offset != 0 {
+		query.Set("offset", strconv.FormatInt(options.Offset, 10))
+	}
+	if len(query) > 0 {
+		queryString = "?" + query.Encode()
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v2/aspects"+queryString, nil)
+	if err != nil {
+		return result, 0, err, http.StatusInternalServerError
+	}
+	return doWithTotalInResult[[]models.Aspect](req)
+}
 
 func (c *Client) GetAspects() ([]models.Aspect, error, int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspects", nil)
