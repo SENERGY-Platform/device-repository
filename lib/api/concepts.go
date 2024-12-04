@@ -19,10 +19,12 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -30,6 +32,154 @@ func init() {
 }
 
 type ConceptEndpoints struct{}
+
+// ListConcepts godoc
+// @Summary      list concepts
+// @Description  list concepts
+// @Tags         list, concepts
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Success      200 {array}  models.Concept
+// @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /v2/concepts [GET]
+func (this *ConceptEndpoints) ListConcepts(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /v2/concepts", func(writer http.ResponseWriter, request *http.Request) {
+		listoptions := model.ConceptListOptions{
+			Limit:  100,
+			Offset: 0,
+		}
+		var err error
+		limitParam := request.URL.Query().Get("limit")
+		if limitParam != "" {
+			listoptions.Limit, err = strconv.ParseInt(limitParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse limit:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		offsetParam := request.URL.Query().Get("offset")
+		if offsetParam != "" {
+			listoptions.Offset, err = strconv.ParseInt(offsetParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse offset:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		idsParam := request.URL.Query().Get("ids")
+		if request.URL.Query().Has("ids") {
+			if idsParam != "" {
+				listoptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
+			} else {
+				listoptions.Ids = []string{}
+			}
+		}
+
+		listoptions.Search = request.URL.Query().Get("search")
+		listoptions.SortBy = request.URL.Query().Get("sort")
+		if listoptions.SortBy == "" {
+			listoptions.SortBy = "name.asc"
+		}
+		result, total, err, errCode := control.ListConcepts(listoptions)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// ListConceptsWithCharacteristics godoc
+// @Summary      list concepts with characteristics
+// @Description  list concepts with characteristics
+// @Tags         list, concepts
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Success      200 {array}  models.ConceptWithCharacteristics
+// @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /v2/concepts-with-characteristics [GET]
+func (this *ConceptEndpoints) ListConceptsWithCharacteristics(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /v2/concepts-with-characteristics", func(writer http.ResponseWriter, request *http.Request) {
+		listoptions := model.ConceptListOptions{
+			Limit:  100,
+			Offset: 0,
+		}
+		var err error
+		limitParam := request.URL.Query().Get("limit")
+		if limitParam != "" {
+			listoptions.Limit, err = strconv.ParseInt(limitParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse limit:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		offsetParam := request.URL.Query().Get("offset")
+		if offsetParam != "" {
+			listoptions.Offset, err = strconv.ParseInt(offsetParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse offset:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		idsParam := request.URL.Query().Get("ids")
+		if request.URL.Query().Has("ids") {
+			if idsParam != "" {
+				listoptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
+			} else {
+				listoptions.Ids = []string{}
+			}
+		}
+
+		listoptions.Search = request.URL.Query().Get("search")
+		listoptions.SortBy = request.URL.Query().Get("sort")
+		if listoptions.SortBy == "" {
+			listoptions.SortBy = "name.asc"
+		}
+		result, total, err, errCode := control.ListConceptsWithCharacteristics(listoptions)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
 
 // Get godoc
 // @Summary      get concept

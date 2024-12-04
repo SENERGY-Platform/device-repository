@@ -132,7 +132,7 @@ func (this *Mongo) CharacteristicIsUsed(ctx context.Context, id string) (result 
 
 	//used in concept
 	temp = this.conceptCollection().FindOne(ctx, bson.M{
-		conceptCharacteristicsKey: id,
+		ConceptBson.CharacteristicIds[0]: id,
 	})
 	err = temp.Err()
 	if err != nil && err != mongo.ErrNoDocuments {

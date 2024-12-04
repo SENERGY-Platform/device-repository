@@ -690,7 +690,7 @@ info:
 paths:
   /aspect-nodes:
     get:
-      description: list aspect-nodes
+      description: deprecated list aspect-nodes
       parameters:
       - description: filter; only 'measuring-function' is a valid value; if set, returns
           aspect-nodes used in combination with measuring-functions
@@ -728,11 +728,12 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: list aspect-nodes
+      summary: deprecated list aspect-nodes
       tags:
       - list
       - aspect-nodes
       - aspects
+      - deprecated
   /aspect-nodes/{id}:
     get:
       description: get aspect-node
@@ -3484,6 +3485,112 @@ paths:
       tags:
       - list
       - aspects
+  /v2/concepts:
+    get:
+      description: list concepts
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.Concept'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list concepts
+      tags:
+      - list
+      - concepts
+  /v2/concepts-with-characteristics:
+    get:
+      description: list concepts with characteristics
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.ConceptWithCharacteristics'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list concepts with characteristics
+      tags:
+      - list
+      - concepts
   /v2/query/device-type-selectables:
     post:
       consumes:

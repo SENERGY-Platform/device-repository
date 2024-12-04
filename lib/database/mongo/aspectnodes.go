@@ -186,6 +186,9 @@ func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, anc
 	if descendants {
 		or = append(or, bson.D{{aspectNodeDescendentIdsKey, bson.M{"$in": aspectNodeIds}}})
 	}
+	if len(or) == 0 {
+		return []models.AspectNode{}, nil
+	}
 	cursor, err := this.aspectNodeCollection().Find(ctx, bson.D{{"$or", or}}, options.Find().SetSort(bson.D{{AspectNodeBson.Id, 1}}))
 	if err != nil {
 		return nil, err

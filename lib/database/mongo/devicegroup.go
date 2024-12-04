@@ -158,7 +158,9 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.Devic
 				}.Short()})
 			}
 		}
-		filter["$and"] = criteriaFilter
+		if len(criteriaFilter) > 0 {
+			filter["$and"] = criteriaFilter
+		}
 	}
 
 	cursor, err := this.deviceGroupCollection().Find(ctx, filter, opt)

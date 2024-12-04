@@ -78,6 +78,8 @@ type Controller interface {
 	ValidateCharacteristics(characteristic models.Characteristic) (err error, code int)
 	ValidateCharacteristicDelete(id string) (err error, code int)
 
+	ListConceptsWithCharacteristics(listOptions model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int)
+	ListConcepts(listOptions model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int)
 	GetConceptWithCharacteristics(id string) (models.ConceptWithCharacteristics, error, int)
 	GetConceptWithoutCharacteristics(id string) (models.Concept, error, int)
 	ValidateConcept(concept models.Concept) (err error, code int)

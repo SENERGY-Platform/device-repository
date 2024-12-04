@@ -94,6 +94,8 @@ type Database interface {
 	RemoveConcept(ctx context.Context, id string) error
 	GetConceptWithCharacteristics(ctx context.Context, id string) (result models.ConceptWithCharacteristics, exists bool, err error)
 	GetConceptWithoutCharacteristics(ctx context.Context, id string) (result models.Concept, exists bool, err error)
+	ListConceptsWithCharacteristics(ctx context.Context, options model.ConceptListOptions) ([]models.ConceptWithCharacteristics, int64, error)
+	ListConcepts(ctx context.Context, options model.ConceptListOptions) ([]models.Concept, int64, error)
 
 	SetDeviceClass(ctx context.Context, class models.DeviceClass) error
 	RemoveDeviceClass(ctx context.Context, id string) error

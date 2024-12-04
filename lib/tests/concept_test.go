@@ -18,15 +18,223 @@ package tests
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
+	"reflect"
 	"sync"
 	"testing"
+	"time"
 )
+
+func TestConceptList(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	characteristics := []models.Characteristic{
+		{
+			Id:   "c1",
+			Name: "c1",
+		},
+		{
+			Id:   "c2",
+			Name: "c2",
+		},
+		{
+			Id:   "c3",
+			Name: "c3",
+		},
+		{
+			Id:   "c4",
+			Name: "c4",
+		},
+		{
+			Id:   "c5",
+			Name: "c5",
+		},
+	}
+
+	concepts := []models.Concept{
+		{
+			Id:   "co1",
+			Name: "co1",
+		},
+		{
+			Id:                   "co2",
+			Name:                 "co2",
+			CharacteristicIds:    []string{"c2", "c3"},
+			BaseCharacteristicId: "c2",
+		},
+		{
+			Id:                   "co3",
+			Name:                 "co3",
+			CharacteristicIds:    []string{"c3", "c4"},
+			BaseCharacteristicId: "c3",
+		},
+		{
+			Id:                   "co4",
+			Name:                 "co4",
+			CharacteristicIds:    []string{"c1"},
+			BaseCharacteristicId: "c1",
+		},
+	}
+
+	conceptsWithCharacteristics := []models.ConceptWithCharacteristics{
+		{
+			Id:              "co1",
+			Name:            "co1",
+			Characteristics: []models.Characteristic{},
+		},
+		{
+			Id:                   "co2",
+			Name:                 "co2",
+			Characteristics:      []models.Characteristic{characteristics[1], characteristics[2]},
+			BaseCharacteristicId: "c2",
+		},
+		{
+			Id:                   "co3",
+			Name:                 "co3",
+			Characteristics:      []models.Characteristic{characteristics[2], characteristics[3]},
+			BaseCharacteristicId: "c3",
+		},
+		{
+			Id:                   "co4",
+			Name:                 "co4",
+			Characteristics:      []models.Characteristic{characteristics[0]},
+			BaseCharacteristicId: "c1",
+		},
+	}
+
+	t.Run("create characteristics", func(t *testing.T) {
+		for _, characteristic := range characteristics {
+			err = producer.PublishCharacteristic(characteristic, "user")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+	})
+	t.Run("create concepts", func(t *testing.T) {
+		for _, concept := range concepts {
+			err = producer.PublishConcept(concept, "user")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+	})
+	time.Sleep(5 * time.Second)
+	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	t.Run("list all concepts", func(t *testing.T) {
+		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 4 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, concepts) {
+			t.Error(list)
+			return
+		}
+	})
+	t.Run("list all concepts with characteristics", func(t *testing.T) {
+		list, total, err, _ := c.ListConceptsWithCharacteristics(client.ConceptListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 4 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, conceptsWithCharacteristics) {
+			t.Errorf("\na=%#v\ne=%#v\n", list, conceptsWithCharacteristics)
+			return
+		}
+	})
+
+	t.Run("search co3 concepts", func(t *testing.T) {
+		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{Search: "co3"})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 1 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, []models.Concept{concepts[2]}) {
+			t.Error(list)
+			return
+		}
+	})
+	t.Run("search co3 concepts with characteristic", func(t *testing.T) {
+		list, total, err, _ := c.ListConceptsWithCharacteristics(client.ConceptListOptions{Search: "co3"})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 1 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, []models.ConceptWithCharacteristics{conceptsWithCharacteristics[2]}) {
+			t.Error(list)
+			return
+		}
+	})
+
+	t.Run("list co2,co4 concepts", func(t *testing.T) {
+		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{Ids: []string{"co2", "co4"}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 2 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, []models.Concept{concepts[1], concepts[3]}) {
+			t.Error(list)
+			return
+		}
+	})
+	t.Run("list co2,co4 concepts with characteristics", func(t *testing.T) {
+		list, total, err, _ := c.ListConceptsWithCharacteristics(client.ConceptListOptions{Ids: []string{"co2", "co4"}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 2 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, []models.ConceptWithCharacteristics{conceptsWithCharacteristics[1], conceptsWithCharacteristics[3]}) {
+			t.Error(list)
+			return
+		}
+	})
+}
 
 func TestConceptValidation(t *testing.T) {
 	conf, err := config.Load("../../config.json")

@@ -19,6 +19,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
@@ -81,6 +82,24 @@ func (this *Controller) ValidateConcept(concept models.Concept) (err error, code
 	}
 
 	return nil, http.StatusOK
+}
+
+func (this *Controller) ListConceptsWithCharacteristics(listOptions model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListConceptsWithCharacteristics(ctx, listOptions)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
+}
+
+func (this *Controller) ListConcepts(listOptions model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListConcepts(ctx, listOptions)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
 }
 
 func (this *Controller) GetConceptWithCharacteristics(id string) (result models.ConceptWithCharacteristics, err error, code int) {

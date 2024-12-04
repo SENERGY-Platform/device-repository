@@ -18,7 +18,10 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"slices"
+	"strings"
 )
 
 func (db *DB) SetConcept(_ context.Context, concept models.Concept) error {
@@ -35,4 +38,23 @@ func (db *DB) GetConceptWithoutCharacteristics(_ context.Context, id string) (re
 }
 func (db *DB) ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	panic("implement me")
+}
+
+func (db *DB) ListConceptsWithCharacteristics(ctx context.Context, options model.ConceptListOptions) ([]models.ConceptWithCharacteristics, int64, error) {
+	panic("implement me")
+}
+
+func (db *DB) ListConcepts(ctx context.Context, options model.ConceptListOptions) (result []models.Concept, total int64, err error) {
+	for _, concept := range db.concepts {
+		if (options.Search == "" || strings.Contains(strings.ToLower(concept.Name), strings.ToLower(options.Search))) &&
+			(options.Ids == nil || slices.Contains(options.Ids, concept.Id)) {
+			result = append(result, concept)
+		}
+	}
+	limit := options.Limit
+	offset := options.Offset
+	if offset >= int64(len(result)) {
+		return []models.Concept{}, int64(len(result)), nil
+	}
+	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
 }
