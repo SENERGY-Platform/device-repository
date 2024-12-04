@@ -114,6 +114,9 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.Devic
 	}
 
 	if listOptions.Criteria != nil {
+		if len(listOptions.Criteria) == 0 {
+			return []models.DeviceGroup{}, 0, nil
+		}
 		criteriaFilter := []bson.M{}
 		for _, c := range listOptions.Criteria {
 			if c.Interaction == "" {
