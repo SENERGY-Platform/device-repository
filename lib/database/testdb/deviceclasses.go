@@ -18,9 +18,27 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"golang.org/x/exp/maps"
+	"slices"
+	"strings"
 )
+
+func (db *DB) ListDeviceClasses(ctx context.Context, options model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error) {
+	for _, dc := range db.deviceClasses {
+		if (options.Search == "" || strings.Contains(strings.ToLower(dc.Name), strings.ToLower(options.Search))) &&
+			(options.Ids == nil || slices.Contains(options.Ids, dc.Id)) {
+			result = append(result, dc)
+		}
+	}
+	limit := options.Limit
+	offset := options.Offset
+	if offset >= int64(len(result)) {
+		return []models.DeviceClass{}, int64(len(result)), nil
+	}
+	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
+}
 
 func (db *DB) SetDeviceClass(_ context.Context, class models.DeviceClass) error {
 	return set(class.Id, db.deviceClasses, class)

@@ -24,6 +24,15 @@ import (
 	"strings"
 )
 
+func (this *Controller) ListDeviceClasses(listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListDeviceClasses(ctx, listOptions)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
+}
+
 func (this *Controller) SetDeviceClass(class models.DeviceClass, owner string) error {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetDeviceClass(ctx, class)

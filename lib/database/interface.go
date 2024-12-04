@@ -97,6 +97,7 @@ type Database interface {
 	ListConceptsWithCharacteristics(ctx context.Context, options model.ConceptListOptions) ([]models.ConceptWithCharacteristics, int64, error)
 	ListConcepts(ctx context.Context, options model.ConceptListOptions) ([]models.Concept, int64, error)
 
+	ListDeviceClasses(ctx context.Context, options model.DeviceClassListOptions) ([]models.DeviceClass, int64, error)
 	SetDeviceClass(ctx context.Context, class models.DeviceClass) error
 	RemoveDeviceClass(ctx context.Context, id string) error
 	ListAllDeviceClasses(ctx context.Context) ([]models.DeviceClass, error)

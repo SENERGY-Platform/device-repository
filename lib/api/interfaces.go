@@ -85,6 +85,7 @@ type Controller interface {
 	ValidateConcept(concept models.Concept) (err error, code int)
 	ValidateConceptDelete(id string) (err error, code int)
 
+	ListDeviceClasses(listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int)
 	GetDeviceClasses() ([]models.DeviceClass, error, int)
 	GetDeviceClassesWithControllingFunctions() ([]models.DeviceClass, error, int)                      //returns all device-classes used in combination with controlling functions
 	GetDeviceClassesFunctions(id string) (result []models.Function, err error, errCode int)            //returns all functions used in combination with given device-class
