@@ -17,33 +17,18 @@
 package tests
 
 import (
-	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"slices"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 )
 
-func TestAspectList(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+func testAspectList(t *testing.T, producer *testutils.Publisher, conf config.Config) {
 	aspects := []models.Aspect{
 		{
 			Id:   "a1",
@@ -82,7 +67,6 @@ func TestAspectList(t *testing.T) {
 			Name: "c4",
 		},
 	}
-
 	aspectNodes := []models.AspectNode{}
 	var createAspectNodes func(aspect models.Aspect, rootId string, parentId string, ancestors []string) (descendents []string)
 	createAspectNodes = func(aspect models.Aspect, rootId string, parentId string, ancestors []string) (descendents []string) {
@@ -91,9 +75,6 @@ func TestAspectList(t *testing.T) {
 		for _, sub := range aspect.SubAspects {
 			children = append(children, sub.Id)
 			temp := createAspectNodes(sub, rootId, aspect.Id, append(ancestors, aspect.Id))
-			if err != nil {
-				return descendents
-			}
 			descendents = append(descendents, temp...)
 		}
 		aspectNodes = append(aspectNodes, models.AspectNode{
@@ -117,7 +98,7 @@ func TestAspectList(t *testing.T) {
 
 	t.Run("create aspects", func(t *testing.T) {
 		for _, aspect := range aspects {
-			err = producer.PublishAspect(aspect, "user")
+			err := producer.PublishAspect(aspect, "user")
 			if err != nil {
 				t.Error(err)
 				return

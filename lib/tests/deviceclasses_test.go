@@ -17,32 +17,16 @@
 package tests
 
 import (
-	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
-	"sync"
 	"testing"
 	"time"
 )
 
-func TestListDeviceClasses(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
+func testListDeviceClasses(t *testing.T, producer *testutils.Publisher, conf config.Config) {
 	deviceClasses := []models.DeviceClass{
 		{
 			Id:   "c1",
@@ -68,7 +52,7 @@ func TestListDeviceClasses(t *testing.T) {
 
 	t.Run("create device-classes", func(t *testing.T) {
 		for _, dc := range deviceClasses {
-			err = producer.PublishDeviceClass(dc, "user")
+			err := producer.PublishDeviceClass(dc, "user")
 			if err != nil {
 				t.Error(err)
 				return

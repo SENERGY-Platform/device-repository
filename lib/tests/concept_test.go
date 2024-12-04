@@ -32,22 +32,7 @@ import (
 	"time"
 )
 
-func TestConceptList(t *testing.T) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conf, err := createTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
+func testConceptList(t *testing.T, producer *testutils.Publisher, conf config.Config) {
 	characteristics := []models.Characteristic{
 		{
 			Id:   "c1",
@@ -124,7 +109,7 @@ func TestConceptList(t *testing.T) {
 
 	t.Run("create characteristics", func(t *testing.T) {
 		for _, characteristic := range characteristics {
-			err = producer.PublishCharacteristic(characteristic, "user")
+			err := producer.PublishCharacteristic(characteristic, "user")
 			if err != nil {
 				t.Error(err)
 				return
@@ -133,7 +118,7 @@ func TestConceptList(t *testing.T) {
 	})
 	t.Run("create concepts", func(t *testing.T) {
 		for _, concept := range concepts {
-			err = producer.PublishConcept(concept, "user")
+			err := producer.PublishConcept(concept, "user")
 			if err != nil {
 				t.Error(err)
 				return
