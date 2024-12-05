@@ -114,7 +114,7 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.Devic
 	}
 
 	if listOptions.Criteria != nil {
-		if len(listOptions.Criteria) == 0 {
+		if len(listOptions.Criteria) == 0 && this.config.PreventEmptyCriteriaListsAllBehavior {
 			return []models.DeviceGroup{}, 0, nil
 		}
 		criteriaFilter := []bson.M{}

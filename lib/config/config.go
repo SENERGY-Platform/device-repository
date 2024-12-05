@@ -77,6 +77,8 @@ type Config struct {
 
 	LocalIdUniqueForOwner               bool `json:"local_id_unique_for_owner"`
 	SkipDeviceGroupGenerationFromDevice bool `json:"skip_device_group_generation_from_device"`
+
+	PreventEmptyCriteriaListsAllBehavior bool `json:"prevent_empty_criteria_lists_all_behavior"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {
