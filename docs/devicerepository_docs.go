@@ -851,15 +851,16 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "list device-classes",
+                "description": "deprecated list device-classes",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "list",
-                    "device-classes"
+                    "device-classes",
+                    "deprecated"
                 ],
-                "summary": "list device-classes",
+                "summary": "deprecated list device-classes",
                 "parameters": [
                     {
                         "type": "string",
@@ -4434,6 +4435,88 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
+        "/v2/device-classes": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list device-classes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "list",
+                    "device-classes"
+                ],
+                "summary": "list device-classes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DeviceClass"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/v2/query/device-type-selectables": {
             "post": {
                 "security": [
@@ -4558,6 +4641,12 @@ const docTemplatedevicerepository = `{
                         "type": "string",
                         "description": "filter; ignores limit/offset; comma-seperated list",
                         "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-seperated list; lists elements only if they use a protocol that is in the given list",
+                        "name": "protocol-ids",
                         "in": "query"
                     },
                     {

@@ -104,6 +104,9 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 	if options.Offset != 0 {
 		query.Set("offset", strconv.FormatInt(options.Offset, 10))
 	}
+	if options.ProtocolIds != nil {
+		query.Set("protocol-ids", strings.Join(options.ProtocolIds, ","))
+	}
 	if options.AttributeKeys != nil {
 		query.Set("attr-keys", strings.Join(options.AttributeKeys, ","))
 	}

@@ -76,6 +76,7 @@ func (this *DeviceTypeEndpoints) Get(config config.Config, router *http.ServeMux
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
 // @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        protocol-ids query string false "filter; comma-seperated list; lists elements only if they use a protocol that is in the given list"
 // @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
 // @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
 // @Param        include-modified query bool false "include id-modified device-types"
@@ -136,6 +137,15 @@ func (this *DeviceTypeEndpoints) ListV3(config config.Config, router *http.Serve
 				options.AttributeValues = strings.Split(strings.TrimSpace(attrValuesParam), ",")
 			} else {
 				options.AttributeValues = []string{}
+			}
+		}
+
+		protocolIdsParam := request.URL.Query().Get("protocol-ids")
+		if request.URL.Query().Has("protocol-ids") {
+			if protocolIdsParam != "" {
+				options.ProtocolIds = strings.Split(strings.TrimSpace(protocolIdsParam), ",")
+			} else {
+				options.ProtocolIds = []string{}
 			}
 		}
 

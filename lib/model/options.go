@@ -127,6 +127,7 @@ type DeviceTypeListOptions struct {
 	AttributeKeys    []string         //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
 	AttributeValues  []string         //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
 	Criteria         []FilterCriteria //filter; ignored if nil
+	ProtocolIds      []string
 	IncludeModified  bool
 	IgnoreUnmodified bool
 }

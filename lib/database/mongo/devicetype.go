@@ -242,6 +242,10 @@ func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.Devi
 		}
 	}
 
+	if listOptions.ProtocolIds != nil {
+		filter[DeviceTypeBson.Services[0].ProtocolId] = bson.M{"$in": listOptions.ProtocolIds}
+	}
+
 	var deviceTypeIdsWithModifier []interface{}
 	if len(listOptions.Criteria) > 0 {
 		deviceTypeIdsWithModifier, err = this.GetDeviceTypeIdsByFilterCriteriaV2(ctx, listOptions.Criteria, listOptions.IncludeModified)

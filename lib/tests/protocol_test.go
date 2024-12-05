@@ -19,10 +19,12 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/google/uuid"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -36,6 +38,184 @@ var protocol1id = uuid.NewString()
 var protocol1name = uuid.NewString()
 var protocol2id = uuid.NewString()
 var protocol2name = uuid.NewString()
+
+func TestDeviceTypeProtocolFilter(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conf, err := createTestEnv(ctx, wg, t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	producer, err := testutils.NewPublisher(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	protocolIds := []string{protocol1id, protocol2id, "foobarprotocol"}
+	t.Run("create protocols", func(t *testing.T) {
+		for _, id := range protocolIds {
+			err = producer.PublishProtocol(models.Protocol{Id: id, Name: protocol1name}, userid)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+	})
+
+	deviceTypes := []models.DeviceType{
+		{
+			Id: "dt1",
+			Services: []models.Service{
+				{
+					Id:         "dt1s1",
+					ProtocolId: protocolIds[0],
+				},
+			},
+		},
+		{
+			Id: "dt2",
+			Services: []models.Service{
+				{
+					Id:         "dt2s1",
+					ProtocolId: protocolIds[1],
+				},
+			},
+		},
+		{
+			Id: "dt3",
+			Services: []models.Service{
+				{
+					Id:         "dt3s1",
+					ProtocolId: protocolIds[2],
+				},
+			},
+		},
+		{
+			Id: "dt4",
+			Services: []models.Service{
+				{
+					Id:         "dt4s1",
+					ProtocolId: protocolIds[0],
+				},
+				{
+					Id:         "dt4s2",
+					ProtocolId: protocolIds[1],
+				},
+			},
+		},
+	}
+
+	t.Run("create device-types", func(t *testing.T) {
+		for _, dt := range deviceTypes {
+			err = producer.PublishDeviceType(dt, userid)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+	})
+
+	time.Sleep(10 * time.Second)
+
+	t.Run("find device-types by protocolIds", func(t *testing.T) {
+		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		t.Run("0", func(t *testing.T) {
+			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+				ProtocolIds: []string{protocolIds[0]},
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ids := []string{}
+			for _, d := range list {
+				ids = append(ids, d.Id)
+			}
+			expected := []string{deviceTypes[0].Id, deviceTypes[3].Id}
+			if !reflect.DeepEqual(ids, expected) {
+				t.Errorf("\na=%#v\ne=%#v\n", ids, expected)
+				return
+			}
+		})
+		t.Run("1", func(t *testing.T) {
+			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+				ProtocolIds: []string{protocolIds[1]},
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ids := []string{}
+			for _, d := range list {
+				ids = append(ids, d.Id)
+			}
+			expected := []string{deviceTypes[1].Id, deviceTypes[3].Id}
+			if !reflect.DeepEqual(ids, expected) {
+				t.Errorf("\na=%#v\ne=%#v\n", ids, expected)
+				return
+			}
+		})
+		t.Run("2", func(t *testing.T) {
+			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+				ProtocolIds: []string{protocolIds[2]},
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ids := []string{}
+			for _, d := range list {
+				ids = append(ids, d.Id)
+			}
+			expected := []string{deviceTypes[2].Id}
+			if !reflect.DeepEqual(ids, expected) {
+				t.Errorf("\na=%#v\ne=%#v\n", ids, expected)
+				return
+			}
+		})
+		t.Run("0,1", func(t *testing.T) {
+			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+				ProtocolIds: []string{protocolIds[0], protocolIds[1]},
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ids := []string{}
+			for _, d := range list {
+				ids = append(ids, d.Id)
+			}
+			expected := []string{deviceTypes[0].Id, deviceTypes[1].Id, deviceTypes[3].Id}
+			if !reflect.DeepEqual(ids, expected) {
+				t.Errorf("\na=%#v\ne=%#v\n", ids, expected)
+				return
+			}
+		})
+		t.Run("0,2", func(t *testing.T) {
+			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+				ProtocolIds: []string{protocolIds[0], protocolIds[2]},
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ids := []string{}
+			for _, d := range list {
+				ids = append(ids, d.Id)
+			}
+			expected := []string{deviceTypes[0].Id, deviceTypes[2].Id, deviceTypes[3].Id}
+			if !reflect.DeepEqual(ids, expected) {
+				t.Errorf("\na=%#v\ne=%#v\n", ids, expected)
+				return
+			}
+		})
+	})
+}
 
 func TestProtocolQuery(t *testing.T) {
 	wg := &sync.WaitGroup{}
@@ -113,7 +293,7 @@ func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...models.Pro
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 		return
 	}
