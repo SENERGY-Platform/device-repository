@@ -18,10 +18,20 @@ package controller
 
 import (
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
+
+func (this *Controller) ListCharacteristics(listOptions model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	result, total, err = this.db.ListCharacteristics(ctx, listOptions)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
+}
 
 func (this *Controller) SetCharacteristic(characteristic models.Characteristic, owner string) error {
 	ctx, _ := getTimeoutContext()

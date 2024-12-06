@@ -17,10 +17,113 @@
 package tests
 
 import (
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
+	"reflect"
 	"testing"
+	"time"
 )
+
+func testCharacteristicList(t *testing.T, producer *testutils.Publisher, conf config.Config) {
+	characteristics := []models.Characteristic{
+		{
+			Id:   "a1",
+			Name: "a1",
+		},
+		{
+			Id:   "a2",
+			Name: "a2",
+			SubCharacteristics: []models.Characteristic{
+				{
+					Id:   "a2.1",
+					Name: "a2.1",
+				},
+				{
+					Id:   "a2.2",
+					Name: "a2.2",
+					SubCharacteristics: []models.Characteristic{
+						{
+							Id:   "a2.2.1",
+							Name: "a2.2.1",
+						},
+						{
+							Id:   "a2.2.2",
+							Name: "a2.2.2",
+						},
+					},
+				},
+			},
+		},
+		{
+			Id:   "b3",
+			Name: "b3",
+		},
+		{
+			Id:   "c4",
+			Name: "c4",
+		},
+	}
+
+	t.Run("create characteristics", func(t *testing.T) {
+		for _, characteristic := range characteristics {
+			err := producer.PublishCharacteristic(characteristic, "user")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+	})
+	time.Sleep(5 * time.Second)
+	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	t.Run("list all characteristics", func(t *testing.T) {
+		list, total, err, _ := c.ListCharacteristics(client.CharacteristicListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 4 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, characteristics) {
+			t.Error(list)
+			return
+		}
+	})
+	t.Run("list b characteristics", func(t *testing.T) {
+		list, total, err, _ := c.ListCharacteristics(client.CharacteristicListOptions{Search: "b"})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 1 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, []models.Characteristic{characteristics[2]}) {
+			t.Error(list)
+			return
+		}
+	})
+	t.Run("list a1,b3 characteristics", func(t *testing.T) {
+		list, total, err, _ := c.ListCharacteristics(client.CharacteristicListOptions{Ids: []string{"a1", "b3"}})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if total != 2 {
+			t.Error(total)
+			return
+		}
+		if !reflect.DeepEqual(list, []models.Characteristic{characteristics[0], characteristics[2]}) {
+			t.Error(list)
+			return
+		}
+	})
+}
 
 func TestCharacteristicValidation(t *testing.T) {
 	t.Run("struct duplicate sub characteristic name", testValidateCharacteristic(true, models.Characteristic{

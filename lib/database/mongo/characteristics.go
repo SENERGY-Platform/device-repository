@@ -23,21 +23,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"regexp"
+	"strings"
 )
 
-const characteristicIdFieldName = "Id"
-
-var characteristicIdKey string
+var CharacteristicBson = getBsonFieldObject[models.Characteristic]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		characteristicIdKey, err = getBsonFieldName(models.Characteristic{}, characteristicIdFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoCharacteristicCollection)
-		err = db.ensureIndex(collection, "characteristicidindex", characteristicIdKey, true, true)
+		err = db.ensureIndex(collection, "characteristicidindex", CharacteristicBson.Id, true, true)
 		if err != nil {
 			return err
 		}
@@ -49,8 +45,54 @@ func (this *Mongo) characteristicCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoCharacteristicCollection)
 }
 
+func (this *Mongo) ListCharacteristics(ctx context.Context, listOptions model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error) {
+	opt := options.Find()
+	opt.SetLimit(listOptions.Limit)
+	opt.SetSkip(listOptions.Offset)
+
+	parts := strings.Split(listOptions.SortBy, ".")
+	sortby := CharacteristicBson.Id
+	switch parts[0] {
+	case "id":
+		sortby = CharacteristicBson.Id
+	case "name":
+		sortby = CharacteristicBson.Name
+	default:
+		sortby = CharacteristicBson.Id
+	}
+	direction := int32(1)
+	if len(parts) > 1 && parts[1] == "desc" {
+		direction = int32(-1)
+	}
+	opt.SetSort(bson.D{{sortby, direction}})
+
+	filter := bson.M{}
+	if listOptions.Ids != nil {
+		filter[CharacteristicBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	search := strings.TrimSpace(listOptions.Search)
+	if search != "" {
+		escapedSearch := regexp.QuoteMeta(search)
+		filter[CharacteristicBson.Name] = bson.M{"$regex": escapedSearch, "$options": "i"}
+	}
+
+	cursor, err := this.characteristicCollection().Find(ctx, filter, opt)
+	if err != nil {
+		return nil, 0, err
+	}
+	err = cursor.All(ctx, &result)
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err = this.characteristicCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, total, nil
+}
+
 func (this *Mongo) GetCharacteristic(ctx context.Context, id string) (characteristic models.Characteristic, exists bool, err error) {
-	result := this.characteristicCollection().FindOne(ctx, bson.M{characteristicIdKey: id})
+	result := this.characteristicCollection().FindOne(ctx, bson.M{CharacteristicBson.Id: id})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return characteristic, false, nil
@@ -66,12 +108,12 @@ func (this *Mongo) GetCharacteristic(ctx context.Context, id string) (characteri
 }
 
 func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic models.Characteristic) error {
-	_, err := this.characteristicCollection().ReplaceOne(ctx, bson.M{characteristicIdKey: characteristic.Id}, characteristic, options.Replace().SetUpsert(true))
+	_, err := this.characteristicCollection().ReplaceOne(ctx, bson.M{CharacteristicBson.Id: characteristic.Id}, characteristic, options.Replace().SetUpsert(true))
 	return err
 }
 
 func (this *Mongo) RemoveCharacteristic(ctx context.Context, id string) error {
-	_, err := this.characteristicCollection().DeleteOne(ctx, bson.M{characteristicIdKey: id})
+	_, err := this.characteristicCollection().DeleteOne(ctx, bson.M{CharacteristicBson.Id: id})
 	return err
 }
 
@@ -97,7 +139,7 @@ func (this *Mongo) getCharacteristicsByIds(ctx context.Context, ids []string) (r
 	if len(ids) == 0 {
 		return []models.Characteristic{}, nil
 	}
-	cursor, err := this.characteristicCollection().Find(ctx, bson.M{characteristicIdKey: bson.M{"$in": ids}})
+	cursor, err := this.characteristicCollection().Find(ctx, bson.M{CharacteristicBson.Id: bson.M{"$in": ids}})
 	if err != nil {
 		return nil, err
 	}

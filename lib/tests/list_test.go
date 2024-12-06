@@ -43,6 +43,10 @@ func TestResourceList(t *testing.T) {
 		testAspectList(t, producer, conf)
 	})
 
+	t.Run("characteristics", func(t *testing.T) {
+		testCharacteristicList(t, producer, conf)
+	})
+
 	t.Run("concepts", func(t *testing.T) {
 		testConceptList(t, producer, conf)
 	})

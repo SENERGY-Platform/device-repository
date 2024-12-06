@@ -18,9 +18,27 @@ package testdb
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"golang.org/x/exp/maps"
+	"slices"
+	"strings"
 )
+
+func (db *DB) ListCharacteristics(ctx context.Context, options model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error) {
+	for _, characteristic := range db.characteristics {
+		if (options.Search == "" || strings.Contains(strings.ToLower(characteristic.Name), strings.ToLower(options.Search))) &&
+			(options.Ids == nil || slices.Contains(options.Ids, characteristic.Id)) {
+			result = append(result, characteristic)
+		}
+	}
+	limit := options.Limit
+	offset := options.Offset
+	if offset >= int64(len(result)) {
+		return []models.Characteristic{}, int64(len(result)), nil
+	}
+	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
+}
 
 func (db *DB) SetCharacteristic(_ context.Context, characteristic models.Characteristic) error {
 	return set(characteristic.Id, db.characteristics, characteristic)
