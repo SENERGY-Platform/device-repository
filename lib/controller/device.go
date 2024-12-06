@@ -44,11 +44,10 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 		return result, total, err, http.StatusBadRequest
 	}
 
-	if options.Owner == "" {
-		options.Owner = jwtToken.GetUserId()
-	}
-
 	if options.LocalIds != nil {
+		if options.Owner == "" {
+			options.Owner = jwtToken.GetUserId()
+		}
 		ctx, _ := getTimeoutContext()
 		options.Ids, err = this.db.DeviceLocalIdsToIds(ctx, options.Owner, options.LocalIds)
 		if err != nil {
@@ -192,11 +191,10 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 		return result, err, http.StatusBadRequest
 	}
 
-	if options.Owner == "" {
-		options.Owner = jwtToken.GetUserId()
-	}
-
 	if options.LocalIds != nil {
+		if options.Owner == "" {
+			options.Owner = jwtToken.GetUserId()
+		}
 		ctx, _ := getTimeoutContext()
 		options.Ids, err = this.db.DeviceLocalIdsToIds(ctx, options.Owner, options.LocalIds)
 		if err != nil {

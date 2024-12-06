@@ -558,6 +558,50 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 
+		t.Run("list as admin", func(t *testing.T) {
+			result, err, _ := c.ListDevices(adminjwt, client.DeviceListOptions{SortBy: "localid"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{d1, d2, d3}
+			slices.SortFunc(expected, func(a, b models.Device) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+
+		t.Run("list as admin filter by owner=userid", func(t *testing.T) {
+			result, err, _ := c.ListDevices(adminjwt, client.DeviceListOptions{SortBy: "localid", Owner: userid})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{d1, d2, d3}
+			slices.SortFunc(expected, func(a, b models.Device) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+		t.Run("list as admin filter by owner=foo", func(t *testing.T) {
+			result, err, _ := c.ListDevices(adminjwt, client.DeviceListOptions{SortBy: "localid", Owner: "foo"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.Device{}
+			slices.SortFunc(expected, func(a, b models.Device) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+
 		t.Run("list by local_id", func(t *testing.T) {
 			t.Run("userjwt implicit owner", func(t *testing.T) {
 				result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
@@ -724,6 +768,50 @@ func TestDeviceQuery(t *testing.T) {
 				return
 			}
 			expected := []models.ExtendedDevice{dx1, dx3}
+			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+
+		t.Run("list as admin", func(t *testing.T) {
+			result, _, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{dx1, dx2, dx3}
+			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+
+		t.Run("list as admin filter by owner=userid", func(t *testing.T) {
+			result, _, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Owner: userid})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{dx1, dx2, dx3}
+			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
+				return strings.Compare(a.LocalId, b.LocalId)
+			})
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("\n%#v\n%#v\n", result, expected)
+			}
+		})
+		t.Run("list as admin filter by owner=foo", func(t *testing.T) {
+			result, _, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Owner: "foo"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := []models.ExtendedDevice{}
 			slices.SortFunc(expected, func(a, b models.ExtendedDevice) int {
 				return strings.Compare(a.LocalId, b.LocalId)
 			})

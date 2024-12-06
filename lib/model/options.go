@@ -111,6 +111,8 @@ func (this ExtendedDeviceListOptions) ToDeviceListOptions() DeviceListOptions {
 		Permission:      this.Permission,
 		AttributeKeys:   this.AttributeKeys,
 		AttributeValues: this.AttributeValues,
+		Owner:           this.Owner,
+		LocalIds:        this.LocalIds,
 	}
 }
 
