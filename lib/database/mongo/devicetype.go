@@ -124,7 +124,7 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 		return result, err
 	}
 	if includeModified {
-		result = addModifiedElements(result, deviceTypeIds)
+		result = addElementsWithModifiedId(result, deviceTypeIds)
 	}
 	return
 }
@@ -184,12 +184,12 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 		return result, err
 	}
 	if includeModified {
-		result = addModifiedElements(result, deviceTypeIds)
+		result = addElementsWithModifiedId(result, deviceTypeIds)
 	}
 	return
 }
 
-func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, err error) {
+func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error) {
 	result = []models.DeviceType{}
 
 	opt := options.Find()
@@ -250,37 +250,41 @@ func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.Devi
 	if len(listOptions.Criteria) > 0 {
 		deviceTypeIdsWithModifier, err = this.GetDeviceTypeIdsByFilterCriteriaV2(ctx, listOptions.Criteria, listOptions.IncludeModified)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		filter = bson.M{DeviceTypeBson.Id: bson.M{"$in": mergeDeviceIdFilter(deviceTypeIdsWithModifier, listOptions.Ids)}}
 	} else if listOptions.IncludeModified {
 		deviceTypeIdsWithModifier, err = this.filterDeviceTypeIdsByFilterCriteriaV2(ctx, nil, model.FilterCriteria{}, listOptions.IncludeModified)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	}
 
 	cursor, err := this.deviceTypeCollection().Find(ctx, filter, opt)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer cursor.Close(context.Background())
 	for cursor.Next(context.Background()) {
 		deviceType := models.DeviceType{}
 		err = cursor.Decode(&deviceType)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		result = append(result, deviceType)
 	}
 	err = cursor.Err()
 	if err != nil {
-		return result, err
+		return result, 0, err
 	}
 	if listOptions.IncludeModified {
-		result = addModifiedElements(result, deviceTypeIdsWithModifier)
+		result = addElementsWithModifiedId(result, deviceTypeIdsWithModifier)
 	}
-	return
+	total, err = this.deviceTypeCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, total, nil
 }
 
 func mergeDeviceIdFilter(ids []interface{}, ids2 []string) []string {
@@ -297,7 +301,7 @@ func mergeDeviceIdFilter(ids []interface{}, ids2 []string) []string {
 	return result
 }
 
-func addModifiedElements(deviceTypes []models.DeviceType, ids []interface{}) (result []models.DeviceType) {
+func addElementsWithModifiedId(deviceTypes []models.DeviceType, ids []interface{}) (result []models.DeviceType) {
 	modifiedIndex := map[string][]string{}
 	for _, idInterface := range ids {
 		id, ok := idInterface.(string)

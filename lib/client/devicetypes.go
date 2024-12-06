@@ -86,7 +86,7 @@ func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort
 	return do[[]models.DeviceType](req)
 }
 
-func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOptions) (result []models.DeviceType, err error, errCode int) {
+func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -122,7 +122,7 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 	if len(options.Criteria) > 0 {
 		filterStr, err := json.Marshal(options.Criteria)
 		if err != nil {
-			return result, err, http.StatusBadRequest
+			return result, 0, err, http.StatusBadRequest
 		}
 		query.Add("criteria", string(filterStr))
 	}
@@ -131,10 +131,10 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 	}
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v3/device-types"+queryString, nil)
 	if err != nil {
-		return result, err, http.StatusInternalServerError
+		return result, 0, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.DeviceType](req)
+	return doWithTotalInResult[[]models.DeviceType](req)
 }
 
 type DeviceTypeValidationOptions = model.ValidationOptions

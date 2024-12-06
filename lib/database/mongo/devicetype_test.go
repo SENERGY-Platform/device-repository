@@ -195,7 +195,7 @@ func TestMongoDeviceType(t *testing.T) {
 		if err != nil {
 			return result, err
 		}
-		result2, err := m.ListDeviceTypesV3(ctx, model.DeviceTypeListOptions{
+		result2, _, err := m.ListDeviceTypesV3(ctx, model.DeviceTypeListOptions{
 			Limit:           limit,
 			Offset:          offset,
 			SortBy:          sort,

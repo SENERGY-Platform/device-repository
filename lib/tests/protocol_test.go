@@ -125,7 +125,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 	t.Run("find device-types by protocolIds", func(t *testing.T) {
 		c := client.NewClient("http://localhost:" + conf.ServerPort)
 		t.Run("0", func(t *testing.T) {
-			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0]},
 			})
 			if err != nil {
@@ -143,7 +143,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("1", func(t *testing.T) {
-			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[1]},
 			})
 			if err != nil {
@@ -161,7 +161,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("2", func(t *testing.T) {
-			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[2]},
 			})
 			if err != nil {
@@ -179,7 +179,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("0,1", func(t *testing.T) {
-			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0], protocolIds[1]},
 			})
 			if err != nil {
@@ -197,12 +197,15 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("0,2", func(t *testing.T) {
-			list, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, total, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0], protocolIds[2]},
 			})
 			if err != nil {
 				t.Error(err)
 				return
+			}
+			if total != 3 {
+				t.Errorf("\na=%#v\ne=%#v\n", total, 3)
 			}
 			ids := []string{}
 			for _, d := range list {

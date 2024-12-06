@@ -82,6 +82,7 @@ func (this *DeviceTypeEndpoints) Get(config config.Config, router *http.ServeMux
 // @Param        include-modified query bool false "include id-modified device-types"
 // @Param        ignore-unmodified query bool false "no unmodified device-types"
 // @Param        criteria query string false "filter; json encoded []model.FilterCriteria"
+// @Header       200 {integer}  X-Total-Count  "count of all matching elements; does not count modified elements; used for pagination"
 // @Success      200 {array}  models.DeviceType
 // @Failure      400
 // @Failure      401
@@ -184,11 +185,13 @@ func (this *DeviceTypeEndpoints) ListV3(config config.Config, router *http.Serve
 			options.Criteria = criteriaList
 		}
 
-		result, err, code := control.ListDeviceTypesV3(util.GetAuthToken(request), options)
+		result, total, err, code := control.ListDeviceTypesV3(util.GetAuthToken(request), options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
 		}
+
+		writer.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {

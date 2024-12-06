@@ -106,7 +106,7 @@ func (db *DB) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, 
 	return deviceTypes[offset:min(len(deviceTypes), int(offset+limit))], nil
 }
 
-func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, err error) {
+func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error) {
 	if STRICT && (listOptions.Criteria != nil ||
 		listOptions.IncludeModified ||
 		listOptions.IgnoreUnmodified ||
@@ -116,7 +116,7 @@ func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTyp
 	}
 	deviceTypes := maps.Values(db.deviceTypes)
 	if listOptions.Offset >= int64(len(deviceTypes)) {
-		return []models.DeviceType{}, nil
+		return []models.DeviceType{}, 0, nil
 	}
 
 	filteredDts := []models.DeviceType{}
@@ -130,7 +130,7 @@ func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTyp
 		filteredDts = append(filteredDts, dt)
 	}
 	if listOptions.Offset >= int64(len(filteredDts)) {
-		return []models.DeviceType{}, nil
+		return []models.DeviceType{}, 0, nil
 	}
 
 	parts := strings.Split(listOptions.SortBy, ".")
@@ -153,7 +153,7 @@ func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTyp
 		})
 	}
 
-	return filteredDts[listOptions.Offset:min(len(filteredDts), int(listOptions.Offset+listOptions.Limit))], nil
+	return filteredDts[listOptions.Offset:min(len(filteredDts), int(listOptions.Offset+listOptions.Limit))], int64(len(filteredDts)), nil
 }
 
 func checkAttrKeyFilter(list []models.Attribute, keys []string) bool {
