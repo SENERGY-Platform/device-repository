@@ -50,6 +50,7 @@ type DeviceGroupEndpoints struct{}
 // @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
 // @Param        criteria query string false "filter; json encoded []model.FilterCriteria"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
+// @Param        filter_generic_duplicate_criteria query bool false "remove criteria that are more generalized variations of already listed criteria (ref SNRGY-3027)"
 // @Success      200 {array}  models.DeviceGroup
 // @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
 // @Failure      400
@@ -61,8 +62,9 @@ type DeviceGroupEndpoints struct{}
 func (this *DeviceGroupEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-groups", func(writer http.ResponseWriter, request *http.Request) {
 		deviceGroupListOptions := model.DeviceGroupListOptions{
-			Limit:  100,
-			Offset: 0,
+			Limit:                          100,
+			Offset:                         0,
+			FilterGenericDuplicateCriteria: request.URL.Query().Get("filter_generic_duplicate_criteria") == "true",
 		}
 		var err error
 		limitParam := request.URL.Query().Get("limit")

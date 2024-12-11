@@ -1216,6 +1216,12 @@ const docTemplatedevicerepository = `{
                         "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
                         "name": "p",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "remove criteria that are more generalized variations of already listed criteria (ref SNRGY-3027)",
+                        "name": "filter_generic_duplicate_criteria",
+                        "in": "query"
                     }
                 ],
                 "responses": {

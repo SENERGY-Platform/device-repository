@@ -78,6 +78,17 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
+
+	if options.FilterGenericDuplicateCriteria {
+		for i, group := range result {
+			group, err = DeviceGroupFilterGenericDuplicateCriteria(group, this.db)
+			if err != nil {
+				return result, total, err, http.StatusInternalServerError
+			}
+			result[i] = group
+		}
+
+	}
 	return result, total, nil, http.StatusOK
 }
 

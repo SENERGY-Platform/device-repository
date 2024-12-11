@@ -1472,6 +1472,11 @@ paths:
         in: query
         name: p
         type: string
+      - description: remove criteria that are more generalized variations of already
+          listed criteria (ref SNRGY-3027)
+        in: query
+        name: filter_generic_duplicate_criteria
+        type: boolean
       produces:
       - application/json
       responses:

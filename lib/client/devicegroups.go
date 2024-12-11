@@ -41,6 +41,9 @@ func (c *Client) ListDeviceGroups(token string, options model.DeviceGroupListOpt
 	if options.IgnoreGenerated {
 		query.Set("ignore_generated", strconv.FormatBool(options.IgnoreGenerated))
 	}
+	if options.FilterGenericDuplicateCriteria {
+		query.Set("filter_generic_duplicate_criteria", "true")
+	}
 	if options.Criteria != nil {
 		criteriaJson, err := json.Marshal(options.Criteria)
 		if err != nil {
