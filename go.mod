@@ -10,7 +10,7 @@ require (
 require (
 	github.com/IBM/sarama v1.43.3
 	github.com/SENERGY-Platform/models/go v0.0.0-20241007061544-de7132ae94e4
-	github.com/SENERGY-Platform/permissions-v2 v0.0.26
+	github.com/SENERGY-Platform/permissions-v2 v0.0.27
 	github.com/SENERGY-Platform/service-commons v0.0.0-20240813072046-91b3195dd8fc
 	github.com/google/uuid v1.6.0
 	github.com/swaggo/http-swagger v1.3.4
