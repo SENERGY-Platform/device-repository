@@ -26,5 +26,5 @@ func (c *Client) GetService(id string) (result models.Service, err error, code i
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.Service](req)
+	return do[models.Service](req, c.optionalAuthTokenForApiGatewayRequest)
 }

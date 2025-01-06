@@ -94,7 +94,7 @@ func TestListDeviceGroups(t *testing.T) {
 	f := func(options model.DeviceGroupListOptions, expectedTotal int64, expectedGroups []models.DeviceGroup) func(t *testing.T) {
 		return func(t *testing.T) {
 			t.Helper()
-			actualGroups, actualTotal, err, _ := client.NewClient("http://localhost:"+conf.ServerPort).ListDeviceGroups(Userjwt, options)
+			actualGroups, actualTotal, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(Userjwt, options)
 			if err != nil {
 				t.Error(err)
 				return
@@ -112,7 +112,7 @@ func TestListDeviceGroups(t *testing.T) {
 	}
 
 	t.Run("other user may not access", func(t *testing.T) {
-		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort).ListDeviceGroups(SecondOwnerToken, client.DeviceGroupListOptions{})
+		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(SecondOwnerToken, client.DeviceGroupListOptions{})
 		if err != nil {
 			t.Error(err)
 			return

@@ -28,7 +28,7 @@ func (c *Client) ReadProtocol(id string, token string) (result models.Protocol, 
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.Protocol](req)
+	return do[models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ListProtocols(token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int) {
@@ -38,7 +38,7 @@ func (c *Client) ListProtocols(token string, limit int64, offset int64, sort str
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]models.Protocol](req)
+	return do[[]models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateProtocol(protocol models.Protocol) (err error, code int) {

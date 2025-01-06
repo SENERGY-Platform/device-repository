@@ -68,7 +68,7 @@ func (c *Client) ListDeviceGroups(token string, options model.DeviceGroupListOpt
 		return result, 0, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.DeviceGroup](req)
+	return doWithTotalInResult[[]models.DeviceGroup](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
@@ -81,7 +81,7 @@ func (c *Client) ReadDeviceGroup(id string, token string, filterGenericDuplicate
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.DeviceGroup](req)
+	return do[models.DeviceGroup](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateDeviceGroup(token string, deviceGroup models.DeviceGroup) (err error, code int) {

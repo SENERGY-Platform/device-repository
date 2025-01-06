@@ -39,7 +39,7 @@ func (c *Client) ReadHub(id string, token string, action model.AuthAction) (resu
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Hub](req)
+	return do[models.Hub](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int) {
@@ -80,7 +80,7 @@ func (c *Client) ListHubs(token string, options model.HubListOptions) (result []
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.Hub](req)
+	return do[[]models.Hub](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
@@ -98,7 +98,7 @@ func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthActi
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]string](req)
+	return do[[]string](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateHub(token string, hub models.Hub) (err error, code int) {

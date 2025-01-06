@@ -51,7 +51,7 @@ func TestLocations(t *testing.T) {
 	}
 	deviceManagerUrl := "http://localhost:" + managerPort
 
-	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	locations := []models.Location{}
 	userLocations := []models.Location{}

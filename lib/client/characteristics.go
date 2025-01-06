@@ -50,7 +50,7 @@ func (c *Client) ListCharacteristics(options model.CharacteristicListOptions) (r
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.Characteristic](req)
+	return doWithTotalInResult[[]models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetCharacteristics(leafsOnly bool) (result []models.Characteristic, err error, errCode int) {
@@ -58,7 +58,7 @@ func (c *Client) GetCharacteristics(leafsOnly bool) (result []models.Characteris
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Characteristic](req)
+	return do[[]models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetCharacteristic(id string) (result models.Characteristic, err error, errCode int) {
@@ -66,7 +66,7 @@ func (c *Client) GetCharacteristic(id string) (result models.Characteristic, err
 	if err != nil {
 		return models.Characteristic{}, err, http.StatusInternalServerError
 	}
-	return do[models.Characteristic](req)
+	return do[models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateCharacteristics(characteristic models.Characteristic) (err error, code int) {

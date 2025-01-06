@@ -219,7 +219,7 @@ func TestConnectionStateHandling(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	t.Run("check with unknown connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {

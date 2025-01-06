@@ -50,7 +50,7 @@ func (c *Client) ListConcepts(options model.ConceptListOptions) (result []models
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.Concept](req)
+	return doWithTotalInResult[[]models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ListConceptsWithCharacteristics(options model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int) {
@@ -78,7 +78,7 @@ func (c *Client) ListConceptsWithCharacteristics(options model.ConceptListOption
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.ConceptWithCharacteristics](req)
+	return doWithTotalInResult[[]models.ConceptWithCharacteristics](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetConceptWithCharacteristics(id string) (models.ConceptWithCharacteristics, error, int) {
@@ -86,7 +86,7 @@ func (c *Client) GetConceptWithCharacteristics(id string) (models.ConceptWithCha
 	if err != nil {
 		return models.ConceptWithCharacteristics{}, err, http.StatusInternalServerError
 	}
-	return do[models.ConceptWithCharacteristics](req)
+	return do[models.ConceptWithCharacteristics](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetConceptWithoutCharacteristics(id string) (models.Concept, error, int) {
@@ -94,7 +94,7 @@ func (c *Client) GetConceptWithoutCharacteristics(id string) (models.Concept, er
 	if err != nil {
 		return models.Concept{}, err, http.StatusInternalServerError
 	}
-	return do[models.Concept](req)
+	return do[models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateConcept(concept models.Concept) (err error, code int) {

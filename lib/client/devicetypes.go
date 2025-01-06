@@ -36,7 +36,7 @@ func (c *Client) ReadDeviceType(id string, token string) (result models.DeviceTy
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.DeviceType](req)
+	return do[models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
@@ -60,7 +60,7 @@ func (c *Client) ListDeviceTypes(token string, limit int64, offset int64, sort s
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.DeviceType](req)
+	return do[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
@@ -83,7 +83,7 @@ func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.DeviceType](req)
+	return do[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
@@ -134,7 +134,7 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 		return result, 0, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.DeviceType](req)
+	return doWithTotalInResult[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 type DeviceTypeValidationOptions = model.ValidationOptions
@@ -152,5 +152,5 @@ func (c *Client) GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (result 
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[model.UsedInDeviceTypeResponse](req)
+	return do[model.UsedInDeviceTypeResponse](req, c.optionalAuthTokenForApiGatewayRequest)
 }

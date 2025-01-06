@@ -77,7 +77,7 @@ func (c *Client) ListExtendedDevices(token string, options model.ExtendedDeviceL
 		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.ExtendedDevice](req)
+	return doWithTotalInResult[[]models.ExtendedDevice](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
@@ -97,7 +97,7 @@ func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAc
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.ExtendedDevice](req)
+	return do[models.ExtendedDevice](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
@@ -115,5 +115,5 @@ func (c *Client) ReadExtendedDeviceByLocalId(ownerId string, localId string, tok
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.ExtendedDevice](req)
+	return do[models.ExtendedDevice](req, c.optionalAuthTokenForApiGatewayRequest)
 }

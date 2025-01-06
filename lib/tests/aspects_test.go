@@ -106,7 +106,7 @@ func testAspectList(t *testing.T, producer *testutils.Publisher, conf config.Con
 		}
 	})
 	time.Sleep(5 * time.Second)
-	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list all aspects", func(t *testing.T) {
 		list, total, err, _ := c.ListAspects(client.AspectListOptions{})
 		if err != nil {

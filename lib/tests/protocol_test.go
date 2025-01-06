@@ -123,7 +123,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 	time.Sleep(10 * time.Second)
 
 	t.Run("find device-types by protocolIds", func(t *testing.T) {
-		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("0", func(t *testing.T) {
 			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0]},

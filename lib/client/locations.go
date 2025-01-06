@@ -31,7 +31,7 @@ func (c *Client) GetLocation(id string, token string) (location models.Location,
 	if err != nil {
 		return location, err, http.StatusInternalServerError
 	}
-	return do[models.Location](req)
+	return do[models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateLocation(location models.Location) (err error, code int) {
@@ -67,5 +67,5 @@ func (c *Client) ListLocations(token string, options model.LocationListOptions) 
 		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.Location](req)
+	return doWithTotalInResult[[]models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
 }

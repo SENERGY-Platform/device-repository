@@ -61,7 +61,7 @@ func testListDeviceClasses(t *testing.T, producer *testutils.Publisher, conf con
 	})
 
 	time.Sleep(5 * time.Second)
-	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	t.Run("list all device-classes", func(t *testing.T) {
 		list, total, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{})

@@ -54,7 +54,7 @@ func (c *Client) ListFunctions(options model.FunctionListOptions) (result []mode
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.Function](req)
+	return doWithTotalInResult[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetFunctionsByType(rdfType string) (result []models.Function, err error, errCode int) {
@@ -71,7 +71,7 @@ func (c *Client) GetFunctionsByType(rdfType string) (result []models.Function, e
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req)
+	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetFunction(id string) (result models.Function, err error, errCode int) {
@@ -79,7 +79,7 @@ func (c *Client) GetFunction(id string) (result models.Function, err error, errC
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.Function](req)
+	return do[models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateFunction(function models.Function) (err error, code int) {

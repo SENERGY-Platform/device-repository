@@ -189,7 +189,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list none", func(t *testing.T) {
 		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{}})
 		if err != nil {
@@ -430,7 +430,7 @@ func TestDeviceQuery(t *testing.T) {
 	time.Sleep(10 * time.Second)
 
 	t.Run("check fulldt query param", func(t *testing.T) {
-		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("ReadExtendedDevice", func(t *testing.T) {
 			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read, true)
 			if err != nil {
@@ -487,7 +487,7 @@ func TestDeviceQuery(t *testing.T) {
 	})
 
 	t.Run("test list devices", func(t *testing.T) {
-		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("list none", func(t *testing.T) {
 			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Ids: []string{}})
 			if err != nil {
@@ -705,7 +705,7 @@ func TestDeviceQuery(t *testing.T) {
 	})
 
 	t.Run("test list extended-devices", func(t *testing.T) {
-		c := client.NewClient("http://localhost:" + conf.ServerPort)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("list none", func(t *testing.T) {
 			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Ids: []string{}})
 			if err != nil {
@@ -1177,7 +1177,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 		})
 
 		t.Run("validates", func(t *testing.T) {
-			c := client.NewClient("http://localhost:" + conf.ServerPort)
+			c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 			t.Run("user may add new device with new local-id", func(t *testing.T) {
 				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/20",

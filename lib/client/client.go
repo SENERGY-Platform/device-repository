@@ -35,13 +35,29 @@ type Interface interface {
 
 type Client struct {
 	baseUrl string
+
+	// optionalAuthTokenForApiGatewayRequest:
+	//   - may be nil if used internally, without kong routing
+	//   - is used for requests that internally don`t need an auth token but are forced to send one if the request is routed over the SENERGY-Platform api-gateway
+	optionalAuthTokenForApiGatewayRequest func() (token string, err error)
 }
 
-func NewClient(baseUrl string) Interface {
-	return &Client{baseUrl: baseUrl}
+// NewClient creates a new client
+// optionalAuthTokenForApiGatewayRequest:
+//   - may be nil if used internally, without kong routing
+//   - is used for requests that internally don`t need an auth token but are forced to send one if the request is routed over the SENERGY-Platform api-gateway
+func NewClient(baseUrl string, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) Interface {
+	return &Client{baseUrl: baseUrl, optionalAuthTokenForApiGatewayRequest: optionalAuthTokenForApiGatewayRequest}
 }
 
-func do[T any](req *http.Request) (result T, err error, code int) {
+func do[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (result T, err error, code int) {
+	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
+		token, err := optionalAuthTokenForApiGatewayRequest()
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		req.Header.Set("Authorization", token)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -59,7 +75,14 @@ func do[T any](req *http.Request) (result T, err error, code int) {
 	return
 }
 
-func doWithTotalInResult[T any](req *http.Request) (result T, total int64, err error, code int) {
+func doWithTotalInResult[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (result T, total int64, err error, code int) {
+	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
+		token, err := optionalAuthTokenForApiGatewayRequest()
+		if err != nil {
+			return result, total, err, http.StatusInternalServerError
+		}
+		req.Header.Set("Authorization", token)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -119,6 +142,13 @@ func (c *Client) validate(path string, e interface{}) (err error, code int) {
 }
 
 func (c *Client) validateWithOptions(path string, e interface{}, options url.Values) (err error, code int) {
+	if c.optionalAuthTokenForApiGatewayRequest != nil {
+		token, err := c.optionalAuthTokenForApiGatewayRequest()
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		return c.validateWithTokenAndOptions(token, path, e, options)
+	}
 	b, err := json.Marshal(e)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -141,6 +171,13 @@ func (c *Client) validateWithOptions(path string, e interface{}, options url.Val
 }
 
 func (c *Client) validateDelete(path string) (err error, code int) {
+	if c.optionalAuthTokenForApiGatewayRequest != nil {
+		token, err := c.optionalAuthTokenForApiGatewayRequest()
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		return c.validateDeleteWithToken(token, path)
+	}
 	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+path+"?dry-run=true", nil)
 	if err != nil {
 		return err, http.StatusInternalServerError

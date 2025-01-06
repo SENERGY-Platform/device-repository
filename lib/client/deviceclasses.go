@@ -50,7 +50,7 @@ func (c *Client) ListDeviceClasses(options model.DeviceClassListOptions) (result
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.DeviceClass](req)
+	return doWithTotalInResult[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetDeviceClasses() ([]models.DeviceClass, error, int) {
@@ -58,7 +58,7 @@ func (c *Client) GetDeviceClasses() ([]models.DeviceClass, error, int) {
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.DeviceClass](req)
+	return do[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetDeviceClassesWithControllingFunctions() ([]models.DeviceClass, error, int) {
@@ -66,7 +66,7 @@ func (c *Client) GetDeviceClassesWithControllingFunctions() ([]models.DeviceClas
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.DeviceClass](req)
+	return do[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetDeviceClassesFunctions(id string) (result []models.Function, err error, errCode int) {
@@ -74,7 +74,7 @@ func (c *Client) GetDeviceClassesFunctions(id string) (result []models.Function,
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req)
+	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetDeviceClassesControllingFunctions(id string) (result []models.Function, err error, errCode int) {
@@ -82,7 +82,7 @@ func (c *Client) GetDeviceClassesControllingFunctions(id string) (result []model
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req)
+	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetDeviceClass(id string) (result models.DeviceClass, err error, errCode int) {
@@ -90,7 +90,7 @@ func (c *Client) GetDeviceClass(id string) (result models.DeviceClass, err error
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.DeviceClass](req)
+	return do[models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) ValidateDeviceClass(deviceclass models.DeviceClass) (err error, code int) {

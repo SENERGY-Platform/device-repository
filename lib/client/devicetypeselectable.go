@@ -35,7 +35,7 @@ func (c *Client) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPref
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]model.DeviceTypeSelectable](req)
+	return do[[]model.DeviceTypeSelectable](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int) {
@@ -48,5 +48,5 @@ func (c *Client) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPr
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]model.DeviceTypeSelectable](req)
+	return do[[]model.DeviceTypeSelectable](req, c.optionalAuthTokenForApiGatewayRequest)
 }

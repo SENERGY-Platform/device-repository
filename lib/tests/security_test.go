@@ -113,7 +113,7 @@ func TestSecurity(t *testing.T) {
 		return
 	}
 
-	deviceRepoClient := client.NewClient("http://localhost:" + conf.ServerPort)
+	deviceRepoClient := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	setRights := func(resourceKind string, resourceId string, rights model.ResourceRights) error {
 		_, err, _ := deviceRepoClient.GetPermissionsClient().SetPermission(permclient.InternalAdminToken, resourceKind, resourceId, rights.ToPermV2Permissions())

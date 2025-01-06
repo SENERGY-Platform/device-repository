@@ -82,7 +82,7 @@ func TestQueryDeviceTypeReferences(t *testing.T) {
 
 	clientUrl := "http://localhost:" + conf.ServerPort
 
-	c := client.NewClient(clientUrl)
+	c := client.NewClient(clientUrl, nil)
 
 	query := model.UsedInDeviceTypeQuery{
 		Resource: "aspects",

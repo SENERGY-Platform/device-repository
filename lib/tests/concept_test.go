@@ -126,7 +126,7 @@ func testConceptList(t *testing.T, producer *testutils.Publisher, conf config.Co
 		}
 	})
 	time.Sleep(5 * time.Second)
-	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list all concepts", func(t *testing.T) {
 		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{})
 		if err != nil {

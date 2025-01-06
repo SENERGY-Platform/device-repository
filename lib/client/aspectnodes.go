@@ -52,7 +52,7 @@ func (c *Client) ListAspectNodes(options model.AspectListOptions) (result []mode
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.AspectNode](req)
+	return doWithTotalInResult[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetAspectNode(id string) (models.AspectNode, error, int) {
@@ -60,7 +60,7 @@ func (c *Client) GetAspectNode(id string) (models.AspectNode, error, int) {
 	if err != nil {
 		return models.AspectNode{}, err, http.StatusInternalServerError
 	}
-	return do[models.AspectNode](req)
+	return do[models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetAspectNodes() ([]models.AspectNode, error, int) {
@@ -68,7 +68,7 @@ func (c *Client) GetAspectNodes() ([]models.AspectNode, error, int) {
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req)
+	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
@@ -76,7 +76,7 @@ func (c *Client) GetAspectNodesWithMeasuringFunction(ancestors bool, descendants
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req)
+	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
@@ -85,7 +85,7 @@ func (c *Client) GetAspectNodesMeasuringFunctions(id string, ancestors bool, des
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req)
+	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetAspectNodesWithFunction(function string, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
@@ -93,7 +93,7 @@ func (c *Client) GetAspectNodesWithFunction(function string, ancestors bool, des
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req)
+	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
 func (c *Client) GetAspectNodesByIdList(ids []string) (result []models.AspectNode, err error, code int) {
@@ -105,5 +105,5 @@ func (c *Client) GetAspectNodesByIdList(ids []string) (result []models.AspectNod
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req)
+	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }

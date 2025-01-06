@@ -127,7 +127,7 @@ func TestGeneratedDeviceGroups(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	c := client.NewClient("http://localhost:" + conf.ServerPort)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	var dg1 models.DeviceGroup
 	t.Run("check dg1", func(t *testing.T) {
