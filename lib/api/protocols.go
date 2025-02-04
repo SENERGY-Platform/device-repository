@@ -158,3 +158,123 @@ func (this *ProtocolEndpoints) Validate(config config.Config, router *http.Serve
 		writer.WriteHeader(http.StatusOK)
 	})
 }
+
+// Create godoc
+// @Summary      create protocol
+// @Description  create protocol
+// @Tags         create, protocols
+// @Produce      json
+// @Security Bearer
+// @Param        message body models.Protocol true "element"
+// @Success      200 {object}  models.Protocol
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /protocols [POST]
+func (this *ProtocolEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /protocols", func(writer http.ResponseWriter, request *http.Request) {
+		protocol := models.Protocol{}
+		err := json.NewDecoder(request.Body).Decode(&protocol)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if protocol.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetProtocol(token, protocol)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set protocol
+// @Description  set protocol
+// @Tags         set, protocols
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Protocol Id"
+// @Param        message body models.Protocol true "element"
+// @Success      200 {object}  models.Protocol
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /protocols/{id} [PUT]
+func (this *ProtocolEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		protocol := models.Protocol{}
+		err := json.NewDecoder(request.Body).Decode(&protocol)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if protocol.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetProtocol(token, protocol)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Delete godoc
+// @Summary      delete protocol
+// @Description  delete protocol
+// @Tags         delete, protocols
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Protocol Id"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /protocols/{id} [DELETE]
+func (this *ProtocolEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		token := util.GetAuthToken(request)
+		err, errCode := control.DeleteProtocol(token, id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}

@@ -345,3 +345,143 @@ func (this *DeviceTypeEndpoints) Validate(config config.Config, router *http.Ser
 		writer.WriteHeader(http.StatusOK)
 	})
 }
+
+// Create godoc
+// @Summary      create device-type
+// @Description  create device-type
+// @Tags         create, device-types
+// @Produce      json
+// @Security Bearer
+// @Param        distinct_attributes query string false "comma separated list of attribute keys; no other device-type with the same attribute key/value may exist"
+// @Param        message body models.DeviceType true "element"
+// @Success      200 {object}  models.DeviceType
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-types [POST]
+func (this *DeviceTypeEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /device-types", func(writer http.ResponseWriter, request *http.Request) {
+		devicetype := models.DeviceType{}
+		err := json.NewDecoder(request.Body).Decode(&devicetype)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+		if devicetype.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
+			return
+		}
+
+		distinctAttr := request.URL.Query().Get("distinct_attributes")
+		if distinctAttr != "" {
+			err = control.ValidateDistinctDeviceTypeAttributes(devicetype, strings.Split(distinctAttr, ","))
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		result, err, errCode := control.SetDeviceType(token, devicetype)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set device-type
+// @Description  set device-type
+// @Tags         set, device-types
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "DeviceType Id"
+// @Param        distinct_attributes query string false "comma separated list of attribute keys; no other device-type with the same attribute key/value may exist"
+// @Param        message body models.DeviceType true "element"
+// @Success      200 {object}  models.DeviceType
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-types/{id} [PUT]
+func (this *DeviceTypeEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		devicetype := models.DeviceType{}
+		err := json.NewDecoder(request.Body).Decode(&devicetype)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if id != devicetype.Id || devicetype.Id == "" {
+			http.Error(writer, "expect body and path to contain the same device-type id", http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+		distinctAttr := request.URL.Query().Get("distinct_attributes")
+		if distinctAttr != "" {
+			err = control.ValidateDistinctDeviceTypeAttributes(devicetype, strings.Split(distinctAttr, ","))
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		result, err, errCode := control.SetDeviceType(token, devicetype)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Delete godoc
+// @Summary      delete device-type
+// @Description  delete device-type
+// @Tags         delete, device-types
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "DeviceType Id"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-types/{id} [DELETE]
+func (this *DeviceTypeEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		token := util.GetAuthToken(request)
+
+		err, errCode := control.DeleteDeviceType(token, id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}

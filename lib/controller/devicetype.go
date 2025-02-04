@@ -23,16 +23,15 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"log"
 	"net/http"
+	"runtime/debug"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 )
-
-/////////////////////////
-//		api
-/////////////////////////
 
 func (this *Controller) ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int) {
 	return this.readDeviceType(id)
@@ -345,12 +344,7 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 }
 
 func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(s, e)
 }
 
 func (this *Controller) getAspectNodeForDeviceTypeSelectables(aspectCache *map[string]models.AspectNode, aspectId string) (aspectNode models.AspectNode, err error) {
@@ -575,16 +569,110 @@ func addDeviceTypeCriteriaToVariableRefs(list []model.VariableReference, criteri
 	return list
 }
 
-/////////////////////////
-//		source
-/////////////////////////
+func (this *Controller) SetDeviceType(token string, dt models.DeviceType) (models.DeviceType, error, int) {
+	dt.GenerateId() //ensure ids
 
-func (this *Controller) SetDeviceType(deviceType models.DeviceType, owner string) (err error) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return dt, err, http.StatusInternalServerError
+	}
+	ctx, _ := getTimeoutContext()
+	_, exists, err := this.db.GetDeviceType(ctx, dt.Id)
+	if err != nil {
+		return dt, err, http.StatusInternalServerError
+	}
+
+	if !jwtToken.IsAdmin() && exists {
+		return dt, errors.New("only admins may update existing device-types"), http.StatusForbidden
+	}
+	err, code := this.ValidateDeviceType(dt, model.ValidationOptions{})
+	if err != nil {
+		debug.PrintStack()
+		return dt, err, code
+	}
+
+	err = this.setDeviceType(dt)
+	if err != nil {
+		debug.PrintStack()
+		return dt, err, http.StatusInternalServerError
+	}
+
+	return dt, nil, http.StatusOK
+}
+
+func (this *Controller) setDeviceType(deviceType models.DeviceType) (err error) {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetDeviceType(ctx, deviceType)
 }
 
-func (this *Controller) DeleteDeviceType(id string) error {
+func (this *Controller) DeleteDeviceType(token string, id string) (err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("only admins may delete device-types"), http.StatusForbidden
+	}
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveDeviceType(ctx, id)
+	err = this.db.RemoveDeviceType(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) ValidateDistinctDeviceTypeAttributes(devicetype models.DeviceType, attributeKeys []string) error {
+	dtAttr := map[string]string{}
+	for _, attr := range devicetype.Attributes {
+		dtAttr[strings.TrimSpace(attr.Key)] = strings.TrimSpace(attr.Value)
+	}
+
+	options := model.DeviceTypeListOptions{
+		Limit:           9999,
+		AttributeKeys:   nil,
+		AttributeValues: nil,
+	}
+
+	for _, attrKey := range attributeKeys {
+		attrKey = strings.TrimSpace(attrKey)
+		if value, ok := dtAttr[attrKey]; ok {
+			options.AttributeKeys = append(options.AttributeKeys, attrKey)
+			options.AttributeValues = append(options.AttributeValues, strings.TrimSpace(value))
+		} else {
+			return errors.New("distinct attribute not in device-type attributes found")
+		}
+	}
+	ctx, _ := getTimeoutContext()
+	list, _, err := this.db.ListDeviceTypesV3(ctx, options)
+	if err != nil {
+		return err
+	}
+	for _, element := range list {
+		eAttr := map[string]string{}
+		for _, attr := range element.Attributes {
+			eAttr[attr.Key] = strings.TrimSpace(attr.Value)
+		}
+		if element.Id != devicetype.Id && attributesMatch(dtAttr, eAttr, attributeKeys) {
+			return errors.New("find matching distinct attributes in " + element.Id)
+		}
+	}
+	return nil
+}
+
+func attributesMatch(a, b map[string]string, attributes []string) bool {
+	for _, attrKey := range attributes {
+		attrKey = strings.TrimSpace(attrKey)
+		aValue, ok := a[attrKey]
+		if !ok {
+			return false
+		}
+		bValue, ok := b[attrKey]
+		if !ok {
+			return false
+		}
+		if strings.TrimSpace(aValue) != strings.TrimSpace(bValue) {
+			return false
+		}
+	}
+	return true
 }

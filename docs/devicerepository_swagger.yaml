@@ -16,6 +16,22 @@ definitions:
       name:
         type: string
     type: object
+  model.AdminLoadPermSearchRequest:
+    properties:
+      dry_run:
+        description: true -> log changes without executing them
+        type: boolean
+      overwrite_existing:
+        description: false -> skip known elements; true -> force state of permission-search
+        type: boolean
+      permission_search_url:
+        type: string
+      token:
+        type: string
+      topic_id:
+        description: topic as used in permissions-v2
+        type: string
+    type: object
   model.ComputedPermissions:
     properties:
       administrate:
@@ -858,6 +874,42 @@ paths:
       - list
       - aspects
       - deprecated
+    post:
+      description: create aspect with generated id
+      parameters:
+      - description: wait for done message in kafka before responding
+        in: query
+        name: wait
+        type: boolean
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Aspect'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Aspect'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create aspect
+      tags:
+      - create
+      - aspects
     put:
       consumes:
       - application/json
@@ -889,12 +941,12 @@ paths:
       - aspects
   /aspects/{id}:
     delete:
-      description: validate if aspect may be deleted
+      description: delete aspect; may only be called by admins; can also be used to
+        only validate deletes
       parameters:
-      - description: must be true; reminder, that this is not a delete but a validation
+      - description: only validate deletion
         in: query
         name: dry-run
-        required: true
         type: boolean
       - description: Aspect Id
         in: path
@@ -910,7 +962,7 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: validate aspect delete
+      summary: delete aspect
       tags:
       - validate
       - aspects
@@ -944,6 +996,43 @@ paths:
       summary: get aspect
       tags:
       - get
+      - aspects
+    put:
+      description: set aspect
+      parameters:
+      - description: Aspect Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Aspect'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Aspect'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set aspect
+      tags:
+      - set
       - aspects
   /aspects/{id}/measuring-functions:
     get:
@@ -1024,6 +1113,38 @@ paths:
       tags:
       - list
       - characteristics
+    post:
+      description: create characteristic
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Characteristic'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Characteristic'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create characteristic
+      tags:
+      - create
+      - characteristics
     put:
       consumes:
       - application/json
@@ -1032,7 +1153,6 @@ paths:
       - description: must be true; reminder, that this is not an update but a validation
         in: query
         name: dry-run
-        required: true
         type: boolean
       - description: Characteristic to be validated
         in: body
@@ -1055,12 +1175,12 @@ paths:
       - characteristics
   /characteristics/{id}:
     delete:
-      description: validate if characteristic may be deleted
+      description: delete characteristic; may only be called by admins; can also be
+        used to only validate deletes
       parameters:
-      - description: must be true; reminder, that this is not a delete but a validation
+      - description: only validate deletion
         in: query
         name: dry-run
-        required: true
         type: boolean
       - description: Characteristics Id
         in: path
@@ -1076,7 +1196,7 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: validate characteristic delete
+      summary: delete characteristic
       tags:
       - validate
       - characteristics
@@ -1111,7 +1231,76 @@ paths:
       tags:
       - get
       - characteristics
+    put:
+      description: set characteristic
+      parameters:
+      - description: Characteristic Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Characteristic'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Characteristic'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set characteristic
+      tags:
+      - set
+      - characteristics
   /concepts:
+    post:
+      description: create concept
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Concept'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Concept'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create concept
+      tags:
+      - create
+      - concepts
     put:
       consumes:
       - application/json
@@ -1143,12 +1332,12 @@ paths:
       - concepts
   /concepts/{id}:
     delete:
-      description: validate if concept may be deleted
+      description: delete concept; may only be called by admins; can also be used
+        to only validate deletes
       parameters:
-      - description: must be true; reminder, that this is not a delete but a validation
+      - description: only validate deletion
         in: query
         name: dry-run
-        required: true
         type: boolean
       - description: Concepts Id
         in: path
@@ -1164,7 +1353,7 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: validate concepts delete
+      summary: delete concept
       tags:
       - validate
       - concepts
@@ -1203,6 +1392,43 @@ paths:
       summary: get concept
       tags:
       - get
+      - concepts
+    put:
+      description: set concept
+      parameters:
+      - description: Concept Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Concept'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Concept'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set concept
+      tags:
+      - set
       - concepts
   /controlling-functions:
     get:
@@ -1268,6 +1494,38 @@ paths:
       - list
       - device-classes
       - deprecated
+    post:
+      description: create device-class
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceClass'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceClass'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create device-class
+      tags:
+      - create
+      - device-classes
     put:
       consumes:
       - application/json
@@ -1299,14 +1557,14 @@ paths:
       - device-classes
   /device-classes/{id}:
     delete:
-      description: validate if device-class may be deleted
+      description: delete device-class; may only be called by admins; can also be
+        used to only validate deletes
       parameters:
-      - description: must be true; reminder, that this is not a delete but a validation
+      - description: only validate deletion
         in: query
         name: dry-run
-        required: true
         type: boolean
-      - description: DeviceClass Id
+      - description: DeviceClasses Id
         in: path
         name: id
         required: true
@@ -1320,7 +1578,7 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: validate device-class delete
+      summary: delete device-class
       tags:
       - validate
       - device-classes
@@ -1354,6 +1612,43 @@ paths:
       summary: get device-class
       tags:
       - get
+      - device-classes
+    put:
+      description: set device-class
+      parameters:
+      - description: DeviceClass Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceClass'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceClass'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set device-class
+      tags:
+      - set
       - device-classes
   /device-classes/{id}/controlling-functions:
     get:
@@ -1506,6 +1801,38 @@ paths:
       tags:
       - list
       - device-groups
+    post:
+      description: create device-group
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceGroup'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create device-group
+      tags:
+      - create
+      - device-groups
     put:
       consumes:
       - application/json
@@ -1537,14 +1864,14 @@ paths:
       - device-groups
   /device-groups/{id}:
     delete:
-      description: validate if device-group may be deleted
+      description: delete device-group; may only be called by admins; can also be
+        used to only validate deletes
       parameters:
-      - description: must be true; reminder, that this is not a delete but a validation
+      - description: only validate deletion
         in: query
         name: dry-run
-        required: true
         type: boolean
-      - description: Device-Group Id
+      - description: DeviceGroup Id
         in: path
         name: id
         required: true
@@ -1558,7 +1885,7 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: validate device-group delete
+      summary: delete device-group
       tags:
       - validate
       - device-groups
@@ -1598,7 +1925,81 @@ paths:
       tags:
       - get
       - device-groups
+    put:
+      description: set device-group
+      parameters:
+      - description: DeviceGroup Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceGroup'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set device-group
+      tags:
+      - set
+      - device-groups
   /device-types:
+    post:
+      description: create device-type
+      parameters:
+      - description: comma separated list of attribute keys; no other device-type
+          with the same attribute key/value may exist
+        in: query
+        name: distinct_attributes
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceType'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create device-type
+      tags:
+      - create
+      - device-types
     put:
       consumes:
       - application/json
@@ -1629,6 +2030,35 @@ paths:
       - validate
       - device-types
   /device-types/{id}:
+    delete:
+      description: delete device-type
+      parameters:
+      - description: DeviceType Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete device-type
+      tags:
+      - delete
+      - device-types
     get:
       description: get device-type
       parameters:
@@ -1660,7 +2090,81 @@ paths:
       tags:
       - get
       - device-types
+    put:
+      description: set device-type
+      parameters:
+      - description: DeviceType Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: comma separated list of attribute keys; no other device-type
+          with the same attribute key/value may exist
+        in: query
+        name: distinct_attributes
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeviceType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DeviceType'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set device-type
+      tags:
+      - set
+      - device-types
   /devices:
+    delete:
+      description: delete multiple devices
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple devices
+      tags:
+      - delete
+      - devices
     get:
       description: list devices
       parameters:
@@ -1743,6 +2247,38 @@ paths:
       tags:
       - list
       - devices
+    post:
+      description: create device
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Device'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create device
+      tags:
+      - create
+      - devices
     put:
       consumes:
       - application/json
@@ -1773,6 +2309,35 @@ paths:
       - validate
       - devices
   /devices/{id}:
+    delete:
+      description: delete device
+      parameters:
+      - description: Device Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete device
+      tags:
+      - delete
+      - devices
     get:
       description: get device
       parameters:
@@ -1817,6 +2382,132 @@ paths:
       summary: get device
       tags:
       - get
+      - devices
+    put:
+      description: set device; admins may create new devices but only without using
+        the UpdateOnlySameOriginAttributesKey query parameter
+      parameters:
+      - description: Device Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: comma separated list; ensure that no attribute from another origin
+          is overwritten
+        in: query
+        name: update-only-same-origin-attributes
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Device'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set device
+      tags:
+      - set
+      - devices
+  /devices/{id}/attributes:
+    put:
+      description: set device attributes
+      parameters:
+      - description: Device Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: comma separated list; ensure that no attribute from another origin
+          is overwritten
+        in: query
+        name: update-only-same-origin-attributes
+        type: string
+      - description: attributes
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.Attribute'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set device attributes
+      tags:
+      - set
+      - devices
+  /devices/{id}/display_name:
+    put:
+      description: set device display name
+      parameters:
+      - description: Device Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: display name
+        in: body
+        name: message
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set device display name
+      tags:
+      - set
       - devices
   /extended-devices:
     get:
@@ -2121,6 +2812,38 @@ paths:
       tags:
       - list
       - functions
+    post:
+      description: create function
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Function'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Function'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create function
+      tags:
+      - create
+      - functions
     put:
       consumes:
       - application/json
@@ -2152,14 +2875,14 @@ paths:
       - locations
   /functions/{id}:
     delete:
-      description: validate if function may be deleted
+      description: delete function; may only be called by admins; can also be used
+        to only validate deletes
       parameters:
-      - description: must be true; reminder, that this is not a delete but a validation
+      - description: only validate deletion
         in: query
         name: dry-run
-        required: true
         type: boolean
-      - description: Function Id
+      - description: Functions Id
         in: path
         name: id
         required: true
@@ -2173,7 +2896,7 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: validate function delete
+      summary: delete function
       tags:
       - validate
       - functions
@@ -2208,6 +2931,71 @@ paths:
       tags:
       - get
       - functions
+    put:
+      description: set function
+      parameters:
+      - description: Function Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Function'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Function'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set function
+      tags:
+      - set
+      - functions
+  /helper/id:
+    get:
+      description: transforms short id to long id
+      parameters:
+      - description: short id
+        in: query
+        name: short_id
+        required: true
+        type: string
+      - description: prefix added to generated long id
+        in: query
+        name: prefix
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+      security:
+      - Bearer: []
+      summary: transforms short id to long id
+      tags:
+      - helper
   /hubs:
     get:
       description: list hubs
@@ -2267,6 +3055,38 @@ paths:
       tags:
       - list
       - hubs
+    post:
+      description: create hub
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Hub'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Hub'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create hub
+      tags:
+      - create
+      - hubs
     put:
       consumes:
       - application/json
@@ -2297,6 +3117,35 @@ paths:
       - validate
       - hubs
   /hubs/{id}:
+    delete:
+      description: delete hub
+      parameters:
+      - description: Hub Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete hub
+      tags:
+      - delete
+      - hubs
     get:
       description: get hub
       parameters:
@@ -2365,6 +3214,49 @@ paths:
       tags:
       - head
       - hubs
+    put:
+      description: set hub
+      parameters:
+      - description: Hub Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: only admins may set user_id; overwrites hub.OwnerId; defaults
+          to existing hub.OwnerId and falls back to user-id of requesting user if
+          hub does not exist
+        in: query
+        name: user_id
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Hub'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Hub'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set hub
+      tags:
+      - set
+      - hubs
   /hubs/{id}/devices:
     get:
       description: get device ids of hub
@@ -2410,6 +3302,44 @@ paths:
       - get
       - hubs
       - devices
+  /hubs/{id}/name:
+    put:
+      description: set hub name
+      parameters:
+      - description: Hub Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: name
+        in: body
+        name: message
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Hub'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set hub name
+      tags:
+      - set
+      - hubs
   /invalid/device-type:
     get:
       description: validate existing device-types
@@ -2454,6 +3384,151 @@ paths:
       tags:
       - validate
       - device-types
+  /local-devices/{id}:
+    delete:
+      description: delete device (local-id variant)
+      parameters:
+      - description: Device Local Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: defaults to requesting user; used in combination with id to find
+          device
+        in: query
+        name: owner_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete device (local-id variant)
+      tags:
+      - delete
+      - devices
+    get:
+      description: get device by local id
+      parameters:
+      - description: Device Local Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: defaults to requesting user; used in combination with id to find
+          device
+        in: query
+        name: owner_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get device by local id
+      tags:
+      - get
+      - devices
+    post:
+      description: create device (local-id variant)
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Device'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create device (local-id variant)
+      tags:
+      - create
+      - devices
+    put:
+      description: set device (local-id variant)
+      parameters:
+      - description: Device Local Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: comma separated list; ensure that no attribute from another origin
+          is overwritten
+        in: query
+        name: update-only-same-origin-attributes
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Device'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Device'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set device (local-id variant)
+      tags:
+      - set
+      - devices
   /locations:
     get:
       description: list location
@@ -2512,7 +3587,73 @@ paths:
       tags:
       - list
       - locations
+    post:
+      description: create location
+      parameters:
+      - description: Location Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Location'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Location'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create location
+      tags:
+      - create
+      - locations
   /locations/{id}:
+    delete:
+      description: delete location
+      parameters:
+      - description: Location Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete location
+      tags:
+      - delete
+      - locations
     get:
       description: get location
       parameters:
@@ -2543,6 +3684,43 @@ paths:
       summary: get location
       tags:
       - get
+      - locations
+    put:
+      description: set location
+      parameters:
+      - description: Location Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Location'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Location'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set location
+      tags:
+      - set
       - locations
   /measuring-functions:
     get:
@@ -2615,6 +3793,39 @@ paths:
       tags:
       - accessible
       - resource
+  /permissions/admin/load/permission-search:
+    post:
+      consumes:
+      - application/json
+      description: load rights from permission-search, requesting user must have admin
+        right
+      parameters:
+      - description: load configuration
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.AdminLoadPermSearchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: update count
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: load rights from permission-search
+      tags:
+      - admin
   /permissions/admin/resources/{topic}:
     get:
       description: lists resource ids in topic, requesting user must be in admin group
@@ -3173,6 +4384,38 @@ paths:
       tags:
       - get
       - protocols
+    post:
+      description: create protocol
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Protocol'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Protocol'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create protocol
+      tags:
+      - create
+      - protocols
     put:
       consumes:
       - application/json
@@ -3203,6 +4446,35 @@ paths:
       - validate
       - protocols
   /protocols/{id}:
+    delete:
+      description: delete protocol
+      parameters:
+      - description: Protocol Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete protocol
+      tags:
+      - delete
+      - protocols
     get:
       description: get protocol
       parameters:
@@ -3233,6 +4505,43 @@ paths:
       summary: get protocol
       tags:
       - get
+      - protocols
+    put:
+      description: set protocol
+      parameters:
+      - description: Protocol Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Protocol'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Protocol'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set protocol
+      tags:
+      - set
       - protocols
   /query/aspect-nodes:
     post:
@@ -3385,6 +4694,27 @@ paths:
       tags:
       - get
       - services
+  /users/{id}:
+    delete:
+      description: delete user; only admins may use this method
+      parameters:
+      - description: User Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete user
+      tags:
+      - users
   /v2/aspect-nodes:
     get:
       description: list aspect-nodes

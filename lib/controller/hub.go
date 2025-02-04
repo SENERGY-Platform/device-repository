@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"log"
 	"net/http"
@@ -28,10 +29,6 @@ import (
 	"slices"
 	"sync"
 )
-
-/////////////////////////
-//		api
-/////////////////////////
 
 func (this *Controller) ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int) {
 	ids := []string{}
@@ -47,7 +44,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err = this.db.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
+			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIds(token, this.config.HubTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, err, http.StatusInternalServerError
 			}
@@ -55,7 +52,7 @@ func (this *Controller) ListHubs(token string, options model.HubListOptions) (re
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err := this.db.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
+		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.HubTopic, options.Ids, client.Permission(permissionFlag))
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
@@ -97,7 +94,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err = this.db.ListAccessibleResourceIds(token, this.config.HubTopic, 0, 0, permissionFlag)
+			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIds(token, this.config.HubTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -105,7 +102,7 @@ func (this *Controller) ListExtendedHubs(token string, options model.HubListOpti
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err := this.db.CheckMultiple(token, this.config.HubTopic, options.Ids, permissionFlag)
+		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.HubTopic, options.Ids, client.Permission(permissionFlag))
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}
@@ -156,7 +153,7 @@ func (this *Controller) ReadExtendedHub(id string, token string, action model.Au
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.db.CheckBool(token, this.config.HubTopic, id, action)
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -171,9 +168,23 @@ func (this *Controller) ReadExtendedHub(id string, token string, action model.Au
 }
 
 func (this *Controller) extendHub(token string, hub model.HubWithConnectionState) (models.ExtendedHub, error) {
-	requestingUser, permissions, err := this.db.GetPermissionsInfo(token, this.config.HubTopic, hub.Id)
+	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return models.ExtendedHub{}, err
+	}
+	requestingUser := jwtToken.GetUserId()
+	computedPermList, err, _ := this.permissionsV2Client.ListComputedPermissions(token, this.config.HubTopic, []string{hub.Id})
+	if err != nil {
+		return models.ExtendedHub{}, err
+	}
+	if len(computedPermList) == 0 {
+		return models.ExtendedHub{}, errors.New("no computation permissions")
+	}
+	permissions := models.Permissions{
+		Read:         computedPermList[0].Read,
+		Write:        computedPermList[0].Write,
+		Execute:      computedPermList[0].Execute,
+		Administrate: computedPermList[0].Administrate,
 	}
 	return models.ExtendedHub{
 		Hub:             hub.Hub,
@@ -192,7 +203,7 @@ func (this *Controller) ReadHub(id string, token string, action model.AuthAction
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.db.CheckBool(token, this.config.HubTopic, id, action)
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -211,7 +222,7 @@ func (this *Controller) ListHubDeviceIds(id string, token string, action model.A
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	ok, err := this.db.CheckBool(token, this.config.HubTopic, id, action)
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -255,12 +266,15 @@ func (this *Controller) ValidateHub(token string, hub models.Hub) (err error, co
 	}
 	if exists {
 		if hub.OwnerId != original.OwnerId {
-			admins, err := this.db.GetAdminUsers(token, this.config.HubTopic, hub.Id)
-			if errors.Is(err, model.PermissionCheckFailed) {
-				return errors.New("requesting user must have admin rights to change owner"), http.StatusBadRequest
-			}
+			resource, err, code := this.permissionsV2Client.GetResource(token, this.config.HubTopic, hub.Id)
 			if err != nil {
-				return err, http.StatusInternalServerError
+				return err, code
+			}
+			admins := []string{}
+			for user, perm := range resource.UserPermissions {
+				if perm.Administrate {
+					admins = append(admins, user)
+				}
 			}
 			if len(admins) == 0 {
 				//o admins indicates the requesting user has not the needed admin rights to see other admins
@@ -310,88 +324,125 @@ func (this *Controller) ValidateHubDevices(hub models.Hub) (err error, code int)
 	return nil, http.StatusOK
 }
 
-/////////////////////////
-//		source
-/////////////////////////
-
-func (this *Controller) SetHub(hub models.Hub, owner string) (err error) {
-	err = this.EnsureInitialRights(this.config.HubTopic, hub.Id, owner)
-	if err != nil {
-		return err
+func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub, err error, code int) {
+	if hub.Id == "" {
+		hub.GenerateId()
 	}
+	hub.GenerateId()
+	ctx, _ := getTimeoutContext()
+	old, exists, err := this.db.GetHub(ctx, hub.Id)
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() && exists {
+		ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, hub.Id, client.Write)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		if !ok {
+			return result, errors.New("access denied"), http.StatusForbidden
+		}
+	}
+
+	//set device owner-id if none is given
+	//prefer existing owner, fallback to requesting user
+	if hub.OwnerId == "" {
+		hub.OwnerId = old.OwnerId //may be empty for new devices
+	}
+	if hub.OwnerId == "" {
+		hub.OwnerId = jwtToken.GetUserId()
+	}
+
+	if exists && old.OwnerId != hub.OwnerId && !jwtToken.IsAdmin() {
+		ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, hub.Id, client.Administrate)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		if !ok {
+			return hub, fmt.Errorf("only admins may set new owner: %w", err), http.StatusBadRequest
+		}
+	}
+
+	permissions, err, code := this.permissionsV2Client.GetResource(token, this.config.HubTopic, hub.Id)
+	if err != nil && code != http.StatusNotFound {
+		log.Println("ERROR:", err)
+		debug.PrintStack()
+		return hub, err, code
+	}
+
+	//new device owner-id must be existing admin user (ignore for new devices or devices with unchanged owner)
+	if code != http.StatusNotFound && hub.OwnerId != old.OwnerId && !permissions.UserPermissions[hub.OwnerId].Administrate {
+		return hub, errors.New("new owner must have existing user admin permissions"), http.StatusBadRequest
+	}
+
+	err, code = this.ValidateHub(token, hub)
+	if err != nil {
+		return hub, err, code
+	}
+	err = this.setHub(model.HubWithConnectionState{
+		Hub:             hub,
+		ConnectionState: old.ConnectionState,
+	}, hub.OwnerId)
+	if err != nil {
+		return hub, err, http.StatusInternalServerError
+	}
+	return hub, nil, http.StatusOK
+}
+
+func (this *Controller) setHub(hub model.HubWithConnectionState, owner string) (err error) {
 	if hub.Id == "" {
 		log.Println("ERROR: received hub without id")
 		return nil
 	}
-	ctx, _ := getTimeoutContext()
-	old, exists, err := this.db.GetHub(ctx, hub.Id)
+	err = this.EnsureInitialRights(this.config.HubTopic, hub.Id, owner)
 	if err != nil {
 		return err
 	}
-	if hub.OwnerId == "" {
-		if exists {
-			hub.OwnerId = old.OwnerId
-		} else {
-			hub.OwnerId = owner
-		}
-	}
-	if err, _ := this.ValidateHubDevices(hub); err != nil {
-		log.Printf("ERROR: received invalid hub from kafka\n%v\n%#v\n", err, hub)
-		debug.PrintStack()
-		if hub.Name == "" {
-			hub.Name = "generated-name"
-		}
-		hub.DeviceIds = []string{}
-		hub.DeviceLocalIds = []string{}
-		hub.Hash = ""
-		if hub.OwnerId == "" {
-			hub.OwnerId = owner
-		}
-		if err, _ = this.ValidateHubDevices(hub); err != nil {
-			log.Println("ERROR: unable to fix invalid hub --> ignore: ", hub, err)
-			return nil
-		}
-		return this.producer.PublishHub(hub, owner)
-	}
-	hubIndex := map[string]models.Hub{}
+
+	//remove devices fom other hubs
+	hubIndex := map[string]model.HubWithConnectionState{}
 	for _, id := range hub.DeviceIds {
 		ctx, _ := getTimeoutContext()
 		hubs, err := this.db.GetHubsByDeviceId(ctx, id)
 		if err != nil {
 			return err
 		}
-		for _, hub2 := range hubs {
-			if hub2.Id != hub.Id {
-				hubIndex[hub2.Id] = hub2.Hub
+		for _, otherHub := range hubs {
+			if otherHub.Id != hub.Id {
+				hubIndex[otherHub.Id] = otherHub
 			}
 		}
 	}
 	for _, lid := range hub.DeviceLocalIds {
-		for _, hub2 := range hubIndex {
-			hub2.DeviceLocalIds = filter(hub2.DeviceLocalIds, lid)
-			hubIndex[hub2.Id] = hub2
+		for _, otherHub := range hubIndex {
+			otherHub.DeviceLocalIds = filter(otherHub.DeviceLocalIds, lid)
+			hubIndex[otherHub.Id] = otherHub
 		}
 	}
 	for _, id := range hub.DeviceIds {
-		for _, hub2 := range hubIndex {
-			hub2.DeviceIds = filter(hub2.DeviceIds, id)
-			hubIndex[hub2.Id] = hub2
+		for _, otherHub := range hubIndex {
+			otherHub.DeviceIds = filter(otherHub.DeviceIds, id)
+			hubIndex[otherHub.Id] = otherHub
 		}
 	}
-	for _, hub2 := range hubIndex {
-		err := this.producer.PublishHub(hub2, owner)
+
+	ctx, _ := getTimeoutContext()
+	err = this.db.SetHub(ctx, hub)
+	if err != nil {
+		return err
+	}
+
+	for _, otherHub := range hubIndex {
+		err := this.setHub(otherHub, otherHub.OwnerId)
 		if err != nil {
 			return err
 		}
 	}
-
-	ctx, _ = getTimeoutContext()
-	return this.db.SetHub(ctx, model.HubWithConnectionState{
-		Hub:             hub,
-		ConnectionState: old.ConnectionState,
-	})
+	return nil
 }
 
+// TODO: reenable event-sourcing
 func (this *Controller) SetHubConnectionState(id string, connected bool) error {
 	state := models.ConnectionStateOffline
 	if connected {
@@ -401,9 +452,32 @@ func (this *Controller) SetHubConnectionState(id string, connected bool) error {
 	return this.db.SetHubConnectionState(ctx, id, state)
 }
 
-func (this *Controller) DeleteHub(id string) error {
+func (this *Controller) DeleteHub(token string, id string) (err error, code int) {
 	ctx, _ := getTimeoutContext()
-	err := this.db.RemoveHub(ctx, id)
+	_, exists, err := this.db.GetHub(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !exists {
+		return nil, http.StatusOK
+	}
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, id, client.Administrate)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !ok {
+		return errors.New("access denied"), http.StatusForbidden
+	}
+	err = this.deleteHub(id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteHub(id string) (err error) {
+	ctx, _ := getTimeoutContext()
+	err = this.db.RemoveHub(ctx, id)
 	if err != nil {
 		return err
 	}

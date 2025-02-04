@@ -20,18 +20,19 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) SetAspect(aspect models.Aspect, owner string) error {
+func (this *Controller) setAspect(aspect models.Aspect) error {
 	ctx, _ := getTimeoutContext()
 	err := this.db.SetAspect(ctx, aspect)
 	if err != nil {
 		return err
 	}
 	descendentNodeIds := getDescendentNodeIds(aspect)
-	err = this.handleMovedSubAspects(aspect, descendentNodeIds, owner)
+	err = this.handleMovedSubAspects(aspect, descendentNodeIds)
 	if err != nil {
 		return err
 	}
@@ -46,7 +47,7 @@ func getDescendentNodeIds(aspect models.Aspect) (result []string) {
 	return result
 }
 
-func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNodesIds []string, owner string) error {
+func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNodesIds []string) error {
 	ctx, _ := getTimeoutContext()
 	nodes, err := this.db.ListAspectNodesByIdList(ctx, descendentNodesIds)
 	if err != nil {
@@ -62,7 +63,7 @@ func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNo
 		//sub aspect is moved root aspect
 		if node.Id == node.RootId && node.Id != aspect.Id {
 			deletedAspect[node.Id] = true
-			err = this.producer.PublishAspectDelete(node.Id, owner)
+			err = this.deleteAspect(node.Id)
 			if err != nil {
 				return err
 			}
@@ -76,7 +77,7 @@ func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNo
 			}
 			if exists {
 				changedAspect := filterSubAspects(sourceAspect, movedIds)
-				err = this.producer.PublishAspectUpdate(changedAspect, owner)
+				err = this.setAspect(changedAspect)
 				if err != nil {
 					return err
 				}
@@ -101,13 +102,59 @@ func filterSubAspects(aspect models.Aspect, ids []string) models.Aspect {
 	return aspect
 }
 
-func (this *Controller) DeleteAspect(id string) error {
+func (this *Controller) SetAspect(token string, aspect models.Aspect) (result models.Aspect, err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return result, errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+
+	//ensure ids
+	aspect.GenerateId()
+
+	err, code = this.ValidateAspect(aspect)
+	if err != nil {
+		return aspect, err, code
+	}
+	err = this.setAspect(aspect)
+	if err != nil {
+		return aspect, err, http.StatusInternalServerError
+	}
+	return aspect, nil, http.StatusOK
+}
+
+func (this *Controller) DeleteAspect(token string, id string) (err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+	err, code = this.ValidateAspectDelete(id)
+	if err != nil {
+		return err, code
+	}
+	err = this.deleteAspect(id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteAspect(id string) (err error) {
 	ctx, _ := getTimeoutContext()
-	err := this.db.RemoveAspectNodesByRootId(ctx, id)
+	err = this.db.RemoveAspectNodesByRootId(ctx, id)
 	if err != nil {
 		return err
 	}
-	return this.db.RemoveAspect(ctx, id)
+	err = this.db.RemoveAspect(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (this *Controller) GetAspects() (result []models.Aspect, err error, code int) {

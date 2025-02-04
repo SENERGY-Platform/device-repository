@@ -19,12 +19,9 @@ package controller
 import (
 	"errors"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"net/http"
 )
-
-/////////////////////////
-//		api
-/////////////////////////
 
 func (this *Controller) ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
@@ -73,16 +70,49 @@ func (this *Controller) ValidateProtocol(protocol models.Protocol) (err error, c
 	return nil, http.StatusOK
 }
 
-/////////////////////////
-//		source
-/////////////////////////
+func (this *Controller) SetProtocol(token string, p models.Protocol) (result models.Protocol, err error, errCode int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return result, errors.New("token is not an admin"), http.StatusUnauthorized
+	}
 
-func (this *Controller) SetProtocol(protocol models.Protocol, owner string) (err error) {
+	//ensure ids
+	p.GenerateId()
+	err, code := this.ValidateProtocol(p)
+	if err != nil {
+		return result, err, code
+	}
+	err = this.setProtocol(p)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return p, nil, http.StatusOK
+}
+
+func (this *Controller) DeleteProtocol(token string, id string) (err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+	err = this.deleteProtocol(id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) setProtocol(protocol models.Protocol) (err error) {
 	ctx, _ := getTimeoutContext()
 	return this.db.SetProtocol(ctx, protocol)
 }
 
-func (this *Controller) DeleteProtocol(id string) error {
+func (this *Controller) deleteProtocol(id string) error {
 	ctx, _ := getTimeoutContext()
 	return this.db.RemoveProtocol(ctx, id)
 }

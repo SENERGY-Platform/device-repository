@@ -22,6 +22,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"log"
 	"net/http"
 	"slices"
@@ -319,5 +320,186 @@ func (this *HubEndpoints) Validate(config config.Config, router *http.ServeMux, 
 			return
 		}
 		writer.WriteHeader(http.StatusOK)
+	})
+}
+
+// Create godoc
+// @Summary      create hub
+// @Description  create hub
+// @Tags         create, hubs
+// @Produce      json
+// @Security Bearer
+// @Param        message body models.Hub true "element"
+// @Success      200 {object}  models.Hub
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs [POST]
+func (this *HubEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /hubs", func(writer http.ResponseWriter, request *http.Request) {
+		hub := models.Hub{}
+		err := json.NewDecoder(request.Body).Decode(&hub)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if hub.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetHub(token, hub)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set hub
+// @Description  set hub
+// @Tags         set, hubs
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Hub Id"
+// @Param        user_id query string false "only admins may set user_id; overwrites hub.OwnerId; defaults to existing hub.OwnerId and falls back to user-id of requesting user if hub does not exist"
+// @Param        message body models.Hub true "element"
+// @Success      200 {object}  models.Hub
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs/{id} [PUT]
+func (this *HubEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		userId := request.URL.Query().Get("user_id")
+		hub := models.Hub{}
+		err := json.NewDecoder(request.Body).Decode(&hub)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if hub.Id != id || hub.Id == "" {
+			http.Error(writer, "hub id in body unequal to hub id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+		jwtToken, err := jwt.Parse(token)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if userId != "" && !jwtToken.IsAdmin() {
+			http.Error(writer, "only admins may set user_id", http.StatusForbidden)
+			return
+		}
+		if userId != "" {
+			hub.OwnerId = userId
+		}
+
+		result, err, errCode := control.SetHub(token, hub)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// SetName godoc
+// @Summary      set hub name
+// @Description  set hub name
+// @Tags         set, hubs
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Hub Id"
+// @Param        message body string true "name"
+// @Success      200 {object}  models.Hub
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs/{id}/name [PUT]
+func (this *HubEndpoints) SetName(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /hubs/{id}/name", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		name := ""
+		err := json.NewDecoder(request.Body).Decode(&name)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+		hub, err, code := control.ReadHub(token, id, model.WRITE)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		hub.Name = name
+
+		result, err, errCode := control.SetHub(token, hub)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Delete godoc
+// @Summary      delete hub
+// @Description  delete hub
+// @Tags         delete, hubs
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Hub Id"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs/{id} [DELETE]
+func (this *HubEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		token := util.GetAuthToken(request)
+		err, errCode := control.DeleteHub(token, id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 }

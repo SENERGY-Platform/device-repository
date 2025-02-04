@@ -65,7 +65,6 @@ func retry(timeout time.Duration, f func() error) (err error) {
 
 func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config) (config config.Config, err error) {
 	config = startConfig
-	config.GroupId = uuid.NewString()
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {

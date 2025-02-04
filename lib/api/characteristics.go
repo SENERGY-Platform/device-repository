@@ -18,6 +18,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -186,7 +187,7 @@ func (this *CharacteristicsEndpoints) Get(config config.Config, router *http.Ser
 // @Tags         validate, characteristics
 // @Accept       json
 // @Security Bearer
-// @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
+// @Param        dry-run query bool false "must be true; reminder, that this is not an update but a validation"
 // @Param        message body models.Characteristic true "Characteristic to be validated"
 // @Success      200
 // @Failure      400
@@ -218,34 +219,139 @@ func (this *CharacteristicsEndpoints) Validate(config config.Config, router *htt
 	})
 }
 
-// ValidateDelete godoc
-// @Summary      validate characteristic delete
-// @Description  validate if characteristic may be deleted
+// Delete godoc
+// @Summary      delete characteristic
+// @Description  delete characteristic; may only be called by admins; can also be used to only validate deletes
 // @Tags         validate, characteristics
 // @Security Bearer
-// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "Characteristics Id"
 // @Success      200
 // @Failure      400
 // @Failure      500
 // @Router       /characteristics/{id} [DELETE]
-func (this *CharacteristicsEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
+		id := request.PathValue("id")
+		dryRun := false
+		if request.URL.Query().Has("dry-run") {
+			var err error
+			dryRun, err = strconv.ParseBool(request.URL.Query().Get("dry-run"))
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		if dryRun {
+			err, code := control.ValidateCharacteristicDelete(id)
+			if err != nil {
+				http.Error(writer, err.Error(), code)
+				return
+			}
+			writer.WriteHeader(http.StatusOK)
+			return
+		}
+		token := util.GetAuthToken(request)
+		err, errCode := control.DeleteCharacteristic(token, id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Create godoc
+// @Summary      create characteristic
+// @Description  create characteristic
+// @Tags         create, characteristics
+// @Produce      json
+// @Security Bearer
+// @Param        message body models.Characteristic true "element"
+// @Success      200 {object}  models.Characteristic
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /characteristics [POST]
+func (this *CharacteristicsEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /characteristics", func(writer http.ResponseWriter, request *http.Request) {
+		characteristic := models.Characteristic{}
+		err := json.NewDecoder(request.Body).Decode(&characteristic)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
+		token := util.GetAuthToken(request)
+
+		if characteristic.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
 			return
 		}
-		id := request.PathValue("id")
-		err, code := control.ValidateCharacteristicDelete(id)
+
+		result, err, errCode := control.SetCharacteristic(token, characteristic)
 		if err != nil {
-			http.Error(writer, err.Error(), code)
+			http.Error(writer, err.Error(), errCode)
 			return
 		}
-		writer.WriteHeader(http.StatusOK)
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Update godoc
+// @Summary      set characteristic
+// @Description  set characteristic
+// @Tags         set, characteristics
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Characteristic Id"
+// @Param        message body models.Characteristic true "element"
+// @Success      200 {object}  models.Characteristic
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /characteristics/{id} [PUT]
+func (this *CharacteristicsEndpoints) Update(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+
+		characteristic := models.Characteristic{}
+		err := json.NewDecoder(request.Body).Decode(&characteristic)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if characteristic.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+
+		result, err, errCode := control.SetCharacteristic(token, characteristic)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 }

@@ -189,3 +189,125 @@ func (this *LocationEndpoints) List(config config.Config, router *http.ServeMux,
 		return
 	})
 }
+
+// Create godoc
+// @Summary      create location
+// @Description  create location
+// @Tags         create, locations
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Location Id"
+// @Param        message body models.Location true "element"
+// @Success      200 {object}  models.Location
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /locations [POST]
+func (this *LocationEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /locations", func(writer http.ResponseWriter, request *http.Request) {
+		location := models.Location{}
+		err := json.NewDecoder(request.Body).Decode(&location)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+		if location.Id != "" {
+			http.Error(writer, "location may not contain a preset id. please use PUT to update a location", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetLocation(token, location)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set location
+// @Description  set location
+// @Tags         set, locations
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Location Id"
+// @Param        message body models.Location true "element"
+// @Success      200 {object}  models.Location
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /locations/{id} [PUT]
+func (this *LocationEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		location := models.Location{}
+		err := json.NewDecoder(request.Body).Decode(&location)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if location.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+
+		result, err, errCode := control.SetLocation(token, location)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Delete godoc
+// @Summary      delete location
+// @Description  delete location
+// @Tags         delete, locations
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Location Id"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /locations/{id} [DELETE]
+func (this *LocationEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		token := util.GetAuthToken(request)
+
+		err, errCode := control.DeleteLocation(token, id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}

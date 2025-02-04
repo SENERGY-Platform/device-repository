@@ -155,3 +155,7 @@ type DeviceGroupListOptions struct {
 	IgnoreGenerated                bool                  //remove generated groups from result
 	FilterGenericDuplicateCriteria bool
 }
+
+type DeviceUpdateOptions struct {
+	UpdateOnlySameOriginAttributes []string
+}

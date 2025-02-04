@@ -21,18 +21,52 @@ import (
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"net/http"
 	"strings"
 )
 
-func (this *Controller) SetConcept(concept models.Concept, owner string) error {
+func (this *Controller) SetConcept(token string, concept models.Concept) (result models.Concept, err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return result, errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+
+	//ensure ids
+	concept.GenerateId()
+	err, code = this.ValidateConcept(concept)
+	if err != nil {
+		return result, err, code
+	}
 	ctx, _ := getTimeoutContext()
-	return this.db.SetConcept(ctx, concept)
+	err = this.db.SetConcept(ctx, concept)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return concept, nil, http.StatusOK
 }
 
-func (this *Controller) DeleteConcept(id string) error {
+func (this *Controller) DeleteConcept(token string, id string) (error, int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+	err, code := this.ValidateConceptDelete(id)
+	if err != nil {
+		return err, code
+	}
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveConcept(ctx, id)
+	err = this.db.RemoveConcept(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
 }
 
 func (this *Controller) ValidateConcept(concept models.Concept) (err error, code int) {

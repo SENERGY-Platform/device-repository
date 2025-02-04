@@ -21,6 +21,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -246,35 +247,141 @@ func (this *AspectEndpoints) Validate(config config.Config, router *http.ServeMu
 	})
 }
 
-// ValidateDelete godoc
-// @Summary      validate aspect delete
-// @Description  validate if aspect may be deleted
+// Set godoc
+// @Summary      set aspect
+// @Description  set aspect
+// @Tags         set, aspects
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Aspect Id"
+// @Param        message body models.Aspect true "element"
+// @Success      200 {object}  models.Aspect
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspects/{id} [PUT]
+func (this *AspectEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		aspect := models.Aspect{}
+		err := json.NewDecoder(request.Body).Decode(&aspect)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+
+		if aspect.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetAspect(token, aspect)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Create godoc
+// @Summary      create aspect
+// @Description  create aspect with generated id
+// @Tags         create, aspects
+// @Produce      json
+// @Security Bearer
+// @Param        wait query bool false "wait for done message in kafka before responding"
+// @Param        message body models.Aspect true "element"
+// @Success      200 {object}  models.Aspect
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspects [POST]
+func (this *AspectEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /aspects", func(writer http.ResponseWriter, request *http.Request) {
+		aspect := models.Aspect{}
+		err := json.NewDecoder(request.Body).Decode(&aspect)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if aspect.Id != "" {
+			http.Error(writer, "id in body must be empty for POST method", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetAspect(token, aspect)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// DeleteAspect godoc
+// @Summary      delete aspect
+// @Description  delete aspect; may only be called by admins; can also be used to only validate deletes
 // @Tags         validate, aspects
 // @Security Bearer
-// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "Aspect Id"
 // @Success      200
 // @Failure      400
 // @Failure      500
 // @Router       /aspects/{id} [DELETE]
-func (this *AspectEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) DeleteAspect(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
 		id := request.PathValue("id")
-		err, code := control.ValidateAspectDelete(id)
-		if err != nil {
-			http.Error(writer, err.Error(), code)
+		dryRun := false
+		if request.URL.Query().Has("dry-run") {
+			var err error
+			dryRun, err = strconv.ParseBool(request.URL.Query().Get("dry-run"))
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		if dryRun {
+			err, code := control.ValidateAspectDelete(id)
+			if err != nil {
+				http.Error(writer, err.Error(), code)
+				return
+			}
+			writer.WriteHeader(http.StatusOK)
 			return
 		}
-		writer.WriteHeader(http.StatusOK)
+		token := util.GetAuthToken(request)
+		err, errCode := control.DeleteAspect(token, id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 }
 

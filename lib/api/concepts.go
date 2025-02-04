@@ -18,6 +18,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -273,34 +274,133 @@ func (this *ConceptEndpoints) Validate(config config.Config, router *http.ServeM
 	})
 }
 
-// ValidateDelete godoc
-// @Summary      validate concepts delete
-// @Description  validate if concept may be deleted
+// Delete godoc
+// @Summary      delete concept
+// @Description  delete concept; may only be called by admins; can also be used to only validate deletes
 // @Tags         validate, concepts
 // @Security Bearer
-// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
+// @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "Concepts Id"
 // @Success      200
 // @Failure      400
 // @Failure      500
 // @Router       /concepts/{id} [DELETE]
-func (this *ConceptEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /concepts/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
 		id := request.PathValue("id")
-		err, code := control.ValidateConceptDelete(id)
+		dryRun := false
+		if request.URL.Query().Has("dry-run") {
+			var err error
+			dryRun, err = strconv.ParseBool(request.URL.Query().Get("dry-run"))
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		if dryRun {
+			err, code := control.ValidateConceptDelete(id)
+			if err != nil {
+				http.Error(writer, err.Error(), code)
+				return
+			}
+			writer.WriteHeader(http.StatusOK)
+			return
+		}
+		token := util.GetAuthToken(request)
+		err, code := control.DeleteConcept(token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
 		}
 		writer.WriteHeader(http.StatusOK)
+	})
+}
+
+// Create godoc
+// @Summary      create concept
+// @Description  create concept
+// @Tags         create, concepts
+// @Produce      json
+// @Security Bearer
+// @Param        message body models.Concept true "element"
+// @Success      200 {object}  models.Concept
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /concepts [POST]
+func (this *ConceptEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /concepts", func(writer http.ResponseWriter, request *http.Request) {
+		concept := models.Concept{}
+		err := json.NewDecoder(request.Body).Decode(&concept)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if concept.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetConcept(token, concept)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set concept
+// @Description  set concept
+// @Tags         set, concepts
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Concept Id"
+// @Param        message body models.Concept true "element"
+// @Success      200 {object}  models.Concept
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /concepts/{id} [PUT]
+func (this *ConceptEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /concepts/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		concept := models.Concept{}
+		err := json.NewDecoder(request.Body).Decode(&concept)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+
+		if concept.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetConcept(token, concept)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 }

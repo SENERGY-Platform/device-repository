@@ -22,8 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/source/consumer"
-	"github.com/SENERGY-Platform/device-repository/lib/source/producer"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"sync"
@@ -53,37 +51,20 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 		}
 	}()
 
-	var p controller.Producer = controller.ErrorProducer{}
-	if !conf.DisableKafkaConsumer {
-		p, err = producer.New(conf)
-		if err != nil {
-			log.Println("ERROR: unable to create producer", err)
-			return err
-		}
-	}
-
 	permClient := client.New(conf.PermissionsV2Url)
 
-	ctrl, err := controller.New(conf, db, p, permClient)
+	ctrl, err := controller.New(conf, db, permClient)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
 		return err
 	}
 
-	if conf.RunStartupMigrations && !conf.DisableKafkaConsumer {
+	if conf.RunStartupMigrations {
 		err = db.RunStartupMigrations(ctrl)
 		if err != nil {
 			db.Disconnect()
 			log.Println("ERROR: RunStartupMigrations()", err)
-			return err
-		}
-	}
-
-	if !conf.DisableKafkaConsumer {
-		err = consumer.Start(ctx, conf, ctrl)
-		if err != nil {
-			log.Println("ERROR: unable to start source", err)
 			return err
 		}
 	}

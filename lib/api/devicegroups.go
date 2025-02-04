@@ -236,34 +236,133 @@ func (this *DeviceGroupEndpoints) Validate(config config.Config, router *http.Se
 	})
 }
 
-// ValidateDelete godoc
-// @Summary      validate device-group delete
-// @Description  validate if device-group may be deleted
+// Delete godoc
+// @Summary      delete device-group
+// @Description  delete device-group; may only be called by admins; can also be used to only validate deletes
 // @Tags         validate, device-groups
 // @Security Bearer
-// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
-// @Param        id path string true "Device-Group Id"
+// @Param        dry-run query bool false "only validate deletion"
+// @Param        id path string true "DeviceGroup Id"
 // @Success      200
 // @Failure      400
 // @Failure      500
 // @Router       /device-groups/{id} [DELETE]
-func (this *DeviceGroupEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceGroupEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
 		id := request.PathValue("id")
-		err, code := control.ValidateDeviceGroupDelete(util.GetAuthToken(request), id)
+		dryRun := false
+		if request.URL.Query().Has("dry-run") {
+			var err error
+			dryRun, err = strconv.ParseBool(request.URL.Query().Get("dry-run"))
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		token := util.GetAuthToken(request)
+		if dryRun {
+			err, code := control.ValidateDeviceGroupDelete(token, id)
+			if err != nil {
+				http.Error(writer, err.Error(), code)
+				return
+			}
+			writer.WriteHeader(http.StatusOK)
+			return
+		}
+		err, code := control.DeleteDeviceGroup(token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
 		}
 		writer.WriteHeader(http.StatusOK)
+	})
+}
+
+// Create godoc
+// @Summary      create device-group
+// @Description  create device-group
+// @Tags         create, device-groups
+// @Produce      json
+// @Security Bearer
+// @Param        message body models.DeviceGroup true "element"
+// @Success      200 {object}  models.DeviceGroup
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-groups [POST]
+func (this *DeviceGroupEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /device-groups", func(writer http.ResponseWriter, request *http.Request) {
+		deviceGroup := models.DeviceGroup{}
+		err := json.NewDecoder(request.Body).Decode(&deviceGroup)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if deviceGroup.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetDeviceGroup(token, deviceGroup)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set device-group
+// @Description  set device-group
+// @Tags         set, device-groups
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "DeviceGroup Id"
+// @Param        message body models.DeviceGroup true "element"
+// @Success      200 {object}  models.DeviceGroup
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-groups/{id} [PUT]
+func (this *DeviceGroupEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		deviceGroup := models.DeviceGroup{}
+		err := json.NewDecoder(request.Body).Decode(&deviceGroup)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+
+		if deviceGroup.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetDeviceGroup(token, deviceGroup)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 }

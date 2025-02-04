@@ -27,45 +27,29 @@ func (c *Controller) GetPermissionsClient() client.Client {
 }
 
 func (this *Controller) EnsureInitialRights(topic string, resourceId string, owner string) error {
-	exists, err := this.db.RightsElementExists(topic, resourceId)
+	initialPermissions := this.getDefaultEntryPermissions(topic, owner)
+
+	resource, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, topic, resourceId)
+	if err != nil && code != http.StatusNotFound {
+		return err
+	}
+	if err == nil {
+		initialPermissions = model.ResourceRightsFromPermission(resource.ResourcePermissions)
+	}
+
+	_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, topic, resourceId, initialPermissions.ToPermV2Permissions())
 	if err != nil {
 		return err
 	}
-	if exists {
-		return nil
-	}
-	initialPermissions := this.getDefaultEntryPermissions(topic, owner)
-	if this.config.PermissionsV2Url != "" {
-		resource, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, topic, resourceId)
-		if err != nil && code != http.StatusNotFound {
-			return err
-		}
-		if err == nil {
-			initialPermissions = model.ResourceRightsFromPermission(resource.ResourcePermissions)
-		}
-	}
-
-	if this.config.PermissionsV2Url != "" {
-		_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, topic, resourceId, initialPermissions.ToPermV2Permissions())
-		if err != nil {
-			return err
-		}
-	}
-	return this.db.SetRights(topic, resourceId, initialPermissions)
-}
-
-func (this *Controller) SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error {
-	return this.db.SetRights(resourceKind, resourceId, rights)
+	return nil
 }
 
 func (this *Controller) RemoveRights(topic string, id string) error {
-	if this.config.PermissionsV2Url != "" {
-		err, _ := this.permissionsV2Client.RemoveResource(client.InternalAdminToken, topic, id)
-		if err != nil {
-			return err
-		}
+	err, _ := this.permissionsV2Client.RemoveResource(client.InternalAdminToken, topic, id)
+	if err != nil {
+		return err
 	}
-	return this.db.RemoveRights(topic, id)
+	return nil
 }
 
 func (this *Controller) getDefaultEntryPermissions(topic string, owner string) (entry model.ResourceRights) {

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"net/http"
 	"strings"
 )
@@ -33,14 +34,46 @@ func (this *Controller) ListCharacteristics(listOptions model.CharacteristicList
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) SetCharacteristic(characteristic models.Characteristic, owner string) error {
+func (this *Controller) SetCharacteristic(token string, characteristic models.Characteristic) (result models.Characteristic, err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return result, errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+	//ensure ids
+	characteristic.GenerateId()
+	err, code = this.ValidateCharacteristics(characteristic)
+	if err != nil {
+		return result, err, code
+	}
 	ctx, _ := getTimeoutContext()
-	return this.db.SetCharacteristic(ctx, characteristic)
+	err = this.db.SetCharacteristic(ctx, characteristic)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return characteristic, nil, http.StatusOK
 }
 
-func (this *Controller) DeleteCharacteristic(id string) error {
+func (this *Controller) DeleteCharacteristic(token string, id string) (error, int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+	err, code := this.ValidateCharacteristicDelete(id)
+	if err != nil {
+		return err, code
+	}
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveCharacteristic(ctx, id)
+	err = this.db.RemoveCharacteristic(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
 }
 
 func (this *Controller) GetCharacteristics(leafsOnly bool) (result []models.Characteristic, err error, code int) {

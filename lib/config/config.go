@@ -29,11 +29,11 @@ import (
 	"time"
 )
 
+// TODO: remove unused configs
 type Config struct {
 	ServerPort                    string `json:"server_port"`
 	EnableSwaggerUi               bool   `json:"enable_swagger_ui"`
 	KafkaUrl                      string `json:"kafka_url"`
-	GroupId                       string `json:"group_id"`
 	DoneTopic                     string `json:"done_topic"`
 	DeviceTopic                   string `json:"device_topic"`
 	DeviceTypeTopic               string `json:"device_type_topic"`
@@ -64,7 +64,6 @@ type Config struct {
 	MongoFunctionCollection       string `json:"mongo_function_collection"`
 	MongoLocationCollection       string `json:"mongo_location_collection"`
 	Debug                         bool   `json:"debug"`
-	DisableKafkaConsumer          bool   `json:"disable_kafka_consumer"`
 	DisableHttpApi                bool   `json:"disable_http_api"`
 	HttpClientTimeout             string `json:"http_client_timeout"`
 	FatalErrHandler               func(v ...interface{})

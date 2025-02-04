@@ -125,17 +125,4 @@ type Database interface {
 	CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 	CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error)
 	ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
-
-	Security
-}
-
-type Security interface {
-	CheckBool(token string, kind string, id string, action model.AuthAction) (allowed bool, err error)
-	CheckMultiple(token string, kind string, ids []string, action model.AuthAction) (map[string]bool, error)
-	GetAdminUsers(token string, topic string, resourceId string) (admins []string, err error)
-	ListAccessibleResourceIds(token string, topic string, limit int64, offset int64, action model.AuthAction) (result []string, err error)
-	GetPermissionsInfo(token string, topic string, id string) (requestingUser string, permissions models.Permissions, err error)
-	RightsElementExists(topic string, resourceId string) (exists bool, err error)
-	SetRights(resourceKind string, resourceId string, rights model.ResourceRights) error
-	RemoveRights(topic string, id string) error
 }

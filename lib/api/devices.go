@@ -36,6 +36,10 @@ func init() {
 
 type DeviceEndpoints struct{}
 
+const UpdateOnlySameOriginAttributesKey = "update-only-same-origin-attributes"
+const DisplayNameAttributeKey = "shared/nickname"
+const DisplayNameAttributeOrigin = "shared"
+
 // List godoc
 // @Summary      list devices
 // @Description  list devices
@@ -264,5 +268,294 @@ func (this *DeviceEndpoints) Validate(config config.Config, router *http.ServeMu
 			return
 		}
 		writer.WriteHeader(http.StatusOK)
+	})
+}
+
+// Create godoc
+// @Summary      create device
+// @Description  create device
+// @Tags         create, devices
+// @Produce      json
+// @Security Bearer
+// @Param        message body models.Device true "element"
+// @Success      200 {object}  models.Device
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices [POST]
+func (this *DeviceEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /devices", func(writer http.ResponseWriter, request *http.Request) {
+		device := models.Device{}
+		err := json.NewDecoder(request.Body).Decode(&device)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+
+		if device.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.CreateDevice(token, device)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set device
+// @Description  set device; admins may create new devices but only without using the UpdateOnlySameOriginAttributesKey query parameter
+// @Tags         set, devices
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Id"
+// @Param        update-only-same-origin-attributes query string false "comma separated list; ensure that no attribute from another origin is overwritten"
+// @Param        message body models.Device true "element"
+// @Success      200 {object}  models.Device
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices/{id} [PUT]
+func (this *DeviceEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		device := models.Device{}
+		err := json.NewDecoder(request.Body).Decode(&device)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if device.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		options := model.DeviceUpdateOptions{}
+		if request.URL.Query().Has(UpdateOnlySameOriginAttributesKey) {
+			temp := request.URL.Query().Get(UpdateOnlySameOriginAttributesKey)
+			options.UpdateOnlySameOriginAttributes = strings.Split(temp, ",")
+		}
+
+		result, err, errCode := control.SetDevice(token, device, options)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// SetAttributes godoc
+// @Summary      set device attributes
+// @Description  set device attributes
+// @Tags         set, devices
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Id"
+// @Param        update-only-same-origin-attributes query string false "comma separated list; ensure that no attribute from another origin is overwritten"
+// @Param        message body []models.Attribute true "attributes"
+// @Success      200 {object}  models.Device
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices/{id}/attributes [PUT]
+func (this *DeviceEndpoints) SetAttributes(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /devices/{id}/attributes", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		attributes := []models.Attribute{}
+		err := json.NewDecoder(request.Body).Decode(&attributes)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		options := model.DeviceUpdateOptions{}
+		if request.URL.Query().Has(UpdateOnlySameOriginAttributesKey) {
+			temp := request.URL.Query().Get(UpdateOnlySameOriginAttributesKey)
+			options.UpdateOnlySameOriginAttributes = strings.Split(temp, ",")
+		}
+
+		device, err, errCode := control.ReadDevice(token, id, model.WRITE)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		device.Attributes = attributes
+
+		result, err, errCode := control.SetDevice(token, device, options)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// SetDisplayName godoc
+// @Summary      set device display name
+// @Description  set device display name
+// @Tags         set, devices
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Id"
+// @Param        message body string true "display name"
+// @Success      200 {object}  models.Device
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices/{id}/display_name [PUT]
+func (this *DeviceEndpoints) SetDisplayName(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /devices/{id}/display_name", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		displayName := ""
+
+		err := json.NewDecoder(request.Body).Decode(&displayName)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		device, err, errCode := control.ReadDevice(token, id, model.WRITE)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		displayNameAttrFound := false
+		for i, attr := range device.Attributes {
+			if attr.Key == DisplayNameAttributeKey {
+				attr.Value = displayName
+				device.Attributes[i] = attr
+				displayNameAttrFound = true
+			}
+		}
+		if !displayNameAttrFound {
+			device.Attributes = append(device.Attributes, models.Attribute{Key: DisplayNameAttributeKey, Value: displayName, Origin: DisplayNameAttributeOrigin})
+		}
+
+		result, err, errCode := control.SetDevice(token, device, model.DeviceUpdateOptions{})
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Delete godoc
+// @Summary      delete device
+// @Description  delete device
+// @Tags         delete, devices
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Device Id"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices/{id} [DELETE]
+func (this *DeviceEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		token := util.GetAuthToken(request)
+
+		err, errCode := control.DeleteDevice(token, id)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// DeleteMany godoc
+// @Summary      delete multiple devices
+// @Description  delete multiple devices
+// @Tags         delete, devices
+// @Produce      json
+// @Security Bearer
+// @Param        message body []string true "ids to be deleted"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices [DELETE]
+func (this *DeviceEndpoints) DeleteMany(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("DELETE /devices", func(writer http.ResponseWriter, request *http.Request) {
+		ids := []string{}
+		err := json.NewDecoder(request.Body).Decode(&ids)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		for _, id := range ids {
+			err, errCode := control.DeleteDevice(token, id)
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
+			}
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 }

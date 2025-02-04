@@ -21,6 +21,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -288,34 +289,133 @@ func (this *DeviceClassEndpoints) Validate(config config.Config, router *http.Se
 	})
 }
 
-// ValidateDelete godoc
-// @Summary      validate device-class delete
-// @Description  validate if device-class may be deleted
+// Delete godoc
+// @Summary      delete device-class
+// @Description  delete device-class; may only be called by admins; can also be used to only validate deletes
 // @Tags         validate, device-classes
 // @Security Bearer
-// @Param        dry-run query bool true "must be true; reminder, that this is not a delete but a validation"
-// @Param        id path string true "DeviceClass Id"
+// @Param        dry-run query bool false "only validate deletion"
+// @Param        id path string true "DeviceClasses Id"
 // @Success      200
 // @Failure      400
 // @Failure      500
 // @Router       /device-classes/{id} [DELETE]
-func (this *DeviceClassEndpoints) ValidateDelete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
 		id := request.PathValue("id")
-		err, code := control.ValidateDeviceClassDelete(id)
+		dryRun := false
+		if request.URL.Query().Has("dry-run") {
+			var err error
+			dryRun, err = strconv.ParseBool(request.URL.Query().Get("dry-run"))
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		if dryRun {
+			err, code := control.ValidateDeviceClassDelete(id)
+			if err != nil {
+				http.Error(writer, err.Error(), code)
+				return
+			}
+			writer.WriteHeader(http.StatusOK)
+			return
+		}
+		token := util.GetAuthToken(request)
+		err, code := control.DeleteDeviceClass(token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
 		}
 		writer.WriteHeader(http.StatusOK)
+	})
+}
+
+// Create godoc
+// @Summary      create device-class
+// @Description  create device-class
+// @Tags         create, device-classes
+// @Produce      json
+// @Security Bearer
+// @Param        message body models.DeviceClass true "element"
+// @Success      200 {object}  models.DeviceClass
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-classes [POST]
+func (this *DeviceClassEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /device-classes", func(writer http.ResponseWriter, request *http.Request) {
+		deviceClass := models.DeviceClass{}
+		err := json.NewDecoder(request.Body).Decode(&deviceClass)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		if deviceClass.Id != "" {
+			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetDeviceClass(token, deviceClass)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
+// Set godoc
+// @Summary      set device-class
+// @Description  set device-class
+// @Tags         set, device-classes
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "DeviceClass Id"
+// @Param        message body models.DeviceClass true "element"
+// @Success      200 {object}  models.DeviceClass
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /device-classes/{id} [PUT]
+func (this *DeviceClassEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		deviceClass := models.DeviceClass{}
+		err := json.NewDecoder(request.Body).Decode(&deviceClass)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token := util.GetAuthToken(request)
+
+		if deviceClass.Id != id {
+			http.Error(writer, "id in body unequal to id in request endpoint", http.StatusBadRequest)
+			return
+		}
+
+		result, err, errCode := control.SetDeviceClass(token, deviceClass)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
 	})
 }

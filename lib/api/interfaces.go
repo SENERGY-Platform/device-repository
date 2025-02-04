@@ -26,6 +26,9 @@ type Controller interface {
 	ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
 	ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int)
 	ValidateDevice(token string, device models.Device) (err error, code int)
+	SetDevice(token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int)
+	CreateDevice(token string, device models.Device) (result models.Device, err error, code int)
+	DeleteDevice(token string, id string) (err error, code int)
 
 	ListExtendedDevices(token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int)
 	ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int)
@@ -35,6 +38,8 @@ type Controller interface {
 	ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int)
 	ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
 	ValidateHub(token string, hub models.Hub) (err error, code int)
+	SetHub(token string, hub models.Hub) (result models.Hub, err error, errCode int)
+	DeleteHub(token string, id string) (err error, code int)
 
 	ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, total int64, err error, errCode int)
 	ReadExtendedHub(id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int)
@@ -44,6 +49,9 @@ type Controller interface {
 	ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)
 	ListDeviceTypesV3(token string, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int)
 	ValidateDeviceType(deviceType models.DeviceType, options model.ValidationOptions) (err error, code int)
+	SetDeviceType(token string, dt models.DeviceType) (result models.DeviceType, err error, errCode int)
+	DeleteDeviceType(token string, id string) (err error, code int)
+	ValidateDistinctDeviceTypeAttributes(devicetype models.DeviceType, attributeKeys []string) error
 
 	GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
 	GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int)
@@ -52,10 +60,14 @@ type Controller interface {
 	ListDeviceGroups(token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int)
 	ValidateDeviceGroup(token string, deviceGroup models.DeviceGroup) (err error, code int)
 	ValidateDeviceGroupDelete(token string, id string) (err error, code int)
+	SetDeviceGroup(token string, dg models.DeviceGroup) (result models.DeviceGroup, err error, errCode int)
+	DeleteDeviceGroup(token string, id string) (err error, code int)
 
 	ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int)
 	ListProtocols(token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int)
 	ValidateProtocol(protocol models.Protocol) (err error, code int)
+	SetProtocol(token string, p models.Protocol) (result models.Protocol, err error, errCode int)
+	DeleteProtocol(token string, id string) (err error, code int)
 
 	GetService(id string) (result models.Service, err error, code int)
 
@@ -65,6 +77,8 @@ type Controller interface {
 	GetAspect(id string) (models.Aspect, error, int)
 	ValidateAspect(aspect models.Aspect) (err error, code int)
 	ValidateAspectDelete(id string) (err error, code int)
+	SetAspect(token string, aspect models.Aspect) (models.Aspect, error, int)
+	DeleteAspect(token string, id string) (err error, code int)
 
 	ListAspectNodes(listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int)
 	GetAspectNode(id string) (models.AspectNode, error, int)
@@ -78,6 +92,8 @@ type Controller interface {
 	GetCharacteristic(id string) (result models.Characteristic, err error, errCode int)
 	ValidateCharacteristics(characteristic models.Characteristic) (err error, code int)
 	ValidateCharacteristicDelete(id string) (err error, code int)
+	SetCharacteristic(token string, characteristic models.Characteristic) (result models.Characteristic, err error, errCode int)
+	DeleteCharacteristic(token string, id string) (err error, code int)
 
 	ListConceptsWithCharacteristics(listOptions model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int)
 	ListConcepts(listOptions model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int)
@@ -85,6 +101,8 @@ type Controller interface {
 	GetConceptWithoutCharacteristics(id string) (models.Concept, error, int)
 	ValidateConcept(concept models.Concept) (err error, code int)
 	ValidateConceptDelete(id string) (err error, code int)
+	SetConcept(token string, concept models.Concept) (result models.Concept, err error, errCode int)
+	DeleteConcept(token string, id string) (err error, code int)
 
 	ListDeviceClasses(listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int)
 	GetDeviceClasses() ([]models.DeviceClass, error, int)
@@ -94,15 +112,23 @@ type Controller interface {
 	GetDeviceClass(id string) (result models.DeviceClass, err error, errCode int)
 	ValidateDeviceClass(deviceclass models.DeviceClass) (err error, code int)
 	ValidateDeviceClassDelete(id string) (err error, code int)
+	SetDeviceClass(token string, dc models.DeviceClass) (result models.DeviceClass, err error, errCode int)
+	DeleteDeviceClass(token string, id string) (err error, code int)
 
 	ListFunctions(options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int)
 	GetFunctionsByType(rdfType string) (result []models.Function, err error, errCode int)
 	GetFunction(id string) (result models.Function, err error, errCode int)
 	ValidateFunction(function models.Function) (err error, code int)
 	ValidateFunctionDelete(id string) (err error, code int)
+	SetFunction(token string, f models.Function) (result models.Function, err error, errCode int)
+	DeleteFunction(token string, id string) (err error, code int)
 
 	GetLocation(id string, token string) (location models.Location, err error, errCode int)
 	ValidateLocation(location models.Location) (err error, code int)
 	ListLocations(token string, options model.LocationListOptions) (result []models.Location, total int64, err error, errCode int)
 	GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int)
+	SetLocation(token string, location models.Location) (result models.Location, err error, errCode int)
+	DeleteLocation(token string, id string) (err error, code int)
+
+	DeleteUser(adminToken string, userId string) (err error, errCode int)
 }

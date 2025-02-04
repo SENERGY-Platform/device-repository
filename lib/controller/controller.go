@@ -24,13 +24,12 @@ import (
 	"time"
 )
 
-func New(config config.Config, db database.Database, producer Producer, permClient client.Client) (ctrl *Controller, err error) {
+func New(config config.Config, db database.Database, permClient client.Client) (ctrl *Controller, err error) {
 	if permClient == nil {
 		permClient = client.New(config.PermissionsV2Url)
 	}
 	ctrl = &Controller{
 		db:                  db,
-		producer:            producer,
 		config:              config,
 		permissionsV2Client: permClient,
 	}
@@ -68,8 +67,29 @@ func New(config config.Config, db database.Database, producer Producer, permClie
 }
 
 type Controller struct {
+	//TODO: use middleware:
+	//	has current db interface
+	//	create/update:
+	//  	stores with sync flag (=false) & last-update time-stamp
+	// 		produces kafka messages
+	//  	ensures initial permissions in permissions-v2
+	//		stores with sync flag (=true)
+	// 	delete:
+	//		stores to-be-deleted flag
+	//			those are not to be found in searches
+	//		removes permissions
+	//		produces kafka message
+	//	periodically:
+	//		retry create/update for elements with sync-flag == false && time.Since(last-update) > buffer
+	//		retry delete for elements with to-be-deleted == true && time.Since(last-update) > buffer
+	//	kafka messages may be send multiple times
+	//  ----------------
+	// 	OR: periodical cleanup
+	// 		request all known resource ids from permissions-v2
+	//			large process
+	//		delete or init where stuff is inconsistent
+	//			danger of missing or duplicated kafka messages
 	db                  database.Database
-	producer            Producer
 	config              config.Config
 	permissionsV2Client client.Client
 }

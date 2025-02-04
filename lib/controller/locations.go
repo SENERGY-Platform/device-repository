@@ -21,13 +21,81 @@ import (
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func (this *Controller) SetLocation(location models.Location, owner string) error {
+func (this *Controller) SetLocation(token string, location models.Location) (result models.Location, err error, errCode int) {
+	if location.Id != "" {
+		ctx, _ := getTimeoutContext()
+		_, exists, err := this.db.GetLocation(ctx, location.Id)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
+		if exists {
+			ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.LocationTopic, location.Id, client.Write)
+			if err != nil {
+				return result, err, http.StatusInternalServerError
+			}
+			if !ok {
+				return result, errors.New("access denied"), http.StatusForbidden
+			}
+		}
+	}
+
+	location.GenerateId()
+	location.DeviceIds, err = this.filterInvalidDeviceIds(token, location.DeviceIds, "r")
+	if err != nil {
+		return location, err, http.StatusInternalServerError
+	}
+	err, code := this.ValidateLocation(location)
+	if err != nil {
+		return location, err, code
+	}
+
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return location, err, http.StatusBadRequest
+	}
+
+	err = this.setLocation(location, jwtToken.GetUserId())
+	if err != nil {
+		return location, err, http.StatusInternalServerError
+	}
+
+	return location, nil, http.StatusOK
+}
+
+func (this *Controller) DeleteLocation(token string, id string) (err error, code int) {
+	if err := preventIdModifier(id); err != nil {
+		return err, http.StatusBadRequest
+	}
+	ctx, _ := getTimeoutContext()
+	_, exists, err := this.db.GetLocation(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !exists {
+		return nil, http.StatusOK
+	}
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.LocationTopic, id, client.Administrate)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !ok {
+		return errors.New("access denied"), http.StatusForbidden
+	}
+	err = this.deleteLocation(id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) setLocation(location models.Location, owner string) error {
 	err := this.EnsureInitialRights(this.config.LocationTopic, location.Id, owner)
 	if err != nil {
 		return err
@@ -36,13 +104,13 @@ func (this *Controller) SetLocation(location models.Location, owner string) erro
 	return this.db.SetLocation(ctx, location)
 }
 
-func (this *Controller) DeleteLocation(id string) error {
+func (this *Controller) deleteLocation(id string) error {
 	ctx, _ := getTimeoutContext()
 	return this.db.RemoveLocation(ctx, id)
 }
 
 func (this *Controller) GetLocation(id string, token string) (result models.Location, err error, code int) {
-	ok, err := this.db.CheckBool(token, this.config.LocationTopic, id, model.READ)
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.LocationTopic, id, client.Read)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -103,7 +171,7 @@ func (this *Controller) ListLocations(token string, options model.LocationListOp
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err = this.db.ListAccessibleResourceIds(token, this.config.LocationTopic, 0, 0, permissionFlag)
+			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIds(token, this.config.LocationTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -114,7 +182,7 @@ func (this *Controller) ListLocations(token string, options model.LocationListOp
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err := this.db.CheckMultiple(token, this.config.LocationTopic, options.Ids, permissionFlag)
+		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.LocationTopic, options.Ids, client.Permission(permissionFlag))
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}

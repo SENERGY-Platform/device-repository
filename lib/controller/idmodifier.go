@@ -172,3 +172,33 @@ func (this *Controller) modifyDeviceTypeServiceGroupSelection(dt models.DeviceTy
 	result.Services = newServiceList
 	return result, nil, http.StatusOK
 }
+
+func removeIdModifier(id string) string {
+	return strings.SplitN(id, idmodifier.Seperator, 2)[0]
+}
+
+func removeIdModifiers(ids []string) (result []string) {
+	for _, id := range ids {
+		result = append(result, removeIdModifier(id))
+	}
+	return result
+}
+
+func preventIdModifier(id string) error {
+	if strings.Contains(id, idmodifier.Seperator) {
+		return errors.New("no edit on ids with " + idmodifier.Seperator + " part allowed")
+	}
+	return nil
+}
+
+func removeDuplicates[T comparable](slice []T) []T {
+	keys := make(map[T]bool)
+	result := []T{}
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			result = append(result, entry)
+		}
+	}
+	return result
+}

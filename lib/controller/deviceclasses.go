@@ -20,6 +20,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"net/http"
 	"strings"
 )
@@ -33,14 +34,47 @@ func (this *Controller) ListDeviceClasses(listOptions model.DeviceClassListOptio
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) SetDeviceClass(class models.DeviceClass, owner string) error {
+func (this *Controller) SetDeviceClass(token string, class models.DeviceClass) (result models.DeviceClass, err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return result, errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+
+	//ensure ids
+	class.GenerateId()
+	err, code = this.ValidateDeviceClass(class)
+	if err != nil {
+		return result, err, code
+	}
 	ctx, _ := getTimeoutContext()
-	return this.db.SetDeviceClass(ctx, class)
+	err = this.db.SetDeviceClass(ctx, class)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	return class, nil, http.StatusOK
 }
 
-func (this *Controller) DeleteDeviceClass(id string) error {
+func (this *Controller) DeleteDeviceClass(token string, id string) (error, int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("token is not an admin"), http.StatusUnauthorized
+	}
+	err, code := this.ValidateDeviceClassDelete(id)
+	if err != nil {
+		return err, code
+	}
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveDeviceClass(ctx, id)
+	err = this.db.RemoveDeviceClass(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
 }
 
 func (this *Controller) GetDeviceClasses() (result []models.DeviceClass, err error, code int) {
