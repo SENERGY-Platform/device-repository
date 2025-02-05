@@ -17,6 +17,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
@@ -24,6 +26,33 @@ import (
 	"strconv"
 	"strings"
 )
+
+func (c *Client) SetDeviceClass(token string, deviceClass models.DeviceClass) (result models.DeviceClass, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(deviceClass)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	if deviceClass.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/device-classes", bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/device-classes/"+url.PathEscape(deviceClass.Id), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteDeviceClass(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/device-classes/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) ListDeviceClasses(options model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int) {
 	queryString := ""

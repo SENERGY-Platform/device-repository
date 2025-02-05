@@ -159,3 +159,7 @@ type DeviceGroupListOptions struct {
 type DeviceUpdateOptions struct {
 	UpdateOnlySameOriginAttributes []string
 }
+
+type DeviceTypeUpdateOptions struct {
+	DistinctAttributes []string
+}

@@ -27,6 +27,37 @@ import (
 	"strings"
 )
 
+func (c *Client) SetDeviceType(token string, deviceType models.DeviceType, options model.DeviceTypeUpdateOptions) (result models.DeviceType, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(deviceType)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	query := url.Values{}
+	if options.DistinctAttributes != nil {
+		query.Set("distinct_attributes", strings.Join(options.DistinctAttributes, ","))
+	}
+	if deviceType.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/device-types?"+query.Encode(), bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/device-types/"+url.PathEscape(deviceType.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteDeviceType(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/device-types/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
 func (c *Client) ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types/"+id, nil)
 	if err != nil {

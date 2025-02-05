@@ -89,12 +89,10 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 
 	ctrl.StartSyncLoop(ctx, syncInterval, syncLockDuration)
 
-	if !conf.DisableHttpApi {
-		err = api.Start(ctx, conf, ctrl)
-		if err != nil {
-			log.Println("ERROR: unable to start api", err)
-			return err
-		}
+	err = api.Start(ctx, conf, ctrl)
+	if err != nil {
+		log.Println("ERROR: unable to start api", err)
+		return err
 	}
 
 	return err

@@ -17,6 +17,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -25,6 +26,33 @@ import (
 	"strconv"
 	"strings"
 )
+
+func (c *Client) SetDeviceGroup(token string, deviceGroup models.DeviceGroup) (result models.DeviceGroup, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(deviceGroup)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	if deviceGroup.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/device-groups", bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/device-groups/"+url.PathEscape(deviceGroup.Id), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.DeviceGroup](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteDeviceGroup(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/device-groups/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) ListDeviceGroups(token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
 	queryString := ""

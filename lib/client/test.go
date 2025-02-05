@@ -41,7 +41,6 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		DeviceClassTopic:                         "device-classes",
 		LocationTopic:                            "locations",
 		Debug:                                    true,
-		DisableKafkaConsumer:                     false,
 		DisableHttpApi:                           false,
 		HttpClientTimeout:                        "30s",
 		FatalErrHandler:                          nil,

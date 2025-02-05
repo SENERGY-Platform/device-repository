@@ -17,6 +17,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
@@ -24,6 +26,33 @@ import (
 	"strconv"
 	"strings"
 )
+
+func (c *Client) SetLocation(token string, location models.Location) (result models.Location, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(location)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	if location.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/locations", bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/locations/"+url.PathEscape(location.Id), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteLocation(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/locations/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) GetLocation(id string, token string) (location models.Location, err error, errCode int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/locations/"+id, nil)

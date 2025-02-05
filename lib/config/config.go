@@ -29,12 +29,10 @@ import (
 	"time"
 )
 
-// TODO: remove unused configs
 type Config struct {
 	ServerPort                    string `json:"server_port"`
 	EnableSwaggerUi               bool   `json:"enable_swagger_ui"`
 	KafkaUrl                      string `json:"kafka_url"`
-	DoneTopic                     string `json:"done_topic"`
 	DeviceTopic                   string `json:"device_topic"`
 	DeviceTypeTopic               string `json:"device_type_topic"`
 	DeviceGroupTopic              string `json:"device_group_topic"`
@@ -46,8 +44,6 @@ type Config struct {
 	FunctionTopic                 string `json:"function_topic"`
 	DeviceClassTopic              string `json:"device_class_topic"`
 	LocationTopic                 string `json:"location_topic"`
-	DeviceConnectionStateTopic    string `json:"device_connection_state_topic"`
-	HubConnectionStateTopic       string `json:"hub_connection_state_topic"`
 	PermissionsV2Url              string `json:"permissions_v2_url"`
 	MongoUrl                      string `json:"mongo_url"`
 	MongoTable                    string `json:"mongo_table"`
@@ -64,9 +60,7 @@ type Config struct {
 	MongoFunctionCollection       string `json:"mongo_function_collection"`
 	MongoLocationCollection       string `json:"mongo_location_collection"`
 	Debug                         bool   `json:"debug"`
-	DisableHttpApi                bool   `json:"disable_http_api"`
 	HttpClientTimeout             string `json:"http_client_timeout"`
-	FatalErrHandler               func(v ...interface{})
 
 	DeviceServiceGroupSelectionAllowNotFound     bool `json:"device_service_group_selection_allow_not_found"`
 	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
@@ -81,14 +75,6 @@ type Config struct {
 
 	SyncInterval     string `json:"sync_interval"`
 	SyncLockDuration string `json:"sync_lock_duration"`
-}
-
-func (this Config) HandleFatalError(v ...interface{}) {
-	if this.FatalErrHandler != nil {
-		this.FatalErrHandler(v...)
-	} else {
-		log.Fatal(v...)
-	}
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
@@ -106,7 +92,6 @@ func Load(location string) (config Config, err error) {
 	}
 	handleEnvironmentVars(&config)
 	setDefaultHttpClient(config)
-	config.FatalErrHandler = log.Fatal
 	return config, nil
 }
 

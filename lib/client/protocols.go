@@ -17,10 +17,40 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+	"net/url"
 	"strconv"
 )
+
+func (c *Client) SetProtocol(token string, protocol models.Protocol) (result models.Protocol, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(protocol)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	if protocol.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/protocols", bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/protocols/"+url.PathEscape(protocol.Id), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteProtocol(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/protocols/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/protocols/"+id, nil)

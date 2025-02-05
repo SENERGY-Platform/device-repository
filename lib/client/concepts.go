@@ -17,6 +17,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
@@ -24,6 +26,33 @@ import (
 	"strconv"
 	"strings"
 )
+
+func (c *Client) SetConcept(token string, concept models.Concept) (result models.Concept, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(concept)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	if concept.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/concepts", bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/concepts/"+url.PathEscape(concept.Id), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteConcept(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/concepts/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) ListConcepts(options model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int) {
 	queryString := ""

@@ -17,6 +17,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
@@ -24,6 +26,60 @@ import (
 	"strconv"
 	"strings"
 )
+
+type DeviceUpdateOptions = model.DeviceUpdateOptions
+
+func (c *Client) SetDeviceConnectionState(token string, id string, connected bool) (error, int) {
+	b, err := json.Marshal(connected)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/devices/"+url.PathEscape(id)+"/connection-state", bytes.NewBuffer(b))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) SetDevice(token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int) {
+	b, err := json.Marshal(device)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	query := url.Values{}
+	if options.UpdateOnlySameOriginAttributes != nil {
+		query.Set("update-only-same-origin-attributes", strings.Join(options.UpdateOnlySameOriginAttributes, ","))
+	}
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/devices/"+url.PathEscape(device.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) CreateDevice(token string, device models.Device) (result models.Device, err error, code int) {
+	b, err := json.Marshal(device)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/devices", bytes.NewBuffer(b))
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteDevice(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/devices/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) ListDevices(token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {
 	queryString := ""

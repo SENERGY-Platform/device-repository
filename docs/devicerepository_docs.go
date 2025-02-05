@@ -2702,6 +2702,52 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
+        "/devices/{id}/connection-state": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "set device connection-state",
+                "tags": [
+                    "connection-state",
+                    "devices"
+                ],
+                "summary": "set device connection-state",
+                "parameters": [
+                    {
+                        "description": "connected true/false",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/devices/{id}/display_name": {
             "put": {
                 "security": [
@@ -3863,6 +3909,52 @@ const docTemplatedevicerepository = `{
                         "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
                         "name": "p",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/hubs/{id}/connection-state": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "set hub connection-state",
+                "tags": [
+                    "connection-state",
+                    "hubs"
+                ],
+                "summary": "set hub connection-state",
+                "parameters": [
+                    {
+                        "description": "connected true/false",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean"
+                        }
                     }
                 ],
                 "responses": {

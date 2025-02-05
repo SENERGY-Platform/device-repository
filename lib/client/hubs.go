@@ -17,6 +17,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
@@ -24,6 +26,46 @@ import (
 	"strconv"
 	"strings"
 )
+
+func (c *Client) SetHubConnectionState(token string, id string, connected bool) (error, int) {
+	b, err := json.Marshal(connected)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(id)+"/connection-state", bytes.NewBuffer(b))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) SetHub(token string, hub models.Hub) (result models.Hub, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(hub)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	if hub.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/hubs", bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(hub.Id), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Hub](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteHub(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/hubs/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
 	query := url.Values{}

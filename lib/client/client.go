@@ -75,6 +75,26 @@ func do[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (
 	return
 }
 
+func doVoid(req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (err error, code int) {
+	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
+		token, err := optionalAuthTokenForApiGatewayRequest()
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		req.Header.Set("Authorization", token)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode > 299 {
+		temp, _ := io.ReadAll(resp.Body) //read error response end ensure that resp.Body is read to EOF
+		return fmt.Errorf("unexpected statuscode %v: %v", resp.StatusCode, string(temp)), resp.StatusCode
+	}
+	return
+}
+
 func doWithTotalInResult[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (result T, total int64, err error, code int) {
 	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
 		token, err := optionalAuthTokenForApiGatewayRequest()

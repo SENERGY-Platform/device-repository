@@ -569,7 +569,7 @@ func addDeviceTypeCriteriaToVariableRefs(list []model.VariableReference, criteri
 	return list
 }
 
-func (this *Controller) SetDeviceType(token string, dt models.DeviceType) (models.DeviceType, error, int) {
+func (this *Controller) SetDeviceType(token string, dt models.DeviceType, options model.DeviceTypeUpdateOptions) (models.DeviceType, error, int) {
 	dt.GenerateId() //ensure ids
 
 	jwtToken, err := jwt.Parse(token)
@@ -581,10 +581,17 @@ func (this *Controller) SetDeviceType(token string, dt models.DeviceType) (model
 	if err != nil {
 		return dt, err, http.StatusInternalServerError
 	}
-
 	if !jwtToken.IsAdmin() && exists {
 		return dt, errors.New("only admins may update existing device-types"), http.StatusForbidden
 	}
+
+	if options.DistinctAttributes != nil {
+		err = this.ValidateDistinctDeviceTypeAttributes(dt, options.DistinctAttributes)
+		if err != nil {
+			return dt, err, http.StatusBadRequest
+		}
+	}
+
 	err, code := this.ValidateDeviceType(dt, model.ValidationOptions{})
 	if err != nil {
 		debug.PrintStack()

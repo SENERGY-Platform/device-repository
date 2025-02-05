@@ -49,9 +49,8 @@ type Controller interface {
 	ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int)
 	ListDeviceTypesV3(token string, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int)
 	ValidateDeviceType(deviceType models.DeviceType, options model.ValidationOptions) (err error, code int)
-	SetDeviceType(token string, dt models.DeviceType) (result models.DeviceType, err error, errCode int)
+	SetDeviceType(token string, dt models.DeviceType, options model.DeviceTypeUpdateOptions) (result models.DeviceType, err error, errCode int)
 	DeleteDeviceType(token string, id string) (err error, code int)
-	ValidateDistinctDeviceTypeAttributes(devicetype models.DeviceType, attributeKeys []string) error
 
 	GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
 	GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int)

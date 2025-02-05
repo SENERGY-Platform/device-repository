@@ -17,6 +17,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -25,6 +27,33 @@ import (
 	"strconv"
 	"strings"
 )
+
+func (c *Client) SetFunction(token string, function models.Function) (result models.Function, err error, code int) {
+	var req *http.Request
+	b, err := json.Marshal(function)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	if function.Id == "" {
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/functions", bytes.NewBuffer(b))
+	} else {
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/functions/"+url.PathEscape(function.Id), bytes.NewBuffer(b))
+	}
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) DeleteFunction(token string, id string) (err error, code int) {
+	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/functions/"+url.PathEscape(id), nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
 
 func (c *Client) ListFunctions(options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {
 	queryString := ""

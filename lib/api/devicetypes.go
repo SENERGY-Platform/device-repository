@@ -375,16 +375,13 @@ func (this *DeviceTypeEndpoints) Create(config config.Config, router *http.Serve
 			return
 		}
 
+		options := model.DeviceTypeUpdateOptions{}
 		distinctAttr := request.URL.Query().Get("distinct_attributes")
 		if distinctAttr != "" {
-			err = control.ValidateDistinctDeviceTypeAttributes(devicetype, strings.Split(distinctAttr, ","))
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				return
-			}
+			options.DistinctAttributes = strings.Split(distinctAttr, ",")
 		}
 
-		result, err, errCode := control.SetDeviceType(token, devicetype)
+		result, err, errCode := control.SetDeviceType(token, devicetype, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -430,16 +427,14 @@ func (this *DeviceTypeEndpoints) Set(config config.Config, router *http.ServeMux
 		}
 
 		token := util.GetAuthToken(request)
+
+		options := model.DeviceTypeUpdateOptions{}
 		distinctAttr := request.URL.Query().Get("distinct_attributes")
 		if distinctAttr != "" {
-			err = control.ValidateDistinctDeviceTypeAttributes(devicetype, strings.Split(distinctAttr, ","))
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusBadRequest)
-				return
-			}
+			options.DistinctAttributes = strings.Split(distinctAttr, ",")
 		}
 
-		result, err, errCode := control.SetDeviceType(token, devicetype)
+		result, err, errCode := control.SetDeviceType(token, devicetype, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
