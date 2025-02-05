@@ -24,11 +24,19 @@ import (
 	"strings"
 )
 
-func (this *Controller) CreateGeneratedDeviceGroup(device models.Device) (err error) {
+func (this *Controller) EnsureGeneratedDeviceGroup(device models.Device) (err error) {
 	if this.config.SkipDeviceGroupGenerationFromDevice {
 		return nil
 	}
 	virtualDgId := this.DeviceIdToGeneratedDeviceGroupId(device.Id)
+	ctx, _ := getTimeoutContext()
+	_, exists, err := this.db.GetDeviceGroup(ctx, virtualDgId)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
 	dg := models.DeviceGroup{
 		Id:                    virtualDgId,
 		Name:                  getDeviceDisplayName(device) + "_group",

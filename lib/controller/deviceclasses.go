@@ -34,6 +34,10 @@ func (this *Controller) ListDeviceClasses(listOptions model.DeviceClassListOptio
 	return result, total, nil, http.StatusOK
 }
 
+func (this *Controller) setDeviceClassSyncHandler(c models.DeviceClass) error {
+	return this.publisher.PublishDeviceClass(c)
+}
+
 func (this *Controller) SetDeviceClass(token string, class models.DeviceClass) (result models.DeviceClass, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
@@ -50,11 +54,15 @@ func (this *Controller) SetDeviceClass(token string, class models.DeviceClass) (
 		return result, err, code
 	}
 	ctx, _ := getTimeoutContext()
-	err = this.db.SetDeviceClass(ctx, class)
+	err = this.db.SetDeviceClass(ctx, class, this.setDeviceClassSyncHandler)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return class, nil, http.StatusOK
+}
+
+func (this *Controller) deleteDeviceClassSyncHandler(c models.DeviceClass) error {
+	return this.publisher.PublishDeviceClassDelete(c.Id)
 }
 
 func (this *Controller) DeleteDeviceClass(token string, id string) (error, int) {
@@ -70,7 +78,7 @@ func (this *Controller) DeleteDeviceClass(token string, id string) (error, int) 
 		return err, code
 	}
 	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveDeviceClass(ctx, id)
+	err = this.db.RemoveDeviceClass(ctx, id, this.deleteDeviceClassSyncHandler)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

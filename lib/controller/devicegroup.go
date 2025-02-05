@@ -480,13 +480,17 @@ func permissionListFromString(str string) (result client.PermissionList, err err
 	return result, nil
 }
 
-func (this *Controller) setDeviceGroup(deviceGroup models.DeviceGroup, owner string) (err error) {
-	err = this.EnsureInitialRights(this.config.DeviceGroupTopic, deviceGroup.Id, owner)
+func (this *Controller) setDeviceGroupSyncHandler(dg models.DeviceGroup, user string) error {
+	err := this.EnsureInitialRights(this.config.DeviceGroupTopic, dg.Id, user)
 	if err != nil {
 		return err
 	}
+	return this.publisher.PublishDeviceGroup(dg)
+}
+
+func (this *Controller) setDeviceGroup(deviceGroup models.DeviceGroup, owner string) (err error) {
 	ctx, _ := getTimeoutContext()
-	return this.db.SetDeviceGroup(ctx, deviceGroup)
+	return this.db.SetDeviceGroup(ctx, deviceGroup, this.setDeviceGroupSyncHandler, owner)
 }
 
 func (this *Controller) DeleteDeviceGroup(token string, id string) (err error, code int) {
@@ -514,13 +518,17 @@ func (this *Controller) DeleteDeviceGroup(token string, id string) (err error, c
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteDeviceGroup(id string) error {
-	ctx, _ := getTimeoutContext()
-	err := this.db.RemoveDeviceGroup(ctx, id)
+func (this *Controller) deleteDeviceGroupSyncHandler(dg models.DeviceGroup) (err error) {
+	err = this.RemoveRights(this.config.DeviceGroupTopic, dg.Id)
 	if err != nil {
 		return err
 	}
-	err = this.RemoveRights(this.config.DeviceGroupTopic, id)
+	return this.publisher.PublishDeviceGroupDelete(dg.Id)
+}
+
+func (this *Controller) deleteDeviceGroup(id string) error {
+	ctx, _ := getTimeoutContext()
+	err := this.db.RemoveDeviceGroup(ctx, id, this.deleteDeviceGroupSyncHandler)
 	if err != nil {
 		return err
 	}

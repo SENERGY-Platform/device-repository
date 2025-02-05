@@ -18,13 +18,16 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var DeviceBson = getBsonFieldObject[model.DeviceWithConnectionState]()
@@ -96,25 +99,114 @@ func (this *Mongo) deviceCollection() *mongo.Collection {
 }
 
 func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error) {
-	result := this.deviceCollection().FindOne(ctx, bson.M{DeviceBson.Id: id})
+	result := this.deviceCollection().FindOne(ctx, bson.M{DeviceBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return device, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&device)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return device, false, nil
 	}
 	return device, true, err
 }
 
-func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnectionState) error {
+type DeviceWithSyncInfo struct {
+	model.DeviceWithConnectionState `bson:",inline"`
+	SyncInfo                        `bson:",inline"`
+}
+
+func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(model.DeviceWithConnectionState) error) error {
 	device.DisplayName = getDisplayName(device)
-	_, err := this.deviceCollection().ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, device, options.Replace().SetUpsert(true))
-	return err
+	timestamp := time.Now().Unix()
+	collection := this.deviceCollection()
+	_, err := collection.ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, DeviceWithSyncInfo{
+		DeviceWithConnectionState: device,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = syncHandler(device)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, DeviceBson.Id, device.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RemoveDevice(ctx context.Context, id string, syncDeleteHandler func(model.DeviceWithConnectionState) error) (err error) {
+	old, exists, err := this.GetDevice(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.deviceCollection()
+	err = this.setDeleted(ctx, collection, DeviceBson.Id, id)
+	if err != nil {
+		return err
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveDevice::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{DeviceBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveDevice::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RetryDeviceSync(lockduration time.Duration, syncDeleteHandler func(model.DeviceWithConnectionState) error, syncHandler func(model.DeviceWithConnectionState) error) error {
+	collection := this.deviceCollection()
+	jobs, err := FetchSyncJobs[DeviceWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		if job.SyncDelete {
+			err = syncDeleteHandler(job.DeviceWithConnectionState)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{DeviceBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			err = syncHandler(job.DeviceWithConnectionState)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			err = this.setSynced(ctx, collection, DeviceBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 func getDisplayName(device model.DeviceWithConnectionState) string {
@@ -127,13 +219,8 @@ func getDisplayName(device model.DeviceWithConnectionState) string {
 	return displayName
 }
 
-func (this *Mongo) RemoveDevice(ctx context.Context, id string) error {
-	_, err := this.deviceCollection().DeleteOne(ctx, bson.M{DeviceBson.Id: id})
-	return err
-}
-
 func (this *Mongo) GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error) {
-	filter := bson.M{DeviceBson.LocalId: localId}
+	filter := bson.M{DeviceBson.LocalId: localId, NotDeletedFilterKey: NotDeletedFilterValue}
 	if this.config.LocalIdUniqueForOwner {
 		filter[DeviceBson.OwnerId] = ownerId
 	}
@@ -175,6 +262,7 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
+	andFilter := []interface{}{bson.M{NotDeletedFilterKey: NotDeletedFilterValue}}
 	filter := bson.M{}
 	if listOptions.Ids != nil {
 		filter[DeviceBson.Id] = bson.M{"$in": listOptions.Ids}
@@ -194,14 +282,17 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {
 		escapedSearch := regexp.QuoteMeta(search)
-		filter["$or"] = []interface{}{
+		orFilter := bson.M{"$or": []interface{}{
 			bson.M{DeviceBson.Name: bson.M{"$regex": escapedSearch, "$options": "i"}},
 			bson.M{DeviceBson.DisplayName: bson.M{"$regex": escapedSearch, "$options": "i"}},
-		}
+		}}
+		andFilter = append(andFilter, orFilter)
 	}
 	if listOptions.ConnectionState != nil {
 		filter[DeviceBson.ConnectionState] = listOptions.ConnectionState
 	}
+
+	filter["$and"] = andFilter
 
 	cursor, err := this.deviceCollection().Find(ctx, filter, opt)
 	if err != nil {
@@ -221,7 +312,11 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 }
 
 func (this *Mongo) DeviceLocalIdsToIds(ctx context.Context, owner string, localIds []string) (ids []string, err error) {
-	cursor, err := this.deviceCollection().Find(ctx, bson.M{DeviceBson.LocalId: bson.M{"$in": localIds}, DeviceBson.OwnerId: owner})
+	cursor, err := this.deviceCollection().Find(ctx, bson.M{
+		DeviceBson.LocalId:  bson.M{"$in": localIds},
+		DeviceBson.OwnerId:  owner,
+		NotDeletedFilterKey: NotDeletedFilterValue,
+	})
 	if err != nil {
 		return ids, err
 	}

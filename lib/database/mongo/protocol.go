@@ -18,36 +18,27 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"strings"
+	"time"
 )
 
-const protocolIdFieldName = "Id"
-const protocolNameFieldName = "Name"
-
-var protocolIdKey string
-var protocolNameKey string
+var ProtocolBson = getBsonFieldObject[models.Protocol]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		protocolIdKey, err = getBsonFieldName(models.Protocol{}, protocolIdFieldName)
-		if err != nil {
-			return err
-		}
-		protocolNameKey, err = getBsonFieldName(models.Protocol{}, protocolNameFieldName)
-		if err != nil {
-			return err
-		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoProtocolCollection)
-		err = db.ensureIndex(collection, "protocolidindex", protocolIdKey, true, true)
+		err = db.ensureIndex(collection, "protocolidindex", ProtocolBson.Id, true, true)
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "protocolnameindex", protocolNameKey, true, false)
+		err = db.ensureIndex(collection, "protocolnameindex", ProtocolBson.Name, true, false)
 		if err != nil {
 			return err
 		}
@@ -60,16 +51,16 @@ func (this *Mongo) protocolCollection() *mongo.Collection {
 }
 
 func (this *Mongo) GetProtocol(ctx context.Context, id string) (protocol models.Protocol, exists bool, err error) {
-	result := this.protocolCollection().FindOne(ctx, bson.M{protocolIdKey: id})
+	result := this.protocolCollection().FindOne(ctx, bson.M{ProtocolBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return protocol, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&protocol)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return protocol, false, nil
 	}
 	return protocol, true, err
@@ -81,14 +72,14 @@ func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64,
 	opt.SetSkip(offset)
 
 	parts := strings.Split(sort, ".")
-	sortby := protocolIdKey
+	sortby := ProtocolBson.Id
 	switch parts[0] {
 	case "id":
-		sortby = protocolIdKey
+		sortby = ProtocolBson.Id
 	case "name":
-		sortby = protocolNameKey
+		sortby = ProtocolBson.Name
 	default:
-		sortby = protocolIdKey
+		sortby = ProtocolBson.Id
 	}
 	direction := int32(1)
 	if len(parts) > 1 && parts[1] == "desc" {
@@ -96,7 +87,7 @@ func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64,
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	cursor, err := this.protocolCollection().Find(ctx, bson.M{}, opt)
+	cursor, err := this.protocolCollection().Find(ctx, bson.M{NotDeletedFilterKey: NotDeletedFilterValue}, opt)
 	if err != nil {
 		return nil, err
 	}
@@ -113,12 +104,96 @@ func (this *Mongo) ListProtocols(ctx context.Context, limit int64, offset int64,
 	return
 }
 
-func (this *Mongo) SetProtocol(ctx context.Context, protocol models.Protocol) error {
-	_, err := this.protocolCollection().ReplaceOne(ctx, bson.M{protocolIdKey: protocol.Id}, protocol, options.Replace().SetUpsert(true))
-	return err
+type ProtocolWithSyncInfo struct {
+	models.Protocol `bson:",inline"`
+	SyncInfo        `bson:",inline"`
 }
 
-func (this *Mongo) RemoveProtocol(ctx context.Context, id string) error {
-	_, err := this.protocolCollection().DeleteOne(ctx, bson.M{protocolIdKey: id})
-	return err
+func (this *Mongo) SetProtocol(ctx context.Context, protocol models.Protocol, syncHandler func(models.Protocol) error) (err error) {
+	timestamp := time.Now().Unix()
+	collection := this.protocolCollection()
+	_, err = this.protocolCollection().ReplaceOne(ctx, bson.M{ProtocolBson.Id: protocol.Id}, ProtocolWithSyncInfo{
+		Protocol: protocol,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = syncHandler(protocol)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, ProtocolBson.Id, protocol.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RemoveProtocol(ctx context.Context, id string, syncDeleteHandler func(models.Protocol) error) error {
+	old, exists, err := this.GetProtocol(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.protocolCollection()
+	err = this.setDeleted(ctx, collection, ProtocolBson.Id, id)
+	if err != nil {
+		return err
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveProtocol::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{ProtocolBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveProtocol::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RetryProtocolSync(lockduration time.Duration, syncDeleteHandler func(models.Protocol) error, syncHandler func(models.Protocol) error) error {
+	collection := this.protocolCollection()
+	jobs, err := FetchSyncJobs[ProtocolWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		if job.SyncDelete {
+			err = syncDeleteHandler(job.Protocol)
+			if err != nil {
+				log.Printf("WARNING: error in RetryProtocolSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{ProtocolBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryProtocolSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			err = syncHandler(job.Protocol)
+			if err != nil {
+				log.Printf("WARNING: error in RetryProtocolSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			err = this.setSynced(ctx, collection, ProtocolBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryProtocolSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }

@@ -18,14 +18,17 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 var ConceptBson = getBsonFieldObject[models.Concept]()
@@ -50,14 +53,98 @@ func (this *Mongo) conceptCollection() *mongo.Collection {
 	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoConceptCollection)
 }
 
-func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept) error {
-	_, err := this.conceptCollection().ReplaceOne(ctx, bson.M{ConceptBson.Id: concept.Id}, concept, options.Replace().SetUpsert(true))
-	return err
+func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept, syncHandler func(models.Concept) error) error {
+	timestamp := time.Now().Unix()
+	collection := this.conceptCollection()
+	_, err := this.conceptCollection().ReplaceOne(ctx, bson.M{ConceptBson.Id: concept.Id}, ConceptWithSyncInfo{
+		Concept: concept,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = syncHandler(concept)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, ConceptBson.Id, concept.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
 }
 
-func (this *Mongo) RemoveConcept(ctx context.Context, id string) error {
-	_, err := this.conceptCollection().DeleteOne(ctx, bson.M{ConceptBson.Id: id})
-	return err
+func (this *Mongo) RemoveConcept(ctx context.Context, id string, syncDeleteHandler func(models.Concept) error) error {
+	old, exists, err := this.GetConceptWithoutCharacteristics(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.conceptCollection()
+	err = this.setDeleted(ctx, collection, ConceptBson.Id, id)
+	if err != nil {
+		return err
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveConcept::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{ConceptBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveConcept::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+type ConceptWithSyncInfo struct {
+	models.Concept `bson:",inline"`
+	SyncInfo       `bson:",inline"`
+}
+
+func (this *Mongo) RetryConceptSync(lockduration time.Duration, syncDeleteHandler func(models.Concept) error, syncHandler func(models.Concept) error) error {
+	collection := this.conceptCollection()
+	jobs, err := FetchSyncJobs[ConceptWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		if job.SyncDelete {
+			err = syncDeleteHandler(job.Concept)
+			if err != nil {
+				log.Printf("WARNING: error in RetryConceptSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{ConceptBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryConceptSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			err = syncHandler(job.Concept)
+			if err != nil {
+				log.Printf("WARNING: error in RetryConceptSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			err = this.setSynced(ctx, collection, ConceptBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryConceptSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 func (this *Mongo) ListConceptsWithCharacteristics(ctx context.Context, listOptions model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error) {
@@ -119,7 +206,7 @@ func (this *Mongo) ListConcepts(ctx context.Context, listOptions model.ConceptLi
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	filter := bson.M{}
+	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	if listOptions.Ids != nil {
 		filter[ConceptBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
@@ -161,16 +248,16 @@ func (this *Mongo) GetConceptWithCharacteristics(ctx context.Context, id string)
 }
 
 func (this *Mongo) GetConceptWithoutCharacteristics(ctx context.Context, id string) (concept models.Concept, exists bool, err error) {
-	result := this.conceptCollection().FindOne(ctx, bson.M{ConceptBson.Id: id})
+	result := this.conceptCollection().FindOne(ctx, bson.M{ConceptBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return concept, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&concept)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return concept, false, nil
 	}
 	return concept, true, err

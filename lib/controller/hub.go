@@ -390,12 +390,8 @@ func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub,
 	return hub, nil, http.StatusOK
 }
 
-func (this *Controller) setHub(hub model.HubWithConnectionState, owner string) (err error) {
-	if hub.Id == "" {
-		log.Println("ERROR: received hub without id")
-		return nil
-	}
-	err = this.EnsureInitialRights(this.config.HubTopic, hub.Id, owner)
+func (this *Controller) setHubSyncHandler(hub model.HubWithConnectionState) (err error) {
+	err = this.EnsureInitialRights(this.config.HubTopic, hub.Id, hub.OwnerId)
 	if err != nil {
 		return err
 	}
@@ -426,30 +422,26 @@ func (this *Controller) setHub(hub model.HubWithConnectionState, owner string) (
 			hubIndex[otherHub.Id] = otherHub
 		}
 	}
-
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetHub(ctx, hub)
-	if err != nil {
-		return err
-	}
-
 	for _, otherHub := range hubIndex {
 		err := this.setHub(otherHub, otherHub.OwnerId)
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return this.publisher.PublishHub(hub.Hub)
 }
 
-// TODO: reenable event-sourcing
-func (this *Controller) SetHubConnectionState(id string, connected bool) error {
-	state := models.ConnectionStateOffline
-	if connected {
-		state = models.ConnectionStateOnline
+func (this *Controller) setHub(hub model.HubWithConnectionState, owner string) (err error) {
+	if hub.Id == "" {
+		log.Println("ERROR: received hub without id")
+		return nil
 	}
 	ctx, _ := getTimeoutContext()
-	return this.db.SetHubConnectionState(ctx, id, state)
+	err = this.db.SetHub(ctx, hub, this.setHubSyncHandler)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (this *Controller) DeleteHub(token string, id string) (err error, code int) {
@@ -475,15 +467,39 @@ func (this *Controller) DeleteHub(token string, id string) (err error, code int)
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteHub(id string) (err error) {
-	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveHub(ctx, id)
+func (this *Controller) deleteHubSyncHandler(hub model.HubWithConnectionState) (err error) {
+	err = this.RemoveRights(this.config.HubTopic, hub.Id)
 	if err != nil {
 		return err
 	}
-	err = this.RemoveRights(this.config.HubTopic, id)
+	return this.publisher.PublishHubDelete(hub.Id)
+}
+
+func (this *Controller) deleteHub(id string) (err error) {
+	ctx, _ := getTimeoutContext()
+	err = this.db.RemoveHub(ctx, id, this.deleteHubSyncHandler)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (this *Controller) SetHubConnectionState(token string, id string, connected bool) (error, int) {
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Write)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !ok {
+		return errors.New("access denied"), http.StatusForbidden
+	}
+	state := models.ConnectionStateOffline
+	if connected {
+		state = models.ConnectionStateOnline
+	}
+	ctx, _ := getTimeoutContext()
+	err = this.db.SetHubConnectionState(ctx, id, state)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
 }

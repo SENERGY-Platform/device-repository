@@ -559,3 +559,45 @@ func (this *DeviceEndpoints) DeleteMany(config config.Config, router *http.Serve
 		return
 	})
 }
+
+// SetConnectionState godoc
+// @Summary      set device connection-state
+// @Description  set device connection-state
+// @Tags         connection-state, devices
+// @Security Bearer
+// @Param        message body bool true "connected true/false"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices/{id}/connection-state [PUT]
+func (this *DeviceEndpoints) SetConnectionState(config config.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /devices/{id}/connection-state", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		if id == "" {
+			http.Error(writer, "missing id", http.StatusBadRequest)
+			return
+		}
+		connected := false
+		err := json.NewDecoder(request.Body).Decode(&connected)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		err, errCode := control.SetDeviceConnectionState(token, id, connected)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}

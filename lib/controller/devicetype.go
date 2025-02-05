@@ -600,9 +600,17 @@ func (this *Controller) SetDeviceType(token string, dt models.DeviceType) (model
 	return dt, nil, http.StatusOK
 }
 
+func (this *Controller) setDeviceTypeSyncHandler(dt models.DeviceType) (err error) {
+	return this.publisher.PublishDeviceType(dt)
+}
+
 func (this *Controller) setDeviceType(deviceType models.DeviceType) (err error) {
 	ctx, _ := getTimeoutContext()
-	return this.db.SetDeviceType(ctx, deviceType)
+	return this.db.SetDeviceType(ctx, deviceType, this.setDeviceTypeSyncHandler)
+}
+
+func (this *Controller) deleteDeviceTypeSyncHandler(dt models.DeviceType) (err error) {
+	return this.publisher.PublishDeviceTypeDelete(dt.Id)
 }
 
 func (this *Controller) DeleteDeviceType(token string, id string) (err error, code int) {
@@ -614,7 +622,7 @@ func (this *Controller) DeleteDeviceType(token string, id string) (err error, co
 		return errors.New("only admins may delete device-types"), http.StatusForbidden
 	}
 	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveDeviceType(ctx, id)
+	err = this.db.RemoveDeviceType(ctx, id, this.deleteDeviceTypeSyncHandler)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

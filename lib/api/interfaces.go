@@ -131,4 +131,7 @@ type Controller interface {
 	DeleteLocation(token string, id string) (err error, code int)
 
 	DeleteUser(adminToken string, userId string) (err error, errCode int)
+
+	SetHubConnectionState(token string, id string, connected bool) (error, int)
+	SetDeviceConnectionState(token string, id string, connected bool) (error, int)
 }

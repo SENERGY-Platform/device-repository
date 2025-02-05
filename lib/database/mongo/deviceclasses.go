@@ -23,8 +23,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var DeviceClassBson = getBsonFieldObject[models.DeviceClass]()
@@ -66,7 +68,7 @@ func (this *Mongo) ListDeviceClasses(ctx context.Context, listOptions model.Devi
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	filter := bson.M{}
+	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	if listOptions.Ids != nil {
 		filter[DeviceClassBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
@@ -92,7 +94,7 @@ func (this *Mongo) ListDeviceClasses(ctx context.Context, listOptions model.Devi
 }
 
 func (this *Mongo) GetDeviceClass(ctx context.Context, id string) (deviceClass models.DeviceClass, exists bool, err error) {
-	result := this.deviceClassCollection().FindOne(ctx, bson.M{DeviceClassBson.Id: id})
+	result := this.deviceClassCollection().FindOne(ctx, bson.M{DeviceClassBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return deviceClass, false, nil
@@ -107,18 +109,102 @@ func (this *Mongo) GetDeviceClass(ctx context.Context, id string) (deviceClass m
 	return deviceClass, true, err
 }
 
-func (this *Mongo) SetDeviceClass(ctx context.Context, deviceClass models.DeviceClass) error {
-	_, err := this.deviceClassCollection().ReplaceOne(ctx, bson.M{DeviceClassBson.Id: deviceClass.Id}, deviceClass, options.Replace().SetUpsert(true))
-	return err
+func (this *Mongo) SetDeviceClass(ctx context.Context, deviceClass models.DeviceClass, syncHandler func(models.DeviceClass) error) error {
+	timestamp := time.Now().Unix()
+	collection := this.deviceClassCollection()
+	_, err := this.deviceClassCollection().ReplaceOne(ctx, bson.M{DeviceClassBson.Id: deviceClass.Id}, DeviceClassWithSyncInfo{
+		DeviceClass: deviceClass,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = syncHandler(deviceClass)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, DeviceClassBson.Id, deviceClass.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
 }
 
-func (this *Mongo) RemoveDeviceClass(ctx context.Context, id string) error {
-	_, err := this.deviceClassCollection().DeleteOne(ctx, bson.M{DeviceClassBson.Id: id})
-	return err
+func (this *Mongo) RemoveDeviceClass(ctx context.Context, id string, syncDeleteHandler func(models.DeviceClass) error) error {
+	old, exists, err := this.GetDeviceClass(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.deviceClassCollection()
+	err = this.setDeleted(ctx, collection, DeviceClassBson.Id, id)
+	if err != nil {
+		return err
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveDeviceClass::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{DeviceClassBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveDeviceClass::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+type DeviceClassWithSyncInfo struct {
+	models.DeviceClass `bson:",inline"`
+	SyncInfo           `bson:",inline"`
+}
+
+func (this *Mongo) RetryDeviceClassSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceClass) error, syncHandler func(models.DeviceClass) error) error {
+	collection := this.deviceClassCollection()
+	jobs, err := FetchSyncJobs[DeviceClassWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		if job.SyncDelete {
+			err = syncDeleteHandler(job.DeviceClass)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceClassSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{DeviceClassBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceClassSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			err = syncHandler(job.DeviceClass)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceClassSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			err = this.setSynced(ctx, collection, DeviceClassBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceClassSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 func (this *Mongo) ListAllDeviceClasses(ctx context.Context) (result []models.DeviceClass, err error) {
-	cursor, err := this.deviceClassCollection().Find(ctx, bson.D{})
+	cursor, err := this.deviceClassCollection().Find(ctx, bson.M{NotDeletedFilterKey: NotDeletedFilterValue})
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +229,7 @@ func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.deviceClassCollection().Find(ctx, bson.M{DeviceClassBson.Id: bson.M{"$in": deviceClassIds}})
+	cursor, err := this.deviceClassCollection().Find(ctx, bson.M{DeviceClassBson.Id: bson.M{"$in": deviceClassIds, NotDeletedFilterKey: NotDeletedFilterValue}})
 	if err != nil {
 		return nil, err
 	}

@@ -23,8 +23,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var AspectBson = getBsonFieldObject[models.Aspect]()
@@ -66,7 +68,7 @@ func (this *Mongo) ListAspects(ctx context.Context, listOptions model.AspectList
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	filter := bson.M{}
+	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	if listOptions.Ids != nil {
 		filter[AspectBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
@@ -92,7 +94,7 @@ func (this *Mongo) ListAspects(ctx context.Context, listOptions model.AspectList
 }
 
 func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect models.Aspect, exists bool, err error) {
-	result := this.aspectCollection().FindOne(ctx, bson.M{AspectBson.Id: id})
+	result := this.aspectCollection().FindOne(ctx, bson.M{AspectBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return aspect, false, nil
@@ -107,18 +109,102 @@ func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect models.Aspe
 	return aspect, true, err
 }
 
-func (this *Mongo) SetAspect(ctx context.Context, aspect models.Aspect) error {
-	_, err := this.aspectCollection().ReplaceOne(ctx, bson.M{AspectBson.Id: aspect.Id}, aspect, options.Replace().SetUpsert(true))
-	return err
+type AspectWithSyncInfo struct {
+	models.Aspect `bson:",inline"`
+	SyncInfo      `bson:",inline"`
 }
 
-func (this *Mongo) RemoveAspect(ctx context.Context, id string) error {
-	_, err := this.aspectCollection().DeleteOne(ctx, bson.M{AspectBson.Id: id})
-	return err
+func (this *Mongo) SetAspect(ctx context.Context, aspect models.Aspect, syncHandler func(models.Aspect) error) (err error) {
+	timestamp := time.Now().Unix()
+	collection := this.aspectCollection()
+	_, err = this.aspectCollection().ReplaceOne(ctx, bson.M{AspectBson.Id: aspect.Id}, AspectWithSyncInfo{
+		Aspect: aspect,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = syncHandler(aspect)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, AspectBson.Id, aspect.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RemoveAspect(ctx context.Context, id string, syncDeleteHandler func(models.Aspect) error) error {
+	old, exists, err := this.GetAspect(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.aspectCollection()
+	err = this.setDeleted(ctx, collection, AspectBson.Id, id)
+	if err != nil {
+		return err
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveAspect::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{AspectBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveAspect::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RetryAspectSync(lockduration time.Duration, syncDeleteHandler func(models.Aspect) error, syncHandler func(models.Aspect) error) error {
+	collection := this.aspectCollection()
+	jobs, err := FetchSyncJobs[AspectWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		if job.SyncDelete {
+			err = syncDeleteHandler(job.Aspect)
+			if err != nil {
+				log.Printf("WARNING: error in RetryAspectSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{AspectBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryAspectSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			err = syncHandler(job.Aspect)
+			if err != nil {
+				log.Printf("WARNING: error in RetryAspectSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			err = this.setSynced(ctx, collection, AspectBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryAspectSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 func (this *Mongo) ListAllAspects(ctx context.Context) (result []models.Aspect, err error) {
-	cursor, err := this.aspectCollection().Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
+	cursor, err := this.aspectCollection().Find(ctx, bson.M{NotDeletedFilterKey: NotDeletedFilterValue}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
 	if err != nil {
 		return nil, err
 	}
@@ -163,12 +249,12 @@ func (this *Mongo) ListAspectsWithMeasuringFunction(ctx context.Context, ancesto
 		if err != nil {
 			return nil, err
 		}
-		cursor, err = this.aspectCollection().Find(ctx, bson.M{AspectBson.Id: bson.M{"$in": rootIds}}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{AspectBson.Id: bson.M{"$in": rootIds}, NotDeletedFilterKey: NotDeletedFilterValue}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		cursor, err = this.aspectCollection().Find(ctx, bson.M{AspectBson.Id: bson.M{"$in": aspectIds}}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
+		cursor, err = this.aspectCollection().Find(ctx, bson.M{AspectBson.Id: bson.M{"$in": aspectIds}, NotDeletedFilterKey: NotDeletedFilterValue}, options.Find().SetSort(bson.D{{AspectBson.Id, 1}}))
 		if err != nil {
 			return nil, err
 		}

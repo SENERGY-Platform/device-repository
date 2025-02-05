@@ -78,6 +78,9 @@ type Config struct {
 	SkipDeviceGroupGenerationFromDevice bool `json:"skip_device_group_generation_from_device"`
 
 	PreventEmptyCriteriaListsAllBehavior bool `json:"prevent_empty_criteria_lists_all_behavior"`
+
+	SyncInterval     string `json:"sync_interval"`
+	SyncLockDuration string `json:"sync_lock_duration"`
 }
 
 func (this Config) HandleFatalError(v ...interface{}) {

@@ -26,6 +26,10 @@ import (
 	"strings"
 )
 
+func (this *Controller) setConceptSyncHandler(c models.Concept) error {
+	return this.publisher.PublishConcept(c)
+}
+
 func (this *Controller) SetConcept(token string, concept models.Concept) (result models.Concept, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
@@ -42,11 +46,15 @@ func (this *Controller) SetConcept(token string, concept models.Concept) (result
 		return result, err, code
 	}
 	ctx, _ := getTimeoutContext()
-	err = this.db.SetConcept(ctx, concept)
+	err = this.db.SetConcept(ctx, concept, this.setConceptSyncHandler)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return concept, nil, http.StatusOK
+}
+
+func (this *Controller) deleteConceptSyncHandler(c models.Concept) error {
+	return this.publisher.PublishConceptDelete(c.Id)
 }
 
 func (this *Controller) DeleteConcept(token string, id string) (error, int) {
@@ -62,7 +70,7 @@ func (this *Controller) DeleteConcept(token string, id string) (error, int) {
 		return err, code
 	}
 	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveConcept(ctx, id)
+	err = this.db.RemoveConcept(ctx, id, this.deleteConceptSyncHandler)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

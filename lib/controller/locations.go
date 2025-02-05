@@ -95,18 +95,30 @@ func (this *Controller) DeleteLocation(token string, id string) (err error, code
 	return nil, http.StatusOK
 }
 
-func (this *Controller) setLocation(location models.Location, owner string) error {
-	err := this.EnsureInitialRights(this.config.LocationTopic, location.Id, owner)
+func (this *Controller) setLocationSyncHandler(location models.Location, user string) (err error) {
+	err = this.EnsureInitialRights(this.config.LocationTopic, location.Id, user)
 	if err != nil {
 		return err
 	}
+	return this.publisher.PublishLocation(location)
+}
+
+func (this *Controller) setLocation(location models.Location, owner string) error {
 	ctx, _ := getTimeoutContext()
-	return this.db.SetLocation(ctx, location)
+	return this.db.SetLocation(ctx, location, this.setLocationSyncHandler, owner)
+}
+
+func (this *Controller) deleteLocationSyncHandler(location models.Location) error {
+	err := this.RemoveRights(this.config.LocationTopic, location.Id)
+	if err != nil {
+		return err
+	}
+	return this.publisher.PublishLocationDelete(location.Id)
 }
 
 func (this *Controller) deleteLocation(id string) error {
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveLocation(ctx, id)
+	return this.db.RemoveLocation(ctx, id, this.deleteLocationSyncHandler)
 }
 
 func (this *Controller) GetLocation(id string, token string) (result models.Location, err error, code int) {

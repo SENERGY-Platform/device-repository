@@ -29,6 +29,7 @@ import (
 	"runtime/debug"
 	"slices"
 	"strings"
+	"time"
 )
 
 var DeviceTypeBson = getBsonFieldObject[models.DeviceType]()
@@ -59,7 +60,7 @@ func (this *Mongo) deviceTypeCollection() *mongo.Collection {
 }
 
 func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error) {
-	result := this.deviceTypeCollection().FindOne(ctx, bson.M{DeviceTypeBson.Id: id})
+	result := this.deviceTypeCollection().FindOne(ctx, bson.M{DeviceTypeBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
 	if err == mongo.ErrNoDocuments {
 		return deviceType, false, nil
@@ -96,7 +97,7 @@ func (this *Mongo) ListDeviceTypes(ctx context.Context, limit int64, offset int6
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	filter := bson.M{}
+	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	var deviceTypeIds []interface{}
 	if len(filterCriteria) > 0 {
 		deviceTypeIds, err = this.GetDeviceTypeIdsByFilterCriteria(ctx, filterCriteria, interactionsFilter, includeModified)
@@ -151,7 +152,7 @@ func (this *Mongo) ListDeviceTypesV2(ctx context.Context, limit int64, offset in
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	filter := bson.M{}
+	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	var deviceTypeIds []interface{}
 	if len(filterCriteria) > 0 {
 		deviceTypeIds, err = this.GetDeviceTypeIdsByFilterCriteriaV2(ctx, filterCriteria, includeModified)
@@ -222,7 +223,7 @@ func (this *Mongo) ListDeviceTypesV3(ctx context.Context, listOptions model.Devi
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	filter := bson.M{}
+	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	if listOptions.Ids != nil {
 		filter[DeviceTypeBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
@@ -328,28 +329,120 @@ func addElementsWithModifiedId(deviceTypes []models.DeviceType, ids []interface{
 	return result
 }
 
-func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceType) error {
-	_, err := this.deviceTypeCollection().ReplaceOne(ctx, bson.M{DeviceTypeBson.Id: deviceType.Id}, deviceType, options.Replace().SetUpsert(true))
+type DeviceTypeWithSyncInfo struct {
+	models.DeviceType `bson:",inline"`
+	SyncInfo          `bson:",inline"`
+}
+
+func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceType, syncHandler func(models.DeviceType) error) error {
+	timestamp := time.Now().Unix()
+	collection := this.deviceTypeCollection()
+	_, err := this.deviceTypeCollection().ReplaceOne(ctx, bson.M{DeviceTypeBson.Id: deviceType.Id}, DeviceTypeWithSyncInfo{
+		DeviceType: deviceType,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
 	if err != nil {
 		return err
 	}
 	err = this.setDeviceTypeCriteria(ctx, deviceType)
 	if err != nil {
-		return err
+		log.Printf("WARNING: error in SetDevice::setDeviceTypeCriteria %v, will be retried later\n", err)
+		return nil
 	}
-	return err
+	err = syncHandler(deviceType)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, DeviceTypeBson.Id, deviceType.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
 }
 
-func (this *Mongo) RemoveDeviceType(ctx context.Context, id string) error {
-	_, err := this.deviceTypeCollection().DeleteOne(ctx, bson.M{DeviceTypeBson.Id: id})
+func (this *Mongo) RemoveDeviceType(ctx context.Context, id string, syncDeleteHandler func(models.DeviceType) error) error {
+	old, exists, err := this.GetDeviceType(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.deviceTypeCollection()
+	err = this.setDeleted(ctx, collection, DeviceTypeBson.Id, id)
 	if err != nil {
 		return err
 	}
 	err = this.removeDeviceTypeCriteriaByDeviceType(ctx, id)
 	if err != nil {
+		log.Printf("WARNING: error in RemoveDeviceType::removeDeviceTypeCriteriaByDeviceType %v, will be retried later\n", err)
+		return nil
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveDeviceType::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{DeviceTypeBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveDeviceType::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RetryDeviceTypeSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceType) error, syncHandler func(models.DeviceType) error) error {
+	collection := this.deviceTypeCollection()
+	jobs, err := FetchSyncJobs[DeviceTypeWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
 		return err
 	}
-	return err
+	for _, job := range jobs {
+		if job.SyncDelete {
+			ctx, _ := getTimeoutContext()
+			err = this.removeDeviceTypeCriteriaByDeviceType(ctx, job.Id)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceTypeSync::removeDeviceTypeCriteriaByDeviceType %v, will be retried later\n", err)
+				continue
+			}
+			err = syncDeleteHandler(job.DeviceType)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceTypeSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ = getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{DeviceTypeBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceTypeSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			ctx, _ := getTimeoutContext()
+			err = this.setDeviceTypeCriteria(ctx, job.DeviceType)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceTypeSync::setDeviceTypeCriteria %v, will be retried later\n", err)
+				return nil
+			}
+			err = syncHandler(job.DeviceType)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceTypeSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ = getTimeoutContext()
+			err = this.setSynced(ctx, collection, DeviceTypeBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryDeviceTypeSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId string) (result []models.DeviceType, err error) {
@@ -357,7 +450,7 @@ func (this *Mongo) GetDeviceTypesByServiceId(ctx context.Context, serviceId stri
 	opt.SetLimit(2)
 	opt.SetSkip(0)
 
-	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{DeviceTypeBson.Services[0].Id: serviceId}, opt)
+	cursor, err := this.deviceTypeCollection().Find(ctx, bson.M{DeviceTypeBson.Services[0].Id: serviceId, NotDeletedFilterKey: NotDeletedFilterValue}, opt)
 	if err != nil {
 		return nil, err
 	}

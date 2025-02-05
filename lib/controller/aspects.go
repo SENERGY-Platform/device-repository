@@ -25,18 +25,30 @@ import (
 	"strings"
 )
 
-func (this *Controller) setAspect(aspect models.Aspect) error {
-	ctx, _ := getTimeoutContext()
-	err := this.db.SetAspect(ctx, aspect)
-	if err != nil {
-		return err
-	}
+func (this *Controller) setAspectSyncHandler(aspect models.Aspect) (err error) {
 	descendentNodeIds := getDescendentNodeIds(aspect)
 	err = this.handleMovedSubAspects(aspect, descendentNodeIds)
 	if err != nil {
 		return err
 	}
-	return this.setAspectNodes(aspect)
+	err = this.setAspectNodes(aspect)
+	if err != nil {
+		return err
+	}
+	err = this.publisher.PublishAspect(aspect)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (this *Controller) setAspect(aspect models.Aspect) error {
+	ctx, _ := getTimeoutContext()
+	err := this.db.SetAspect(ctx, aspect, this.setAspectSyncHandler)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func getDescendentNodeIds(aspect models.Aspect) (result []string) {
@@ -144,13 +156,22 @@ func (this *Controller) DeleteAspect(token string, id string) (err error, code i
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteAspect(id string) (err error) {
+func (this *Controller) deleteAspectSyncHandler(aspect models.Aspect) (err error) {
 	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveAspectNodesByRootId(ctx, id)
+	err = this.db.RemoveAspectNodesByRootId(ctx, aspect.Id)
 	if err != nil {
 		return err
 	}
-	err = this.db.RemoveAspect(ctx, id)
+	err = this.publisher.PublishAspectDelete(aspect.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (this *Controller) deleteAspect(id string) (err error) {
+	ctx, _ := getTimeoutContext()
+	err = this.db.RemoveAspect(ctx, id, this.deleteAspectSyncHandler)
 	if err != nil {
 		return err
 	}

@@ -107,12 +107,20 @@ func (this *Controller) DeleteProtocol(token string, id string) (err error, code
 	return nil, http.StatusOK
 }
 
+func (this *Controller) setProtocolSyncHandler(protocol models.Protocol) (err error) {
+	return this.publisher.PublishProtocol(protocol)
+}
+
 func (this *Controller) setProtocol(protocol models.Protocol) (err error) {
 	ctx, _ := getTimeoutContext()
-	return this.db.SetProtocol(ctx, protocol)
+	return this.db.SetProtocol(ctx, protocol, this.setProtocolSyncHandler)
+}
+
+func (this *Controller) deleteProtocolSyncHandler(protocol models.Protocol) (err error) {
+	return this.publisher.PublishProtocolDelete(protocol.Id)
 }
 
 func (this *Controller) deleteProtocol(id string) error {
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveProtocol(ctx, id)
+	return this.db.RemoveProtocol(ctx, id, this.deleteProtocolSyncHandler)
 }

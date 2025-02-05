@@ -18,13 +18,16 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var CharacteristicBson = getBsonFieldObject[models.Characteristic]()
@@ -66,7 +69,7 @@ func (this *Mongo) ListCharacteristics(ctx context.Context, listOptions model.Ch
 	}
 	opt.SetSort(bson.D{{sortby, direction}})
 
-	filter := bson.M{}
+	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	if listOptions.Ids != nil {
 		filter[CharacteristicBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
@@ -92,33 +95,117 @@ func (this *Mongo) ListCharacteristics(ctx context.Context, listOptions model.Ch
 }
 
 func (this *Mongo) GetCharacteristic(ctx context.Context, id string) (characteristic models.Characteristic, exists bool, err error) {
-	result := this.characteristicCollection().FindOne(ctx, bson.M{CharacteristicBson.Id: id})
+	result := this.characteristicCollection().FindOne(ctx, bson.M{CharacteristicBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return characteristic, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&characteristic)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return characteristic, false, nil
 	}
 	return characteristic, true, err
 }
 
-func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic models.Characteristic) error {
-	_, err := this.characteristicCollection().ReplaceOne(ctx, bson.M{CharacteristicBson.Id: characteristic.Id}, characteristic, options.Replace().SetUpsert(true))
-	return err
+func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic models.Characteristic, syncHandler func(models.Characteristic) error) error {
+	timestamp := time.Now().Unix()
+	collection := this.characteristicCollection()
+	_, err := this.characteristicCollection().ReplaceOne(ctx, bson.M{CharacteristicBson.Id: characteristic.Id}, CharacteristicWithSyncInfo{
+		Characteristic: characteristic,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = syncHandler(characteristic)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, CharacteristicBson.Id, characteristic.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
 }
 
-func (this *Mongo) RemoveCharacteristic(ctx context.Context, id string) error {
-	_, err := this.characteristicCollection().DeleteOne(ctx, bson.M{CharacteristicBson.Id: id})
-	return err
+func (this *Mongo) RemoveCharacteristic(ctx context.Context, id string, syncDeleteHandler func(models.Characteristic) error) error {
+	old, exists, err := this.GetCharacteristic(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.characteristicCollection()
+	err = this.setDeleted(ctx, collection, CharacteristicBson.Id, id)
+	if err != nil {
+		return err
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveCharacteristic::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{CharacteristicBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveCharacteristic::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+type CharacteristicWithSyncInfo struct {
+	models.Characteristic `bson:",inline"`
+	SyncInfo              `bson:",inline"`
+}
+
+func (this *Mongo) RetryCharacteristicSync(lockduration time.Duration, syncDeleteHandler func(models.Characteristic) error, syncHandler func(models.Characteristic) error) error {
+	collection := this.characteristicCollection()
+	jobs, err := FetchSyncJobs[CharacteristicWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		if job.SyncDelete {
+			err = syncDeleteHandler(job.Characteristic)
+			if err != nil {
+				log.Printf("WARNING: error in RetryCharacteristicSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{CharacteristicBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryCharacteristicSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			err = syncHandler(job.Characteristic)
+			if err != nil {
+				log.Printf("WARNING: error in RetryCharacteristicSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			err = this.setSynced(ctx, collection, CharacteristicBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryCharacteristicSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 func (this *Mongo) ListAllCharacteristics(ctx context.Context) (result []models.Characteristic, err error) {
-	cursor, err := this.characteristicCollection().Find(ctx, bson.D{})
+	cursor, err := this.characteristicCollection().Find(ctx, bson.M{NotDeletedFilterKey: NotDeletedFilterValue})
 	if err != nil {
 		return nil, err
 	}

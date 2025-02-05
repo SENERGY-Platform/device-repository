@@ -43,6 +43,9 @@
 
     "local_id_unique_for_owner": true,
 
+    "sync_interval": "10m",
+    "sync_lock_duration": "1m",
+
     "initial_group_rights": {
         "devices": {"admin": "rwxa"},
         "device-groups": {"system": "rwxa"},

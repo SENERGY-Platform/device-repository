@@ -640,23 +640,11 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 }
 
 func (this *Controller) setDevice(device models.Device) (result models.Device, err error, code int) {
-	err = this.EnsureInitialRights(this.config.DeviceTopic, device.Id, device.OwnerId)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
-	}
-
 	//update hub about changed device.local_id
 	ctx, _ := getTimeoutContext()
 	old, exists, err := this.db.GetDevice(ctx, device.Id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
-	}
-
-	if !exists {
-		err = this.CreateGeneratedDeviceGroup(device)
-		if err != nil {
-			return result, err, http.StatusInternalServerError
-		}
 	}
 
 	connectionState := models.ConnectionStateUnknown
@@ -669,19 +657,53 @@ func (this *Controller) setDevice(device models.Device) (result models.Device, e
 	err = this.db.SetDevice(ctx, model.DeviceWithConnectionState{
 		Device:          device,
 		ConnectionState: connectionState,
-	})
+	}, this.setDeviceSyncHandler)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 
-	if exists && old.LocalId != device.LocalId {
-		err = this.resetHubsForDeviceUpdate(old.Device)
-		if err != nil {
-			return result, err, http.StatusInternalServerError
-		}
+	return device, nil, http.StatusOK
+}
+
+func (this *Controller) setDeviceSyncHandler(device model.DeviceWithConnectionState) (err error) {
+	err = this.EnsureInitialRights(this.config.DeviceTopic, device.Id, device.OwnerId)
+	if err != nil {
+		return err
 	}
 
-	return device, nil, http.StatusOK
+	err = this.EnsureGeneratedDeviceGroup(device.Device)
+	if err != nil {
+		return err
+	}
+
+	//ensure that changed device-local-ids are mirrored in hubs
+	ctx, _ := getTimeoutContext()
+	hubs, err := this.db.GetHubsByDeviceId(ctx, device.Id)
+	if err != nil {
+		return err
+	}
+	for _, hub := range hubs {
+		if !slices.Contains(hub.DeviceLocalIds, device.LocalId) {
+			devices, _, err := this.db.ListDevices(ctx, model.DeviceListOptions{Ids: hub.DeviceIds}, false)
+			if err != nil {
+				return err
+			}
+			hub.DeviceLocalIds = []string{}
+			for _, d := range devices {
+				hub.DeviceLocalIds = append(hub.DeviceLocalIds, d.LocalId)
+			}
+			hub.Hash = ""
+			err = this.setHub(hub, hub.OwnerId)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	err = this.publisher.PublishDevice(device.Device)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (this *Controller) DeleteDevice(token string, id string) (error, int) {
@@ -707,25 +729,29 @@ func (this *Controller) DeleteDevice(token string, id string) (error, int) {
 	return nil, http.StatusOK
 }
 
+func (this *Controller) deleteDeviceSyncHandler(old model.DeviceWithConnectionState) (err error) {
+	err = this.resetHubsForDeviceUpdate(old.Device)
+	if err != nil {
+		return err
+	}
+	err = this.RemoveGeneratedDeviceGroup(old.Id, old.OwnerId)
+	if err != nil {
+		return err
+	}
+	err = this.RemoveRights(this.config.DeviceTopic, old.Id)
+	if err != nil {
+		return err
+	}
+	err = this.publisher.PublishDeviceDelete(old.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (this *Controller) deleteDevice(id string) error {
 	ctx, _ := getTimeoutContext()
-	old, exists, err := this.db.GetDevice(ctx, id)
-	if err != nil {
-		return err
-	}
-	err = this.RemoveGeneratedDeviceGroup(id, old.OwnerId)
-	if err != nil {
-		return err
-	}
-	if exists {
-		ctx, _ := getTimeoutContext()
-		err := this.db.RemoveDevice(ctx, id)
-		if err != nil {
-			return err
-		}
-		return this.resetHubsForDeviceUpdate(old.Device)
-	}
-	err = this.RemoveRights(this.config.DeviceTopic, id)
+	err := this.db.RemoveDevice(ctx, id, this.deleteDeviceSyncHandler)
 	if err != nil {
 		return err
 	}
@@ -776,12 +802,22 @@ func updateSameOriginAttributes(attributes []models.Attribute, update []models.A
 	return result
 }
 
-// TODO: replace event-sourcing with http request
-func (this *Controller) SetDeviceConnectionState(id string, connected bool) error {
+func (this *Controller) SetDeviceConnectionState(token string, id string, connected bool) (error, int) {
+	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Write)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !ok {
+		return errors.New("access denied"), http.StatusForbidden
+	}
 	state := models.ConnectionStateOffline
 	if connected {
 		state = models.ConnectionStateOnline
 	}
 	ctx, _ := getTimeoutContext()
-	return this.db.SetDeviceConnectionState(ctx, id, state)
+	err = this.db.SetDeviceConnectionState(ctx, id, state)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
 }

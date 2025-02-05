@@ -23,8 +23,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var FunctionBson = getBsonFieldObject[models.Function]()
@@ -122,14 +124,98 @@ func (this *Mongo) GetFunction(ctx context.Context, id string) (function models.
 	return function, true, err
 }
 
-func (this *Mongo) SetFunction(ctx context.Context, function models.Function) error {
-	_, err := this.functionCollection().ReplaceOne(ctx, bson.M{FunctionBson.Id: function.Id}, function, options.Replace().SetUpsert(true))
-	return err
+type FunctionWithSyncInfo struct {
+	models.Function `bson:",inline"`
+	SyncInfo        `bson:",inline"`
 }
 
-func (this *Mongo) RemoveFunction(ctx context.Context, id string) error {
-	_, err := this.functionCollection().DeleteOne(ctx, bson.M{FunctionBson.Id: id})
-	return err
+func (this *Mongo) SetFunction(ctx context.Context, function models.Function, syncHandler func(models.Function) error) (err error) {
+	timestamp := time.Now().Unix()
+	collection := this.functionCollection()
+	_, err = this.functionCollection().ReplaceOne(ctx, bson.M{FunctionBson.Id: function.Id}, FunctionWithSyncInfo{
+		Function: function,
+		SyncInfo: SyncInfo{
+			SyncTodo:          true,
+			SyncDelete:        false,
+			SyncUnixTimestamp: timestamp,
+		},
+	}, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = syncHandler(function)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		return nil
+	}
+	err = this.setSynced(ctx, collection, FunctionBson.Id, function.Id, timestamp)
+	if err != nil {
+		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RemoveFunction(ctx context.Context, id string, syncDeleteHandler func(models.Function) error) error {
+	old, exists, err := this.GetFunction(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	collection := this.functionCollection()
+	err = this.setDeleted(ctx, collection, FunctionBson.Id, id)
+	if err != nil {
+		return err
+	}
+	err = syncDeleteHandler(old)
+	if err != nil {
+		log.Printf("WARNING: error in RemoveFunction::syncDeleteHandler %v, will be retried later\n", err)
+		return nil
+	}
+	_, err = collection.DeleteOne(ctx, bson.M{FunctionBson.Id: id})
+	if err != nil {
+		log.Printf("WARNING: error in RemoveFunction::DeleteOne %v, will be retried later\n", err)
+		return nil
+	}
+	return nil
+}
+
+func (this *Mongo) RetryFunctionSync(lockduration time.Duration, syncDeleteHandler func(models.Function) error, syncHandler func(models.Function) error) error {
+	collection := this.functionCollection()
+	jobs, err := FetchSyncJobs[FunctionWithSyncInfo](collection, lockduration, FetchSyncJobsDefaultBatchSize)
+	if err != nil {
+		return err
+	}
+	for _, job := range jobs {
+		if job.SyncDelete {
+			err = syncDeleteHandler(job.Function)
+			if err != nil {
+				log.Printf("WARNING: error in RetryFunctionSync::syncDeleteHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			_, err = collection.DeleteOne(ctx, bson.M{FunctionBson.Id: job.Id})
+			if err != nil {
+				log.Printf("WARNING: error in RetryFunctionSync::DeleteOne %v, will be retried later\n", err)
+				continue
+			}
+		} else if job.SyncTodo {
+			err = syncHandler(job.Function)
+			if err != nil {
+				log.Printf("WARNING: error in RetryFunctionSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			ctx, _ := getTimeoutContext()
+			err = this.setSynced(ctx, collection, FunctionBson.Id, job.Id, job.SyncUnixTimestamp)
+			if err != nil {
+				log.Printf("WARNING: error in RetryFunctionSync::setSynced %v, will be retried later\n", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (result []models.Function, err error) {

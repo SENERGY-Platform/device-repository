@@ -34,6 +34,10 @@ func (this *Controller) ListCharacteristics(listOptions model.CharacteristicList
 	return result, total, nil, http.StatusOK
 }
 
+func (this *Controller) setCharacteristicSyncHandler(c models.Characteristic) (err error) {
+	return this.publisher.PublishCharacteristic(c)
+}
+
 func (this *Controller) SetCharacteristic(token string, characteristic models.Characteristic) (result models.Characteristic, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
@@ -49,11 +53,15 @@ func (this *Controller) SetCharacteristic(token string, characteristic models.Ch
 		return result, err, code
 	}
 	ctx, _ := getTimeoutContext()
-	err = this.db.SetCharacteristic(ctx, characteristic)
+	err = this.db.SetCharacteristic(ctx, characteristic, this.setCharacteristicSyncHandler)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return characteristic, nil, http.StatusOK
+}
+
+func (this *Controller) deleteCharacteristicSyncHandler(c models.Characteristic) (err error) {
+	return this.publisher.PublishCharacteristicDelete(c.Id)
 }
 
 func (this *Controller) DeleteCharacteristic(token string, id string) (error, int) {
@@ -69,7 +77,7 @@ func (this *Controller) DeleteCharacteristic(token string, id string) (error, in
 		return err, code
 	}
 	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveCharacteristic(ctx, id)
+	err = this.db.RemoveCharacteristic(ctx, id, this.deleteCharacteristicSyncHandler)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

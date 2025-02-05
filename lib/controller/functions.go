@@ -66,15 +66,23 @@ func (this *Controller) DeleteFunction(token string, id string) (error, int) {
 	return nil, http.StatusOK
 }
 
+func (this *Controller) setFunctionSyncHandler(f models.Function) (err error) {
+	return this.publisher.PublishFunction(f)
+}
+
 func (this *Controller) setFunction(function models.Function) error {
 	model.SetFunctionRdfType(&function)
 	ctx, _ := getTimeoutContext()
-	return this.db.SetFunction(ctx, function)
+	return this.db.SetFunction(ctx, function, this.setFunctionSyncHandler)
+}
+
+func (this *Controller) deleteFunctionSyncHandler(f models.Function) (err error) {
+	return this.publisher.PublishFunctionDelete(f.Id)
 }
 
 func (this *Controller) deleteFunction(id string) error {
 	ctx, _ := getTimeoutContext()
-	return this.db.RemoveFunction(ctx, id)
+	return this.db.RemoveFunction(ctx, id, this.deleteFunctionSyncHandler)
 }
 
 func (this *Controller) ListFunctions(options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {

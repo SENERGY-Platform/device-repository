@@ -21,10 +21,12 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"sync"
+	"time"
 )
 
 // set wg if you want to wait for clean disconnects after ctx is done
@@ -53,7 +55,14 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 
 	permClient := client.New(conf.PermissionsV2Url)
 
-	ctrl, err := controller.New(conf, db, permClient)
+	p, err := publisher.New(conf, ctx)
+	if err != nil {
+		db.Disconnect()
+		log.Println("ERROR: unable to start control", err)
+		return err
+	}
+
+	ctrl, err := controller.New(conf, db, p, permClient)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
@@ -68,6 +77,17 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 			return err
 		}
 	}
+
+	syncInterval := 10 * time.Minute
+	if conf.SyncInterval != "" && conf.SyncInterval != "-" {
+		syncInterval, err = time.ParseDuration(conf.SyncInterval)
+	}
+	syncLockDuration := time.Minute
+	if conf.SyncLockDuration != "" && conf.SyncLockDuration != "-" {
+		syncLockDuration, err = time.ParseDuration(conf.SyncLockDuration)
+	}
+
+	ctrl.StartSyncLoop(ctx, syncInterval, syncLockDuration)
 
 	if !conf.DisableHttpApi {
 		err = api.Start(ctx, conf, ctrl)
