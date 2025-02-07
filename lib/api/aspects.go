@@ -319,11 +319,6 @@ func (this *AspectEndpoints) Create(config config.Config, router *http.ServeMux,
 		}
 		token := util.GetAuthToken(request)
 
-		if aspect.Id != "" {
-			http.Error(writer, "id in body must be empty for POST method", http.StatusBadRequest)
-			return
-		}
-
 		result, err, errCode := control.SetAspect(token, aspect)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

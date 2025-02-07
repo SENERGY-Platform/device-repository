@@ -21,7 +21,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"

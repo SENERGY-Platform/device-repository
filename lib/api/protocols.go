@@ -183,11 +183,6 @@ func (this *ProtocolEndpoints) Create(config config.Config, router *http.ServeMu
 		}
 		token := util.GetAuthToken(request)
 
-		if protocol.Id != "" {
-			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
-			return
-		}
-
 		result, err, errCode := control.SetProtocol(token, protocol)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

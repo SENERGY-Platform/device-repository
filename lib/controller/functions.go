@@ -38,6 +38,7 @@ func (this *Controller) SetFunction(token string, function models.Function) (res
 	if !DisableFeaturesForTestEnv {
 		function.GenerateId()
 	}
+	model.SetFunctionRdfType(&function)
 	err, code = this.ValidateFunction(function)
 	if err != nil {
 		return result, err, code
@@ -73,7 +74,6 @@ func (this *Controller) setFunctionSyncHandler(f models.Function) (err error) {
 }
 
 func (this *Controller) setFunction(function models.Function) error {
-	model.SetFunctionRdfType(&function)
 	ctx, _ := getTimeoutContext()
 	return this.db.SetFunction(ctx, function, this.setFunctionSyncHandler)
 }

@@ -290,11 +290,6 @@ func (this *CharacteristicsEndpoints) Create(config config.Config, router *http.
 		}
 		token := util.GetAuthToken(request)
 
-		if characteristic.Id != "" {
-			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
-			return
-		}
-
 		result, err, errCode := control.SetCharacteristic(token, characteristic)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

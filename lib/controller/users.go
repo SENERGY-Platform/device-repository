@@ -135,7 +135,11 @@ func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource 
 		if !slices.ContainsFunc(deleteUserFromResource, func(resource client.Resource) bool {
 			return resource.Id == element.Id
 		}) {
-			deleteUserFromResource = append(deleteUserFromResource, element)
+			if containsOtherAdmin(element.UserPermissions, userid) {
+				deleteUserFromResource = append(deleteUserFromResource, element)
+			} else {
+				deleteResourceIds = append(deleteResourceIds, element.Id)
+			}
 		}
 	})
 	if err != nil {
@@ -145,7 +149,11 @@ func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource 
 		if !slices.ContainsFunc(deleteUserFromResource, func(resource client.Resource) bool {
 			return resource.Id == element.Id
 		}) {
-			deleteUserFromResource = append(deleteUserFromResource, element)
+			if containsOtherAdmin(element.UserPermissions, userid) {
+				deleteUserFromResource = append(deleteUserFromResource, element)
+			} else {
+				deleteResourceIds = append(deleteResourceIds, element.Id)
+			}
 		}
 	})
 	if err != nil {
@@ -155,7 +163,11 @@ func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource 
 		if !slices.ContainsFunc(deleteUserFromResource, func(resource client.Resource) bool {
 			return resource.Id == element.Id
 		}) {
-			deleteUserFromResource = append(deleteUserFromResource, element)
+			if containsOtherAdmin(element.UserPermissions, userid) {
+				deleteUserFromResource = append(deleteUserFromResource, element)
+			} else {
+				deleteResourceIds = append(deleteResourceIds, element.Id)
+			}
 		}
 	})
 	if err != nil {

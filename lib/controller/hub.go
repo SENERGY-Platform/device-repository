@@ -325,14 +325,24 @@ func (this *Controller) ValidateHubDevices(hub models.Hub) (err error, code int)
 }
 
 func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub, err error, code int) {
+	hub, err, code = this.completeHub(token, hub)
+	if err != nil {
+		return hub, err, code
+	}
 	if hub.Id == "" {
 		hub.GenerateId()
 	}
 	ctx, _ := getTimeoutContext()
 	old, exists, err := this.db.GetHub(ctx, hub.Id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
+	}
+	if !exists && hub.OwnerId != "" && hub.OwnerId != jwtToken.GetUserId() {
+		return hub, errors.New("new devices must be initialised with the requesting user as owner-id"), http.StatusBadRequest
 	}
 	if !jwtToken.IsAdmin() && exists {
 		ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, hub.Id, client.Write)
@@ -387,6 +397,57 @@ func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub,
 		return hub, err, http.StatusInternalServerError
 	}
 	return hub, nil, http.StatusOK
+}
+
+func (this *Controller) completeHub(token string, edit models.Hub) (result models.Hub, err error, code int) {
+	result = edit
+	if result.DeviceLocalIds == nil {
+		result.DeviceLocalIds = []string{}
+	}
+	if result.DeviceIds == nil {
+		result.DeviceIds = []string{}
+	}
+
+	if len(edit.DeviceLocalIds) > 0 {
+		devices, err, code := this.ListDevices(token, model.DeviceListOptions{LocalIds: edit.DeviceLocalIds, Owner: edit.OwnerId})
+		if err != nil {
+			return result, err, code
+		}
+		if len(devices) != len(edit.DeviceLocalIds) {
+			return result, errors.New("not all local device ids found"), http.StatusBadRequest
+		}
+		for _, device := range devices {
+			if !slices.Contains(result.DeviceLocalIds, device.LocalId) {
+				result.DeviceLocalIds = append(result.DeviceLocalIds, device.LocalId)
+			}
+			if !slices.Contains(result.DeviceIds, device.Id) {
+				result.DeviceIds = append(result.DeviceIds, device.Id)
+			}
+		}
+	}
+
+	if len(edit.DeviceIds) > 0 {
+		devices, err, code := this.ListDevices(token, model.DeviceListOptions{Ids: edit.DeviceIds})
+		if err != nil {
+			return result, err, code
+		}
+		if len(devices) != len(edit.DeviceIds) {
+			return result, errors.New("not all device ids found"), http.StatusBadRequest
+		}
+		for _, device := range devices {
+			if !slices.Contains(result.DeviceLocalIds, device.LocalId) {
+				result.DeviceLocalIds = append(result.DeviceLocalIds, device.LocalId)
+			}
+			if !slices.Contains(result.DeviceIds, device.Id) {
+				result.DeviceIds = append(result.DeviceIds, device.Id)
+			}
+		}
+	}
+
+	if len(result.DeviceLocalIds) != len(result.DeviceIds) {
+		return result, errors.New("DeviceLocalIds DeviceIds count mismatch"), http.StatusBadRequest
+	}
+	return result, err, code
 }
 
 func (this *Controller) setHubSyncHandler(hub model.HubWithConnectionState) (err error) {

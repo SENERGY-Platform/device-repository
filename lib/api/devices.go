@@ -405,7 +405,7 @@ func (this *DeviceEndpoints) SetAttributes(config config.Config, router *http.Se
 			options.UpdateOnlySameOriginAttributes = strings.Split(temp, ",")
 		}
 
-		device, err, errCode := control.ReadDevice(token, id, model.WRITE)
+		device, err, errCode := control.ReadDevice(id, token, model.WRITE)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
@@ -454,9 +454,9 @@ func (this *DeviceEndpoints) SetDisplayName(config config.Config, router *http.S
 		}
 		token := util.GetAuthToken(request)
 
-		device, err, errCode := control.ReadDevice(token, id, model.WRITE)
+		device, err, errCode := control.ReadDevice(id, token, model.WRITE)
 		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
+			http.Error(writer, err.Error(), errCode)
 			return
 		}
 

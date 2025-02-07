@@ -23,7 +23,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"strconv"

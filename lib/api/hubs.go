@@ -426,7 +426,7 @@ func (this *HubEndpoints) SetName(config config.Config, router *http.ServeMux, c
 			return
 		}
 		token := util.GetAuthToken(request)
-		hub, err, code := control.ReadHub(token, id, model.WRITE)
+		hub, err, code := control.ReadHub(id, token, model.WRITE)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

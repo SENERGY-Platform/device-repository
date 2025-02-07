@@ -340,11 +340,6 @@ func (this *ConceptEndpoints) Create(config config.Config, router *http.ServeMux
 		}
 		token := util.GetAuthToken(request)
 
-		if concept.Id != "" {
-			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
-			return
-		}
-
 		result, err, errCode := control.SetConcept(token, concept)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

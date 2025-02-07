@@ -355,11 +355,6 @@ func (this *DeviceClassEndpoints) Create(config config.Config, router *http.Serv
 		}
 		token := util.GetAuthToken(request)
 
-		if deviceClass.Id != "" {
-			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
-			return
-		}
-
 		result, err, errCode := control.SetDeviceClass(token, deviceClass)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

@@ -308,11 +308,6 @@ func (this *FunctionsEndpoints) Create(config config.Config, router *http.ServeM
 		}
 		token := util.GetAuthToken(request)
 
-		if function.Id != "" {
-			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
-			return
-		}
-
 		result, err, errCode := control.SetFunction(token, function)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

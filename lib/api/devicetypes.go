@@ -370,10 +370,6 @@ func (this *DeviceTypeEndpoints) Create(config config.Config, router *http.Serve
 			return
 		}
 		token := util.GetAuthToken(request)
-		if devicetype.Id != "" {
-			http.Error(writer, "body may not contain a preset id. please use the PUT method for updates", http.StatusBadRequest)
-			return
-		}
 
 		options := model.DeviceTypeUpdateOptions{}
 		distinctAttr := request.URL.Query().Get("distinct_attributes")
