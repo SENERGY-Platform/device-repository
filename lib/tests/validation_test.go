@@ -21,15 +21,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestProtocolConstraintInValidation(t *testing.T) {
@@ -42,13 +42,10 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishProtocol(models.Protocol{
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetProtocol(AdminToken, models.Protocol{
 		Id:      "p1",
 		Name:    "p1",
 		Handler: "p1",
@@ -56,13 +53,13 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 			Id:   "segment",
 			Name: "segment",
 		}},
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishProtocol(models.Protocol{
+	_, err, _ = c.SetProtocol(AdminToken, models.Protocol{
 		Id:      "p2",
 		Name:    "p2",
 		Handler: "p2",
@@ -71,13 +68,13 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 			Name: "segment",
 		}},
 		Constraints: []string{model.SenergyConnectorLocalIdConstraint},
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishDeviceType(models.DeviceType{
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
 		Id:          "dt1",
 		Name:        "dt1",
 		Description: "",
@@ -90,13 +87,13 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 			ProtocolId:  "p1",
 		}},
 		DeviceClassId: "dc1",
-	}, userid)
+	}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishDeviceType(models.DeviceType{
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
 		Id:          "dt2",
 		Name:        "dt2",
 		Description: "",
@@ -109,13 +106,13 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 			ProtocolId:  "p2",
 		}},
 		DeviceClassId: "dc1",
-	}, userid)
+	}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	time.Sleep(10 * time.Second)
+	controller.DisableFeaturesForTestEnv = false
 
 	t.Run("device-type unconstrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", models.DeviceType{
 		Id:          "dt",
@@ -194,124 +191,121 @@ func TestDeleteValidations(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishDeviceClass(models.DeviceClass{
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetDeviceClass(AdminToken, models.DeviceClass{
 		Id:   "used_device_class",
 		Name: "used_device_class",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = producer.PublishDeviceClass(models.DeviceClass{
+	_, err, _ = c.SetDeviceClass(AdminToken, models.DeviceClass{
 		Id:   "unused_device_class",
 		Name: "unused_device_class",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishCharacteristic(models.Characteristic{
+	_, err, _ = c.SetCharacteristic(AdminToken, models.Characteristic{
 		Id:   "used_characteristic",
 		Name: "used_characteristic",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishCharacteristic(models.Characteristic{
+	_, err, _ = c.SetCharacteristic(AdminToken, models.Characteristic{
 		Id:   "used_characteristic_2",
 		Name: "used_characteristic_2",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishCharacteristic(models.Characteristic{
+	_, err, _ = c.SetCharacteristic(AdminToken, models.Characteristic{
 		Id:   "unused_characteristic",
 		Name: "unused_characteristic",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishFunction(models.Function{
+	_, err, _ = c.SetFunction(AdminToken, models.Function{
 		Id:        model.CONTROLLING_FUNCTION_PREFIX + "used_function",
 		Name:      "used_function",
 		ConceptId: "used_concept",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishFunction(models.Function{
+	_, err, _ = c.SetFunction(AdminToken, models.Function{
 		Id:        model.MEASURING_FUNCTION_PREFIX + "used_function_2",
 		Name:      "used_function_2",
 		ConceptId: "used_concept",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishFunction(models.Function{
+	_, err, _ = c.SetFunction(AdminToken, models.Function{
 		Id:        model.MEASURING_FUNCTION_PREFIX + "unused_function_2",
 		Name:      "unused_function_2",
 		ConceptId: "used_concept_2",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishFunction(models.Function{
+	_, err, _ = c.SetFunction(AdminToken, models.Function{
 		Id:        model.CONTROLLING_FUNCTION_PREFIX + "unused_function",
 		Name:      "unused_function",
 		ConceptId: "used_concept_2",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishConcept(models.Concept{
+	_, err, _ = c.SetConcept(AdminToken, models.Concept{
 		Id:   "used_concept",
 		Name: "used_concept",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishConcept(models.Concept{
+	_, err, _ = c.SetConcept(AdminToken, models.Concept{
 		Id:   "used_concept_2",
 		Name: "used_concept_2",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishConcept(models.Concept{
+	_, err, _ = c.SetConcept(AdminToken, models.Concept{
 		Id:   "unused_concept",
 		Name: "unused_concept",
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishAspect(models.Aspect{
+	_, err, _ = c.SetAspect(AdminToken, models.Aspect{
 		Id:   model.URN_PREFIX + "used_root_aspect",
 		Name: "used_root_aspect",
 		SubAspects: []models.Aspect{
@@ -320,13 +314,13 @@ func TestDeleteValidations(t *testing.T) {
 				Name: "sub1",
 			},
 		},
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishAspect(models.Aspect{
+	_, err, _ = c.SetAspect(AdminToken, models.Aspect{
 		Id:   model.URN_PREFIX + "root_aspect",
 		Name: "root_aspect",
 		SubAspects: []models.Aspect{
@@ -335,13 +329,13 @@ func TestDeleteValidations(t *testing.T) {
 				Name: "used_aspect",
 			},
 		},
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishAspect(models.Aspect{
+	_, err, _ = c.SetAspect(AdminToken, models.Aspect{
 		Id:   model.URN_PREFIX + "unused_root_aspect",
 		Name: "unused_root_aspect",
 		SubAspects: []models.Aspect{
@@ -350,13 +344,13 @@ func TestDeleteValidations(t *testing.T) {
 				Name: "unused_used_aspect",
 			},
 		},
-	}, userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name,
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name,
 		DeviceClassId: "used_device_class",
 		Services: []models.Service{
 			{
@@ -396,12 +390,13 @@ func TestDeleteValidations(t *testing.T) {
 					},
 				},
 			},
-		}}, userid)
+		}}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(10 * time.Second)
+
+	controller.DisableFeaturesForTestEnv = false
 
 	t.Run("used_device_class", func(t *testing.T) {
 		err = testDeleteValidation(

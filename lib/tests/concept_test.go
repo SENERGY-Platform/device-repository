@@ -22,17 +22,17 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 )
 
-func testConceptList(t *testing.T, producer *testutils.Publisher, conf config.Config) {
+func testConceptList(t *testing.T, conf config.Config) {
 	characteristics := []models.Characteristic{
 		{
 			Id:   "c1",
@@ -107,9 +107,10 @@ func testConceptList(t *testing.T, producer *testutils.Publisher, conf config.Co
 		},
 	}
 
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("create characteristics", func(t *testing.T) {
 		for _, characteristic := range characteristics {
-			err := producer.PublishCharacteristic(characteristic, "user")
+			_, err, _ := c.SetCharacteristic(AdminToken, characteristic)
 			if err != nil {
 				t.Error(err)
 				return
@@ -118,15 +119,13 @@ func testConceptList(t *testing.T, producer *testutils.Publisher, conf config.Co
 	})
 	t.Run("create concepts", func(t *testing.T) {
 		for _, concept := range concepts {
-			err := producer.PublishConcept(concept, "user")
+			_, err, _ := c.SetConcept(AdminToken, concept)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 	})
-	time.Sleep(5 * time.Second)
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list all concepts", func(t *testing.T) {
 		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{})
 		if err != nil {
@@ -228,7 +227,6 @@ func TestConceptValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
 
 	wg := &sync.WaitGroup{}
@@ -260,7 +258,14 @@ func TestConceptValidation(t *testing.T) {
 		}
 	}()
 
-	ctrl, err := controller.New(conf, db, nil, nil)
+	pc, err := permclient.NewTestClient(ctx)
+	if err != nil {
+		db.Disconnect()
+		log.Println("ERROR: unable to start test permission v2", err)
+		t.Error(err)
+		return
+	}
+	ctrl, err := controller.New(conf, db, testenv.VoidProducerMock{}, pc)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
@@ -268,10 +273,11 @@ func TestConceptValidation(t *testing.T) {
 		return
 	}
 
-	err = ctrl.SetCharacteristic(models.Characteristic{
+	_, err, _ = ctrl.SetCharacteristic(AdminToken, models.Characteristic{
 		Id:   "c",
 		Name: "c",
-	}, "")
+		Type: models.String,
+	})
 	if err != nil {
 		t.Error(err)
 		return

@@ -48,7 +48,9 @@ func (this *Controller) SetDeviceClass(token string, class models.DeviceClass) (
 	}
 
 	//ensure ids
-	class.GenerateId()
+	if !DisableFeaturesForTestEnv {
+		class.GenerateId()
+	}
 	err, code = this.ValidateDeviceClass(class)
 	if err != nil {
 		return result, err, code
@@ -108,6 +110,9 @@ func (this *Controller) GetDeviceClass(id string) (result models.DeviceClass, er
 }
 
 func (this *Controller) ValidateDeviceClass(deviceClass models.DeviceClass) (err error, code int) {
+	if DisableFeaturesForTestEnv {
+		return nil, http.StatusOK
+	}
 	if deviceClass.Id == "" {
 		return errors.New("missing device class id"), http.StatusBadRequest
 	}

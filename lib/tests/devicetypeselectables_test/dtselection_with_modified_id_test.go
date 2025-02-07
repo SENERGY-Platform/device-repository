@@ -458,8 +458,6 @@ func TestDeviceTypeSelectablesV2WithModifiedIdNousA5T(t *testing.T) {
 
 	t.Run("init metadata", createTestMetadataFromString(conf, nousA5tDeviceTypeStr, aspectsStr, functionsStr))
 
-	time.Sleep(5 * time.Second)
-
 	criteriaStr := `[{"device_class_id":"urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250","function_id":"urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9","interaction":"request"},{"interaction":"request","function_id":"urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd","device_class_id":"urn:infai:ses:device-class:79de1bd9-b933-412d-b98e-4cfe19aa3250"},{"function_id":"urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0","aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"},{"function_id":"urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0","aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","interaction":"event"}]`
 	criteria := []model.FilterCriteria{}
 	err = json.Unmarshal([]byte(criteriaStr), &criteria)

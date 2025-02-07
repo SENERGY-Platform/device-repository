@@ -23,21 +23,27 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"strings"
+	"time"
 )
 
 var STRICT = true
 
+func (db *DB) SetDeviceType(ctx context.Context, deviceType models.DeviceType, syncHandler func(models.DeviceType) error) error {
+	return set(deviceType.Id, db.deviceTypes, deviceType, syncHandler)
+}
+
+func (db *DB) RemoveDeviceType(ctx context.Context, id string, syncDeleteHandler func(models.DeviceType) error) error {
+	return del(id, db.deviceTypes, syncDeleteHandler)
+}
+
+func (db *DB) RetryDeviceTypeSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceType) error, syncHandler func(models.DeviceType) error) error {
+	return nil
+}
+
 func (db *DB) GetDeviceType(_ context.Context, id string) (deviceType models.DeviceType, exists bool, err error) {
 	return get(id, db.deviceTypes)
 }
-func (db *DB) SetDeviceType(_ context.Context, deviceType models.DeviceType) error {
-	return set(deviceType.Id, db.deviceTypes, deviceType)
 
-}
-func (db *DB) RemoveDeviceType(_ context.Context, id string) error {
-	return del(id, db.deviceTypes)
-
-}
 func (db *DB) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []models.DeviceType, err error) {
 	// sort can be id or name with .asc or .desc
 	deviceTypes := maps.Values(db.deviceTypes)

@@ -19,16 +19,14 @@ package tests
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
-	"time"
 )
 
-func testAspectList(t *testing.T, producer *testutils.Publisher, conf config.Config) {
+func testAspectList(t *testing.T, conf config.Config) {
 	aspects := []models.Aspect{
 		{
 			Id:   "a1",
@@ -97,15 +95,15 @@ func testAspectList(t *testing.T, producer *testutils.Publisher, conf config.Con
 	})
 
 	t.Run("create aspects", func(t *testing.T) {
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		for _, aspect := range aspects {
-			err := producer.PublishAspect(aspect, "user")
+			_, err, _ := c.SetAspect(AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 	})
-	time.Sleep(5 * time.Second)
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list all aspects", func(t *testing.T) {
 		list, total, err, _ := c.ListAspects(client.AspectListOptions{})

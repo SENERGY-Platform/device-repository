@@ -25,12 +25,12 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/resources"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -54,19 +54,15 @@ func TestListDeviceGroups(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	publisher, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	for _, dg := range resources.DeviceGroupExamples {
-		err = publisher.PublishDeviceGroup(dg, Userid)
+		_, err, _ := c.SetDeviceGroup(Userjwt, dg)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 	}
-	time.Sleep(5 * time.Second)
 
 	all := resources.DeviceGroupExamples
 	slices.SortFunc(all, func(a, b models.DeviceGroup) int {
@@ -491,7 +487,6 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf, err = docker.NewEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)
@@ -516,7 +511,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetAspect(models.Aspect{
+	_, err, _ = ctrl.SetAspect(AdminToken, models.Aspect{
 		Id:   "parent",
 		Name: "parent",
 		SubAspects: []models.Aspect{
@@ -531,12 +526,12 @@ func TestDeviceGroupsValidation(t *testing.T) {
 				},
 			},
 		},
-	}, "")
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetDeviceType(models.DeviceType{
+	_, err, _ = ctrl.SetDeviceType(AdminToken, models.DeviceType{
 		Id:            "dt1",
 		DeviceClassId: "dcid",
 		Services: []models.Service{{
@@ -551,19 +546,20 @@ func TestDeviceGroupsValidation(t *testing.T) {
 				},
 			},
 		}},
-	}, "")
+	}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetDevice(models.Device{
+	_, err, _ = ctrl.SetDevice(Userjwt, models.Device{
 		Id:           "did",
 		DeviceTypeId: "dt1",
-	}, "testowner")
+	}, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
+	controller.DisableFeaturesForTestEnv = false
 	t.Run("minimal ok", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",
@@ -722,25 +718,47 @@ func testDeviceGroupValidation(ctrl *controller.Controller, group models.DeviceG
 }
 
 func TestDeviceGroupsDeviceFilter(t *testing.T) {
-	conf := config.Config{DeviceGroupTopic: "device-group", DeviceTopic: "devices"}
-	db := testdb.NewTestDB(conf)
-	ctrl, err := controller.New(conf, db, nil, nil)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	conf, err := config.Load("../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = db.SetRights(conf.DeviceTopic, "d1", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+	conf.DeviceGroupTopic = "device-group"
+	conf.DeviceTopic = "devices"
+
+	db := testdb.NewTestDB(conf)
+	pclient, err := permclient.NewTestClient(ctx)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = db.SetRights(conf.DeviceTopic, "d2", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+
+	ctrl, err := controller.New(conf, db, testenv.VoidProducerMock{}, pclient)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = db.SetRights(conf.DeviceTopic, "d3", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+
+	setPermissions := func(topic string, id string, rights model.ResourceRights) error {
+		_, err, _ := pclient.SetPermission(permclient.InternalAdminToken, topic, id, rights.ToPermV2Permissions())
+		return err
+	}
+
+	err = setPermissions(conf.DeviceTopic, "d1", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = setPermissions(conf.DeviceTopic, "d2", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = setPermissions(conf.DeviceTopic, "d3", model.ResourceRights{UserRights: map[string]model.Right{userid: {Read: true, Write: true, Execute: true, Administrate: true}}})
 	if err != nil {
 		t.Error(err)
 		return
@@ -860,13 +878,10 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishDeviceType(models.DeviceType{
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
 		Id:            devicetype1id,
 		Name:          devicetype1name,
 		DeviceClassId: "dcid",
@@ -880,7 +895,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 				}},
 			},
 		}},
-	}, userid)
+	}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -893,7 +908,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		DeviceTypeId: devicetype1id,
 	}
 
-	err = producer.PublishDevice(d1, userid)
+	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -910,13 +925,11 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		DeviceIds: []string{device1id},
 	}
 
-	err = producer.PublishDeviceGroup(dg1, userid)
+	_, err, _ = c.SetDeviceGroup(userjwt, dg1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("not existing", func(t *testing.T) {
 		testDeviceGroupReadNotFound(t, conf, "foobar")
@@ -932,11 +945,6 @@ func TestDeviceGroupsAttributes(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	conf, err := createTestEnv(ctx, wg, t)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	producer, err := testutils.NewPublisher(conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -963,13 +971,13 @@ func TestDeviceGroupsAttributes(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDeviceGroup(dg1, userid)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetDeviceGroup(userjwt, dg1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("not existing", func(t *testing.T) {
 		testDeviceGroupReadNotFound(t, conf, "foobar")
@@ -1014,7 +1022,7 @@ func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss
 			return
 		}
 		if resp.StatusCode != http.StatusOK {
-			b, _ := ioutil.ReadAll(resp.Body)
+			b, _ := io.ReadAll(resp.Body)
 			t.Error("unexpected response", endpoint, resp.Status, resp.StatusCode, string(b))
 			return
 		}
@@ -1025,7 +1033,7 @@ func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss
 			t.Error(err)
 		}
 		if !reflect.DeepEqual(expected, result) {
-			t.Error("unexpected result", expected, result)
+			t.Errorf("\ne=%#v\na=%#v\n", expected, result)
 			return
 		}
 	}

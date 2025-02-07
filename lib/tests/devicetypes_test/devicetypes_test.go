@@ -20,10 +20,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/google/uuid"
 	"io"
@@ -52,13 +52,10 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishAspect(models.Aspect{
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 		Id:   "parent_2",
 		Name: "parent_2",
 		SubAspects: []models.Aspect{
@@ -73,13 +70,13 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 				},
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishProtocol(models.Protocol{
+	_, err, _ = c.SetProtocol(testenv.AdminToken, models.Protocol{
 		Id:      "p",
 		Name:    "p",
 		Handler: "p",
@@ -89,13 +86,11 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 				Name: "ps",
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(5 * time.Second)
 
 	body, err := json.Marshal(models.DeviceType{
 		Id:            "dt",
@@ -168,19 +163,13 @@ func TestServiceQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	time.Sleep(3 * time.Second)
 
 	t.Run("testServiceRead", func(t *testing.T) {
 		testServiceRead(t, conf, models.Service{Id: "service_42", Name: "foo"})
@@ -198,11 +187,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		return
 	}
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	dt := models.DeviceType{
 		Id:   devicetype1id,
@@ -228,13 +213,11 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	err = producer.PublishDeviceType(dt, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(3 * time.Second)
 
 	t.Run("after create", testDeviceTypeReadV2(conf, dt))
 
@@ -262,13 +245,11 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	err = producer.PublishDeviceType(dtUpdated, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dtUpdated, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(3 * time.Second)
 
 	t.Run("after update", testDeviceTypeReadV2(conf, dtUpdated))
 
@@ -291,13 +272,11 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	err = producer.PublishDeviceType(dtSubVarDeleted, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dtSubVarDeleted, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(3 * time.Second)
 
 	t.Run("after sub delete", testDeviceTypeReadV2(conf, dtSubVarDeleted))
 }
@@ -313,25 +292,20 @@ func TestDeviceTypeQuery(t *testing.T) {
 		return
 	}
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishDeviceType(models.DeviceType{Id: uuid.NewString(), Name: uuid.NewString()}, testenv.Userid)
+		_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: uuid.NewString(), Name: uuid.NewString()}, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 	}
-	time.Sleep(10 * time.Second)
 
 	t.Run("unexisting", func(t *testing.T) {
 		testDeviceTypeReadNotFound(t, conf, uuid.NewString())
@@ -352,13 +326,11 @@ func TestDeviceTypeQuery(t *testing.T) {
 		testDeviceTypeListSort(t, conf)
 	})
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(3 * time.Second)
 
 	t.Run("testServiceRead", func(t *testing.T) {
 		testServiceRead(t, conf, models.Service{Id: "service_42", Name: "foo"})
@@ -376,11 +348,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		return
 	}
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
 		{
@@ -427,13 +395,11 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		}
 	})
 
-	err = producer.PublishDeviceType(dt, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(5 * time.Second)
 
 	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
 
@@ -450,23 +416,17 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 		return
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(1 * time.Second)
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}}
 
-	err = producer.PublishDeviceType(dt, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
 
@@ -483,13 +443,9 @@ func TestServiceWithAttribute(t *testing.T) {
 		return
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(1 * time.Second)
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}, Services: []models.Service{
 		{
@@ -510,13 +466,11 @@ func TestServiceWithAttribute(t *testing.T) {
 		},
 	}}
 
-	err = producer.PublishDeviceType(dt, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
 

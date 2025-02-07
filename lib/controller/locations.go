@@ -46,14 +46,16 @@ func (this *Controller) SetLocation(token string, location models.Location) (res
 		}
 	}
 
-	location.GenerateId()
-	location.DeviceIds, err = this.filterInvalidDeviceIds(token, location.DeviceIds, "r")
-	if err != nil {
-		return location, err, http.StatusInternalServerError
-	}
-	err, code := this.ValidateLocation(location)
-	if err != nil {
-		return location, err, code
+	if !DisableFeaturesForTestEnv {
+		location.GenerateId()
+		location.DeviceIds, err = this.filterInvalidDeviceIds(token, location.DeviceIds, "r")
+		if err != nil {
+			return location, err, http.StatusInternalServerError
+		}
+		err, code := this.ValidateLocation(location)
+		if err != nil {
+			return location, err, code
+		}
 	}
 
 	jwtToken, err := jwt.Parse(token)

@@ -18,13 +18,13 @@ package semantic_legacy
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestConcepts(t *testing.T) {
@@ -36,64 +36,66 @@ func TestConcepts(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("testProduceValidConcept1withCharIdAndBaseCharId", testProduceValidConcept1withCharIdAndBaseCharId(prod))
-	t.Run("testProduceValidConcept1withNoCharId", testProduceValidConcept1withNoCharId(prod))
-	t.Run("testProduceValidConcept1withCharId", testProduceValidConcept1withCharId(prod))
-	t.Run("testProduceValidCharacteristicDependencie", testProduceValidCharacteristicDependencie(prod))
-	time.Sleep(2 * time.Second)
+	t.Run("testProduceValidConcept1withCharIdAndBaseCharId", testProduceValidConcept1withCharIdAndBaseCharId(conf))
+	t.Run("testProduceValidConcept1withNoCharId", testProduceValidConcept1withNoCharId(conf))
+	t.Run("testProduceValidConcept1withCharId", testProduceValidConcept1withCharId(conf))
+	t.Run("testProduceValidCharacteristicDependencie", testProduceValidCharacteristicDependencie(conf))
 	t.Run("testReadConcept1WithoutSubClass", testReadConcept1WithoutSubClass(ctrl))
 	t.Run("testReadConcept1WithSubClass", testReadConcept1WithSubClass(ctrl))
-	t.Run("testDeleteConcept1", testDeleteConcept1(prod))
+	t.Run("testDeleteConcept1", testDeleteConcept1(conf))
 }
 
-func testProduceValidConcept1withCharIdAndBaseCharId(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidConcept1withCharIdAndBaseCharId(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a1-28-11-2019"
 		concept.Name = "color1"
 		concept.BaseCharacteristicId = "urn:ses:infai:characteristic:544433333"
 		concept.CharacteristicIds = []string{"urn:ses:infai:characteristic:544433333"}
-		err := producer.PublishConcept(concept, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetConcept(testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func testProduceValidConcept1withNoCharId(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidConcept1withNoCharId(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a"
 		concept.Name = "color1"
 		concept.CharacteristicIds = nil
-		err := producer.PublishConcept(concept, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetConcept(testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func testProduceValidConcept1withCharId(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidConcept1withCharId(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a"
 		concept.Name = "color1"
 		concept.CharacteristicIds = []string{"urn:ses:infai:characteristic:544433333"}
 		concept.BaseCharacteristicId = "urn:ses:infai:characteristic:544433333"
-		err := producer.PublishConcept(concept, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetConcept(testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func testProduceValidCharacteristicDependencie(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidCharacteristicDependencie(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:544433333"
@@ -108,7 +110,8 @@ func testProduceValidCharacteristicDependencie(producer *producer.Producer) func
 			Name:               "charFloat",
 			SubCharacteristics: nil,
 		}}
-		err := producer.PublishCharacteristic(characteristic, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -165,9 +168,10 @@ func testReadConcept1WithSubClass(con *controller.Controller) func(t *testing.T)
 	}
 }
 
-func testDeleteConcept1(producer *producer.Producer) func(t *testing.T) {
+func testDeleteConcept1(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		err := producer.PublishConceptDelete("urn:ses:infai:concept:1a1a1a", "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		err, _ := c.DeleteConcept(testenv.AdminToken, "urn:ses:infai:concept:1a1a1a")
 		if err != nil {
 			t.Fatal(err)
 		}

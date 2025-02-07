@@ -145,12 +145,12 @@ func (this *Mongo) SetFunction(ctx context.Context, function models.Function, sy
 	}
 	err = syncHandler(function)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetFunction::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, FunctionBson.Id, function.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetFunction::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil

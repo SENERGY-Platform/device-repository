@@ -40,7 +40,9 @@ func (this *Controller) SetConcept(token string, concept models.Concept) (result
 	}
 
 	//ensure ids
-	concept.GenerateId()
+	if !DisableFeaturesForTestEnv {
+		concept.GenerateId()
+	}
 	err, code = this.ValidateConcept(concept)
 	if err != nil {
 		return result, err, code
@@ -78,6 +80,9 @@ func (this *Controller) DeleteConcept(token string, id string) (error, int) {
 }
 
 func (this *Controller) ValidateConcept(concept models.Concept) (err error, code int) {
+	if DisableFeaturesForTestEnv {
+		return nil, http.StatusOK
+	}
 	if concept.Id == "" {
 		return errors.New("missing concept id"), http.StatusBadRequest
 	}

@@ -21,14 +21,14 @@ package semantic_legacy
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestFunction(t *testing.T) {
@@ -40,16 +40,14 @@ func TestFunction(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("testProduceFunctions", testProduceFunctions(prod))
-	time.Sleep(2 * time.Second)
-	t.Run("testUpdateFunctions", testUpdateFunctionsDisplayName(prod))
-	time.Sleep(2 * time.Second)
+	t.Run("testProduceFunctions", testProduceFunctions(conf))
+	t.Run("testUpdateFunctions", testUpdateFunctionsDisplayName(conf))
 	t.Run("testReadControllingFunction", testReadControllingFunction(ctrl))
 	t.Run("testReadMeasuringFunction", testReadMeasuringFunction(ctrl))
 	t.Run("list functions", func(t *testing.T) {
@@ -114,10 +112,10 @@ func TestFunction(t *testing.T) {
 			}
 		})
 	})
-	t.Run("testFunctionDelete", testFunctionDelete(prod))
+	t.Run("testFunctionDelete", testFunctionDelete(conf))
 }
 
-func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
+func testProduceFunctions(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		confunction1 := models.Function{}
 		confunction1.Id = "urn:infai:ses:controlling-function:333"
@@ -125,7 +123,8 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 		confunction1.DisplayName = "foo"
 		confunction1.Description = "Turn the device on"
 
-		err := producer.PublishFunction(confunction1, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetFunction(testenv.AdminToken, confunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -136,7 +135,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 		confunction2.DisplayName = "off-function"
 		confunction2.ConceptId = ""
 
-		err = producer.PublishFunction(confunction2, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, confunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -147,7 +146,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 		confunction3.DisplayName = "ctrl display name"
 		confunction3.ConceptId = "urn:infai:ses:concept:efffsdfd-01a1-4434-9dcc-064b3955000f"
 
-		err = producer.PublishFunction(confunction3, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, confunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -157,7 +156,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 		measfunction1.Name = "getOnOffFunction"
 		measfunction1.DisplayName = "bar"
 
-		err = producer.PublishFunction(measfunction1, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -168,7 +167,7 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 		measfunction2.ConceptId = "urn:infai:ses:concept:efffsdfd-aaaa-bbbb-ccc-0000"
 		measfunction2.DisplayName = "batz"
 
-		err = producer.PublishFunction(measfunction2, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -178,14 +177,14 @@ func testProduceFunctions(producer *producer.Producer) func(t *testing.T) {
 		measfunction3.Name = "getHumidityFunction"
 		measfunction3.DisplayName = "hum_display"
 
-		err = producer.PublishFunction(measfunction3, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing.T) {
+func testUpdateFunctionsDisplayName(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		confunction1 := models.Function{}
 		confunction1.Id = "urn:infai:ses:controlling-function:333"
@@ -193,7 +192,8 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 		confunction1.DisplayName = "foo 2"
 		confunction1.Description = "Turn the device on"
 
-		err := producer.PublishFunction(confunction1, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetFunction(testenv.AdminToken, confunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,7 +204,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 		confunction2.DisplayName = "off-function 2"
 		confunction2.ConceptId = "2"
 
-		err = producer.PublishFunction(confunction2, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, confunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -215,7 +215,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 		confunction3.DisplayName = "ctrl display name 2"
 		confunction3.ConceptId = "urn:infai:ses:concept:efffsdfd-01a1-4434-9dcc-064b3955000f"
 
-		err = producer.PublishFunction(confunction3, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, confunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -225,7 +225,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 		measfunction1.Name = "getOnOffFunction"
 		measfunction1.DisplayName = "bar 2"
 
-		err = producer.PublishFunction(measfunction1, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -236,7 +236,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 		measfunction2.ConceptId = "urn:infai:ses:concept:efffsdfd-aaaa-bbbb-ccc-0000"
 		measfunction2.DisplayName = "batz 2"
 
-		err = producer.PublishFunction(measfunction2, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -246,7 +246,7 @@ func testUpdateFunctionsDisplayName(producer *producer.Producer) func(t *testing
 		measfunction3.Name = "getHumidityFunction"
 		measfunction3.DisplayName = "hum_display 2"
 
-		err = producer.PublishFunction(measfunction3, "sdfdsfsf")
+		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -354,7 +354,7 @@ func testReadMeasuringFunction(con *controller.Controller) func(t *testing.T) {
 	}
 }
 
-func testFunctionDelete(producer *producer.Producer) func(t *testing.T) {
+func testFunctionDelete(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		funcids := [6]string{
 			"urn:infai:ses:controlling-function:333",
@@ -364,8 +364,9 @@ func testFunctionDelete(producer *producer.Producer) func(t *testing.T) {
 			"urn:infai:ses:measuring-function:321",
 			"urn:infai:ses:measuring-function:467"}
 
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		for _, funcid := range funcids {
-			err := producer.PublishFunctionDelete(funcid, "sdfdsfsf")
+			err, _ := c.DeleteFunction(testenv.AdminToken, funcid)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -2,17 +2,15 @@ package semantic_legacy
 
 import (
 	"context"
-	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sort"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestLocation(t *testing.T) {
@@ -24,7 +22,7 @@ func TestLocation(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -33,19 +31,19 @@ func TestLocation(t *testing.T) {
 	bath := models.Location{Id: "urn:infai:ses:location:bath", Name: "Bath", Description: "bath description", Image: "https://i.imgur.com/YHc7cbe.png", DeviceIds: []string{"urn:infai:ses:device:d1", "urn:infai:ses:device:d2"}}
 	floor := models.Location{Id: "urn:infai:ses:location:floor", Name: "Floor", Description: "floor description", Image: "https://i.imgur.com/YHc7cbe.png", DeviceGroupIds: []string{"urn:infai:ses:device-group:dg1", "urn:infai:ses:device-group:dg2"}}
 
-	t.Run("testProduceLocation bath", testProduceLocation(prod, bath))
-	t.Run("testProduceLocation floor", testProduceLocation(prod, floor))
-	time.Sleep(2 * time.Second)
+	t.Run("testProduceLocation bath", testProduceLocation(conf, bath))
+	t.Run("testProduceLocation floor", testProduceLocation(conf, floor))
 	t.Run("testLocationRead bath", testLocationRead(ctrl, bath.Id, &bath))
 	t.Run("testLocationRead floor", testLocationRead(ctrl, floor.Id, &floor))
-	t.Run("testLocationDelete bath", testLocationDelete(prod, bath.Id))
+	t.Run("testLocationDelete bath", testLocationDelete(conf, bath.Id))
 	t.Run("testLocationRead bath after delete", testLocationRead(ctrl, bath.Id, nil))
 	t.Run("testLocationRead floor after delete", testLocationRead(ctrl, floor.Id, &floor))
 }
 
-func testProduceLocation(producer *producer.Producer, location models.Location) func(t *testing.T) {
+func testProduceLocation(conf config.Config, location models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
-		err := producer.PublishLocation(location, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetLocation(testenv.AdminToken, location)
 		if err != nil {
 			t.Error(err)
 			return
@@ -79,16 +77,15 @@ func testLocationRead(con *controller.Controller, id string, expectedLocation *m
 		sort.Strings(result.DeviceGroupIds)
 		sort.Strings(result.DeviceIds)
 		if !reflect.DeepEqual(result, expected) {
-			resultJson, _ := json.Marshal(result)
-			expectedJson, _ := json.Marshal(expected)
-			t.Error(string(resultJson), "\n\n", string(expectedJson))
+			t.Errorf("\na=%#v\ne=%#v\n", result, expected)
 		}
 	}
 }
 
-func testLocationDelete(producer *producer.Producer, id string) func(t *testing.T) {
+func testLocationDelete(conf config.Config, id string) func(t *testing.T) {
 	return func(t *testing.T) {
-		err := producer.PublishLocationDelete(id, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		err, _ := c.DeleteLocation(testenv.AdminToken, id)
 		if err != nil {
 			t.Error(err)
 			return

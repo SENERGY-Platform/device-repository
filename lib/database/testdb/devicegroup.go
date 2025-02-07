@@ -21,18 +21,25 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"golang.org/x/exp/maps"
+	"time"
 )
+
+func (db *DB) SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup, syncHandler func(dg models.DeviceGroup, user string) error, user string) error {
+	return set(deviceGroup.Id, db.deviceGroups, deviceGroup, func(group models.DeviceGroup) error {
+		return syncHandler(group, user)
+	})
+}
+
+func (db *DB) RemoveDeviceGroup(ctx context.Context, id string, syncDeleteHandler func(models.DeviceGroup) error) error {
+	return del(id, db.deviceGroups, syncDeleteHandler)
+}
+
+func (db *DB) RetryDeviceGroupSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceGroup) error, syncHandler func(dg models.DeviceGroup, user string) error) error {
+	return nil
+}
 
 func (db *DB) GetDeviceGroup(_ context.Context, id string) (deviceGroup models.DeviceGroup, exists bool, err error) {
 	return get(id, db.deviceGroups)
-}
-
-func (db *DB) SetDeviceGroup(_ context.Context, deviceGroup models.DeviceGroup) error {
-	return set(deviceGroup.Id, db.deviceGroups, deviceGroup)
-}
-
-func (db *DB) RemoveDeviceGroup(_ context.Context, id string) error {
-	return del(id, db.deviceGroups)
 }
 
 func (db *DB) ListDeviceGroups(_ context.Context, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error) {

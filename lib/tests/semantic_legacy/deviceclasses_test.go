@@ -18,13 +18,13 @@ package semantic_legacy
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestDeviceClass(t *testing.T) {
@@ -36,22 +36,30 @@ func TestDeviceClass(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("testProduceDeviceType", testProduceDeviceType(prod))
-	time.Sleep(2 * time.Second)
+	t.Run("testProduceDeviceType", testProduceDeviceType(conf))
 	t.Run("testDeviceClassRead", testDeviceClassRead(ctrl))
-	t.Run("testDeviceClassDelete", testDeviceClassDelete(prod))
+	t.Run("testDeviceClassDelete", testDeviceClassDelete(conf))
 }
 
-func testProduceDeviceType(producer *producer.Producer) func(t *testing.T) {
+func testProduceDeviceType(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		producer.PublishDeviceClass(models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef", Name: "Lamp", Image: "https://i.imgur.com/YHc7cbe.png"}, "sdfdsfsf")
-		producer.PublishDeviceClass(models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456", Name: "Lamp2"}, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetDeviceClass(testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef", Name: "Lamp", Image: "https://i.imgur.com/YHc7cbe.png"})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		_, err, _ = c.SetDeviceClass(testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456", Name: "Lamp2"})
+		if err != nil {
+			t.Error(err)
+			return
+		}
 	}
 }
 
@@ -84,14 +92,15 @@ func testDeviceClassRead(con *controller.Controller) func(t *testing.T) {
 	}
 }
 
-func testDeviceClassDelete(producer *producer.Producer) func(t *testing.T) {
+func testDeviceClassDelete(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		err := producer.PublishDeviceClassDelete("urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef", "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		err, _ := c.DeleteDeviceClass(testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		err = producer.PublishDeviceClassDelete("urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456", "sdfdsfsf")
+		err, _ = c.DeleteDeviceClass(testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456")
 		if err != nil {
 			t.Fatal(err)
 		}

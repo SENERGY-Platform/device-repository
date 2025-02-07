@@ -30,9 +30,10 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/google/uuid"
 	"io"
 	"log"
@@ -80,14 +81,14 @@ func jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 }
 
 func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf config.Config, err error) {
+	controller.DisableFeaturesForTestEnv = true
 	conf, err = config.Load("../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return conf, err
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
-	conf, err = docker.NewEnv(ctx, wg, conf)
+	conf, err = docker2.NewEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)
 		return conf, err
@@ -108,11 +109,9 @@ func createMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 		log.Println("ERROR: unable to load config: ", err)
 		return
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
-	conf.DisableKafkaConsumer = true
 
-	_, ip, err := docker.MongoDB(ctx, wg)
+	_, ip, err := docker2.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
@@ -153,7 +152,13 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 		}
 	}()
 
-	ctrl, err = controller.New(conf, db, controller.ErrorProducer{}, nil)
+	pc, err := permclient.NewTestClient(ctx)
+	if err != nil {
+		db.Disconnect()
+		log.Println("ERROR: unable to start NewTestClient", err)
+		return
+	}
+	ctrl, err = controller.New(conf, db, testenv.VoidProducerMock{}, pc)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)

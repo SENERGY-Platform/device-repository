@@ -20,8 +20,7 @@ import (
 	"context"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/source/util"
-	"github.com/google/uuid"
+	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"log"
 	"net"
 	"strconv"
@@ -96,7 +95,7 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Conf
 		return config, err
 	}
 
-	err = util.InitTopic(config.KafkaUrl,
+	err = publisher.InitTopic(config.KafkaUrl,
 		"concepts",
 		"device-groups",
 		"aspects",

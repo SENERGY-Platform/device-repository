@@ -19,14 +19,13 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestConfigurables(t *testing.T) {
@@ -957,14 +956,9 @@ func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
 
 func createTestConfigurableMetadataBase(config config.Config, aspects []models.Aspect, functions []models.Function, devicetypes []models.DeviceType) func(t *testing.T) {
 	return func(t *testing.T) {
-		producer, err := testutils.NewPublisher(config)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-
+		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 		for _, aspect := range aspects {
-			err = producer.PublishAspect(aspect, userid)
+			_, err, _ := c.SetAspect(AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
@@ -972,7 +966,7 @@ func createTestConfigurableMetadataBase(config config.Config, aspects []models.A
 		}
 
 		for _, function := range functions {
-			err = producer.PublishFunction(function, userid)
+			_, err, _ := c.SetFunction(AdminToken, function)
 			if err != nil {
 				t.Error(err)
 				return
@@ -980,13 +974,12 @@ func createTestConfigurableMetadataBase(config config.Config, aspects []models.A
 		}
 
 		for _, dt := range devicetypes {
-			err = producer.PublishDeviceType(dt, userid)
+			_, err, _ := c.SetDeviceType(AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 
-		time.Sleep(20 * time.Second)
 	}
 }

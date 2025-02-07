@@ -27,7 +27,8 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"net/http"
 	"sync"
@@ -69,19 +70,19 @@ func Jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 }
 
 func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...func(*config.Config)) (conf config.Config, err error) {
+	controller.DisableFeaturesForTestEnv = true
 	conf, err = config.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return conf, err
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
 
 	for _, f := range cm {
 		f(&conf)
 	}
 
-	conf, err = docker.NewEnv(ctx, wg, conf)
+	conf, err = docker2.NewEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)
 		return conf, err
@@ -97,25 +98,20 @@ func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...
 }
 
 func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (ctrl *controller.Controller, err error) {
+	controller.DisableFeaturesForTestEnv = true
 	conf, err := config.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
-	conf.DisableKafkaConsumer = true
 
-	_, ip, err := docker.MongoDB(ctx, wg)
+	_, ip, err := docker2.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	conf.MongoUrl = "mongodb://" + ip + ":27017"
-	if err != nil {
-		log.Println("ERROR: unable to create mongo mock", err)
-		return
-	}
 	ctrl, err = StartController(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to start lib", err)
@@ -125,6 +121,7 @@ func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 }
 
 func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (ctrl *controller.Controller, err error) {
+	controller.DisableFeaturesForTestEnv = true
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {
@@ -147,11 +144,16 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 		}
 	}()
 
-	ctrl, err = controller.New(conf, db, controller.ErrorProducer{}, nil)
+	pc, err := permclient.NewTestClient(ctx)
+	if err != nil {
+		return ctrl, err
+	}
+
+	ctrl, err = controller.New(conf, db, VoidProducerMock{}, pc)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
-		return
+		return ctrl, err
 	}
 
 	return ctrl, err

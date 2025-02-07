@@ -20,9 +20,9 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 
@@ -41,9 +41,7 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		DeviceClassTopic:                         "device-classes",
 		LocationTopic:                            "locations",
 		Debug:                                    true,
-		DisableHttpApi:                           false,
 		HttpClientTimeout:                        "30s",
-		FatalErrHandler:                          nil,
 		DeviceServiceGroupSelectionAllowNotFound: true,
 		LocalIdUniqueForOwner:                    true,
 	}
@@ -53,7 +51,7 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	ctrl, err = controller.New(conf, db, semantic_legacy.VoidProducerMock{}, permclient)
+	ctrl, err = controller.New(conf, db, publisher.Void{}, permclient)
 	if err != nil {
 		return nil, nil, err
 	}

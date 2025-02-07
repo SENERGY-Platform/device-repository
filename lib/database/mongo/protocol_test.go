@@ -19,7 +19,7 @@ package mongo
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
@@ -76,7 +76,7 @@ func TestMongoProtocol(t *testing.T) {
 				Name: "s2name",
 			},
 		},
-	})
+	}, func(_ models.Protocol) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -92,7 +92,7 @@ func TestMongoProtocol(t *testing.T) {
 				Name: "s3name",
 			},
 		},
-	})
+	}, func(_ models.Protocol) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -127,7 +127,7 @@ func TestMongoProtocol(t *testing.T) {
 				Name: "s2name",
 			},
 		},
-	})
+	}, func(_ models.Protocol) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -164,7 +164,7 @@ func TestMongoProtocol(t *testing.T) {
 	}
 
 	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
-	err = m.RemoveProtocol(timeout, "foobar1")
+	err = m.RemoveProtocol(timeout, "foobar1", func(_ models.Protocol) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return

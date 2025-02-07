@@ -86,6 +86,9 @@ func (this *Controller) ListDeviceTypesV3(token string, listOptions model.Device
 }
 
 func (this *Controller) ValidateDeviceType(dt models.DeviceType, options model.ValidationOptions) (err error, code int) {
+	if DisableFeaturesForTestEnv {
+		return nil, 200
+	}
 	if dt.Id == "" {
 		return errors.New("missing device-type id"), http.StatusBadRequest
 	}
@@ -570,7 +573,9 @@ func addDeviceTypeCriteriaToVariableRefs(list []model.VariableReference, criteri
 }
 
 func (this *Controller) SetDeviceType(token string, dt models.DeviceType, options model.DeviceTypeUpdateOptions) (models.DeviceType, error, int) {
-	dt.GenerateId() //ensure ids
+	if !DisableFeaturesForTestEnv {
+		dt.GenerateId() //ensure ids
+	}
 
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {

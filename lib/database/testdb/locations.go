@@ -23,14 +23,23 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
-func (db *DB) SetLocation(_ context.Context, location models.Location) error {
-	return set(location.Id, db.locations, location)
+func (db *DB) SetLocation(ctx context.Context, location models.Location, syncHandler func(l models.Location, user string) error, user string) error {
+	return set(location.Id, db.locations, location, func(location models.Location) error {
+		return syncHandler(location, user)
+	})
 }
-func (db *DB) RemoveLocation(_ context.Context, id string) error {
-	return del(id, db.locations)
+
+func (db *DB) RemoveLocation(ctx context.Context, id string, syncDeleteHandler func(models.Location) error) error {
+	return del(id, db.locations, syncDeleteHandler)
 }
+
+func (db *DB) RetryLocationSync(lockduration time.Duration, syncDeleteHandler func(models.Location) error, syncHandler func(l models.Location, user string) error) error {
+	return nil
+}
+
 func (db *DB) GetLocation(_ context.Context, id string) (result models.Location, exists bool, err error) {
 	return get(id, db.locations)
 }

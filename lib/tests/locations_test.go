@@ -21,16 +21,14 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/testcontainers/testcontainers-go"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestLocations(t *testing.T) {
@@ -44,18 +42,15 @@ func TestLocations(t *testing.T) {
 		return
 	}
 
-	managerPort, _, err := docker.DeviceManager(ctx, wg, conf.KafkaUrl, conf.PermissionsV2Url, "http://"+testcontainers.HostInternal+":"+conf.ServerPort)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	deviceManagerUrl := "http://localhost:" + managerPort
-
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	deviceManagerUrl := "http://localhost:" + conf.ServerPort //manager has been replaced/integrated into device-repository
 
 	locations := []models.Location{}
 	userLocations := []models.Location{}
 	secondOwnerLocations := []models.Location{}
+
+	controller.DisableFeaturesForTestEnv = false
+
 	t.Run("create Userjwt locations", func(t *testing.T) {
 		names := []string{"a1", "b1", "c2", "d2", "e3", "f3", "g4"}
 		for _, name := range names {
@@ -130,8 +125,6 @@ func TestLocations(t *testing.T) {
 			secondOwnerLocations = append(secondOwnerLocations, result)
 		}
 	})
-
-	time.Sleep(5 * time.Second)
 
 	t.Run("check locations as admin", func(t *testing.T) {
 		if len(locations) == 0 {
@@ -305,8 +298,6 @@ func TestLocations(t *testing.T) {
 			return
 		}
 	})
-
-	time.Sleep(5 * time.Second)
 
 	t.Run("try read of deleted location", func(t *testing.T) {
 		location := userLocations[0]

@@ -23,7 +23,20 @@ import (
 	"golang.org/x/exp/maps"
 	"slices"
 	"strings"
+	"time"
 )
+
+func (db *DB) SetAspect(ctx context.Context, aspect models.Aspect, syncHandler func(models.Aspect) error) error {
+	return set(aspect.Id, db.aspects, aspect, syncHandler)
+}
+
+func (db *DB) RemoveAspect(ctx context.Context, id string, syncDeleteHandler func(models.Aspect) error) error {
+	return del(id, db.aspects, syncDeleteHandler)
+}
+
+func (db *DB) RetryAspectSync(lockduration time.Duration, syncDeleteHandler func(models.Aspect) error, syncHandler func(models.Aspect) error) error {
+	return nil
+}
 
 func (db *DB) ListAspects(ctx context.Context, options model.AspectListOptions) (result []models.Aspect, total int64, err error) {
 	for _, aspect := range db.aspects {
@@ -42,12 +55,6 @@ func (db *DB) ListAspects(ctx context.Context, options model.AspectListOptions) 
 
 func (db *DB) GetAspect(_ context.Context, id string) (result models.Aspect, exists bool, err error) {
 	return get(id, db.aspects)
-}
-func (db *DB) SetAspect(_ context.Context, aspect models.Aspect) error {
-	return set(aspect.Id, db.aspects, aspect)
-}
-func (db *DB) RemoveAspect(_ context.Context, id string) error {
-	return del(id, db.aspects)
 }
 func (db *DB) ListAllAspects(_ context.Context) ([]models.Aspect, error) {
 	return maps.Values(db.aspects), nil

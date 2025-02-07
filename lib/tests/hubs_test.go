@@ -21,8 +21,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
@@ -30,7 +30,6 @@ import (
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 )
 
 var hub1id = "urn:infai:ses:device:1"
@@ -47,18 +46,13 @@ func TestHubs(t *testing.T) {
 		return
 	}
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(10 * time.Second)
 
 	d1 := models.Device{
 		Id:           device1id,
@@ -67,7 +61,7 @@ func TestHubs(t *testing.T) {
 		DeviceTypeId: devicetype1id,
 	}
 
-	err = producer.PublishDevice(d1, userid)
+	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -80,13 +74,11 @@ func TestHubs(t *testing.T) {
 		DeviceTypeId: devicetype2id,
 	}
 
-	err = producer.PublishDevice(d2, userid)
+	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
 
 	h1 := models.Hub{
 		Id:             hub1id,
@@ -104,12 +96,11 @@ func TestHubs(t *testing.T) {
 		OwnerId:        userid,
 	}
 
-	err = producer.PublishHub(h1, userid)
+	_, err, _ = c.SetHub(userjwt, h1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(10 * time.Second)
 
 	t.Run("not existing", func(t *testing.T) {
 		testHubReadNotFound(t, conf, "foobar")

@@ -87,12 +87,12 @@ func (this *Mongo) SetLocation(ctx context.Context, location models.Location, sy
 	}
 	err = syncHandler(location, user)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetLocation::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, LocationBson.Id, location.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetLocation::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil

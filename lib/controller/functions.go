@@ -35,7 +35,9 @@ func (this *Controller) SetFunction(token string, function models.Function) (res
 	}
 
 	//ensure ids
-	function.GenerateId()
+	if !DisableFeaturesForTestEnv {
+		function.GenerateId()
+	}
 	err, code = this.ValidateFunction(function)
 	if err != nil {
 		return result, err, code
@@ -148,6 +150,9 @@ func (this *Controller) GetFunction(id string) (result models.Function, err erro
 }
 
 func (this *Controller) ValidateFunction(function models.Function) (err error, code int) {
+	if DisableFeaturesForTestEnv {
+		return nil, http.StatusOK
+	}
 	if function.Id == "" {
 		return errors.New("missing function id"), http.StatusBadRequest
 	}

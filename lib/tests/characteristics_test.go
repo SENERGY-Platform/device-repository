@@ -20,14 +20,12 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"testing"
-	"time"
 )
 
-func testCharacteristicList(t *testing.T, producer *testutils.Publisher, conf config.Config) {
+func testCharacteristicList(t *testing.T, conf config.Config) {
 	characteristics := []models.Characteristic{
 		{
 			Id:   "a1",
@@ -68,15 +66,15 @@ func testCharacteristicList(t *testing.T, producer *testutils.Publisher, conf co
 	}
 
 	t.Run("create characteristics", func(t *testing.T) {
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		for _, characteristic := range characteristics {
-			err := producer.PublishCharacteristic(characteristic, "user")
+			_, err, _ := c.SetCharacteristic(AdminToken, characteristic)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 	})
-	time.Sleep(5 * time.Second)
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list all characteristics", func(t *testing.T) {
 		list, total, err, _ := c.ListCharacteristics(client.CharacteristicListOptions{})

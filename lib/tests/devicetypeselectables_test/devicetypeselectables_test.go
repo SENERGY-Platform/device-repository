@@ -21,10 +21,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"log"
@@ -2593,14 +2593,10 @@ func createTestMetadata(config config.Config, interaction models.Interaction) fu
 			},
 		}
 
-		producer, err := testutils.NewPublisher(config)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 
 		for _, aspect := range aspects {
-			err = producer.PublishAspect(aspect, testenv.Userid)
+			_, err, _ := c.SetAspect(testenv.AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2608,7 +2604,7 @@ func createTestMetadata(config config.Config, interaction models.Interaction) fu
 		}
 
 		for _, function := range functions {
-			err = producer.PublishFunction(function, testenv.Userid)
+			_, err, _ := c.SetFunction(testenv.AdminToken, function)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2616,14 +2612,12 @@ func createTestMetadata(config config.Config, interaction models.Interaction) fu
 		}
 
 		for _, dt := range devicetypes {
-			err = producer.PublishDeviceType(dt, testenv.Userid)
+			_, err, _ := c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
-
-		time.Sleep(5 * time.Second)
 	}
 }
 
@@ -2651,14 +2645,10 @@ func createTestMetadataFromString(config config.Config, deviceTypesStr string, a
 			return
 		}
 
-		producer, err := testutils.NewPublisher(config)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 
 		for _, aspect := range aspects {
-			err = producer.PublishAspect(aspect, testenv.Userid)
+			_, err, _ = c.SetAspect(testenv.AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2666,7 +2656,7 @@ func createTestMetadataFromString(config config.Config, deviceTypesStr string, a
 		}
 
 		for _, function := range functions {
-			err = producer.PublishFunction(function, testenv.Userid)
+			_, err, _ = c.SetFunction(testenv.AdminToken, function)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2674,14 +2664,12 @@ func createTestMetadataFromString(config config.Config, deviceTypesStr string, a
 		}
 
 		for _, dt := range devicetypes {
-			err = producer.PublishDeviceType(dt, testenv.Userid)
+			_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
-
-		time.Sleep(5 * time.Second)
 	}
 }
 

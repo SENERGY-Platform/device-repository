@@ -21,9 +21,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
@@ -31,7 +31,6 @@ import (
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestSubAspectMoveSNRGY2202(t *testing.T) {
@@ -218,7 +217,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 		return
 	}
 
-	err = ctrl.SetAspect(initialAspect, testenv.Userid)
+	_, err, _ = ctrl.SetAspect(testenv.AdminToken, initialAspect)
 	if err != nil {
 		t.Error(err)
 		return
@@ -249,7 +248,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 			},
 		},
 	}
-	err = ctrl.SetDeviceType(dt, testenv.Userid)
+	_, err, _ = ctrl.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -306,13 +305,10 @@ func TestSubAspectMovePartial(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishAspect(models.Aspect{
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 		Id:   "a1",
 		Name: "a1",
 		SubAspects: []models.Aspect{
@@ -327,13 +323,13 @@ func TestSubAspectMovePartial(t *testing.T) {
 				},
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishAspect(models.Aspect{
+	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 		Id:   "a2",
 		Name: "a2",
 		SubAspects: []models.Aspect{
@@ -348,13 +344,11 @@ func TestSubAspectMovePartial(t *testing.T) {
 				},
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(2 * time.Second)
 
 	t.Run("aspect-nodes before move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
@@ -413,7 +407,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 	}))
 
 	t.Run("aspect-nodes move", func(t *testing.T) {
-		err = producer.PublishAspect(models.Aspect{
+		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 			Id:   "a1",
 			Name: "a1",
 			SubAspects: []models.Aspect{
@@ -438,14 +432,12 @@ func TestSubAspectMovePartial(t *testing.T) {
 					},
 				},
 			},
-		}, testenv.Userid)
+		})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 	})
-
-	time.Sleep(2 * time.Second)
 
 	t.Run("aspect-nodes after move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
@@ -514,13 +506,10 @@ func TestSubAspectMoveRoot(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishAspect(models.Aspect{
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 		Id:   "a1",
 		Name: "a1",
 		SubAspects: []models.Aspect{
@@ -535,13 +524,13 @@ func TestSubAspectMoveRoot(t *testing.T) {
 				},
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishAspect(models.Aspect{
+	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 		Id:   "a2",
 		Name: "a2",
 		SubAspects: []models.Aspect{
@@ -556,13 +545,11 @@ func TestSubAspectMoveRoot(t *testing.T) {
 				},
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(2 * time.Second)
 
 	t.Run("aspect-nodes before move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
@@ -621,7 +608,7 @@ func TestSubAspectMoveRoot(t *testing.T) {
 	}))
 
 	t.Run("aspect-nodes move", func(t *testing.T) {
-		err = producer.PublishAspect(models.Aspect{
+		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 			Id:   "a1",
 			Name: "a1",
 			SubAspects: []models.Aspect{
@@ -652,14 +639,12 @@ func TestSubAspectMoveRoot(t *testing.T) {
 					},
 				},
 			},
-		}, testenv.Userid)
+		})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 	})
-
-	time.Sleep(2 * time.Second)
 
 	t.Run("aspect-nodes after move", testGetRequest(testenv.Userjwt, conf, "/aspect-nodes", []models.AspectNode{
 		{
@@ -729,33 +714,29 @@ func TestAspectFunctions(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	err = producer.PublishFunction(models.Function{
+	_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishFunction(models.Function{
+	_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{
 		Id:        "fid_2",
 		Name:      "fid_2",
 		ConceptId: "concept_2",
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = producer.PublishAspect(models.Aspect{
+	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 		Id:   "parent_2",
 		Name: "parent_2",
 		SubAspects: []models.Aspect{
@@ -770,7 +751,7 @@ func TestAspectFunctions(t *testing.T) {
 				},
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
@@ -792,7 +773,7 @@ func TestAspectFunctions(t *testing.T) {
 			},
 		},
 	}
-	err = producer.PublishAspect(aspect, testenv.Userid)
+	_, err, _ = c.SetAspect(testenv.AdminToken, aspect)
 	if err != nil {
 		t.Error(err)
 		return
@@ -823,13 +804,11 @@ func TestAspectFunctions(t *testing.T) {
 			},
 		},
 	}
-	err = producer.PublishDeviceType(dt, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(3 * time.Second)
 
 	//defaults to ancestors=false&descendants=true
 	t.Run("aspects", testGetRequest(testenv.Userjwt, conf, "/aspects?function=measuring-function", []models.Aspect{aspect}))
@@ -1020,13 +999,10 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishAspect(models.Aspect{
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
 		Id:   "parent",
 		Name: "parent",
 		SubAspects: []models.Aspect{
@@ -1041,7 +1017,7 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 				},
 			},
 		},
-	}, testenv.Userid)
+	})
 	if err != nil {
 		t.Error(err)
 		return
@@ -1072,13 +1048,11 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 			},
 		},
 	}
-	err = producer.PublishDeviceType(dt, testenv.Userid)
+	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(3 * time.Second)
 
 	t.Run("matching", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{dt}))
 	t.Run("parent", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{dt}))

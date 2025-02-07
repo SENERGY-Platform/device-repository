@@ -18,21 +18,23 @@ package semantic_legacy
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/api"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 )
 
-func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config, t *testing.T) (config config.Config, ctrl *controller.Controller, prod *producer.Producer, err error) {
+func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config, t *testing.T) (config config.Config, ctrl *controller.Controller, err error) {
+	controller.DisableFeaturesForTestEnv = true
 	config = startConfig
-	config.FatalErrHandler = t.Fatal
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {
@@ -40,35 +42,41 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 		}
 	}()
 
-	whPort, err := docker.GetFreePort()
+	whPort, err := docker2.GetFreePort()
 	if err != nil {
 		log.Println("unable to find free port", err)
-		return config, ctrl, prod, err
+		return config, ctrl, err
 	}
 	config.ServerPort = strconv.Itoa(whPort)
 
-	_, ip, err := docker.MongoDB(ctx, wg)
+	_, ip, err := docker2.MongoDB(ctx, wg)
 	if err != nil {
-		return config, ctrl, prod, err
+		return config, ctrl, err
 	}
 	config.MongoUrl = "mongodb://" + ip + ":27017"
 
 	db, err := database.New(config)
 	if err != nil {
-		return config, ctrl, prod, err
+		return config, ctrl, err
 	}
 
-	ctrl, err = controller.New(config, db, VoidProducerMock{}, nil)
+	pc, err := permclient.NewTestClient(ctx)
 	if err != nil {
-		return config, ctrl, prod, err
+		return config, ctrl, err
 	}
 
-	prod, err = producer.StartSourceMock(config, ctrl)
+	ctrl, err = controller.New(config, db, testenv.VoidProducerMock{}, pc)
 	if err != nil {
-		return config, ctrl, prod, err
+		return config, ctrl, err
 	}
 
-	return config, ctrl, prod, err
+	err = api.Start(ctx, config, ctrl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(time.Second)
+
+	return config, ctrl, err
 }
-
-type VoidProducerMock = testenv.VoidProducerMock

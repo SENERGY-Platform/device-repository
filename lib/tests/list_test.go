@@ -18,7 +18,6 @@ package tests
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"sync"
 	"testing"
 )
@@ -33,25 +32,20 @@ func TestResourceList(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
 	t.Run("aspects", func(t *testing.T) {
-		testAspectList(t, producer, conf)
+		testAspectList(t, conf)
 	})
 
 	t.Run("characteristics", func(t *testing.T) {
-		testCharacteristicList(t, producer, conf)
+		testCharacteristicList(t, conf)
 	})
 
 	t.Run("concepts", func(t *testing.T) {
-		testConceptList(t, producer, conf)
+		testConceptList(t, conf)
 	})
 
 	t.Run("device-classes", func(t *testing.T) {
-		testListDeviceClasses(t, producer, conf)
+		testListDeviceClasses(t, conf)
 	})
 }

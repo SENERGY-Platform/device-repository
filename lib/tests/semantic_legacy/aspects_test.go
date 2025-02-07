@@ -18,14 +18,14 @@ package semantic_legacy
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestAspects(t *testing.T) {
@@ -37,16 +37,16 @@ func TestAspects(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("produce aspect", testProduceAspect(prod))
+	t.Run("produce aspect", testProduceAspect(conf))
 	t.Run("read aspect", testAspectRead(ctrl))
-	t.Run("delete aspect", testAspectDelete(prod))
-	t.Run("produce device-type with aspect", testProduceDeviceTypeForAspectTest(prod))
+	t.Run("delete aspect", testAspectDelete(conf))
+	t.Run("produce device-type with aspect", testProduceDeviceTypeForAspectTest(conf))
 	t.Run("read aspect measuring-functions", testReadAspectMeasuringFunctions(ctrl))
 }
 
@@ -59,23 +59,22 @@ func TestAspects2(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("test_2_ProduceDeviceTypeforAspectTest", test_2_ProduceDeviceTypeforAspectTest(prod))
-	time.Sleep(2 * time.Second)
+	t.Run("test_2_ProduceDeviceTypeforAspectTest", test_2_ProduceDeviceTypeforAspectTest(conf))
 	t.Run("test_2_ReadAspectsWithMeasuringFunctions", test_2_ReadAspectsWithMeasuringFunctions(ctrl))
 }
 
-func testProduceAspect(producer *producer.Producer) func(t *testing.T) {
+func testProduceAspect(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		aspect := models.Aspect{}
 		aspect.Id = "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf"
 		aspect.Name = "Air"
-		err := producer.PublishAspect(aspect, "sdfdsfsf")
+		_, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).SetAspect(testenv.AdminToken, aspect)
 		if err != nil {
 			t.Error(err)
 			return
@@ -100,16 +99,16 @@ func testAspectRead(con *controller.Controller) func(t *testing.T) {
 	}
 }
 
-func testAspectDelete(producer *producer.Producer) func(t *testing.T) {
+func testAspectDelete(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		err := producer.PublishAspectDelete("urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf", "sdfdsfsf")
+		err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).DeleteAspect(testenv.AdminToken, "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf")
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func testProduceDeviceTypeForAspectTest(producer *producer.Producer) func(t *testing.T) {
+func testProduceDeviceTypeForAspectTest(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:devicetype:1e1e-AspectTest"
@@ -166,31 +165,32 @@ func testProduceDeviceTypeForAspectTest(producer *producer.Producer) func(t *tes
 			},
 		})
 
-		err := producer.PublishDeviceType(devicetype, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+		_, err, _ := c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishAspect(models.Aspect{Id: "urn:infai:ses:aspect:4e4e-AspectTest", Name: "Lighting"}, "sdfsdfdsds")
+		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:4e4e-AspectTest", Name: "Lighting"})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:5e5e1-AspectTest", Name: "brightnessAdjustment1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:5e5e1-AspectTest", Name: "brightnessAdjustment1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:5e5e2-AspectTest", Name: "brightnessAdjustment2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:5e5e2-AspectTest", Name: "brightnessAdjustment2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:5e5e3-AspectTest", Name: "brightnessFunction4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:5e5e3-AspectTest", Name: "brightnessFunction4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:5e5e4-AspectTest", Name: "brightnessFunction2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:5e5e4-AspectTest", Name: "brightnessFunction2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		time.Sleep(2 * time.Second)
 	}
 }
 
@@ -232,7 +232,7 @@ func testReadAspectMeasuringFunctions(con *controller.Controller) func(t *testin
 	}
 }
 
-func test_2_ProduceDeviceTypeforAspectTest(producer *producer.Producer) func(t *testing.T) {
+func test_2_ProduceDeviceTypeforAspectTest(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:devicetype:08-01-20"
@@ -290,32 +290,33 @@ func test_2_ProduceDeviceTypeforAspectTest(producer *producer.Producer) func(t *
 			},
 		})
 
-		err := producer.PublishDeviceType(devicetype, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
+		_, err, _ := c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishAspect(models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_1", Name: "aspect1"}, "sdfsdfdsds")
+		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_1", Name: "aspect1"})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishAspect(models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_2", Name: "aspect2"}, "sdfsdfdsds")
+		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_2", Name: "aspect2"})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_1", Name: "func1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_1", Name: "func1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_2", Name: "func2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_2", Name: "func2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_3", Name: "func3", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_3", Name: "func3", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = producer.PublishFunction(models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_4", Name: "func4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION}, "sdfsdfdsds")
+		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_4", Name: "func4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}

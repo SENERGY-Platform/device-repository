@@ -24,16 +24,92 @@ import (
 
 type VoidProducerMock struct{}
 
-func (v VoidProducerMock) PublishDeviceGroupDelete(id string, owner string) error {
+func (v VoidProducerMock) PublishDevice(device models.Device) (err error) {
 	return nil
 }
 
-func (v VoidProducerMock) PublishDeviceGroup(element models.DeviceGroup, owner string) error {
+func (v VoidProducerMock) PublishDeviceDelete(id string) error {
 	return nil
 }
 
-func (v VoidProducerMock) PublishDevice(element models.Device, userId string) error {
-	panic("implement me")
+func (v VoidProducerMock) PublishDeviceType(device models.DeviceType) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceTypeDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceGroup(dg models.DeviceGroup) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceGroupDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishProtocol(device models.Protocol) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishProtocolDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishHub(hub models.Hub) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishHubDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishConcept(concept models.Concept) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishConceptDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishCharacteristic(characteristic models.Characteristic) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishCharacteristicDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishAspect(device models.Aspect) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishAspectDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishFunction(device models.Function) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishFunctionDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceClass(device models.DeviceClass) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceClassDelete(id string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishLocation(device models.Location) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishLocationDelete(id string) error {
+	return nil
 }
 
 func (v VoidProducerMock) PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error) {
@@ -44,18 +120,6 @@ func (v VoidProducerMock) SendDone(msg donewait.DoneMsg) error {
 	return nil
 }
 
-func (v VoidProducerMock) PublishAspectDelete(id string, owner string) error {
-	panic("implement me")
-}
-
 func (v VoidProducerMock) PublishAspectUpdate(aspect models.Aspect, owner string) error {
-	panic("implement me")
-}
-
-func (v VoidProducerMock) PublishDeviceDelete(id string, owner string) error {
-	panic("implement me")
-}
-
-func (v VoidProducerMock) PublishHub(hub models.Hub, userId string) (err error) {
 	panic("implement me")
 }

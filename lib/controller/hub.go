@@ -328,7 +328,6 @@ func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub,
 	if hub.Id == "" {
 		hub.GenerateId()
 	}
-	hub.GenerateId()
 	ctx, _ := getTimeoutContext()
 	old, exists, err := this.db.GetHub(ctx, hub.Id)
 	jwtToken, err := jwt.Parse(token)

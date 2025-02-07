@@ -130,12 +130,12 @@ func (this *Mongo) SetAspect(ctx context.Context, aspect models.Aspect, syncHand
 	}
 	err = syncHandler(aspect)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetAspect::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, AspectBson.Id, aspect.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetAspect::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil

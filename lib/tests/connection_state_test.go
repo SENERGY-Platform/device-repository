@@ -19,13 +19,11 @@ package tests
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/google/uuid"
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestConnectionStateHandling(t *testing.T) {
@@ -39,18 +37,13 @@ func TestConnectionStateHandling(t *testing.T) {
 		return
 	}
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(10 * time.Second)
 
 	d1 := models.Device{
 		Id:           device1id,
@@ -73,7 +66,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d1, userid)
+	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -101,7 +94,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d2, userid)
+	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -133,7 +126,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d3, userid)
+	_, err, _ = c.SetDevice(userjwt, d3, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -159,7 +152,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishHub(h1, userid)
+	_, err, _ = c.SetHub(userjwt, h1)
 	if err != nil {
 		t.Error(err)
 		return
@@ -185,7 +178,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishHub(h2, userid)
+	_, err, _ = c.SetHub(userjwt, h2)
 	if err != nil {
 		t.Error(err)
 		return
@@ -211,15 +204,11 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishHub(h3, userid)
+	_, err, _ = c.SetHub(userjwt, h3)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
-
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	t.Run("check with unknown connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
@@ -493,7 +482,7 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("set connection state", func(t *testing.T) {
 		t.Run("set unknown1 online", func(t *testing.T) {
 			dx1.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishDeviceConnectionState("unknown1", true)
+			err, _ = c.SetDeviceConnectionState(AdminToken, "unknown1", true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -501,7 +490,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set unknown2 offline", func(t *testing.T) {
 			dx1.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishDeviceConnectionState("unknown2", true)
+			err, _ = c.SetDeviceConnectionState(AdminToken, "unknown2", true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -509,7 +498,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set unknown1 hub online", func(t *testing.T) {
 			dx1.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishHubConnectionState("unknown1", true)
+			err, _ = c.SetDeviceConnectionState(AdminToken, "unknown1", true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -517,7 +506,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set unknown2 hub offline", func(t *testing.T) {
 			dx1.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishHubConnectionState("unknown2", true)
+			err, _ = c.SetDeviceConnectionState(AdminToken, "unknown2", true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -525,7 +514,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set d1 online", func(t *testing.T) {
 			dx1.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishDeviceConnectionState(d1.Id, true)
+			err, _ = c.SetDeviceConnectionState(AdminToken, d1.Id, true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -533,7 +522,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set d2 online", func(t *testing.T) {
 			dx2.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishDeviceConnectionState(d2.Id, true)
+			err, _ = c.SetDeviceConnectionState(AdminToken, d2.Id, true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -541,7 +530,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set d3 offline", func(t *testing.T) {
 			dx3.ConnectionState = models.ConnectionStateOffline
-			err = producer.PublishDeviceConnectionState(d3.Id, false)
+			err, _ = c.SetDeviceConnectionState(AdminToken, d3.Id, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -549,7 +538,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set h1 online", func(t *testing.T) {
 			hx1.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishHubConnectionState(h1.Id, true)
+			err, _ = c.SetHubConnectionState(AdminToken, h1.Id, true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -557,7 +546,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set h2 online", func(t *testing.T) {
 			hx2.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishHubConnectionState(h2.Id, true)
+			err, _ = c.SetHubConnectionState(AdminToken, h2.Id, true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -565,15 +554,13 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set h3 offline", func(t *testing.T) {
 			hx3.ConnectionState = models.ConnectionStateOffline
-			err = producer.PublishHubConnectionState(h3.Id, false)
+			err, _ = c.SetHubConnectionState(AdminToken, h3.Id, false)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		})
 	})
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("check with set connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
@@ -817,7 +804,7 @@ func TestConnectionStateHandling(t *testing.T) {
 	t.Run("update connection state", func(t *testing.T) {
 		t.Run("set d1 online", func(t *testing.T) {
 			dx1.ConnectionState = models.ConnectionStateOffline
-			err = producer.PublishDeviceConnectionState(d1.Id, false)
+			err, _ = c.SetDeviceConnectionState(AdminToken, d1.Id, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -825,7 +812,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set d2 online", func(t *testing.T) {
 			dx2.ConnectionState = models.ConnectionStateOffline
-			err = producer.PublishDeviceConnectionState(d2.Id, false)
+			err, _ = c.SetDeviceConnectionState(AdminToken, d2.Id, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -833,7 +820,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set d3 offline", func(t *testing.T) {
 			dx3.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishDeviceConnectionState(d3.Id, true)
+			err, _ = c.SetDeviceConnectionState(AdminToken, d3.Id, true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -841,7 +828,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set h1 online", func(t *testing.T) {
 			hx1.ConnectionState = models.ConnectionStateOffline
-			err = producer.PublishHubConnectionState(h1.Id, false)
+			err, _ = c.SetHubConnectionState(AdminToken, h1.Id, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -849,7 +836,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set h2 online", func(t *testing.T) {
 			hx2.ConnectionState = models.ConnectionStateOffline
-			err = producer.PublishHubConnectionState(h2.Id, false)
+			err, _ = c.SetHubConnectionState(AdminToken, h2.Id, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -857,15 +844,13 @@ func TestConnectionStateHandling(t *testing.T) {
 		})
 		t.Run("set h3 offline", func(t *testing.T) {
 			hx3.ConnectionState = models.ConnectionStateOnline
-			err = producer.PublishHubConnectionState(h3.Id, true)
+			err, _ = c.SetHubConnectionState(AdminToken, h3.Id, true)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		})
 	})
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("check with updated connection state", func(t *testing.T) {
 		t.Run("check extended device list", func(t *testing.T) {
@@ -881,7 +866,7 @@ func TestConnectionStateHandling(t *testing.T) {
 				}
 				expected := []models.ExtendedDevice{dx1, dx3, dx2}
 				if !reflect.DeepEqual(result, expected) {
-					t.Errorf("%#v\n", result)
+					t.Errorf("\na=%#v\ne=%#v\n", result, expected)
 				}
 			})
 			t.Run("list online", func(t *testing.T) {

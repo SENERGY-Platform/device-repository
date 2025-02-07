@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sort"
@@ -21,7 +22,7 @@ func TestConceptCharacteristic(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, _, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -44,17 +45,17 @@ func TestConceptCharacteristic(t *testing.T) {
 		Type: models.Boolean,
 	}
 
-	err = ctrl.SetConcept(concept, "owner")
+	_, err, _ = ctrl.SetConcept(testenv.AdminToken, concept)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetCharacteristic(characterisitc1, "owner")
+	_, err, _ = ctrl.SetCharacteristic(testenv.AdminToken, characterisitc1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	err = ctrl.SetCharacteristic(characterisitc2, "owner")
+	_, err, _ = ctrl.SetCharacteristic(testenv.AdminToken, characterisitc2)
 	if err != nil {
 		t.Error(err)
 		return
@@ -62,14 +63,14 @@ func TestConceptCharacteristic(t *testing.T) {
 
 	t.Run("check after init", checkConcept(ctrl, "urn:ses:infai:concept:c", concept))
 
-	err = ctrl.SetConcept(concept, "owner")
+	_, err, _ = ctrl.SetConcept(testenv.AdminToken, concept)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	t.Run("check after reset concept", checkConcept(ctrl, "urn:ses:infai:concept:c", concept))
 
-	err = ctrl.SetCharacteristic(characterisitc1, "owner")
+	_, err, _ = ctrl.SetCharacteristic(testenv.AdminToken, characterisitc1)
 	if err != nil {
 		t.Error(err)
 		return

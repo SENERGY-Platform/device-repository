@@ -296,31 +296,6 @@ func (this *HubEndpoints) Validate(config config.Config, router *http.ServeMux, 
 		}
 		writer.WriteHeader(http.StatusOK)
 	})
-
-	//legacy
-	router.HandleFunc("PUT /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
-		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !dryRun {
-			http.Error(writer, "only with query-parameter 'dry-run=true' allowed", http.StatusNotImplemented)
-			return
-		}
-		hub := models.Hub{}
-		err = json.NewDecoder(request.Body).Decode(&hub)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		err, code := control.ValidateHub(util.GetAuthToken(request), hub)
-		if err != nil {
-			http.Error(writer, err.Error(), code)
-			return
-		}
-		writer.WriteHeader(http.StatusOK)
-	})
 }
 
 // Create godoc

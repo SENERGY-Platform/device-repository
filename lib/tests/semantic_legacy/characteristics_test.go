@@ -18,13 +18,13 @@ package semantic_legacy
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestCharacteristics(t *testing.T) {
@@ -36,17 +36,17 @@ func TestCharacteristics(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("testProduceValidCharacteristic1", testProduceValidCharacteristic1(prod))
-	t.Run("testProduceValidCharacteristic2", testProduceValidCharacteristic2(prod))
+	t.Run("testProduceValidCharacteristic1", testProduceValidCharacteristic1(conf))
+	t.Run("testProduceValidCharacteristic2", testProduceValidCharacteristic2(conf))
 	t.Run("testReadCharacteristic1", testReadCharacteristic1(ctrl))
 	t.Run("testReadAllCharacteristic", testReadAllCharacteristic(ctrl))
-	t.Run("testDeleteCharacteristic1", testDeleteCharacteristic1(prod))
+	t.Run("testDeleteCharacteristic1", testDeleteCharacteristic1(conf))
 }
 
 func TestSpecialCaseCharacteristics(t *testing.T) {
@@ -58,17 +58,17 @@ func TestSpecialCaseCharacteristics(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("produce characteristic with special characters", testProduceValidCharacteristic3(prod))
+	t.Run("produce characteristic with special characters", testProduceValidCharacteristic3(conf))
 	t.Run("read characteristic with special characters", testReadCharacteristic3(ctrl))
 }
 
-func testProduceValidCharacteristic1(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidCharacteristic1(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:1d1e1f"
@@ -100,38 +100,40 @@ func testProduceValidCharacteristic1(producer *producer.Producer) func(t *testin
 					Name:               "charBoolean",
 					SubCharacteristics: nil}},
 		}}
-		err := producer.PublishCharacteristic(characteristic, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func testProduceValidCharacteristic2(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidCharacteristic2(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:4711111-20.03.2020"
 		characteristic.Name = "bool"
 		characteristic.DisplayUnit = "°F"
 		characteristic.Type = models.Boolean
-		err := producer.PublishCharacteristic(characteristic, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
-func testProduceValidCharacteristic3(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidCharacteristic3(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:1111111-30.03.2021"
 		characteristic.Name = "µg/m³"
 		characteristic.Type = models.Boolean
-		err := producer.PublishCharacteristic(characteristic, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
-		time.Sleep(2 * time.Second)
 	}
 }
 
@@ -259,9 +261,10 @@ func testReadAllCharacteristic(con *controller.Controller) func(t *testing.T) {
 	}
 }
 
-func testDeleteCharacteristic1(producer *producer.Producer) func(t *testing.T) {
+func testDeleteCharacteristic1(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		err := producer.PublishCharacteristicDelete("urn:ses:infai:characteristic:1d1e1f", "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		err, _ := c.DeleteCharacteristic(testenv.AdminToken, "urn:ses:infai:characteristic:1d1e1f")
 		if err != nil {
 			t.Fatal(err)
 		}

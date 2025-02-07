@@ -24,6 +24,8 @@ import (
 	"time"
 )
 
+var DisableFeaturesForTestEnv = false //only for tests; disables validations and id generations
+
 func New(config config.Config, db database.Database, p Publisher, permClient client.Client) (ctrl *Controller, err error) {
 	if permClient == nil {
 		permClient = client.New(config.PermissionsV2Url)
@@ -34,7 +36,7 @@ func New(config config.Config, db database.Database, p Publisher, permClient cli
 		config:              config,
 		permissionsV2Client: permClient,
 	}
-	if config.PermissionsV2Url != "" && config.PermissionsV2Url != "-" {
+	if permClient != nil {
 		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
 			Id:                  config.DeviceTopic,
 			PublishToKafkaTopic: config.DeviceTopic,

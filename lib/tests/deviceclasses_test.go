@@ -19,14 +19,12 @@ package tests
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"testing"
-	"time"
 )
 
-func testListDeviceClasses(t *testing.T, producer *testutils.Publisher, conf config.Config) {
+func testListDeviceClasses(t *testing.T, conf config.Config) {
 	deviceClasses := []models.DeviceClass{
 		{
 			Id:   "c1",
@@ -50,18 +48,17 @@ func testListDeviceClasses(t *testing.T, producer *testutils.Publisher, conf con
 		},
 	}
 
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
 	t.Run("create device-classes", func(t *testing.T) {
 		for _, dc := range deviceClasses {
-			err := producer.PublishDeviceClass(dc, "user")
+			_, err, _ := c.SetDeviceClass(AdminToken, dc)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 	})
-
-	time.Sleep(5 * time.Second)
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	t.Run("list all device-classes", func(t *testing.T) {
 		list, total, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{})

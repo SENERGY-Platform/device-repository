@@ -350,17 +350,17 @@ func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceTy
 	}
 	err = this.setDeviceTypeCriteria(ctx, deviceType)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setDeviceTypeCriteria %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetDeviceType::setDeviceTypeCriteria %v, will be retried later\n", err)
 		return nil
 	}
 	err = syncHandler(deviceType)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetDeviceType::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, DeviceTypeBson.Id, deviceType.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetDeviceType::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil

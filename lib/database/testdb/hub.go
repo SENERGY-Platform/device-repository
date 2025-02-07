@@ -23,16 +23,23 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
+
+func (db *DB) SetHub(ctx context.Context, hub model.HubWithConnectionState, syncHandler func(model.HubWithConnectionState) error) error {
+	return set(hub.Id, db.hubs, hub, syncHandler)
+}
+
+func (db *DB) RemoveHub(ctx context.Context, id string, syncDeleteHandler func(model.HubWithConnectionState) error) error {
+	return del(id, db.hubs, syncDeleteHandler)
+}
+
+func (db *DB) RetryHubSync(lockduration time.Duration, syncDeleteHandler func(model.HubWithConnectionState) error, syncHandler func(model.HubWithConnectionState) error) error {
+	return nil
+}
 
 func (db *DB) GetHub(_ context.Context, id string) (hub model.HubWithConnectionState, exists bool, err error) {
 	return get(id, db.hubs)
-}
-func (db *DB) SetHub(_ context.Context, hub model.HubWithConnectionState) error {
-	return set(hub.Id, db.hubs, hub)
-}
-func (db *DB) RemoveHub(_ context.Context, id string) error {
-	return del(id, db.hubs)
 }
 func (db *DB) GetHubsByDeviceId(_ context.Context, id string) (hubs []model.HubWithConnectionState, err error) {
 	for i := range db.hubs {
@@ -111,5 +118,5 @@ func (db *DB) SetHubConnectionState(ctx context.Context, id string, state models
 		return nil
 	}
 	hub.ConnectionState = state
-	return db.SetHub(ctx, hub)
+	return db.SetHub(ctx, hub, nil)
 }

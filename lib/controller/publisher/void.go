@@ -17,13 +17,12 @@
 package publisher
 
 import (
-	"errors"
 	"github.com/SENERGY-Platform/models/go/models"
 )
 
 type Void struct{}
 
-var VoidPublisherError = errors.New("try to use void publisher")
+var VoidPublisherError error = nil //errors.New("try to use void publisher")
 
 func (this Void) PublishDevice(device models.Device) (err error) {
 	return VoidPublisherError

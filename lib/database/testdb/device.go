@@ -23,19 +23,23 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 func (db *DB) GetDevice(_ context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error) {
 	return get(id, db.devices)
 }
 
-func (db *DB) SetDevice(_ context.Context, device model.DeviceWithConnectionState) error {
-	return set(device.Id, db.devices, device)
+func (db *DB) RetryDeviceSync(lockduration time.Duration, syncDeleteHandler func(model.DeviceWithConnectionState) error, syncHandler func(model.DeviceWithConnectionState) error) error {
+	return nil
 }
 
-func (db *DB) RemoveDevice(_ context.Context, id string) error {
-	return del(id, db.devices)
+func (db *DB) SetDevice(_ context.Context, device model.DeviceWithConnectionState, syncHandler func(model.DeviceWithConnectionState) error) error {
+	return set(device.Id, db.devices, device, syncHandler)
+}
 
+func (db *DB) RemoveDevice(_ context.Context, id string, syncDeleteHandler func(model.DeviceWithConnectionState) error) error {
+	return del(id, db.devices, syncDeleteHandler)
 }
 
 func (db *DB) GetDeviceByLocalId(_ context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error) {
@@ -126,5 +130,5 @@ func (db *DB) SetDeviceConnectionState(ctx context.Context, id string, state mod
 		return nil
 	}
 	device.ConnectionState = state
-	return db.SetDevice(ctx, device)
+	return db.SetDevice(ctx, device, nil)
 }

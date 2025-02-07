@@ -41,7 +41,7 @@ func (db *DB) ListAspectNodes(ctx context.Context, options model.AspectListOptio
 }
 
 func (db *DB) AddAspectNode(_ context.Context, node models.AspectNode) error {
-	return set(node.Id, db.aspectNodes, node)
+	return set(node.Id, db.aspectNodes, node, nil)
 }
 func (db *DB) RemoveAspectNodesByRootId(_ context.Context, id string) error {
 	panic("not implemented")
@@ -69,5 +69,5 @@ func (db *DB) ListAspectNodesByIdList(_ context.Context, ids []string) (result [
 }
 
 func (db *DB) SetAspectNode(_ context.Context, node models.AspectNode) error {
-	return set(node.Id, db.aspectNodes, node)
+	return set(node.Id, db.aspectNodes, node, nil)
 }

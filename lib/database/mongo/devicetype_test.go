@@ -21,7 +21,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sync"
@@ -99,7 +99,7 @@ func TestMongoDeviceType(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, func(deviceType models.DeviceType) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -121,7 +121,7 @@ func TestMongoDeviceType(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, func(deviceType models.DeviceType) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -169,7 +169,7 @@ func TestMongoDeviceType(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, func(deviceType models.DeviceType) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -272,7 +272,7 @@ func TestMongoDeviceType(t *testing.T) {
 	}
 
 	timeout, _ = context.WithTimeout(ctx, 2*time.Second)
-	err = m.RemoveDeviceType(timeout, "foobar1")
+	err = m.RemoveDeviceType(timeout, "foobar1", func(deviceType models.DeviceType) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -348,7 +348,7 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, func(deviceType models.DeviceType) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -370,7 +370,7 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, func(deviceType models.DeviceType) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return
@@ -398,7 +398,7 @@ func TestMongoDeviceTypeByService(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, func(deviceType models.DeviceType) error { return nil })
 	if err != nil {
 		t.Error(err)
 		return

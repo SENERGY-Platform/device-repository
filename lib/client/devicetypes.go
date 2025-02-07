@@ -27,6 +27,8 @@ import (
 	"strings"
 )
 
+type DeviceTypeUpdateOptions = model.DeviceTypeUpdateOptions
+
 func (c *Client) SetDeviceType(token string, deviceType models.DeviceType, options model.DeviceTypeUpdateOptions) (result models.DeviceType, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(deviceType)

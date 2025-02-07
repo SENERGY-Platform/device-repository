@@ -19,14 +19,14 @@ package semantic_legacy
 import (
 	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/semantic_legacy/producer"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestDeviceType(t *testing.T) {
@@ -38,14 +38,13 @@ func TestDeviceType(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	defer cancel()
-	conf, ctrl, prod, err := NewPartialMockEnv(ctx, wg, conf, t)
+	conf, ctrl, err := NewPartialMockEnv(ctx, wg, conf, t)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("testProduceValidDeviceTypes", testProduceValidDeviceTypes(prod))
-	time.Sleep(2 * time.Second)
+	t.Run("testProduceValidDeviceTypes", testProduceValidDeviceTypes(conf))
 	t.Run("testReadDeviceType", testReadDeviceType(ctrl))
 	t.Run("testReadDeviceTypeCF", testReadDeviceTypeCF(ctrl))
 	t.Run("testReadDeviceType_1MF", testReadDeviceType_1MF(ctrl))
@@ -55,7 +54,7 @@ func TestDeviceType(t *testing.T) {
 	t.Run("testReadDeviceTypeWithId1", testReadDeviceTypeWithId1(ctrl))
 }
 
-func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T) {
+func testProduceValidDeviceTypes(conf config.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:device-type:eb4a3337-01a1-4434-9dcc-064b3955eeef"
@@ -80,7 +79,8 @@ func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T)
 			},
 		})
 
-		err := producer.PublishDeviceType(devicetype, "sdfdsfsf")
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, err, _ := c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -136,7 +136,7 @@ func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T)
 			},
 		})
 
-		err = producer.PublishDeviceType(devicetype, "sdfdsfsf")
+		_, err, _ = c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -171,7 +171,7 @@ func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T)
 			},
 		})
 
-		err = producer.PublishDeviceType(devicetype, "sdfdsfsf")
+		_, err, _ = c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -226,7 +226,7 @@ func testProduceValidDeviceTypes(producer *producer.Producer) func(t *testing.T)
 			},
 		})
 
-		err = producer.PublishDeviceType(devicetype, "sdfdsfsf")
+		_, err, _ = c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}

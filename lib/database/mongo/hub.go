@@ -97,12 +97,12 @@ func (this *Mongo) SetHub(ctx context.Context, hub model.HubWithConnectionState,
 	}
 	err = syncHandler(hub)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetHub::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, HubBson.Id, hub.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetHub::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil

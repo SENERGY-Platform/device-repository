@@ -20,17 +20,24 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/models/go/models"
 	"golang.org/x/exp/maps"
+	"time"
 )
+
+func (db *DB) SetProtocol(ctx context.Context, protocol models.Protocol, syncHandler func(models.Protocol) error) error {
+	return set(protocol.Id, db.protocols, protocol, syncHandler)
+}
+
+func (db *DB) RemoveProtocol(ctx context.Context, id string, syncDeleteHandler func(models.Protocol) error) error {
+	return del(id, db.protocols, syncDeleteHandler)
+}
+
+func (db *DB) RetryProtocolSync(lockduration time.Duration, syncDeleteHandler func(models.Protocol) error, syncHandler func(models.Protocol) error) error {
+	return nil
+}
 
 func (db *DB) GetProtocol(_ context.Context, id string) (result models.Protocol, exists bool, err error) {
 	return get(id, db.protocols)
 }
 func (db *DB) ListProtocols(_ context.Context, limit int64, offset int64, sort string) ([]models.Protocol, error) {
 	return maps.Values(db.protocols), nil
-}
-func (db *DB) SetProtocol(_ context.Context, protocol models.Protocol) error {
-	return set(protocol.Id, db.protocols, protocol)
-}
-func (db *DB) RemoveProtocol(_ context.Context, id string) error {
-	return del(id, db.protocols)
 }

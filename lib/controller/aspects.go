@@ -124,7 +124,9 @@ func (this *Controller) SetAspect(token string, aspect models.Aspect) (result mo
 	}
 
 	//ensure ids
-	aspect.GenerateId()
+	if !DisableFeaturesForTestEnv {
+		aspect.GenerateId()
+	}
 
 	err, code = this.ValidateAspect(aspect)
 	if err != nil {
@@ -224,6 +226,9 @@ func (this *Controller) ValidateAspect(aspect models.Aspect) (err error, code in
 }
 
 func (this *Controller) validateAspect(aspect models.Aspect, checkDelete bool) (err error, code int) {
+	if DisableFeaturesForTestEnv {
+		return nil, http.StatusOK
+	}
 	if aspect.Id == "" {
 		return errors.New("missing aspect id"), http.StatusBadRequest
 	}

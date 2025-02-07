@@ -56,10 +56,10 @@ func (c *Client) DeleteLocation(token string, id string) (err error, code int) {
 
 func (c *Client) GetLocation(id string, token string) (location models.Location, err error, errCode int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/locations/"+id, nil)
-	req.Header.Set("Authorization", token)
 	if err != nil {
 		return location, err, http.StatusInternalServerError
 	}
+	req.Header.Set("Authorization", token)
 	return do[models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 

@@ -439,6 +439,9 @@ func ValidateDeviceName(device models.Device) (err error) {
 }
 
 func (this *Controller) ValidateDevice(token string, device models.Device) (err error, code int) {
+	if DisableFeaturesForTestEnv {
+		return nil, http.StatusOK
+	}
 	if device.Id == "" {
 		return errors.New("missing device id"), http.StatusBadRequest
 	}
@@ -538,7 +541,9 @@ func (this *Controller) CreateDevice(token string, device models.Device) (result
 	if device.Id != "" {
 		return result, errors.New("device id already set"), http.StatusBadRequest
 	}
-	device.GenerateId()
+	if !DisableFeaturesForTestEnv {
+		device.GenerateId()
+	}
 
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
@@ -568,7 +573,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	if !jwtToken.IsAdmin() {
+	if !jwtToken.IsAdmin() && !DisableFeaturesForTestEnv {
 		ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Write)
 		if err != nil {
 			return device, err, code

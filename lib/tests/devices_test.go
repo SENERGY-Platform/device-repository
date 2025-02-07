@@ -23,14 +23,12 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/source/util"
+	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/service-commons/pkg/donewait"
-	"github.com/SENERGY-Platform/service-commons/pkg/kafka"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/google/uuid"
 	"io"
 	"net/http"
@@ -88,13 +86,10 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -121,7 +116,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d1, userid)
+	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -149,7 +144,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d2, userid)
+	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -181,15 +176,12 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d3, userid)
+	_, err, _ = c.SetDevice(userjwt, d3, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	time.Sleep(10 * time.Second)
-
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list none", func(t *testing.T) {
 		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{}})
 		if err != nil {
@@ -312,18 +304,14 @@ func TestDeviceQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(10 * time.Second)
 
 	d1 := models.Device{
 		Id:           device1id,
@@ -361,7 +349,7 @@ func TestDeviceQuery(t *testing.T) {
 		DeviceType: &models.DeviceType{Id: devicetype1id, Name: devicetype1name},
 	}
 
-	err = producer.PublishDevice(d1, userid)
+	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -389,7 +377,7 @@ func TestDeviceQuery(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d2, userid)
+	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -421,13 +409,11 @@ func TestDeviceQuery(t *testing.T) {
 		},
 	}
 
-	err = producer.PublishDevice(d3, userid)
+	_, err, _ = c.SetDevice(userjwt, d3, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("check fulldt query param", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
@@ -993,37 +979,43 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
 	conf.LocalIdUniqueForOwner = true
-	whPort, err := docker.GetFreePort()
+	whPort, err := docker2.GetFreePort()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	conf.ServerPort = strconv.Itoa(whPort)
 
-	_, ip, err := docker.MongoDB(ctx, wg)
+	_, ip, err := docker2.MongoDB(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	conf.MongoUrl = "mongodb://" + ip + ":27017"
 
-	_, zkIp, err := docker.Zookeeper(ctx, wg)
+	_, zkIp, err := docker2.Zookeeper(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	zookeeperUrl := zkIp + ":2181"
 
-	conf.KafkaUrl, err = docker.Kafka(ctx, wg, zookeeperUrl)
+	conf.KafkaUrl, err = docker2.Kafka(ctx, wg, zookeeperUrl)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = util.InitTopic(conf.KafkaUrl,
+	_, permIp, err := docker2.PermissionsV2(ctx, wg, conf.MongoUrl, conf.KafkaUrl)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	conf.PermissionsV2Url = "http://" + permIp + ":8080"
+
+	err = publisher.InitTopic(conf.KafkaUrl,
 		"concepts",
 		"device-groups",
 		"aspects",
@@ -1058,10 +1050,9 @@ func TestDeviceLocalIdOwnerConstraintPermissionsSearch(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
 	conf.LocalIdUniqueForOwner = true
-	conf, err = docker.NewEnv(ctx, wg, conf)
+	conf, err = docker2.NewEnv(ctx, wg, conf)
 	if err != nil {
 		t.Error(err)
 		return
@@ -1078,37 +1069,13 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 			return
 		}
 		time.Sleep(1 * time.Second)
-		producer, err := testutils.NewPublisher(conf)
-		if err != nil {
-			t.Error(err)
-			return
-		}
 
-		err = donewait.StartDoneWaitListener(ctx, kafka.Config{
-			KafkaUrl:    conf.KafkaUrl,
-			StartOffset: kafka.LastOffset,
-			Debug:       conf.Debug,
-		}, []string{conf.DoneTopic}, nil)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+		controller.DisableFeaturesForTestEnv = true
 
 		t.Run("create device-type", func(t *testing.T) {
-			doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
-			wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
-				ResourceKind: conf.DeviceTypeTopic,
-				ResourceId:   devicetype1id,
-				Command:      "PUT",
-			}, nil)
-
-			err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name}, userid)
-			if err != nil {
-				t.Error(err)
-				return
-			}
-
-			err = wait()
+			_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1116,59 +1083,54 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 		})
 
 		t.Run("create devices", func(t *testing.T) {
-			doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
-			wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
-				ResourceKind: conf.DeviceTopic,
-				ResourceId:   testenv.SecendOwnerTokenUser,
-				Command:      "PUT",
-			}, nil)
 			for i := range 10 {
-				err = producer.PublishDevice(models.Device{
+				_, err, _ = c.SetDevice(testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/" + strconv.Itoa(i),
 					LocalId:      strconv.Itoa(i),
 					Name:         testenv.TestTokenUser + "/" + strconv.Itoa(i),
 					DeviceTypeId: devicetype1id,
 					OwnerId:      testenv.TestTokenUser,
-				}, testenv.TestTokenUser)
+				}, client.DeviceUpdateOptions{})
 				if err != nil {
 					t.Error(err)
 					return
 				}
-				err = producer.PublishDevice(models.Device{
+				_, err, _ = c.SetDevice(testenv.SecondOwnerToken, models.Device{
 					Id:           testenv.SecendOwnerTokenUser + "/" + strconv.Itoa(i),
 					LocalId:      strconv.Itoa(i),
 					Name:         testenv.SecendOwnerTokenUser + "/" + strconv.Itoa(i),
 					DeviceTypeId: devicetype1id,
 					OwnerId:      testenv.SecendOwnerTokenUser,
-				}, testenv.SecendOwnerTokenUser)
+				}, client.DeviceUpdateOptions{})
 				if err != nil {
 					t.Error(err)
 					return
 				}
 			}
-			err = producer.PublishDevice(models.Device{
+
+			_, err, _ = c.SetDevice(testenv.TestToken, models.Device{
 				Id:           testenv.TestTokenUser,
 				LocalId:      testenv.TestTokenUser,
 				Name:         testenv.TestTokenUser,
 				DeviceTypeId: devicetype1id,
 				OwnerId:      testenv.TestTokenUser,
-			}, testenv.TestTokenUser)
+			}, client.DeviceUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = producer.PublishDevice(models.Device{
+
+			_, err, _ = c.SetDevice(testenv.TestToken, models.Device{
 				Id:           testenv.SecendOwnerTokenUser,
 				LocalId:      testenv.SecendOwnerTokenUser,
 				Name:         testenv.SecendOwnerTokenUser,
 				DeviceTypeId: devicetype1id,
 				OwnerId:      testenv.SecendOwnerTokenUser,
-			}, testenv.TestTokenUser)
+			}, client.DeviceUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			err = wait()
 			if err != nil {
 				t.Error(err)
 				return
@@ -1176,6 +1138,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 
 		})
 
+		controller.DisableFeaturesForTestEnv = false
 		t.Run("validates", func(t *testing.T) {
 			c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 			t.Run("user may add new device with new local-id", func(t *testing.T) {
@@ -1269,29 +1232,25 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 					return
 				}
 			})
+
+			pc := permclient.New(conf.PermissionsV2Url)
+
 			t.Run("user may update owner to admin with not existing local id", func(t *testing.T) {
-				doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
-				wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
-					ResourceKind: conf.DeviceTopic,
-					ResourceId:   testenv.TestTokenUser + "/1",
-					Command:      "RIGHTS",
-				}, nil)
-				err = producer.PublishDeviceRights(testenv.TestTokenUser+"/1", testenv.TestTokenUser, model.ResourceRights{
+				perm := model.ResourceRights{
 					UserRights: map[string]model.Right{
 						testenv.TestTokenUser:        {Read: true, Write: true, Execute: true, Administrate: true},
 						testenv.SecendOwnerTokenUser: {Read: true, Write: true, Execute: true, Administrate: true},
 					},
-				})
+				}
+				_, err, _ = pc.SetPermission(permclient.InternalAdminToken, conf.DeviceTopic, testenv.TestTokenUser+"/1", perm.ToPermV2Permissions())
 				if err != nil {
 					t.Error(err)
 					return
 				}
-				err = wait()
 				if err != nil {
 					t.Error(err)
 					return
 				}
-				time.Sleep(time.Second)
 				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "20",
@@ -1306,28 +1265,21 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 			})
 
 			t.Run("user may update owner to admin with not existing local id (unchanged)", func(t *testing.T) {
-				doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
-				wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
-					ResourceKind: conf.DeviceTopic,
-					ResourceId:   testenv.TestTokenUser,
-					Command:      "RIGHTS",
-				}, nil)
-				err = producer.PublishDeviceRights(testenv.TestTokenUser, testenv.TestTokenUser, model.ResourceRights{
+				perm := model.ResourceRights{
 					UserRights: map[string]model.Right{
 						testenv.TestTokenUser:        {Read: true, Write: true, Execute: true, Administrate: true},
 						testenv.SecendOwnerTokenUser: {Read: true, Write: true, Execute: true, Administrate: true},
 					},
-				})
+				}
+				_, err, _ = pc.SetPermission(permclient.InternalAdminToken, conf.DeviceTopic, testenv.TestTokenUser, perm.ToPermV2Permissions())
 				if err != nil {
 					t.Error(err)
 					return
 				}
-				err = wait()
 				if err != nil {
 					t.Error(err)
 					return
 				}
-				time.Sleep(time.Second)
 				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser,
 					LocalId:      testenv.TestTokenUser,
@@ -1342,23 +1294,17 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 			})
 
 			t.Run("user may not update owner to admin with existing local id", func(t *testing.T) {
-				doneTimeout, _ := context.WithTimeout(ctx, 10*time.Second)
-				wait := donewait.AsyncWait(doneTimeout, donewait.DoneMsg{
-					ResourceKind: conf.DeviceTopic,
-					ResourceId:   testenv.TestTokenUser + "/1",
-					Command:      "RIGHTS",
-				}, nil)
-				err = producer.PublishDeviceRights(testenv.TestTokenUser+"/1", testenv.TestTokenUser, model.ResourceRights{
+				perm := model.ResourceRights{
 					UserRights: map[string]model.Right{
 						testenv.TestTokenUser:        {Read: true, Write: true, Execute: true, Administrate: true},
 						testenv.SecendOwnerTokenUser: {Read: true, Write: true, Execute: true, Administrate: true},
 					},
-				})
+				}
+				_, err, _ = pc.SetPermission(permclient.InternalAdminToken, conf.DeviceTopic, testenv.TestTokenUser+"/1", perm.ToPermV2Permissions())
 				if err != nil {
 					t.Error(err)
 					return
 				}
-				err = wait()
 				if err != nil {
 					t.Error(err)
 					return

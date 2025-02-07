@@ -22,14 +22,21 @@ import (
 	"github.com/SENERGY-Platform/models/go/models"
 	"slices"
 	"strings"
+	"time"
 )
 
-func (db *DB) SetConcept(_ context.Context, concept models.Concept) error {
-	return set(concept.Id, db.concepts, concept)
+func (db *DB) SetConcept(ctx context.Context, concept models.Concept, syncHandler func(models.Concept) error) error {
+	return set(concept.Id, db.concepts, concept, syncHandler)
 }
-func (db *DB) RemoveConcept(_ context.Context, id string) error {
-	return del(id, db.concepts)
+
+func (db *DB) RemoveConcept(ctx context.Context, id string, syncDeleteHandler func(models.Concept) error) error {
+	return del(id, db.concepts, syncDeleteHandler)
 }
+
+func (db *DB) RetryConceptSync(lockduration time.Duration, syncDeleteHandler func(models.Concept) error, syncHandler func(models.Concept) error) error {
+	return nil
+}
+
 func (db *DB) GetConceptWithCharacteristics(_ context.Context, id string) (result models.ConceptWithCharacteristics, exists bool, err error) {
 	panic("not implemented")
 }

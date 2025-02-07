@@ -21,11 +21,9 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"
-	"time"
 )
 
 func TestModifiedDevice(t *testing.T) {
@@ -38,50 +36,48 @@ func TestModifiedDevice(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
 	sgKey := "a8ee3b1c-4cda-4f0d-9f55-4ef4882ce0af"
 
-	err = producer.PublishDeviceType(models.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
-		{
-			Key:         sgKey,
-			Name:        "sg1",
-			Description: "",
-		},
-		{
-			Key:         "a8ee3b1c-4cda-4f0d-9f55-4ef4882ce0aa",
-			Name:        "sg2",
-			Description: "",
-		},
-	}, Services: []models.Service{
-		{
-			Id:              "service1",
-			LocalId:         "service1",
-			Name:            "service1",
-			ServiceGroupKey: "",
-		},
-		{
-			Id:              "service2",
-			LocalId:         "service2",
-			Name:            "service2",
-			ServiceGroupKey: sgKey,
-		},
-		{
-			Id:              "service3",
-			LocalId:         "service3",
-			Name:            "service3",
-			ServiceGroupKey: "a8ee3b1c-4cda-4f0d-9f55-4ef4882ce0aa",
-		},
-	}}, userid)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+
+	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
+		Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
+			{
+				Key:         sgKey,
+				Name:        "sg1",
+				Description: "",
+			},
+			{
+				Key:         "a8ee3b1c-4cda-4f0d-9f55-4ef4882ce0aa",
+				Name:        "sg2",
+				Description: "",
+			},
+		}, Services: []models.Service{
+			{
+				Id:              "service1",
+				LocalId:         "service1",
+				Name:            "service1",
+				ServiceGroupKey: "",
+			},
+			{
+				Id:              "service2",
+				LocalId:         "service2",
+				Name:            "service2",
+				ServiceGroupKey: sgKey,
+			},
+			{
+				Id:              "service3",
+				LocalId:         "service3",
+				Name:            "service3",
+				ServiceGroupKey: "a8ee3b1c-4cda-4f0d-9f55-4ef4882ce0aa",
+			},
+		}},
+		client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(10 * time.Second)
 
 	d1 := models.Device{
 		Id:           device1id,
@@ -91,7 +87,7 @@ func TestModifiedDevice(t *testing.T) {
 		OwnerId:      userid,
 	}
 
-	err = producer.PublishDevice(d1, userid)
+	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -111,13 +107,11 @@ func TestModifiedDevice(t *testing.T) {
 		OwnerId:      userid,
 	}
 
-	err = producer.PublishDevice(d2, userid)
+	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(10 * time.Second)
 
 	idModifier := idmodifier.Seperator + idmodifier.EncodeModifierParameter(map[string][]string{"service_group_selection": {sgKey}})
 	modifiedNameSuffix := " sg1"

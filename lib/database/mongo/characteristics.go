@@ -126,12 +126,12 @@ func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic models.
 	}
 	err = syncHandler(characteristic)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetCharacteristic::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, CharacteristicBson.Id, characteristic.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetCharacteristic::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil

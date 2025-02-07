@@ -22,8 +22,10 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"
 	"sync"
 	"testing"
@@ -41,7 +43,6 @@ func TestVariableValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	conf.FatalErrHandler = t.Fatal
 	conf.Debug = true
 
 	_, ip, err := docker.MongoDB(ctx, wg)
@@ -68,7 +69,14 @@ func TestVariableValidation(t *testing.T) {
 		}
 	}()
 
-	ctrl, err := controller.New(conf, db, nil, nil)
+	pc, err := permclient.NewTestClient(ctx)
+	if err != nil {
+		db.Disconnect()
+		log.Println("ERROR: unable to start NewTestClient", err)
+		return
+	}
+
+	ctrl, err := controller.New(conf, db, testenv.VoidProducerMock{}, pc)
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)
@@ -76,36 +84,40 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	err = ctrl.SetConcept(models.Concept{
+	controller.DisableFeaturesForTestEnv = true
+
+	_, err, _ = ctrl.SetConcept(AdminToken, models.Concept{
 		Id:                   "concept",
 		Name:                 "concept",
 		CharacteristicIds:    []string{"c1", "c2"},
 		BaseCharacteristicId: "c1",
-	}, "")
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = ctrl.SetFunction(models.Function{
+	_, err, _ = ctrl.SetFunction(AdminToken, models.Function{
 		Id:        "f1",
 		Name:      "f1",
 		ConceptId: "",
-	}, "")
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = ctrl.SetFunction(models.Function{
+	_, err, _ = ctrl.SetFunction(AdminToken, models.Function{
 		Id:        "f2",
 		Name:      "f2",
 		ConceptId: "concept",
-	}, "")
+	})
 	if err != nil {
 		t.Error(err)
 		return
 	}
+
+	controller.DisableFeaturesForTestEnv = false
 
 	t.Run("simple no characteristic & no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",

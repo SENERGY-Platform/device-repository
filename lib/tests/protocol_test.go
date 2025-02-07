@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/google/uuid"
 	"io"
@@ -31,7 +30,6 @@ import (
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 )
 
 var protocol1id = uuid.NewString()
@@ -50,16 +48,12 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 		return
 	}
 
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
 	protocolIds := []string{protocol1id, protocol2id, "foobarprotocol"}
 	t.Run("create protocols", func(t *testing.T) {
 		for _, id := range protocolIds {
-			err = producer.PublishProtocol(models.Protocol{Id: id, Name: protocol1name}, userid)
+			_, err, _ = c.SetProtocol(AdminToken, models.Protocol{Id: id, Name: protocol1name})
 			if err != nil {
 				t.Error(err)
 				return
@@ -112,15 +106,13 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 
 	t.Run("create device-types", func(t *testing.T) {
 		for _, dt := range deviceTypes {
-			err = producer.PublishDeviceType(dt, userid)
+			_, err, _ = c.SetDeviceType(AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 	})
-
-	time.Sleep(10 * time.Second)
 
 	t.Run("find device-types by protocolIds", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
@@ -231,32 +223,20 @@ func TestProtocolQuery(t *testing.T) {
 		return
 	}
 
-	/*
-		err = InitTopic(conf.ZookeeperUrl, conf.ProtocolTopic)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-	*/
-	producer, err := testutils.NewPublisher(conf)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	err = producer.PublishProtocol(models.Protocol{Id: protocol1id, Name: protocol1name}, userid)
+	_, err, _ = c.SetProtocol(AdminToken, models.Protocol{Id: protocol1id, Name: protocol1name})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		err = producer.PublishProtocol(models.Protocol{Id: uuid.NewString(), Name: uuid.NewString()}, userid)
+		_, err, _ = c.SetProtocol(AdminToken, models.Protocol{Id: uuid.NewString(), Name: uuid.NewString()})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 	}
-	time.Sleep(5 * time.Second)
 
 	t.Run("unexisting", func(t *testing.T) {
 		testProtocolReadNotFound(t, conf, uuid.NewString())

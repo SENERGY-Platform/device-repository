@@ -23,7 +23,20 @@ import (
 	"golang.org/x/exp/maps"
 	"slices"
 	"strings"
+	"time"
 )
+
+func (db *DB) SetCharacteristic(ctx context.Context, characteristic models.Characteristic, syncHandler func(models.Characteristic) error) error {
+	return set(characteristic.Id, db.characteristics, characteristic, syncHandler)
+}
+
+func (db *DB) RemoveCharacteristic(ctx context.Context, id string, syncDeleteHandler func(models.Characteristic) error) error {
+	return del(id, db.characteristics, syncDeleteHandler)
+}
+
+func (db *DB) RetryCharacteristicSync(lockduration time.Duration, syncDeleteHandler func(models.Characteristic) error, syncHandler func(models.Characteristic) error) error {
+	return nil
+}
 
 func (db *DB) ListCharacteristics(ctx context.Context, options model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error) {
 	for _, characteristic := range db.characteristics {
@@ -40,12 +53,6 @@ func (db *DB) ListCharacteristics(ctx context.Context, options model.Characteris
 	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
 }
 
-func (db *DB) SetCharacteristic(_ context.Context, characteristic models.Characteristic) error {
-	return set(characteristic.Id, db.characteristics, characteristic)
-}
-func (db *DB) RemoveCharacteristic(_ context.Context, id string) error {
-	return del(id, db.characteristics)
-}
 func (db *DB) GetCharacteristic(_ context.Context, id string) (result models.Characteristic, exists bool, err error) {
 	return get(id, db.characteristics)
 }

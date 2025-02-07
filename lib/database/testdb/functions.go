@@ -22,16 +22,23 @@ import (
 	"github.com/SENERGY-Platform/models/go/models"
 	"slices"
 	"strings"
+	"time"
 )
 
-func (db *DB) SetFunction(_ context.Context, function models.Function) error {
-	return set(function.Id, db.functions, function)
+func (db *DB) SetFunction(ctx context.Context, function models.Function, syncHandler func(models.Function) error) error {
+	return set(function.Id, db.functions, function, syncHandler)
 }
+
+func (db *DB) RemoveFunction(ctx context.Context, id string, syncDeleteHandler func(models.Function) error) error {
+	return del(id, db.functions, syncDeleteHandler)
+}
+
+func (db *DB) RetryFunctionSync(lockduration time.Duration, syncDeleteHandler func(models.Function) error, syncHandler func(models.Function) error) error {
+	return nil
+}
+
 func (db *DB) GetFunction(_ context.Context, id string) (result models.Function, exists bool, err error) {
 	return get(id, db.functions)
-}
-func (db *DB) RemoveFunction(_ context.Context, id string) error {
-	return del(id, db.functions)
 }
 
 func (db *DB) ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error) {

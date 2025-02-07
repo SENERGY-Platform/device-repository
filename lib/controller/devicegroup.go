@@ -164,6 +164,9 @@ func (this *Controller) checkAccessToDevicesOfGroup(token string, group models.D
 }
 
 func (this *Controller) ValidateDeviceGroup(token string, group models.DeviceGroup) (err error, code int) {
+	if DisableFeaturesForTestEnv {
+		return nil, http.StatusOK
+	}
 	if group.Id == "" {
 		return errors.New("missing device-group id"), http.StatusBadRequest
 	}
@@ -398,15 +401,16 @@ func (this *Controller) SetDeviceGroup(token string, dg models.DeviceGroup) (res
 		return result, err, http.StatusInternalServerError
 	}
 
-	dg.GenerateId()
-	dg.SetShortCriteria()
-
-	dg.DeviceIds, err = this.filterInvalidDeviceIds(token, dg.DeviceIds, "r")
-	if err != nil {
-		return dg, err, http.StatusInternalServerError
+	if !DisableFeaturesForTestEnv {
+		dg.GenerateId()
+		dg.SetShortCriteria()
+		dg.DeviceIds, err = this.filterInvalidDeviceIds(token, dg.DeviceIds, "r")
+		if err != nil {
+			return dg, err, http.StatusInternalServerError
+		}
 	}
 
-	if !jwtToken.IsAdmin() {
+	if !jwtToken.IsAdmin() && !DisableFeaturesForTestEnv {
 		ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceGroupTopic, dg.Id, client.Write)
 		if err != nil {
 			debug.PrintStack()

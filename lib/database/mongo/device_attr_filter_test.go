@@ -20,7 +20,7 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/config"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/testutils/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sync"
@@ -156,7 +156,7 @@ func TestDeviceAttributeFilter(t *testing.T) {
 
 	t.Run("create devices", func(t *testing.T) {
 		for _, d := range devices {
-			err = m.SetDevice(context.Background(), d)
+			err = m.SetDevice(context.Background(), d, func(state model.DeviceWithConnectionState) error { return nil })
 			if err != nil {
 				t.Error(err)
 				return

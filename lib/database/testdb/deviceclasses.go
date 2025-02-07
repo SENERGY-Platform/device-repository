@@ -23,7 +23,20 @@ import (
 	"golang.org/x/exp/maps"
 	"slices"
 	"strings"
+	"time"
 )
+
+func (db *DB) SetDeviceClass(ctx context.Context, class models.DeviceClass, syncHandler func(models.DeviceClass) error) error {
+	return set(class.Id, db.deviceClasses, class, syncHandler)
+}
+
+func (db *DB) RemoveDeviceClass(ctx context.Context, id string, syncDeleteHandler func(models.DeviceClass) error) error {
+	return del(id, db.deviceClasses, syncDeleteHandler)
+}
+
+func (db *DB) RetryDeviceClassSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceClass) error, syncHandler func(models.DeviceClass) error) error {
+	return nil
+}
 
 func (db *DB) ListDeviceClasses(ctx context.Context, options model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error) {
 	for _, dc := range db.deviceClasses {
@@ -40,12 +53,6 @@ func (db *DB) ListDeviceClasses(ctx context.Context, options model.DeviceClassLi
 	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
 }
 
-func (db *DB) SetDeviceClass(_ context.Context, class models.DeviceClass) error {
-	return set(class.Id, db.deviceClasses, class)
-}
-func (db *DB) RemoveDeviceClass(_ context.Context, id string) error {
-	return del(id, db.deviceClasses)
-}
 func (db *DB) ListAllDeviceClasses(_ context.Context) ([]models.DeviceClass, error) {
 	return maps.Values(db.deviceClasses), nil
 }

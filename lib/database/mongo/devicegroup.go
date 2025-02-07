@@ -209,12 +209,12 @@ func (this *Mongo) SetDeviceGroup(ctx context.Context, deviceGroup models.Device
 	}
 	err = syncHandler(deviceGroup, user)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetDeviceGroup::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, DeviceGroupBson.Id, deviceGroup.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetDeviceGroup::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil

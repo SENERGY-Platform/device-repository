@@ -78,14 +78,22 @@ func get[T any](id string, m map[string]T) (T, bool, error) {
 	return resp, ok, nil
 }
 
-func set[T any](id string, m map[string]T, t T) error {
+func set[T any](id string, m map[string]T, t T, syncHandler func(T) error) error {
 	m[id] = t
-	return nil
+	if syncHandler == nil {
+		return nil
+	}
+	return syncHandler(t)
 }
 
-func del[T any](id string, m map[string]T) error {
+func del[T any](id string, m map[string]T, syncDeleteHandler func(T) error) error {
+	var err error
+	e, ok := m[id]
 	delete(m, id)
-	return nil
+	if ok && syncDeleteHandler != nil {
+		err = syncDeleteHandler(e)
+	}
+	return err
 }
 
 func min(a, b int) int {

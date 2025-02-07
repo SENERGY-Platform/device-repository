@@ -69,12 +69,12 @@ func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept, syncH
 	}
 	err = syncHandler(concept)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetConcept::syncHandler %v, will be retried later\n", err)
 		return nil
 	}
 	err = this.setSynced(ctx, collection, ConceptBson.Id, concept.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDevice::setSynced %v, will be retried later\n", err)
+		log.Printf("WARNING: error in SetConcept::setSynced %v, will be retried later\n", err)
 		return nil
 	}
 	return nil
