@@ -399,8 +399,8 @@ func (this *Controller) SetDeviceGroup(token string, dg models.DeviceGroup) (res
 	}
 
 	dg.GenerateId()
+	dg.SetShortCriteria()
 	if !this.config.DisableStrictValidationForTesting {
-		dg.SetShortCriteria()
 		dg.DeviceIds, err = this.filterInvalidDeviceIds(token, dg.DeviceIds, "r")
 		if err != nil {
 			return dg, err, http.StatusInternalServerError

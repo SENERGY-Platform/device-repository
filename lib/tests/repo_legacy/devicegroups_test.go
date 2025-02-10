@@ -935,6 +935,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		testDeviceGroupReadNotFound(t, conf, "foobar")
 	})
 	t.Run("testDeviceRead", func(t *testing.T) {
+		dg1.SetShortCriteria()
 		testDeviceGroupRead(t, conf, dg1)
 	})
 }
@@ -983,6 +984,7 @@ func TestDeviceGroupsAttributes(t *testing.T) {
 		testDeviceGroupReadNotFound(t, conf, "foobar")
 	})
 	t.Run("testDeviceRead", func(t *testing.T) {
+		dg1.SetShortCriteria()
 		testDeviceGroupRead(t, conf, dg1)
 	})
 }
