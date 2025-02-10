@@ -545,12 +545,18 @@ func (this *Controller) deleteHub(id string) (err error) {
 }
 
 func (this *Controller) SetHubConnectionState(token string, id string, connected bool) (error, int) {
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Write)
+	jwtToken, err := jwt.Parse(token)
 	if err != nil {
-		return err, http.StatusInternalServerError
+		return err, http.StatusBadRequest
 	}
-	if !ok {
-		return errors.New("access denied"), http.StatusForbidden
+	if !jwtToken.IsAdmin() {
+		ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Write)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		if !ok {
+			return errors.New("access denied"), http.StatusForbidden
+		}
 	}
 	state := models.ConnectionStateOffline
 	if connected {
