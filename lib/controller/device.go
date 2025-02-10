@@ -351,7 +351,8 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 	}
 	requestingUser := jwtToken.GetUserId()
 
-	computedPermissionList, err, _ := this.permissionsV2Client.ListComputedPermissions(token, this.config.DeviceTopic, []string{device.Id})
+	pureDeviceId, _ := idmodifier.SplitModifier(device.Id)
+	computedPermissionList, err, _ := this.permissionsV2Client.ListComputedPermissions(token, this.config.DeviceTopic, []string{pureDeviceId})
 	if err != nil {
 		return models.ExtendedDevice{}, err
 	}
