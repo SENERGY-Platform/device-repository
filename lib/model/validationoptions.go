@@ -17,7 +17,7 @@
 package model
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"net/url"
 	"strconv"
 )
@@ -29,7 +29,7 @@ type ValidationOptions struct {
 	AllowNoneLeafAspectNodesInDeviceTypes *bool
 }
 
-func (this *ValidationOptions) CheckAllowNoneLeafAspectNodesInDeviceTypes(defaults config.Config) bool {
+func (this *ValidationOptions) CheckAllowNoneLeafAspectNodesInDeviceTypes(defaults configuration.Config) bool {
 	if this != nil && this.AllowNoneLeafAspectNodesInDeviceTypes != nil {
 		return *this.AllowNoneLeafAspectNodesInDeviceTypes
 	}

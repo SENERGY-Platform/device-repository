@@ -17,10 +17,10 @@
 package database
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 )
 
-func New(conf config.Config) (db Database, err error) {
+func New(conf configuration.Config) (db Database, err error) {
 	return mongo.New(conf)
 }

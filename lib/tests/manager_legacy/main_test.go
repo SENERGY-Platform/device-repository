@@ -19,7 +19,7 @@ package tests
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
@@ -57,7 +57,7 @@ func TestWithDocker(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	conf, err := config.Load("./../../../config.json")
+	conf, err := configuration.Load("./../../../config.json")
 	if err != nil {
 		t.Fatal("ERROR: unable to load config", err)
 	}
@@ -90,7 +90,7 @@ func TestWithDocker(t *testing.T) {
 const a1Id = models.URN_PREFIX + "aspect:a1"
 const f1Id = models.URN_PREFIX + "controlling-function:f1"
 
-func tests(t *testing.T, conf config.Config, mock bool) {
+func tests(t *testing.T, conf configuration.Config, mock bool) {
 	t.Run("id helper", func(t *testing.T) {
 		testHelperId(t, conf.ServerPort)
 	})

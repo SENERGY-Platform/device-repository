@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
@@ -51,7 +51,7 @@ type HubEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /hubs/{id} [GET]
-func (this *HubEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
@@ -96,7 +96,7 @@ func (this *HubEndpoints) Get(config config.Config, router *http.ServeMux, contr
 // @Failure      404
 // @Failure      500
 // @Router       /hubs [GET]
-func (this *HubEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /hubs", func(writer http.ResponseWriter, request *http.Request) {
 		hubListOptions := model.HubListOptions{
 			Limit:  100,
@@ -188,7 +188,7 @@ func (this *HubEndpoints) List(config config.Config, router *http.ServeMux, cont
 // @Failure      404
 // @Failure      500
 // @Router       /hubs/{id}/devices [GET]
-func (this *HubEndpoints) GetDevices(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) GetDevices(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /hubs/{id}/devices", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
@@ -243,7 +243,7 @@ func (this *HubEndpoints) GetDevices(config config.Config, router *http.ServeMux
 // @Failure      404
 // @Failure      500
 // @Router       /hubs/{id} [HEAD]
-func (this *HubEndpoints) Head(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) Head(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("HEAD /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
 		if err != nil {
@@ -272,7 +272,7 @@ func (this *HubEndpoints) Head(config config.Config, router *http.ServeMux, cont
 // @Failure      400
 // @Failure      500
 // @Router       /hubs [PUT]
-func (this *HubEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /hubs", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -312,7 +312,7 @@ func (this *HubEndpoints) Validate(config config.Config, router *http.ServeMux, 
 // @Failure      404
 // @Failure      500
 // @Router       /hubs [POST]
-func (this *HubEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /hubs", func(writer http.ResponseWriter, request *http.Request) {
 		hub := models.Hub{}
 		err := json.NewDecoder(request.Body).Decode(&hub)
@@ -357,7 +357,7 @@ func (this *HubEndpoints) Create(config config.Config, router *http.ServeMux, co
 // @Failure      404
 // @Failure      500
 // @Router       /hubs/{id} [PUT]
-func (this *HubEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		userId := request.URL.Query().Get("user_id")
@@ -416,7 +416,7 @@ func (this *HubEndpoints) Set(config config.Config, router *http.ServeMux, contr
 // @Failure      404
 // @Failure      500
 // @Router       /hubs/{id}/name [PUT]
-func (this *HubEndpoints) SetName(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) SetName(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /hubs/{id}/name", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		name := ""
@@ -461,7 +461,7 @@ func (this *HubEndpoints) SetName(config config.Config, router *http.ServeMux, c
 // @Failure      404
 // @Failure      500
 // @Router       /hubs/{id} [DELETE]
-func (this *HubEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
@@ -492,7 +492,7 @@ func (this *HubEndpoints) Delete(config config.Config, router *http.ServeMux, co
 // @Failure      404
 // @Failure      500
 // @Router       /hubs/{id}/connection-state [PUT]
-func (this *HubEndpoints) SetConnectionState(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HubEndpoints) SetConnectionState(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /hubs/{id}/connection-state", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		if id == "" {

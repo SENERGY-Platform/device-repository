@@ -22,7 +22,7 @@ package semantic_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
@@ -32,7 +32,7 @@ import (
 )
 
 func TestFunction(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestFunction(t *testing.T) {
 	t.Run("testFunctionDelete", testFunctionDelete(conf))
 }
 
-func testProduceFunctions(conf config.Config) func(t *testing.T) {
+func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		confunction1 := models.Function{}
 		confunction1.Id = "urn:infai:ses:controlling-function:333"
@@ -184,7 +184,7 @@ func testProduceFunctions(conf config.Config) func(t *testing.T) {
 	}
 }
 
-func testUpdateFunctionsDisplayName(conf config.Config) func(t *testing.T) {
+func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		confunction1 := models.Function{}
 		confunction1.Id = "urn:infai:ses:controlling-function:333"
@@ -354,7 +354,7 @@ func testReadMeasuringFunction(con *controller.Controller) func(t *testing.T) {
 	}
 }
 
-func testFunctionDelete(conf config.Config) func(t *testing.T) {
+func testFunctionDelete(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		funcids := [6]string{
 			"urn:infai:ses:controlling-function:333",

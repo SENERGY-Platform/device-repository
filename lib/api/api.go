@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/accesslog"
 	"log"
@@ -30,11 +30,11 @@ import (
 	"runtime/debug"
 )
 
-type EndpointMethod = func(config config.Config, router *http.ServeMux, ctrl Controller)
+type EndpointMethod = func(config configuration.Config, router *http.ServeMux, ctrl Controller)
 
 var endpoints = []interface{}{} //list of objects with EndpointMethod
 
-func Start(ctx context.Context, config config.Config, control Controller) (err error) {
+func Start(ctx context.Context, config configuration.Config, control Controller) (err error) {
 	log.Println("start api")
 	defer func() {
 		if r := recover(); r != nil {
@@ -67,7 +67,7 @@ func Start(ctx context.Context, config config.Config, control Controller) (err e
 // @in header
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
-func GetRouter(config config.Config, control Controller) http.Handler {
+func GetRouter(config configuration.Config, control Controller) http.Handler {
 	handler := GetRouterWithoutMiddleware(config, control)
 	log.Println("add permissions endpoints")
 	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), handler, "/permissions/")
@@ -78,7 +78,7 @@ func GetRouter(config config.Config, control Controller) http.Handler {
 	return logger
 }
 
-func GetRouterWithoutMiddleware(config config.Config, command Controller) http.Handler {
+func GetRouterWithoutMiddleware(config configuration.Config, command Controller) http.Handler {
 	router := http.NewServeMux()
 	log.Println("add heart beat endpoint")
 	router.HandleFunc("GET /", func(writer http.ResponseWriter, request *http.Request) {
@@ -93,7 +93,7 @@ func GetRouterWithoutMiddleware(config config.Config, command Controller) http.H
 	return router
 }
 
-func getEndpointMethods(e interface{}) map[string]func(config config.Config, router *http.ServeMux, ctrl Controller) {
+func getEndpointMethods(e interface{}) map[string]func(config configuration.Config, router *http.ServeMux, ctrl Controller) {
 	result := map[string]EndpointMethod{}
 	objRef := reflect.ValueOf(e)
 	methodCount := objRef.NumMethod()

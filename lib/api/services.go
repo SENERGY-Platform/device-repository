@@ -18,7 +18,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"log"
 	"net/http"
 )
@@ -43,7 +43,7 @@ type ServiceEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /services/{id} [GET]
-func (this *ServiceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ServiceEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /services/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetService(id)

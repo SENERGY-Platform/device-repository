@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -66,7 +66,7 @@ func init() {
 	})
 }
 
-func getAspectNodeCollectionName(config config.Config) string {
+func getAspectNodeCollectionName(config configuration.Config) string {
 	return config.MongoAspectCollection + "_node"
 }
 

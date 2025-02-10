@@ -18,7 +18,7 @@ package repo_legacy
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"slices"
@@ -26,7 +26,7 @@ import (
 	"testing"
 )
 
-func testAspectList(t *testing.T, conf config.Config) {
+func testAspectList(t *testing.T, conf configuration.Config) {
 	aspects := []models.Aspect{
 		{
 			Id:   "a1",

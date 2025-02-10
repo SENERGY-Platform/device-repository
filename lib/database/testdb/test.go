@@ -17,7 +17,7 @@
 package testdb
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -26,7 +26,7 @@ import (
 )
 
 type DB struct {
-	config          config.Config
+	config          configuration.Config
 	devices         map[string]model.DeviceWithConnectionState
 	hubs            map[string]model.HubWithConnectionState
 	deviceTypes     map[string]models.DeviceType
@@ -49,7 +49,7 @@ type Resource struct {
 	model.ResourceRights
 }
 
-func NewTestDB(config config.Config) database.Database {
+func NewTestDB(config configuration.Config) database.Database {
 	return &DB{
 		config:          config,
 		devices:         make(map[string]model.DeviceWithConnectionState),

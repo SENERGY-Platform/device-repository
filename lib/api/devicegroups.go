@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -59,7 +59,7 @@ type DeviceGroupEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /device-groups [GET]
-func (this *DeviceGroupEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceGroupEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-groups", func(writer http.ResponseWriter, request *http.Request) {
 		deviceGroupListOptions := model.DeviceGroupListOptions{
 			Limit:                          100,
@@ -176,7 +176,7 @@ func (this *DeviceGroupEndpoints) List(config config.Config, router *http.ServeM
 // @Failure      404
 // @Failure      500
 // @Router       /device-groups/{id} [GET]
-func (this *DeviceGroupEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceGroupEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 
@@ -210,7 +210,7 @@ func (this *DeviceGroupEndpoints) Get(config config.Config, router *http.ServeMu
 // @Failure      400
 // @Failure      500
 // @Router       /device-groups [PUT]
-func (this *DeviceGroupEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceGroupEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-groups", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -247,7 +247,7 @@ func (this *DeviceGroupEndpoints) Validate(config config.Config, router *http.Se
 // @Failure      400
 // @Failure      500
 // @Router       /device-groups/{id} [DELETE]
-func (this *DeviceGroupEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceGroupEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		dryRun := false
@@ -292,7 +292,7 @@ func (this *DeviceGroupEndpoints) Delete(config config.Config, router *http.Serv
 // @Failure      404
 // @Failure      500
 // @Router       /device-groups [POST]
-func (this *DeviceGroupEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceGroupEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /device-groups", func(writer http.ResponseWriter, request *http.Request) {
 		deviceGroup := models.DeviceGroup{}
 		err := json.NewDecoder(request.Body).Decode(&deviceGroup)
@@ -336,7 +336,7 @@ func (this *DeviceGroupEndpoints) Create(config config.Config, router *http.Serv
 // @Failure      404
 // @Failure      500
 // @Router       /device-groups/{id} [PUT]
-func (this *DeviceGroupEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceGroupEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-groups/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		deviceGroup := models.DeviceGroup{}

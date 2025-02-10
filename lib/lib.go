@@ -19,7 +19,7 @@ package lib
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
@@ -30,7 +30,7 @@ import (
 )
 
 // set wg if you want to wait for clean disconnects after ctx is done
-func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err error) {
+func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Config) (err error) {
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {
@@ -55,7 +55,15 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (err
 
 	permClient := client.New(conf.PermissionsV2Url)
 
-	p, err := publisher.New(conf, ctx)
+	var p controller.Publisher
+	if conf.KafkaUrl == "" || conf.KafkaUrl == "-" {
+		publisher.VoidPublisherError = nil
+		p = publisher.Void{}
+		log.Println("WARNING: kafka not configured, no publishing of events")
+	} else {
+		p, err = publisher.New(conf, ctx)
+	}
+
 	if err != nil {
 		db.Disconnect()
 		log.Println("ERROR: unable to start control", err)

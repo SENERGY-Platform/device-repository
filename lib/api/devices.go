@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
@@ -65,7 +65,7 @@ const DisplayNameAttributeOrigin = "shared"
 // @Failure      404
 // @Failure      500
 // @Router       /devices [GET]
-func (this *DeviceEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /devices", func(writer http.ResponseWriter, request *http.Request) {
 		deviceListOptions := model.DeviceListOptions{
 			Limit:  100,
@@ -192,7 +192,7 @@ func (this *DeviceEndpoints) List(config config.Config, router *http.ServeMux, c
 // @Failure      404
 // @Failure      500
 // @Router       /devices/{id} [GET]
-func (this *DeviceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		as := request.URL.Query().Get("as")
@@ -245,7 +245,7 @@ func (this *DeviceEndpoints) Get(config config.Config, router *http.ServeMux, co
 // @Failure      400
 // @Failure      500
 // @Router       /devices [PUT]
-func (this *DeviceEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /devices", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -285,7 +285,7 @@ func (this *DeviceEndpoints) Validate(config config.Config, router *http.ServeMu
 // @Failure      404
 // @Failure      500
 // @Router       /devices [POST]
-func (this *DeviceEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /devices", func(writer http.ResponseWriter, request *http.Request) {
 		device := models.Device{}
 		err := json.NewDecoder(request.Body).Decode(&device)
@@ -331,7 +331,7 @@ func (this *DeviceEndpoints) Create(config config.Config, router *http.ServeMux,
 // @Failure      404
 // @Failure      500
 // @Router       /devices/{id} [PUT]
-func (this *DeviceEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		device := models.Device{}
@@ -384,7 +384,7 @@ func (this *DeviceEndpoints) Set(config config.Config, router *http.ServeMux, co
 // @Failure      404
 // @Failure      500
 // @Router       /devices/{id}/attributes [PUT]
-func (this *DeviceEndpoints) SetAttributes(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) SetAttributes(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /devices/{id}/attributes", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		attributes := []models.Attribute{}
@@ -442,7 +442,7 @@ func (this *DeviceEndpoints) SetAttributes(config config.Config, router *http.Se
 // @Failure      404
 // @Failure      500
 // @Router       /devices/{id}/display_name [PUT]
-func (this *DeviceEndpoints) SetDisplayName(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) SetDisplayName(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /devices/{id}/display_name", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		displayName := ""
@@ -501,7 +501,7 @@ func (this *DeviceEndpoints) SetDisplayName(config config.Config, router *http.S
 // @Failure      404
 // @Failure      500
 // @Router       /devices/{id} [DELETE]
-func (this *DeviceEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
@@ -534,7 +534,7 @@ func (this *DeviceEndpoints) Delete(config config.Config, router *http.ServeMux,
 // @Failure      404
 // @Failure      500
 // @Router       /devices [DELETE]
-func (this *DeviceEndpoints) DeleteMany(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /devices", func(writer http.ResponseWriter, request *http.Request) {
 		ids := []string{}
 		err := json.NewDecoder(request.Body).Decode(&ids)
@@ -573,7 +573,7 @@ func (this *DeviceEndpoints) DeleteMany(config config.Config, router *http.Serve
 // @Failure      404
 // @Failure      500
 // @Router       /devices/{id}/connection-state [PUT]
-func (this *DeviceEndpoints) SetConnectionState(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceEndpoints) SetConnectionState(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /devices/{id}/connection-state", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		if id == "" {

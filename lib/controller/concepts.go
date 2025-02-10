@@ -47,12 +47,17 @@ func (this *Controller) SetConcept(token string, concept models.Concept) (result
 	if err != nil {
 		return result, err, code
 	}
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetConcept(ctx, concept, this.setConceptSyncHandler)
+	err = this.setConcept(concept)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return concept, nil, http.StatusOK
+}
+
+func (this *Controller) setConcept(concept models.Concept) (err error) {
+	ctx, _ := getTimeoutContext()
+	err = this.db.SetConcept(ctx, concept, this.setConceptSyncHandler)
+	return err
 }
 
 func (this *Controller) deleteConceptSyncHandler(c models.Concept) error {

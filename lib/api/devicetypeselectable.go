@@ -18,7 +18,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"net/http"
@@ -50,7 +50,7 @@ type DeviceTypeSelectableEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /query/device-type-selectables [POST]
-func (this *DeviceTypeSelectableEndpoints) Query(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeSelectableEndpoints) Query(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /query/device-type-selectables", func(writer http.ResponseWriter, request *http.Request) {
 		query := []model.FilterCriteria{}
 		err := json.NewDecoder(request.Body).Decode(&query)
@@ -107,7 +107,7 @@ func (this *DeviceTypeSelectableEndpoints) Query(config config.Config, router *h
 // @Failure      404
 // @Failure      500
 // @Router       /v2/query/device-type-selectables [POST]
-func (this *DeviceTypeSelectableEndpoints) QueryV2(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeSelectableEndpoints) QueryV2(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /v2/query/device-type-selectables", func(writer http.ResponseWriter, request *http.Request) {
 		query := []model.FilterCriteria{}
 		err := json.NewDecoder(request.Body).Decode(&query)

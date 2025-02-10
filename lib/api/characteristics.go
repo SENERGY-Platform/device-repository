@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -53,7 +53,7 @@ type CharacteristicsEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /v2/characteristics [GET]
-func (this *CharacteristicsEndpoints) ListCharacteristics(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) ListCharacteristics(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v2/characteristics", func(writer http.ResponseWriter, request *http.Request) {
 		listoptions := model.CharacteristicListOptions{
 			Limit:  100,
@@ -122,7 +122,7 @@ func (this *CharacteristicsEndpoints) ListCharacteristics(config config.Config, 
 // @Failure      404
 // @Failure      500
 // @Router       /characteristics [GET]
-func (this *CharacteristicsEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /characteristics", func(writer http.ResponseWriter, request *http.Request) {
 		leafsOnlyStr := request.URL.Query().Get("leafsOnly")
 		leafsOnly := true
@@ -164,7 +164,7 @@ func (this *CharacteristicsEndpoints) List(config config.Config, router *http.Se
 // @Failure      404
 // @Failure      500
 // @Router       /characteristics/{id} [GET]
-func (this *CharacteristicsEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetCharacteristic(id)
@@ -193,7 +193,7 @@ func (this *CharacteristicsEndpoints) Get(config config.Config, router *http.Ser
 // @Failure      400
 // @Failure      500
 // @Router       /characteristics [PUT]
-func (this *CharacteristicsEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /characteristics", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -230,7 +230,7 @@ func (this *CharacteristicsEndpoints) Validate(config config.Config, router *htt
 // @Failure      400
 // @Failure      500
 // @Router       /characteristics/{id} [DELETE]
-func (this *CharacteristicsEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		dryRun := false
@@ -280,7 +280,7 @@ func (this *CharacteristicsEndpoints) Delete(config config.Config, router *http.
 // @Failure      404
 // @Failure      500
 // @Router       /characteristics [POST]
-func (this *CharacteristicsEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /characteristics", func(writer http.ResponseWriter, request *http.Request) {
 		characteristic := models.Characteristic{}
 		err := json.NewDecoder(request.Body).Decode(&characteristic)
@@ -319,7 +319,7 @@ func (this *CharacteristicsEndpoints) Create(config config.Config, router *http.
 // @Failure      404
 // @Failure      500
 // @Router       /characteristics/{id} [PUT]
-func (this *CharacteristicsEndpoints) Update(config config.Config, router *http.ServeMux, control Controller) {
+func (this *CharacteristicsEndpoints) Update(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 

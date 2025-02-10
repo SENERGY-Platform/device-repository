@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -48,7 +48,7 @@ type DeviceTypeEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /device-types/{id} [GET]
-func (this *DeviceTypeEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.ReadDeviceType(id, util.GetAuthToken(request))
@@ -90,7 +90,7 @@ func (this *DeviceTypeEndpoints) Get(config config.Config, router *http.ServeMux
 // @Failure      404
 // @Failure      500
 // @Router       /v3/device-types [GET]
-func (this *DeviceTypeEndpoints) ListV3(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeEndpoints) ListV3(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v3/device-types", func(writer http.ResponseWriter, request *http.Request) {
 		options := model.DeviceTypeListOptions{
 			Limit:  100,
@@ -202,7 +202,7 @@ func (this *DeviceTypeEndpoints) ListV3(config config.Config, router *http.Serve
 }
 
 // deprecated
-func (this *DeviceTypeEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	/*
 			query params:
 			- limit: number; default 100
@@ -315,7 +315,7 @@ func (this *DeviceTypeEndpoints) List(config config.Config, router *http.ServeMu
 // @Failure      400
 // @Failure      500
 // @Router       /device-types [PUT]
-func (this *DeviceTypeEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-types", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -361,7 +361,7 @@ func (this *DeviceTypeEndpoints) Validate(config config.Config, router *http.Ser
 // @Failure      404
 // @Failure      500
 // @Router       /device-types [POST]
-func (this *DeviceTypeEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /device-types", func(writer http.ResponseWriter, request *http.Request) {
 		devicetype := models.DeviceType{}
 		err := json.NewDecoder(request.Body).Decode(&devicetype)
@@ -407,7 +407,7 @@ func (this *DeviceTypeEndpoints) Create(config config.Config, router *http.Serve
 // @Failure      404
 // @Failure      500
 // @Router       /device-types/{id} [PUT]
-func (this *DeviceTypeEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		devicetype := models.DeviceType{}
@@ -458,7 +458,7 @@ func (this *DeviceTypeEndpoints) Set(config config.Config, router *http.ServeMux
 // @Failure      404
 // @Failure      500
 // @Router       /device-types/{id} [DELETE]
-func (this *DeviceTypeEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceTypeEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)

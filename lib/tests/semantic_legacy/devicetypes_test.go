@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
@@ -30,7 +30,7 @@ import (
 )
 
 func TestDeviceType(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestDeviceType(t *testing.T) {
 	t.Run("testReadDeviceTypeWithId1", testReadDeviceTypeWithId1(ctrl))
 }
 
-func testProduceValidDeviceTypes(conf config.Config) func(t *testing.T) {
+func testProduceValidDeviceTypes(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:device-type:eb4a3337-01a1-4434-9dcc-064b3955eeef"

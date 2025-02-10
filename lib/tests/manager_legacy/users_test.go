@@ -21,7 +21,7 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib"
 	devicerepo "github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
@@ -37,7 +37,7 @@ import (
 )
 
 func TestUserDelete(t *testing.T) {
-	conf, err := config.Load("./../../../config.json")
+	conf, err := configuration.Load("./../../../config.json")
 	if err != nil {
 		t.Fatal("ERROR: unable to load config", err)
 	}
@@ -235,7 +235,7 @@ func TestUserDelete(t *testing.T) {
 
 }
 
-func checkUserDevices(conf config.Config, token auth.Token, expectedDeviceIdsAsInt []int) func(t *testing.T) {
+func checkUserDevices(conf configuration.Config, token auth.Token, expectedDeviceIdsAsInt []int) func(t *testing.T) {
 	return func(t *testing.T) {
 		devices, err, _ := devicerepo.NewClient("http://localhost:"+conf.ServerPort, nil).ListDevices(token.Jwt(), devicerepo.DeviceListOptions{Limit: 100})
 		if err != nil {

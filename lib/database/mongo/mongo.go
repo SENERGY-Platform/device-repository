@@ -19,7 +19,7 @@ package mongo
 import (
 	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
@@ -36,13 +36,13 @@ import (
 )
 
 type Mongo struct {
-	config config.Config
+	config configuration.Config
 	client *mongo.Client
 }
 
 var CreateCollections = []func(db *Mongo) error{}
 
-func New(conf config.Config) (*Mongo, error) {
+func New(conf configuration.Config) (*Mongo, error) {
 	ctx, _ := getTimeoutContext()
 	c, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.MongoUrl), options.Client().SetReadConcern(readconcern.Majority()))
 	if err != nil {

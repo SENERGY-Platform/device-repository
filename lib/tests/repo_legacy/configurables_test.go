@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
@@ -652,7 +652,7 @@ func TestConfigurables(t *testing.T) {
 	}))
 }
 
-func testDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectables(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectables(config, userjwt, pathPrefix, interactionsFilter, criteria)
 		if err != nil {
@@ -949,12 +949,12 @@ func getTestConfigurableMetadata() (aspects []models.Aspect, functions []models.
 	return
 }
 
-func createTestConfigurableMetadata(config config.Config) func(t *testing.T) {
+func createTestConfigurableMetadata(config configuration.Config) func(t *testing.T) {
 	aspects, functions, deviceTypes := getTestConfigurableMetadata()
 	return createTestConfigurableMetadataBase(config, aspects, functions, deviceTypes)
 }
 
-func createTestConfigurableMetadataBase(config config.Config, aspects []models.Aspect, functions []models.Function, devicetypes []models.DeviceType) func(t *testing.T) {
+func createTestConfigurableMetadataBase(config configuration.Config, aspects []models.Aspect, functions []models.Function, devicetypes []models.DeviceType) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 		for _, aspect := range aspects {

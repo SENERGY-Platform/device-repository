@@ -54,12 +54,17 @@ func (this *Controller) SetCharacteristic(token string, characteristic models.Ch
 	if err != nil {
 		return result, err, code
 	}
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetCharacteristic(ctx, characteristic, this.setCharacteristicSyncHandler)
+	err = this.setCharacteristic(characteristic)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return characteristic, nil, http.StatusOK
+}
+
+func (this *Controller) setCharacteristic(characteristic models.Characteristic) (err error) {
+	ctx, _ := getTimeoutContext()
+	err = this.db.SetCharacteristic(ctx, characteristic, this.setCharacteristicSyncHandler)
+	return err
 }
 
 func (this *Controller) deleteCharacteristicSyncHandler(c models.Characteristic) (err error) {

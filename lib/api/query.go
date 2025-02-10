@@ -18,7 +18,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"net/http"
@@ -43,7 +43,7 @@ type QueryEndpoint struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /query/used-in-device-type [POST]
-func (this *QueryEndpoint) Query(config config.Config, router *http.ServeMux, control Controller) {
+func (this *QueryEndpoint) Query(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /query/used-in-device-type", func(writer http.ResponseWriter, request *http.Request) {
 		query := model.UsedInDeviceTypeQuery{}
 		err := json.NewDecoder(request.Body).Decode(&query)

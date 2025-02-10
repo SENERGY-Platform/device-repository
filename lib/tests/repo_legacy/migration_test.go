@@ -19,7 +19,7 @@ package repo_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -38,7 +38,7 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		t.Error(err)

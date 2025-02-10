@@ -22,7 +22,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -57,7 +57,7 @@ type FunctionsEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /functions [GET]
-func (this *FunctionsEndpoints) ListFunctions(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) ListFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /functions", func(writer http.ResponseWriter, request *http.Request) {
 		listoptions := model.FunctionListOptions{
 			Limit:  100,
@@ -127,7 +127,7 @@ func (this *FunctionsEndpoints) ListFunctions(config config.Config, router *http
 // @Failure      404
 // @Failure      500
 // @Router       /controlling-functions [GET]
-func (this *FunctionsEndpoints) ListControllingFunctions(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) ListControllingFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
 		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_CONTROLLING_FUNCTION)
 		if err != nil {
@@ -156,7 +156,7 @@ func (this *FunctionsEndpoints) ListControllingFunctions(config config.Config, r
 // @Failure      404
 // @Failure      500
 // @Router       /measuring-functions [GET]
-func (this *FunctionsEndpoints) ListMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) ListMeasuringFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
 		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_MEASURING_FUNCTION)
 		if err != nil {
@@ -186,7 +186,7 @@ func (this *FunctionsEndpoints) ListMeasuringFunctions(config config.Config, rou
 // @Failure      404
 // @Failure      500
 // @Router       /functions/{id} [GET]
-func (this *FunctionsEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetFunction(id)
@@ -215,7 +215,7 @@ func (this *FunctionsEndpoints) Get(config config.Config, router *http.ServeMux,
 // @Failure      400
 // @Failure      500
 // @Router       /functions [PUT]
-func (this *FunctionsEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /functions", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -253,7 +253,7 @@ func (this *FunctionsEndpoints) Validate(config config.Config, router *http.Serv
 // @Failure      400
 // @Failure      500
 // @Router       /functions/{id} [DELETE]
-func (this *FunctionsEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		dryRun := false
@@ -298,7 +298,7 @@ func (this *FunctionsEndpoints) Delete(config config.Config, router *http.ServeM
 // @Failure      404
 // @Failure      500
 // @Router       /functions [POST]
-func (this *FunctionsEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /functions", func(writer http.ResponseWriter, request *http.Request) {
 		function := models.Function{}
 		err := json.NewDecoder(request.Body).Decode(&function)
@@ -337,7 +337,7 @@ func (this *FunctionsEndpoints) Create(config config.Config, router *http.ServeM
 // @Failure      404
 // @Failure      500
 // @Router       /functions/{id} [PUT]
-func (this *FunctionsEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *FunctionsEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		function := models.Function{}

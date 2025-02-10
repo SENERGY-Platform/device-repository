@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -639,7 +639,7 @@ func TestDeleteValidations(t *testing.T) {
 	})
 }
 
-func testDeleteValidation(t *testing.T, config config.Config, resource string, id string, expectedCode int) error {
+func testDeleteValidation(t *testing.T, config configuration.Config, resource string, id string, expectedCode int) error {
 	t.Helper()
 	req, err := http.NewRequest("DELETE", "http://localhost:"+config.ServerPort+"/"+resource+"/"+id+"?dry-run=true", nil)
 	if err != nil {
@@ -658,7 +658,7 @@ func testDeleteValidation(t *testing.T, config config.Config, resource string, i
 	return nil
 }
 
-func testAspectValidation(t *testing.T, config config.Config, aspect models.Aspect, expectedCode int) error {
+func testAspectValidation(t *testing.T, config configuration.Config, aspect models.Aspect, expectedCode int) error {
 	t.Helper()
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(aspect)

@@ -18,13 +18,13 @@ package repo_legacy
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"testing"
 )
 
-func testListDeviceClasses(t *testing.T, conf config.Config) {
+func testListDeviceClasses(t *testing.T, conf configuration.Config) {
 	deviceClasses := []models.DeviceClass{
 		{
 			Id:   "c1",

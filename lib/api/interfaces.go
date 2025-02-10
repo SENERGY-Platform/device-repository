@@ -133,4 +133,7 @@ type Controller interface {
 
 	SetHubConnectionState(token string, id string, connected bool) (error, int)
 	SetDeviceConnectionState(token string, id string, connected bool) (error, int)
+
+	Export(token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int)
+	Import(token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int)
 }

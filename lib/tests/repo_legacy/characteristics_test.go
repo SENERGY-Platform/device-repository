@@ -18,14 +18,14 @@ package repo_legacy
 
 import (
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"testing"
 )
 
-func testCharacteristicList(t *testing.T, conf config.Config) {
+func testCharacteristicList(t *testing.T, conf configuration.Config) {
 	characteristics := []models.Characteristic{
 		{
 			Id:   "a1",

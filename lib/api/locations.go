@@ -22,7 +22,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -51,7 +51,7 @@ type LocationEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /locations/{id} [GET]
-func (this *LocationEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocationEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetLocation(id, util.GetAuthToken(request))
@@ -80,7 +80,7 @@ func (this *LocationEndpoints) Get(config config.Config, router *http.ServeMux, 
 // @Failure      400
 // @Failure      500
 // @Router       /functions [PUT]
-func (this *LocationEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocationEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /locations", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -126,7 +126,7 @@ func (this *LocationEndpoints) Validate(config config.Config, router *http.Serve
 // @Failure      404
 // @Failure      500
 // @Router       /locations [GET]
-func (this *LocationEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocationEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /locations", func(writer http.ResponseWriter, request *http.Request) {
 		locationListOptions := model.LocationListOptions{
 			Limit:  100,
@@ -205,7 +205,7 @@ func (this *LocationEndpoints) List(config config.Config, router *http.ServeMux,
 // @Failure      404
 // @Failure      500
 // @Router       /locations [POST]
-func (this *LocationEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocationEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /locations", func(writer http.ResponseWriter, request *http.Request) {
 		location := models.Location{}
 		err := json.NewDecoder(request.Body).Decode(&location)
@@ -248,7 +248,7 @@ func (this *LocationEndpoints) Create(config config.Config, router *http.ServeMu
 // @Failure      404
 // @Failure      500
 // @Router       /locations/{id} [PUT]
-func (this *LocationEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocationEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		location := models.Location{}
@@ -293,7 +293,7 @@ func (this *LocationEndpoints) Set(config config.Config, router *http.ServeMux, 
 // @Failure      404
 // @Failure      500
 // @Router       /locations/{id} [DELETE]
-func (this *LocationEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocationEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)

@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"net/http"
@@ -55,7 +55,7 @@ type ValidationError struct {
 // @Failure      404
 // @Failure      500
 // @Router       /invalid/device-type [GET]
-func (this *InvalidElements) DeviceTypes(config config.Config, router *http.ServeMux, control Controller) {
+func (this *InvalidElements) DeviceTypes(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /invalid/device-types", func(writer http.ResponseWriter, request *http.Request) {
 		var err error
 		limitParam := request.URL.Query().Get("limit")

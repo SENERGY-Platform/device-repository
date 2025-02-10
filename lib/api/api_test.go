@@ -17,10 +17,10 @@
 package api
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"testing"
 )
 
 func TestRoutes(t *testing.T) {
-	GetRouter(config.Config{}, nil)
+	GetRouter(configuration.Config{}, nil)
 }

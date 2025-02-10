@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -906,7 +906,7 @@ func setSharedTrue(expected []models.ExtendedDevice) (result []models.ExtendedDe
 	return result
 }
 
-func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDevices ...models.Device) {
+func testDeviceRead(t *testing.T, conf configuration.Config, asLocalId bool, expectedDevices ...models.Device) {
 	for _, expected := range expectedDevices {
 		endpoint := "http://localhost:" + conf.ServerPort + "/devices/"
 		if asLocalId {
@@ -944,7 +944,7 @@ func testDeviceRead(t *testing.T, conf config.Config, asLocalId bool, expectedDe
 
 }
 
-func testDeviceReadNotFound(t *testing.T, conf config.Config, asLocalId bool, id string) {
+func testDeviceReadNotFound(t *testing.T, conf configuration.Config, asLocalId bool, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/devices/" + url.PathEscape(id)
 	if asLocalId {
 		endpoint = endpoint + "?as=local_id"
@@ -972,7 +972,7 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
@@ -1043,7 +1043,7 @@ func TestDeviceLocalIdOwnerConstraintPermissionsSearch(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
@@ -1059,7 +1059,7 @@ func TestDeviceLocalIdOwnerConstraintPermissionsSearch(t *testing.T) {
 	t.Run("test", testDeviceLocalIdOwnerConstraint(ctx, wg, conf))
 }
 
-func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, conf config.Config) func(t *testing.T) {
+func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		err := lib.Start(ctx, wg, conf)
 		if err != nil {

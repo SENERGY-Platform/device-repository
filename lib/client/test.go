@@ -18,7 +18,7 @@ package client
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
@@ -27,7 +27,7 @@ import (
 )
 
 func NewTestClient() (ctrl Interface, db database.Database, err error) {
-	conf := config.Config{
+	conf := configuration.Config{
 		ServerPort:                               "8080",
 		DeviceTopic:                              "devices",
 		DeviceTypeTopic:                          "device-types",

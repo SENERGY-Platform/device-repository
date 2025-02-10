@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/google/uuid"
 	"io"
@@ -258,7 +258,7 @@ func TestProtocolQuery(t *testing.T) {
 	})
 }
 
-func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...models.Protocol) {
+func testProtocolRead(t *testing.T, conf configuration.Config, expectedDt ...models.Protocol) {
 	expected := models.Protocol{Id: protocol1id, Name: protocol1name}
 	if len(expectedDt) > 0 {
 		expected = expectedDt[0]
@@ -291,7 +291,7 @@ func testProtocolRead(t *testing.T, conf config.Config, expectedDt ...models.Pro
 	}
 }
 
-func testProtocolList(t *testing.T, conf config.Config) {
+func testProtocolList(t *testing.T, conf configuration.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols"
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -320,7 +320,7 @@ func testProtocolList(t *testing.T, conf config.Config) {
 	}
 }
 
-func testProtocolListLimit10(t *testing.T, conf config.Config) {
+func testProtocolListLimit10(t *testing.T, conf configuration.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols?limit=10"
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -349,7 +349,7 @@ func testProtocolListLimit10(t *testing.T, conf config.Config) {
 	}
 }
 
-func testProtocolListLimit10Offset20(t *testing.T, conf config.Config) {
+func testProtocolListLimit10Offset20(t *testing.T, conf configuration.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols?limit=10&offset=20"
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -378,7 +378,7 @@ func testProtocolListLimit10Offset20(t *testing.T, conf config.Config) {
 	}
 }
 
-func testProtocolListSort(t *testing.T, config config.Config) {
+func testProtocolListSort(t *testing.T, config configuration.Config) {
 	defaultendpoint := "http://localhost:" + config.ServerPort + "/protocols?sort=name"
 	req, err := http.NewRequest("GET", defaultendpoint, nil)
 	if err != nil {
@@ -471,7 +471,7 @@ func testProtocolListSort(t *testing.T, config config.Config) {
 	}
 }
 
-func testProtocolReadNotFound(t *testing.T, conf config.Config, id string) {
+func testProtocolReadNotFound(t *testing.T, conf configuration.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/protocols/" + url.PathEscape(id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {

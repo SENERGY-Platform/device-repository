@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"net/http"
@@ -46,7 +46,7 @@ type ProtocolEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /protocols/{id} [GET]
-func (this *ProtocolEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ProtocolEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.ReadProtocol(id, util.GetAuthToken(request))
@@ -79,7 +79,7 @@ func (this *ProtocolEndpoints) Get(config config.Config, router *http.ServeMux, 
 // @Failure      404
 // @Failure      500
 // @Router       /protocols [GET]
-func (this *ProtocolEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ProtocolEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /protocols", func(writer http.ResponseWriter, request *http.Request) {
 		var err error
 		limitParam := request.URL.Query().Get("limit")
@@ -133,7 +133,7 @@ func (this *ProtocolEndpoints) List(config config.Config, router *http.ServeMux,
 // @Failure      400
 // @Failure      500
 // @Router       /protocols [PUT]
-func (this *ProtocolEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ProtocolEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /protocols", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -173,7 +173,7 @@ func (this *ProtocolEndpoints) Validate(config config.Config, router *http.Serve
 // @Failure      404
 // @Failure      500
 // @Router       /protocols [POST]
-func (this *ProtocolEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ProtocolEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /protocols", func(writer http.ResponseWriter, request *http.Request) {
 		protocol := models.Protocol{}
 		err := json.NewDecoder(request.Body).Decode(&protocol)
@@ -212,7 +212,7 @@ func (this *ProtocolEndpoints) Create(config config.Config, router *http.ServeMu
 // @Failure      404
 // @Failure      500
 // @Router       /protocols/{id} [PUT]
-func (this *ProtocolEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ProtocolEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		protocol := models.Protocol{}
@@ -256,7 +256,7 @@ func (this *ProtocolEndpoints) Set(config config.Config, router *http.ServeMux, 
 // @Failure      404
 // @Failure      500
 // @Router       /protocols/{id} [DELETE]
-func (this *ProtocolEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ProtocolEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)

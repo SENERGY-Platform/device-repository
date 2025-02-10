@@ -19,7 +19,7 @@ package semantic_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -28,7 +28,7 @@ import (
 )
 
 func TestDeviceClass(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestDeviceClass(t *testing.T) {
 	t.Run("testDeviceClassDelete", testDeviceClassDelete(conf))
 }
 
-func testProduceDeviceType(conf config.Config) func(t *testing.T) {
+func testProduceDeviceType(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		_, err, _ := c.SetDeviceClass(testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef", Name: "Lamp", Image: "https://i.imgur.com/YHc7cbe.png"})
@@ -92,7 +92,7 @@ func testDeviceClassRead(con *controller.Controller) func(t *testing.T) {
 	}
 }
 
-func testDeviceClassDelete(conf config.Config) func(t *testing.T) {
+func testDeviceClassDelete(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		err, _ := c.DeleteDeviceClass(testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef")

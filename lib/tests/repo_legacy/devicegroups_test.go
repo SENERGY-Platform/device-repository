@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
@@ -481,7 +481,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		t.Error(err)
@@ -721,7 +721,7 @@ func TestDeviceGroupsDeviceFilter(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
 		return
@@ -987,7 +987,7 @@ func TestDeviceGroupsAttributes(t *testing.T) {
 	})
 }
 
-func testDeviceGroupReadNotFound(t *testing.T, conf config.Config, id string) {
+func testDeviceGroupReadNotFound(t *testing.T, conf configuration.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -1007,7 +1007,7 @@ func testDeviceGroupReadNotFound(t *testing.T, conf config.Config, id string) {
 	}
 }
 
-func testDeviceGroupRead(t *testing.T, conf config.Config, expectedDeviceGroupss ...models.DeviceGroup) {
+func testDeviceGroupRead(t *testing.T, conf configuration.Config, expectedDeviceGroupss ...models.DeviceGroup) {
 	for _, expected := range expectedDeviceGroupss {
 		endpoint := "http://localhost:" + conf.ServerPort + "/device-groups/" + url.PathEscape(expected.Id)
 		req, err := http.NewRequest("GET", endpoint, nil)

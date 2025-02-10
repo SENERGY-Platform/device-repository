@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
@@ -63,7 +63,7 @@ type ExtendedDeviceEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /extended-devices [GET]
-func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ExtendedDeviceEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-devices", func(writer http.ResponseWriter, request *http.Request) {
 		deviceListOptions := model.ExtendedDeviceListOptions{
 			Limit:  100,
@@ -192,7 +192,7 @@ func (this *ExtendedDeviceEndpoints) List(config config.Config, router *http.Ser
 // @Failure      404
 // @Failure      500
 // @Router       /extended-devices/{id} [GET]
-func (this *ExtendedDeviceEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ExtendedDeviceEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		as := request.URL.Query().Get("as")

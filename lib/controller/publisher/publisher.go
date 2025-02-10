@@ -18,7 +18,7 @@ package publisher
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/segmentio/kafka-go"
 	"io"
 	"log"
@@ -29,7 +29,7 @@ import (
 )
 
 type Publisher struct {
-	config          config.Config
+	config          configuration.Config
 	devicetypes     *kafka.Writer
 	devicegroups    *kafka.Writer
 	protocols       *kafka.Writer
@@ -43,7 +43,7 @@ type Publisher struct {
 	locations       *kafka.Writer
 }
 
-func New(conf config.Config, ctx context.Context) (*Publisher, error) {
+func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 	log.Println("ensure kafka topics")
 	err := InitTopic(
 		conf.KafkaUrl,

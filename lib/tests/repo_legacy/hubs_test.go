@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
@@ -113,7 +113,7 @@ func TestHubs(t *testing.T) {
 	})
 }
 
-func testHubReadNotFound(t *testing.T, conf config.Config, id string) {
+func testHubReadNotFound(t *testing.T, conf configuration.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -133,7 +133,7 @@ func testHubReadNotFound(t *testing.T, conf config.Config, id string) {
 	}
 }
 
-func testHubRead(t *testing.T, conf config.Config, expectedHubs ...models.Hub) {
+func testHubRead(t *testing.T, conf configuration.Config, expectedHubs ...models.Hub) {
 	for _, expected := range expectedHubs {
 		endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(expected.Id)
 		req, err := http.NewRequest("GET", endpoint, nil)
@@ -165,7 +165,7 @@ func testHubRead(t *testing.T, conf config.Config, expectedHubs ...models.Hub) {
 	}
 }
 
-func testHubDeviceRead(t *testing.T, conf config.Config, hub models.Hub, expectedDevices ...models.Device) {
+func testHubDeviceRead(t *testing.T, conf configuration.Config, hub models.Hub, expectedDevices ...models.Device) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/hubs/" + url.PathEscape(hub.Id) + "/devices"
 	call := func(endpoint string) ([]string, error) {
 		var result []string

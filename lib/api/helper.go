@@ -18,7 +18,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
 	"net/http"
@@ -42,7 +42,7 @@ type HelperEndpoints struct{}
 // @Success      200 {object} string
 // @Failure      400
 // @Router       /helper/id [GET]
-func (this *HelperEndpoints) Id(config config.Config, router *http.ServeMux, control Controller) {
+func (this *HelperEndpoints) Id(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /helper/id", func(writer http.ResponseWriter, request *http.Request) {
 		shortId := strings.TrimSpace(request.URL.Query().Get("short_id"))
 		prefix := strings.TrimSpace(request.URL.Query().Get("prefix"))

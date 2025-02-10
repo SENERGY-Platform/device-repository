@@ -18,7 +18,7 @@ package tests
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
@@ -29,7 +29,7 @@ import (
 	"testing"
 )
 
-func testCharacteristics(t *testing.T, conf config.Config) {
+func testCharacteristics(t *testing.T, conf configuration.Config) {
 	createCharacteristic := models.Characteristic{
 		Name: "char1",
 		Type: models.Structure,
@@ -119,7 +119,7 @@ func testCharacteristics(t *testing.T, conf config.Config) {
 	})
 }
 
-func checkCharacteristicDelete(t *testing.T, conf config.Config, id string) {
+func checkCharacteristicDelete(t *testing.T, conf configuration.Config, id string) {
 	resp, err := helper.Jwtget(userjwt, "http://localhost:"+conf.ServerPort+"/characteristics/"+url.PathEscape(id))
 	if err != nil {
 		t.Fatal(err)
@@ -132,7 +132,7 @@ func checkCharacteristicDelete(t *testing.T, conf config.Config, id string) {
 	}
 }
 
-func checkCharacteristic(t *testing.T, conf config.Config, id string, expected models.Characteristic) {
+func checkCharacteristic(t *testing.T, conf configuration.Config, id string, expected models.Characteristic) {
 	resp, err := helper.Jwtget(userjwt, "http://localhost:"+conf.ServerPort+"/characteristics/"+url.PathEscape(id))
 	if err != nil {
 		t.Fatal(err)

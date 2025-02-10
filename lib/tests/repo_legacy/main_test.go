@@ -26,7 +26,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -80,9 +80,9 @@ func jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 	return
 }
 
-func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf config.Config, err error) {
+func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf configuration.Config, err error) {
 	controller.DisableFeaturesForTestEnv = true
-	conf, err = config.Load("../../../config.json")
+	conf, err = configuration.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return conf, err
@@ -104,7 +104,7 @@ func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf 
 }
 
 func createMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (ctrl *controller.Controller, err error) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return
@@ -129,7 +129,7 @@ func createMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 	return
 }
 
-func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (ctrl *controller.Controller, err error) {
+func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Config) (ctrl *controller.Controller, err error) {
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {
@@ -168,7 +168,7 @@ func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Co
 	return ctrl, err
 }
 
-func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+func GetDeviceTypeSelectables(config configuration.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -235,7 +235,7 @@ func normalize(expected interface{}) (result interface{}) {
 	return
 }
 
-func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...models.DeviceType) {
+func testDeviceTypeRead(t *testing.T, conf configuration.Config, expectedDt ...models.DeviceType) {
 	expected := models.DeviceType{Id: devicetype1id, Name: devicetype1name}
 	if len(expectedDt) > 0 {
 		expected = expectedDt[0]
@@ -268,11 +268,11 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...models.D
 	}
 }
 
-func testRequest(config config.Config, method string, path string, body interface{}, expectedStatusCode int, expected interface{}) func(t *testing.T) {
+func testRequest(config configuration.Config, method string, path string, body interface{}, expectedStatusCode int, expected interface{}) func(t *testing.T) {
 	return testRequestWithToken(config, userjwt, method, path, body, expectedStatusCode, expected)
 }
 
-func testRequestWithToken(config config.Config, token string, method string, path string, body interface{}, expectedStatusCode int, expected interface{}) func(t *testing.T) {
+func testRequestWithToken(config configuration.Config, token string, method string, path string, body interface{}, expectedStatusCode int, expected interface{}) func(t *testing.T) {
 	return func(t *testing.T) {
 		var requestBody io.Reader
 		if body != nil {

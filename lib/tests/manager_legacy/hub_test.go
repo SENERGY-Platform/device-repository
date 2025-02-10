@@ -18,7 +18,7 @@ package tests
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
@@ -30,7 +30,7 @@ import (
 	"time"
 )
 
-func testHubOwner(t *testing.T, conf config.Config) {
+func testHubOwner(t *testing.T, conf configuration.Config) {
 	//replace sleep with wait=true query parameter
 	tempSleepAfterEdit := helper.SleepAfterEdit
 	helper.SleepAfterEdit = 0

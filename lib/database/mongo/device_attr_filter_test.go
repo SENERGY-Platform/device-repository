@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -33,7 +33,7 @@ func TestDeviceAttributeFilter(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Error(err)
 		return

@@ -19,7 +19,7 @@ package semantic_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -28,7 +28,7 @@ import (
 )
 
 func TestConcepts(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestConcepts(t *testing.T) {
 	t.Run("testDeleteConcept1", testDeleteConcept1(conf))
 }
 
-func testProduceValidConcept1withCharIdAndBaseCharId(conf config.Config) func(t *testing.T) {
+func testProduceValidConcept1withCharIdAndBaseCharId(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a1-28-11-2019"
@@ -66,7 +66,7 @@ func testProduceValidConcept1withCharIdAndBaseCharId(conf config.Config) func(t 
 	}
 }
 
-func testProduceValidConcept1withNoCharId(conf config.Config) func(t *testing.T) {
+func testProduceValidConcept1withNoCharId(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a"
@@ -80,7 +80,7 @@ func testProduceValidConcept1withNoCharId(conf config.Config) func(t *testing.T)
 	}
 }
 
-func testProduceValidConcept1withCharId(conf config.Config) func(t *testing.T) {
+func testProduceValidConcept1withCharId(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		concept := models.Concept{}
 		concept.Id = "urn:ses:infai:concept:1a1a1a"
@@ -95,7 +95,7 @@ func testProduceValidConcept1withCharId(conf config.Config) func(t *testing.T) {
 	}
 }
 
-func testProduceValidCharacteristicDependencie(conf config.Config) func(t *testing.T) {
+func testProduceValidCharacteristicDependencie(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		characteristic := models.Characteristic{}
 		characteristic.Id = "urn:ses:infai:characteristic:544433333"
@@ -168,7 +168,7 @@ func testReadConcept1WithSubClass(con *controller.Controller) func(t *testing.T)
 	}
 }
 
-func testDeleteConcept1(conf config.Config) func(t *testing.T) {
+func testDeleteConcept1(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		err, _ := c.DeleteConcept(testenv.AdminToken, "urn:ses:infai:concept:1a1a1a")

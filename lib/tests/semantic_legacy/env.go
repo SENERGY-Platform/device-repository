@@ -19,7 +19,7 @@ package semantic_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/api"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
@@ -32,7 +32,7 @@ import (
 	"time"
 )
 
-func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config, t *testing.T) (config config.Config, ctrl *controller.Controller, err error) {
+func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configuration.Config, t *testing.T) (config configuration.Config, ctrl *controller.Controller, err error) {
 	controller.DisableFeaturesForTestEnv = true
 	config = startConfig
 	ctx, cancel := context.WithCancel(baseCtx)

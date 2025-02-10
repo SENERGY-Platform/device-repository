@@ -21,7 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -45,7 +45,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 	defer wg.Wait()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	conf, err := testenv.CreateTestEnv(ctx, wg, t, func(c *config.Config) {
+	conf, err := testenv.CreateTestEnv(ctx, wg, t, func(c *configuration.Config) {
 		c.AllowNoneLeafAspectNodesInDeviceTypesDefault = true
 	})
 	if err != nil {
@@ -476,7 +476,7 @@ func TestServiceWithAttribute(t *testing.T) {
 
 }
 
-func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...models.DeviceType) {
+func testDeviceTypeRead(t *testing.T, conf configuration.Config, expectedDt ...models.DeviceType) {
 	expected := models.DeviceType{Id: devicetype1id, Name: devicetype1name}
 	if len(expectedDt) > 0 {
 		expected = expectedDt[0]
@@ -509,7 +509,7 @@ func testDeviceTypeRead(t *testing.T, conf config.Config, expectedDt ...models.D
 	}
 }
 
-func testDeviceTypeReadV2(conf config.Config, expected models.DeviceType) func(t *testing.T) {
+func testDeviceTypeReadV2(conf configuration.Config, expected models.DeviceType) func(t *testing.T) {
 	return func(t *testing.T) {
 		endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(expected.Id)
 		req, err := http.NewRequest("GET", endpoint, nil)
@@ -542,7 +542,7 @@ func testDeviceTypeReadV2(conf config.Config, expected models.DeviceType) func(t
 	}
 }
 
-func testServiceRead(t *testing.T, conf config.Config, expected models.Service) {
+func testServiceRead(t *testing.T, conf configuration.Config, expected models.Service) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/services/" + url.PathEscape(expected.Id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -571,7 +571,7 @@ func testServiceRead(t *testing.T, conf config.Config, expected models.Service) 
 	}
 }
 
-func testDeviceTypeList(t *testing.T, conf config.Config) {
+func testDeviceTypeList(t *testing.T, conf configuration.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types"
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -600,7 +600,7 @@ func testDeviceTypeList(t *testing.T, conf config.Config) {
 	}
 }
 
-func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
+func testDeviceTypeListLimit10(t *testing.T, conf configuration.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10"
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -629,7 +629,7 @@ func testDeviceTypeListLimit10(t *testing.T, conf config.Config) {
 	}
 }
 
-func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
+func testDeviceTypeListLimit10Offset20(t *testing.T, conf configuration.Config) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types?limit=10&offset=20"
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -658,7 +658,7 @@ func testDeviceTypeListLimit10Offset20(t *testing.T, conf config.Config) {
 	}
 }
 
-func testDeviceTypeListSort(t *testing.T, config config.Config) {
+func testDeviceTypeListSort(t *testing.T, config configuration.Config) {
 	defaultendpoint := "http://localhost:" + config.ServerPort + "/device-types?sort=name"
 	req, err := http.NewRequest("GET", defaultendpoint, nil)
 	if err != nil {
@@ -751,7 +751,7 @@ func testDeviceTypeListSort(t *testing.T, config config.Config) {
 	}
 }
 
-func testDeviceTypeReadNotFound(t *testing.T, conf config.Config, id string) {
+func testDeviceTypeReadNotFound(t *testing.T, conf configuration.Config, id string) {
 	endpoint := "http://localhost:" + conf.ServerPort + "/device-types/" + url.PathEscape(id)
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {

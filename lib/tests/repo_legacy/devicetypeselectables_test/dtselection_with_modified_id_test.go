@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
@@ -683,7 +683,7 @@ func TestDeviceTypeFilterWithModifiedId(t *testing.T) {
 
 }
 
-func GetDeviceTypeSelectablesIncludeModified(config config.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+func GetDeviceTypeSelectablesIncludeModified(config configuration.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -733,7 +733,7 @@ func GetDeviceTypeSelectablesIncludeModified(config config.Config, token string,
 	return result, err
 }
 
-func GetDeviceTypeSelectablesV2IncludeModified(config config.Config, token string, prefix string, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+func GetDeviceTypeSelectablesV2IncludeModified(config configuration.Config, token string, prefix string, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -775,7 +775,7 @@ func GetDeviceTypeSelectablesV2IncludeModified(config config.Config, token strin
 	return result, err
 }
 
-func testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectablesIncludeModified(config, testenv.Userjwt, pathPrefix, interactionsFilter, criteria)
 		if err != nil {
@@ -800,7 +800,7 @@ func testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(config config.
 	}
 }
 
-func testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(config config.Config, criteria []model.FilterCriteria, pathPrefix string, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectablesV2IncludeModified(config, testenv.Userjwt, pathPrefix, criteria)
 		if err != nil {
@@ -819,7 +819,7 @@ func testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(config confi
 	}
 }
 
-func clientTestDeviceTypeSelectables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func clientTestDeviceTypeSelectables(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err, _ := client.NewClient("http://localhost:"+config.ServerPort, nil).GetDeviceTypeSelectablesV2(criteria, pathPrefix, includeModified, servicesMustMatchAllCriteria)
 		if err != nil {
@@ -838,7 +838,7 @@ func clientTestDeviceTypeSelectables(config config.Config, criteria []model.Filt
 	}
 }
 
-func testGetRequest(token string, conf config.Config, path string, expected interface{}) func(t *testing.T) {
+func testGetRequest(token string, conf configuration.Config, path string, expected interface{}) func(t *testing.T) {
 	return func(t *testing.T) {
 		req, err := http.NewRequest("GET", "http://localhost:"+conf.ServerPort+path, nil)
 		if err != nil {

@@ -21,7 +21,7 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -55,7 +55,7 @@ type AspectNodeQuery struct {
 // @Failure      404
 // @Failure      500
 // @Router       /query/aspect-nodes [POST]
-func (this *AspectNodeEndpoints) Query(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectNodeEndpoints) Query(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /query/aspect-nodes", func(writer http.ResponseWriter, request *http.Request) {
 		query := AspectNodeQuery{}
 		err := json.NewDecoder(request.Body).Decode(&query)
@@ -100,7 +100,7 @@ func (this *AspectNodeEndpoints) Query(config config.Config, router *http.ServeM
 // @Failure      404
 // @Failure      500
 // @Router       /v2/aspect-nodes [GET]
-func (this *AspectEndpoints) ListAspectNodes(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) ListAspectNodes(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v2/aspect-nodes", func(writer http.ResponseWriter, request *http.Request) {
 		listoptions := model.AspectListOptions{
 			Limit:  100,
@@ -171,7 +171,7 @@ func (this *AspectEndpoints) ListAspectNodes(config config.Config, router *http.
 // @Failure      404
 // @Failure      500
 // @Router       /aspect-nodes [GET]
-func (this *AspectNodeEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectNodeEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-nodes", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.AspectNode
 		var err error
@@ -236,7 +236,7 @@ func (this *AspectNodeEndpoints) List(config config.Config, router *http.ServeMu
 // @Failure      404
 // @Failure      500
 // @Router       /aspect-nodes/{id} [GET]
-func (this *AspectNodeEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectNodeEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-nodes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetAspectNode(id)
@@ -269,7 +269,7 @@ func (this *AspectNodeEndpoints) Get(config config.Config, router *http.ServeMux
 // @Failure      404
 // @Failure      500
 // @Router       /aspect-nodes/{id}/measuring-functions [GET]
-func (this *AspectNodeEndpoints) ListMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectNodeEndpoints) ListMeasuringFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-nodes/{id}/measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		ancestors := false

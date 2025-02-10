@@ -20,7 +20,7 @@ import (
 	"context"
 	"flag"
 	"github.com/SENERGY-Platform/device-repository/lib"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"log"
 	"os"
 	"os/signal"
@@ -32,7 +32,7 @@ func main() {
 	configLocation := flag.String("config", "config.json", "configuration file")
 	flag.Parse()
 
-	conf, err := config.Load(*configLocation)
+	conf, err := configuration.Load(*configLocation)
 	if err != nil {
 		log.Fatal("ERROR: unable to load config", err)
 	}

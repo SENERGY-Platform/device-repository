@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -53,7 +53,7 @@ type ConceptEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /v2/concepts [GET]
-func (this *ConceptEndpoints) ListConcepts(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) ListConcepts(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v2/concepts", func(writer http.ResponseWriter, request *http.Request) {
 		listoptions := model.ConceptListOptions{
 			Limit:  100,
@@ -127,7 +127,7 @@ func (this *ConceptEndpoints) ListConcepts(config config.Config, router *http.Se
 // @Failure      404
 // @Failure      500
 // @Router       /v2/concepts-with-characteristics [GET]
-func (this *ConceptEndpoints) ListConceptsWithCharacteristics(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) ListConceptsWithCharacteristics(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v2/concepts-with-characteristics", func(writer http.ResponseWriter, request *http.Request) {
 		listoptions := model.ConceptListOptions{
 			Limit:  100,
@@ -198,7 +198,7 @@ func (this *ConceptEndpoints) ListConceptsWithCharacteristics(config config.Conf
 // @Failure      404
 // @Failure      500
 // @Router       /concepts/{id} [GET]
-func (this *ConceptEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /concepts/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		subClassStr := request.URL.Query().Get("sub-class")
@@ -248,7 +248,7 @@ func (this *ConceptEndpoints) Get(config config.Config, router *http.ServeMux, c
 // @Failure      400
 // @Failure      500
 // @Router       /concepts [PUT]
-func (this *ConceptEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /concepts", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -285,7 +285,7 @@ func (this *ConceptEndpoints) Validate(config config.Config, router *http.ServeM
 // @Failure      400
 // @Failure      500
 // @Router       /concepts/{id} [DELETE]
-func (this *ConceptEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /concepts/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		dryRun := false
@@ -330,7 +330,7 @@ func (this *ConceptEndpoints) Delete(config config.Config, router *http.ServeMux
 // @Failure      404
 // @Failure      500
 // @Router       /concepts [POST]
-func (this *ConceptEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /concepts", func(writer http.ResponseWriter, request *http.Request) {
 		concept := models.Concept{}
 		err := json.NewDecoder(request.Body).Decode(&concept)
@@ -369,7 +369,7 @@ func (this *ConceptEndpoints) Create(config config.Config, router *http.ServeMux
 // @Failure      404
 // @Failure      500
 // @Router       /concepts/{id} [PUT]
-func (this *ConceptEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ConceptEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /concepts/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		concept := models.Concept{}

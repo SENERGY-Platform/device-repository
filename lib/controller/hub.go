@@ -392,7 +392,7 @@ func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub,
 	err = this.setHub(model.HubWithConnectionState{
 		Hub:             hub,
 		ConnectionState: old.ConnectionState,
-	}, hub.OwnerId)
+	})
 	if err != nil {
 		return hub, err, http.StatusInternalServerError
 	}
@@ -483,7 +483,7 @@ func (this *Controller) setHubSyncHandler(hub model.HubWithConnectionState) (err
 		}
 	}
 	for _, otherHub := range hubIndex {
-		err := this.setHub(otherHub, otherHub.OwnerId)
+		err := this.setHub(otherHub)
 		if err != nil {
 			return err
 		}
@@ -491,7 +491,7 @@ func (this *Controller) setHubSyncHandler(hub model.HubWithConnectionState) (err
 	return this.publisher.PublishHub(hub.Hub)
 }
 
-func (this *Controller) setHub(hub model.HubWithConnectionState, owner string) (err error) {
+func (this *Controller) setHub(hub model.HubWithConnectionState) (err error) {
 	if hub.Id == "" {
 		log.Println("ERROR: received hub without id")
 		return nil

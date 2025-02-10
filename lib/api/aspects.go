@@ -22,7 +22,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -56,7 +56,7 @@ type AspectEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /v2/aspects [GET]
-func (this *AspectEndpoints) ListAspects(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) ListAspects(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v2/aspects", func(writer http.ResponseWriter, request *http.Request) {
 		listoptions := model.AspectListOptions{
 			Limit:  100,
@@ -127,7 +127,7 @@ func (this *AspectEndpoints) ListAspects(config config.Config, router *http.Serv
 // @Failure      404
 // @Failure      500
 // @Router       /aspects [GET]
-func (this *AspectEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspects", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.Aspect
 		var err error
@@ -192,7 +192,7 @@ func (this *AspectEndpoints) List(config config.Config, router *http.ServeMux, c
 // @Failure      404
 // @Failure      500
 // @Router       /aspects/{id} [GET]
-func (this *AspectEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetAspect(id)
@@ -221,7 +221,7 @@ func (this *AspectEndpoints) Get(config config.Config, router *http.ServeMux, co
 // @Failure      400
 // @Failure      500
 // @Router       /aspects [PUT]
-func (this *AspectEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /aspects", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -262,7 +262,7 @@ func (this *AspectEndpoints) Validate(config config.Config, router *http.ServeMu
 // @Failure      404
 // @Failure      500
 // @Router       /aspects/{id} [PUT]
-func (this *AspectEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		aspect := models.Aspect{}
@@ -309,7 +309,7 @@ func (this *AspectEndpoints) Set(config config.Config, router *http.ServeMux, co
 // @Failure      404
 // @Failure      500
 // @Router       /aspects [POST]
-func (this *AspectEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /aspects", func(writer http.ResponseWriter, request *http.Request) {
 		aspect := models.Aspect{}
 		err := json.NewDecoder(request.Body).Decode(&aspect)
@@ -344,7 +344,7 @@ func (this *AspectEndpoints) Create(config config.Config, router *http.ServeMux,
 // @Failure      400
 // @Failure      500
 // @Router       /aspects/{id} [DELETE]
-func (this *AspectEndpoints) DeleteAspect(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) DeleteAspect(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		dryRun := false
@@ -396,7 +396,7 @@ func (this *AspectEndpoints) DeleteAspect(config config.Config, router *http.Ser
 // @Failure      404
 // @Failure      500
 // @Router       /aspects/{id}/measuring-functions [GET]
-func (this *AspectEndpoints) GetMeasuringFunctions(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) GetMeasuringFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspects/{id}/measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		ancestors := false

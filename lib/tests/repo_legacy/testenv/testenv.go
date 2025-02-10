@@ -24,7 +24,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
@@ -69,9 +69,9 @@ func Jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 	return
 }
 
-func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...func(*config.Config)) (conf config.Config, err error) {
+func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...func(*configuration.Config)) (conf configuration.Config, err error) {
 	controller.DisableFeaturesForTestEnv = true
-	conf, err = config.Load("../../../../config.json")
+	conf, err = configuration.Load("../../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return conf, err
@@ -99,7 +99,7 @@ func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...
 
 func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (ctrl *controller.Controller, err error) {
 	controller.DisableFeaturesForTestEnv = true
-	conf, err := config.Load("../../../../config.json")
+	conf, err := configuration.Load("../../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return
@@ -120,7 +120,7 @@ func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 	return
 }
 
-func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf config.Config) (ctrl *controller.Controller, err error) {
+func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Config) (ctrl *controller.Controller, err error) {
 	controller.DisableFeaturesForTestEnv = true
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {

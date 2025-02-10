@@ -3,7 +3,7 @@ package semantic_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestLocation(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func TestLocation(t *testing.T) {
 	t.Run("testLocationRead floor after delete", testLocationRead(ctrl, floor.Id, &floor))
 }
 
-func testProduceLocation(conf config.Config, location models.Location) func(t *testing.T) {
+func testProduceLocation(conf configuration.Config, location models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		_, err, _ := c.SetLocation(testenv.AdminToken, location)
@@ -82,7 +82,7 @@ func testLocationRead(con *controller.Controller, id string, expectedLocation *m
 	}
 }
 
-func testLocationDelete(conf config.Config, id string) func(t *testing.T) {
+func testLocationDelete(conf configuration.Config, id string) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		err, _ := c.DeleteLocation(testenv.AdminToken, id)

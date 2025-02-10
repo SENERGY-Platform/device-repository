@@ -18,7 +18,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -36,7 +36,7 @@ var deviceTypeCriteriaIsVoidFieldName, deviceTypeCriteriaIsVoidKey = "IsVoid", "
 var deviceTypeCriteriaIsInputFieldName, deviceTypeCriteriaIsInputKey = "IsInput", ""
 var deviceTypeCriteriaIsIdModifiedFieldName, deviceTypeCriteriaIsIdModifiedKey = "IsIdModified", ""
 
-func getDeviceTypeCriteriaCollectionName(config config.Config) string {
+func getDeviceTypeCriteriaCollectionName(config configuration.Config) string {
 	return config.MongoDeviceTypeCollection + "_criteria"
 }
 

@@ -698,7 +698,7 @@ func (this *Controller) setDeviceSyncHandler(device model.DeviceWithConnectionSt
 				hub.DeviceLocalIds = append(hub.DeviceLocalIds, d.LocalId)
 			}
 			hub.Hash = ""
-			err = this.setHub(hub, hub.OwnerId)
+			err = this.setHub(hub)
 			if err != nil {
 				return err
 			}
@@ -773,7 +773,7 @@ func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 		hub.DeviceLocalIds = filter(hub.DeviceLocalIds, old.LocalId)
 		hub.DeviceIds = filter(hub.DeviceIds, old.Id)
 		hub.Hash = ""
-		err = this.setHub(hub, hub.OwnerId)
+		err = this.setHub(hub)
 		if err != nil {
 			return err
 		}

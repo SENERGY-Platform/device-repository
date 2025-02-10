@@ -3,7 +3,7 @@ package semantic_legacy
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestConceptCharacteristic(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"log"
 	"net/http"
 )
@@ -40,7 +40,7 @@ type UsersEndpoints struct{}
 // @Failure      400
 // @Failure      500
 // @Router       /users/{id} [DELETE]
-func (this *AspectEndpoints) UserDelete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *AspectEndpoints) UserDelete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /users/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)

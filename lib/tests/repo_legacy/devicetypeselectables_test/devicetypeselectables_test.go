@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -2027,7 +2027,7 @@ func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions
 	return result
 }
 
-func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectablesWithoutConfigurables(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectables(config, testenv.Userjwt, pathPrefix, interactionsFilter, criteria)
 		if err != nil {
@@ -2046,7 +2046,7 @@ func testDeviceTypeSelectablesWithoutConfigurables(config config.Config, criteri
 	}
 }
 
-func testDeviceTypeSelectablesWithoutConfigurablesV2(config config.Config, criteria []model.FilterCriteria, pathPrefix string, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
+func testDeviceTypeSelectablesWithoutConfigurablesV2(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectablesV2(config, testenv.Userjwt, pathPrefix, criteria)
 		if err != nil {
@@ -2092,7 +2092,7 @@ func sortServices(list []model.DeviceTypeSelectable) (result []model.DeviceTypeS
 	return
 }
 
-func createTestMetadata(config config.Config, interaction models.Interaction) func(t *testing.T) {
+func createTestMetadata(config configuration.Config, interaction models.Interaction) func(t *testing.T) {
 	return func(t *testing.T) {
 		aspects := []models.Aspect{
 			{
@@ -2621,7 +2621,7 @@ func createTestMetadata(config config.Config, interaction models.Interaction) fu
 	}
 }
 
-func createTestMetadataFromString(config config.Config, deviceTypesStr string, aspectsStr string, functionsStr string) func(t *testing.T) {
+func createTestMetadataFromString(config configuration.Config, deviceTypesStr string, aspectsStr string, functionsStr string) func(t *testing.T) {
 	return func(t *testing.T) {
 		aspects := []models.Aspect{}
 		functions := []models.Function{}
@@ -2673,7 +2673,7 @@ func createTestMetadataFromString(config config.Config, deviceTypesStr string, a
 	}
 }
 
-func GetDeviceTypeSelectables(config config.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+func GetDeviceTypeSelectables(config configuration.Config, token string, prefix string, interactionsFilter []models.Interaction, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -2723,7 +2723,7 @@ func GetDeviceTypeSelectables(config config.Config, token string, prefix string,
 	return result, err
 }
 
-func GetDeviceTypeSelectablesV2(config config.Config, token string, prefix string, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
+func GetDeviceTypeSelectablesV2(config configuration.Config, token string, prefix string, descriptions []model.FilterCriteria) (result []model.DeviceTypeSelectable, err error) {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}

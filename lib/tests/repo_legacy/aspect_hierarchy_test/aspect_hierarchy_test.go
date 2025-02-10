@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
@@ -271,7 +271,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 
 }
 
-func testAspectEditValidation(t *testing.T, config config.Config, aspect models.Aspect, expectedCode int) error {
+func testAspectEditValidation(t *testing.T, config configuration.Config, aspect models.Aspect, expectedCode int) error {
 	t.Helper()
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(aspect)
@@ -1064,7 +1064,7 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 
 }
 
-func testGetRequest(token string, conf config.Config, path string, expected interface{}) func(t *testing.T) {
+func testGetRequest(token string, conf configuration.Config, path string, expected interface{}) func(t *testing.T) {
 	return func(t *testing.T) {
 		req, err := http.NewRequest("GET", "http://localhost:"+conf.ServerPort+path, nil)
 		if err != nil {

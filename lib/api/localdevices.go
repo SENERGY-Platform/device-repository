@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
@@ -59,7 +59,7 @@ type LocalDevicesEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /local-devices/{id} [GET]
-func (this *LocalDevicesEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocalDevicesEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /local-devices", func(writer http.ResponseWriter, request *http.Request) {
 		deviceListOptions := model.DeviceListOptions{
 			Limit:  100,
@@ -175,7 +175,7 @@ func (this *LocalDevicesEndpoints) List(config config.Config, router *http.Serve
 // @Failure      404
 // @Failure      500
 // @Router       /local-devices/{id} [GET]
-func (this *LocalDevicesEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocalDevicesEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /local-devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token, err := jwt.GetParsedToken(request)
@@ -215,7 +215,7 @@ func (this *LocalDevicesEndpoints) Get(config config.Config, router *http.ServeM
 // @Failure      404
 // @Failure      500
 // @Router       /local-devices/{id} [POST]
-func (this *LocalDevicesEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocalDevicesEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /local-devices", func(writer http.ResponseWriter, request *http.Request) {
 		device := models.Device{}
 		err := json.NewDecoder(request.Body).Decode(&device)
@@ -261,7 +261,7 @@ func (this *LocalDevicesEndpoints) Create(config config.Config, router *http.Ser
 // @Failure      404
 // @Failure      500
 // @Router       /local-devices/{id} [PUT]
-func (this *LocalDevicesEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocalDevicesEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /local-devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token, err := jwt.GetParsedToken(request)
@@ -325,7 +325,7 @@ func (this *LocalDevicesEndpoints) Set(config config.Config, router *http.ServeM
 // @Failure      404
 // @Failure      500
 // @Router       /local-devices/{id} [DELETE]
-func (this *LocalDevicesEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *LocalDevicesEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /local-devices/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token, err := jwt.GetParsedToken(request)

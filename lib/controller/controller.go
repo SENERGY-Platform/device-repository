@@ -18,7 +18,7 @@ package controller
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"time"
@@ -26,7 +26,7 @@ import (
 
 var DisableFeaturesForTestEnv = false //only for tests; disables validations and id generations
 
-func New(config config.Config, db database.Database, p Publisher, permClient client.Client) (ctrl *Controller, err error) {
+func New(config configuration.Config, db database.Database, p Publisher, permClient client.Client) (ctrl *Controller, err error) {
 	if permClient == nil {
 		permClient = client.New(config.PermissionsV2Url)
 	}
@@ -72,7 +72,7 @@ func New(config config.Config, db database.Database, p Publisher, permClient cli
 type Controller struct {
 	publisher           Publisher
 	db                  database.Database
-	config              config.Config
+	config              configuration.Config
 	permissionsV2Client client.Client
 }
 

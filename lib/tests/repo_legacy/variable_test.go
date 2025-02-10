@@ -18,7 +18,7 @@ package repo_legacy
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -37,7 +37,7 @@ func TestVariableValidation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		t.Error(err)

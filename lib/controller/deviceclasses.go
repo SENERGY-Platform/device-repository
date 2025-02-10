@@ -55,12 +55,17 @@ func (this *Controller) SetDeviceClass(token string, class models.DeviceClass) (
 	if err != nil {
 		return result, err, code
 	}
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetDeviceClass(ctx, class, this.setDeviceClassSyncHandler)
+	err = this.setDeviceClass(class)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return class, nil, http.StatusOK
+}
+
+func (this *Controller) setDeviceClass(class models.DeviceClass) (err error) {
+	ctx, _ := getTimeoutContext()
+	err = this.db.SetDeviceClass(ctx, class, this.setDeviceClassSyncHandler)
+	return err
 }
 
 func (this *Controller) deleteDeviceClassSyncHandler(c models.DeviceClass) error {

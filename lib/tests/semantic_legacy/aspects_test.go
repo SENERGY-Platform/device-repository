@@ -19,7 +19,7 @@ package semantic_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
@@ -29,7 +29,7 @@ import (
 )
 
 func TestAspects(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestAspects(t *testing.T) {
 }
 
 func TestAspects2(t *testing.T) {
-	conf, err := config.Load("../../../config.json")
+	conf, err := configuration.Load("../../../config.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestAspects2(t *testing.T) {
 	t.Run("test_2_ReadAspectsWithMeasuringFunctions", test_2_ReadAspectsWithMeasuringFunctions(ctrl))
 }
 
-func testProduceAspect(conf config.Config) func(t *testing.T) {
+func testProduceAspect(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		aspect := models.Aspect{}
 		aspect.Id = "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf"
@@ -99,7 +99,7 @@ func testAspectRead(con *controller.Controller) func(t *testing.T) {
 	}
 }
 
-func testAspectDelete(conf config.Config) func(t *testing.T) {
+func testAspectDelete(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).DeleteAspect(testenv.AdminToken, "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf")
 		if err != nil {
@@ -108,7 +108,7 @@ func testAspectDelete(conf config.Config) func(t *testing.T) {
 	}
 }
 
-func testProduceDeviceTypeForAspectTest(conf config.Config) func(t *testing.T) {
+func testProduceDeviceTypeForAspectTest(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:devicetype:1e1e-AspectTest"
@@ -232,7 +232,7 @@ func testReadAspectMeasuringFunctions(con *controller.Controller) func(t *testin
 	}
 }
 
-func test_2_ProduceDeviceTypeforAspectTest(conf config.Config) func(t *testing.T) {
+func test_2_ProduceDeviceTypeforAspectTest(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		devicetype := models.DeviceType{}
 		devicetype.Id = "urn:infai:ses:devicetype:08-01-20"

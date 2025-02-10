@@ -19,7 +19,7 @@ package docker
 import (
 	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"log"
 	"net"
@@ -62,7 +62,7 @@ func retry(timeout time.Duration, f func() error) (err error) {
 	return err
 }
 
-func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig config.Config) (config config.Config, err error) {
+func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configuration.Config) (config configuration.Config, err error) {
 	config = startConfig
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {

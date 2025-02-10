@@ -19,7 +19,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -50,7 +50,7 @@ type ExtendedHubEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /extended-hubs/{id} [GET]
-func (this *ExtendedHubEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ExtendedHubEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		permission, err := model.GetPermissionFlagFromQuery(request.URL.Query())
@@ -96,7 +96,7 @@ func (this *ExtendedHubEndpoints) Get(config config.Config, router *http.ServeMu
 // @Failure      404
 // @Failure      500
 // @Router       /extended-hubs [GET]
-func (this *ExtendedHubEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *ExtendedHubEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /extended-hubs", func(writer http.ResponseWriter, request *http.Request) {
 		hubListOptions := model.HubListOptions{
 			Limit:  100,

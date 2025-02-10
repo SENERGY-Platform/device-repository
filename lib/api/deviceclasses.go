@@ -22,7 +22,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"log"
@@ -56,7 +56,7 @@ type DeviceClassEndpoints struct{}
 // @Failure      404
 // @Failure      500
 // @Router       /v2/device-classes [GET]
-func (this *DeviceClassEndpoints) ListDeviceClasses(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) ListDeviceClasses(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /v2/device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		listoptions := model.DeviceClassListOptions{
 			Limit:  100,
@@ -125,7 +125,7 @@ func (this *DeviceClassEndpoints) ListDeviceClasses(config config.Config, router
 // @Failure      404
 // @Failure      500
 // @Router       /device-classes [GET]
-func (this *DeviceClassEndpoints) List(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		var result []models.DeviceClass
 		var err error
@@ -172,7 +172,7 @@ func (this *DeviceClassEndpoints) List(config config.Config, router *http.ServeM
 // @Failure      404
 // @Failure      500
 // @Router       /device-classes/{id} [GET]
-func (this *DeviceClassEndpoints) Get(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetDeviceClass(id)
@@ -203,7 +203,7 @@ func (this *DeviceClassEndpoints) Get(config config.Config, router *http.ServeMu
 // @Failure      404
 // @Failure      500
 // @Router       /device-classes/{id}/functions [GET]
-func (this *DeviceClassEndpoints) GetFunctions(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) GetFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}/functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetDeviceClassesFunctions(id)
@@ -234,7 +234,7 @@ func (this *DeviceClassEndpoints) GetFunctions(config config.Config, router *htt
 // @Failure      404
 // @Failure      500
 // @Router       /device-classes/{id}/controlling-functions [GET]
-func (this *DeviceClassEndpoints) GetControllingFunctions(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) GetControllingFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}/controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		result, err, errCode := control.GetDeviceClassesControllingFunctions(id)
@@ -263,7 +263,7 @@ func (this *DeviceClassEndpoints) GetControllingFunctions(config config.Config, 
 // @Failure      400
 // @Failure      500
 // @Router       /device-classes [PUT]
-func (this *DeviceClassEndpoints) Validate(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) Validate(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		dryRun, err := strconv.ParseBool(request.URL.Query().Get("dry-run"))
 		if err != nil {
@@ -300,7 +300,7 @@ func (this *DeviceClassEndpoints) Validate(config config.Config, router *http.Se
 // @Failure      400
 // @Failure      500
 // @Router       /device-classes/{id} [DELETE]
-func (this *DeviceClassEndpoints) Delete(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) Delete(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("DELETE /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		dryRun := false
@@ -345,7 +345,7 @@ func (this *DeviceClassEndpoints) Delete(config config.Config, router *http.Serv
 // @Failure      404
 // @Failure      500
 // @Router       /device-classes [POST]
-func (this *DeviceClassEndpoints) Create(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) Create(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("POST /device-classes", func(writer http.ResponseWriter, request *http.Request) {
 		deviceClass := models.DeviceClass{}
 		err := json.NewDecoder(request.Body).Decode(&deviceClass)
@@ -384,7 +384,7 @@ func (this *DeviceClassEndpoints) Create(config config.Config, router *http.Serv
 // @Failure      404
 // @Failure      500
 // @Router       /device-classes/{id} [PUT]
-func (this *DeviceClassEndpoints) Set(config config.Config, router *http.ServeMux, control Controller) {
+func (this *DeviceClassEndpoints) Set(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("PUT /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		deviceClass := models.DeviceClass{}

@@ -18,7 +18,7 @@ package tests
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/config"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
@@ -30,7 +30,7 @@ import (
 	"time"
 )
 
-func testConcepts(t *testing.T, conf config.Config) {
+func testConcepts(t *testing.T, conf configuration.Config) {
 	resp, err := helper.Jwtput(adminjwt, "http://localhost:"+conf.ServerPort+"/characteristics/urn:infai:ses:characteristic:4711a?wait=true", models.Characteristic{
 		Id:          "urn:infai:ses:characteristic:4711a",
 		Name:        "urn:infai:ses:characteristic:4711a",
@@ -145,7 +145,7 @@ func testConcepts(t *testing.T, conf config.Config) {
 	})
 }
 
-func checkConceptDelete(t *testing.T, conf config.Config, id string) {
+func checkConceptDelete(t *testing.T, conf configuration.Config, id string) {
 	resp, err := helper.Jwtget(userjwt, "http://localhost:"+conf.ServerPort+"/concepts/"+url.PathEscape(id))
 	if err != nil {
 		t.Fatal(err)
@@ -158,7 +158,7 @@ func checkConceptDelete(t *testing.T, conf config.Config, id string) {
 	}
 }
 
-func checkConcept(t *testing.T, conf config.Config, id string, expected models.Concept) {
+func checkConcept(t *testing.T, conf configuration.Config, id string, expected models.Concept) {
 	resp, err := helper.Jwtget(userjwt, "http://localhost:"+conf.ServerPort+"/concepts/"+url.PathEscape(id))
 	if err != nil {
 		t.Fatal(err)
