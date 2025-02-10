@@ -42,9 +42,6 @@ func (this *Controller) ListProtocols(token string, limit int64, offset int64, s
 }
 
 func (this *Controller) ValidateProtocol(protocol models.Protocol) (err error, code int) {
-	if DisableFeaturesForTestEnv {
-		return nil, http.StatusOK
-	}
 	if protocol.Id == "" {
 		return errors.New("missing protocol id"), http.StatusBadRequest
 	}
@@ -83,12 +80,12 @@ func (this *Controller) SetProtocol(token string, p models.Protocol) (result mod
 	}
 
 	//ensure ids
-	if !DisableFeaturesForTestEnv {
-		p.GenerateId()
-	}
-	err, code := this.ValidateProtocol(p)
-	if err != nil {
-		return result, err, code
+	p.GenerateId()
+	if !this.config.DisableStrictValidationForTesting {
+		err, code := this.ValidateProtocol(p)
+		if err != nil {
+			return result, err, code
+		}
 	}
 	err = this.setProtocol(p)
 	if err != nil {

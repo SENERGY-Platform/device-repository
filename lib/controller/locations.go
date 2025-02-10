@@ -46,8 +46,8 @@ func (this *Controller) SetLocation(token string, location models.Location) (res
 		}
 	}
 
-	if !DisableFeaturesForTestEnv {
-		location.GenerateId()
+	location.GenerateId()
+	if !this.config.DisableStrictValidationForTesting {
 		location.DeviceIds, err = this.filterInvalidDeviceIds(token, location.DeviceIds, "r")
 		if err != nil {
 			return location, err, http.StatusInternalServerError

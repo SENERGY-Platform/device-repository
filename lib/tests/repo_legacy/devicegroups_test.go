@@ -487,6 +487,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	conf.DisableStrictValidationForTesting = true
 	conf, err = docker.NewEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)
@@ -559,7 +560,6 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	controller.DisableFeaturesForTestEnv = false
 	t.Run("minimal ok", testDeviceGroupValidation(ctrl, models.DeviceGroup{
 		Id:   "id",
 		Name: "name",

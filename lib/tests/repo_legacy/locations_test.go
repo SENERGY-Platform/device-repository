@@ -21,7 +21,6 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
@@ -49,7 +48,7 @@ func TestLocations(t *testing.T) {
 	userLocations := []models.Location{}
 	secondOwnerLocations := []models.Location{}
 
-	controller.DisableFeaturesForTestEnv = false
+	conf.DisableStrictValidationForTesting = false
 
 	t.Run("create Userjwt locations", func(t *testing.T) {
 		names := []string{"a1", "b1", "c2", "d2", "e3", "f3", "g4"}

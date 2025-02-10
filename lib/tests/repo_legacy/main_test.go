@@ -81,13 +81,13 @@ func jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 }
 
 func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf configuration.Config, err error) {
-	controller.DisableFeaturesForTestEnv = true
 	conf, err = configuration.Load("../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return conf, err
 	}
 	conf.Debug = true
+	conf.DisableStrictValidationForTesting = true
 	conf, err = docker2.NewEnv(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to create docker env", err)

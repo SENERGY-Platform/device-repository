@@ -44,6 +44,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 	conf.Debug = true
+	conf.DisableStrictValidationForTesting = true
 
 	_, ip, err := docker.MongoDB(ctx, wg)
 	if err != nil {
@@ -84,8 +85,6 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	controller.DisableFeaturesForTestEnv = true
-
 	_, err, _ = ctrl.SetConcept(AdminToken, models.Concept{
 		Id:                   "concept",
 		Name:                 "concept",
@@ -117,7 +116,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	controller.DisableFeaturesForTestEnv = false
+	conf.DisableStrictValidationForTesting = false
 
 	t.Run("simple no characteristic & no function", testValidateVariable(ctrl, false, models.ContentVariable{
 		Id:                  "v",

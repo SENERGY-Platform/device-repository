@@ -72,7 +72,7 @@ func TestUserDelete(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	controller.DisableFeaturesForTestEnv = false
+	conf.DisableStrictValidationForTesting = false
 
 	oldBatchSize := controller.ResourcesEffectedByUserDelete_BATCH_SIZE
 	controller.ResourcesEffectedByUserDelete_BATCH_SIZE = 5

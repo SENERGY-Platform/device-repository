@@ -439,9 +439,6 @@ func ValidateDeviceName(device models.Device) (err error) {
 }
 
 func (this *Controller) ValidateDevice(token string, device models.Device) (err error, code int) {
-	if DisableFeaturesForTestEnv {
-		return nil, http.StatusOK
-	}
 	if device.Id == "" {
 		return errors.New("missing device id"), http.StatusBadRequest
 	}
@@ -541,7 +538,7 @@ func (this *Controller) CreateDevice(token string, device models.Device) (result
 	if device.Id != "" {
 		return result, errors.New("device id already set"), http.StatusBadRequest
 	}
-	if !DisableFeaturesForTestEnv {
+	if !this.config.DisableStrictValidationForTesting {
 		device.GenerateId()
 	}
 
@@ -556,10 +553,11 @@ func (this *Controller) CreateDevice(token string, device models.Device) (result
 	if device.OwnerId == "" {
 		device.OwnerId = jwtToken.GetUserId()
 	}
-
-	err, code = this.ValidateDevice(token, device)
-	if err != nil {
-		return device, err, code
+	if !this.config.DisableStrictValidationForTesting {
+		err, code = this.ValidateDevice(token, device)
+		if err != nil {
+			return device, err, code
+		}
 	}
 
 	return this.setDevice(device)
@@ -573,7 +571,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	if !jwtToken.IsAdmin() && !DisableFeaturesForTestEnv {
+	if !jwtToken.IsAdmin() && !this.config.DisableStrictValidationForTesting {
 		ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Write)
 		if err != nil {
 			return device, err, code
@@ -619,9 +617,11 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 		}
 	}
 
-	err, code = this.ValidateDevice(token, device)
-	if err != nil {
-		return device, err, code
+	if !this.config.DisableStrictValidationForTesting {
+		err, code = this.ValidateDevice(token, device)
+		if err != nil {
+			return device, err, code
+		}
 	}
 
 	rights, err, code := this.permissionsV2Client.GetResource(token, this.config.DeviceTopic, device.Id)

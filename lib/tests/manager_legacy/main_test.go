@@ -20,7 +20,6 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -73,8 +72,6 @@ func TestWithDocker(t *testing.T) {
 		t.Error(err)
 		return
 	}
-
-	controller.DisableFeaturesForTestEnv = false
 
 	err = lib.Start(ctx, wg, conf)
 	if err != nil {

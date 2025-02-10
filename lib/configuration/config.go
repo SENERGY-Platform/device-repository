@@ -75,6 +75,8 @@ type Config struct {
 
 	SyncInterval     string `json:"sync_interval"`
 	SyncLockDuration string `json:"sync_lock_duration"`
+
+	DisableStrictValidationForTesting bool `json:"disable_strict_validation_for_testing"` //only for tests; disables validations and id generations
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
@@ -92,6 +94,7 @@ func Load(location string) (config Config, err error) {
 	}
 	handleEnvironmentVars(&config)
 	setDefaultHttpClient(config)
+
 	return config, nil
 }
 

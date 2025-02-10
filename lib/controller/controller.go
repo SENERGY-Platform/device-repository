@@ -24,8 +24,6 @@ import (
 	"time"
 )
 
-var DisableFeaturesForTestEnv = false //only for tests; disables validations and id generations
-
 func New(config configuration.Config, db database.Database, p Publisher, permClient client.Client) (ctrl *Controller, err error) {
 	if permClient == nil {
 		permClient = client.New(config.PermissionsV2Url)

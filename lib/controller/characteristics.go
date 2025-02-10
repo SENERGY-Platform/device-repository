@@ -47,13 +47,14 @@ func (this *Controller) SetCharacteristic(token string, characteristic models.Ch
 		return result, errors.New("token is not an admin"), http.StatusUnauthorized
 	}
 	//ensure ids
-	if !DisableFeaturesForTestEnv {
-		characteristic.GenerateId()
+	characteristic.GenerateId()
+	if !this.config.DisableStrictValidationForTesting {
+		err, code = this.ValidateCharacteristics(characteristic)
+		if err != nil {
+			return result, err, code
+		}
 	}
-	err, code = this.ValidateCharacteristics(characteristic)
-	if err != nil {
-		return result, err, code
-	}
+
 	err = this.setCharacteristic(characteristic)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -137,9 +138,6 @@ func characteristicIdToBaseCharacteristic(characteristic models.Characteristic) 
 }
 
 func (this *Controller) ValidateCharacteristics(characteristic models.Characteristic) (err error, code int) {
-	if DisableFeaturesForTestEnv {
-		return nil, http.StatusOK
-	}
 	ctx, _ := getTimeoutContext()
 	knownCharacteristics, err := this.db.ListAllCharacteristics(ctx)
 	if err != nil {
@@ -166,9 +164,6 @@ func validateCharacteristicIdReuse(characteristic models.Characteristic, knownCh
 }
 
 func ValidateCharacteristicsWithoutDbAccess(characteristic models.Characteristic) (err error, code int) {
-	if DisableFeaturesForTestEnv {
-		return nil, http.StatusOK
-	}
 	if characteristic.Id == "" {
 		return errors.New("missing characteristic id"), http.StatusBadRequest
 	}

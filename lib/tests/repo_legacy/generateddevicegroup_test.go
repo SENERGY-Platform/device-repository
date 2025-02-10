@@ -19,7 +19,6 @@ package repo_legacy
 import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"reflect"
@@ -119,7 +118,7 @@ func TestGeneratedDeviceGroups(t *testing.T) {
 		return
 	}
 
-	controller.DisableFeaturesForTestEnv = false
+	conf.DisableStrictValidationForTesting = false
 
 	var dg1 models.DeviceGroup
 	t.Run("check dg1", func(t *testing.T) {

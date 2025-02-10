@@ -33,8 +33,8 @@ import (
 )
 
 func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configuration.Config, t *testing.T) (config configuration.Config, ctrl *controller.Controller, err error) {
-	controller.DisableFeaturesForTestEnv = true
 	config = startConfig
+	config.DisableStrictValidationForTesting = true
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {

@@ -86,9 +86,6 @@ func (this *Controller) ListDeviceTypesV3(token string, listOptions model.Device
 }
 
 func (this *Controller) ValidateDeviceType(dt models.DeviceType, options model.ValidationOptions) (err error, code int) {
-	if DisableFeaturesForTestEnv {
-		return nil, 200
-	}
 	if dt.Id == "" {
 		return errors.New("missing device-type id"), http.StatusBadRequest
 	}
@@ -573,7 +570,7 @@ func addDeviceTypeCriteriaToVariableRefs(list []model.VariableReference, criteri
 }
 
 func (this *Controller) SetDeviceType(token string, dt models.DeviceType, options model.DeviceTypeUpdateOptions) (models.DeviceType, error, int) {
-	if !DisableFeaturesForTestEnv {
+	if !this.config.DisableStrictValidationForTesting {
 		dt.GenerateId() //ensure ids
 	}
 
@@ -597,10 +594,12 @@ func (this *Controller) SetDeviceType(token string, dt models.DeviceType, option
 		}
 	}
 
-	err, code := this.ValidateDeviceType(dt, model.ValidationOptions{})
-	if err != nil {
-		debug.PrintStack()
-		return dt, err, code
+	if !this.config.DisableStrictValidationForTesting {
+		err, code := this.ValidateDeviceType(dt, model.ValidationOptions{})
+		if err != nil {
+			debug.PrintStack()
+			return dt, err, code
+		}
 	}
 
 	err = this.setDeviceType(dt)

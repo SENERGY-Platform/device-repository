@@ -70,13 +70,13 @@ func Jwtput(token string, url string, contenttype string, body *bytes.Buffer) (r
 }
 
 func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...func(*configuration.Config)) (conf configuration.Config, err error) {
-	controller.DisableFeaturesForTestEnv = true
 	conf, err = configuration.Load("../../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return conf, err
 	}
 	conf.Debug = true
+	conf.DisableStrictValidationForTesting = true
 
 	for _, f := range cm {
 		f(&conf)
@@ -98,13 +98,13 @@ func CreateTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T, cm ...
 }
 
 func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (ctrl *controller.Controller, err error) {
-	controller.DisableFeaturesForTestEnv = true
 	conf, err := configuration.Load("../../../../config.json")
 	if err != nil {
 		log.Println("ERROR: unable to load config: ", err)
 		return
 	}
 	conf.Debug = true
+	conf.DisableStrictValidationForTesting = true
 
 	_, ip, err := docker2.MongoDB(ctx, wg)
 	if err != nil {
@@ -121,7 +121,6 @@ func CreateMongoTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (
 }
 
 func StartController(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Config) (ctrl *controller.Controller, err error) {
-	controller.DisableFeaturesForTestEnv = true
 	ctx, cancel := context.WithCancel(baseCtx)
 	defer func() {
 		if err != nil {

@@ -977,6 +977,7 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	conf.DisableStrictValidationForTesting = true
 	conf.Debug = true
 	conf.LocalIdUniqueForOwner = true
 	whPort, err := docker2.GetFreePort()
@@ -1050,6 +1051,7 @@ func TestDeviceLocalIdOwnerConstraintPermissionsSearch(t *testing.T) {
 	}
 	conf.Debug = true
 	conf.LocalIdUniqueForOwner = true
+	conf.DisableStrictValidationForTesting = true
 	conf, err = docker2.NewEnv(ctx, wg, conf)
 	if err != nil {
 		t.Error(err)
@@ -1070,7 +1072,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-		controller.DisableFeaturesForTestEnv = true
+		conf.DisableStrictValidationForTesting = true
 
 		t.Run("create device-type", func(t *testing.T) {
 			_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
@@ -1136,7 +1138,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 
 		})
 
-		controller.DisableFeaturesForTestEnv = false
+		conf.DisableStrictValidationForTesting = false
 		t.Run("validates", func(t *testing.T) {
 			c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 			t.Run("user may add new device with new local-id", func(t *testing.T) {

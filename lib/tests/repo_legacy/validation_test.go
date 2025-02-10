@@ -23,7 +23,6 @@ import (
 	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
@@ -112,7 +111,7 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	controller.DisableFeaturesForTestEnv = false
+	conf.DisableStrictValidationForTesting = false
 
 	t.Run("device-type unconstrained ok", testRequest(conf, "PUT", "/device-types?dry-run=true", models.DeviceType{
 		Id:          "dt",
@@ -396,7 +395,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	controller.DisableFeaturesForTestEnv = false
+	conf.DisableStrictValidationForTesting = false
 
 	t.Run("used_device_class", func(t *testing.T) {
 		err = testDeleteValidation(

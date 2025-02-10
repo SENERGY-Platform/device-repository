@@ -34,15 +34,16 @@ func (this *Controller) SetFunction(token string, function models.Function) (res
 		return result, errors.New("token is not an admin"), http.StatusUnauthorized
 	}
 
-	//ensure ids
-	if !DisableFeaturesForTestEnv {
-		function.GenerateId()
-	}
 	model.SetFunctionRdfType(&function)
-	err, code = this.ValidateFunction(function)
-	if err != nil {
-		return result, err, code
+	//ensure ids
+	function.GenerateId()
+	if !this.config.DisableStrictValidationForTesting {
+		err, code = this.ValidateFunction(function)
+		if err != nil {
+			return result, err, code
+		}
 	}
+
 	err = this.setFunction(function)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -150,9 +151,6 @@ func (this *Controller) GetFunction(id string) (result models.Function, err erro
 }
 
 func (this *Controller) ValidateFunction(function models.Function) (err error, code int) {
-	if DisableFeaturesForTestEnv {
-		return nil, http.StatusOK
-	}
 	if function.Id == "" {
 		return errors.New("missing function id"), http.StatusBadRequest
 	}
