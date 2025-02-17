@@ -54,7 +54,7 @@ func (c *Client) Import(token string, importModel model.ImportExport, options mo
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/import"+queryString, bytes.NewBuffer(b))
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/import"+queryString, bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
