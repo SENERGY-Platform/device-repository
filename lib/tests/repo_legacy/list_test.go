@@ -18,6 +18,8 @@ package repo_legacy
 
 import (
 	"context"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"net/http"
 	"sync"
 	"testing"
 )
@@ -32,6 +34,36 @@ func TestResourceList(t *testing.T) {
 		t.Error(err)
 		return
 	}
+
+	t.Run("health", func(t *testing.T) {
+		resp, err := http.Get("http://localhost:" + conf.ServerPort)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Error("unexpected status code", resp.StatusCode)
+			return
+		}
+		resp, err = http.Get("http://localhost:" + conf.ServerPort + "/")
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Error("unexpected status code", resp.StatusCode)
+			return
+		}
+	})
+
+	t.Run("EOF /aspect-nodes/", func(t *testing.T) {
+		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		_, _, code := c.GetAspectNode("")
+		if code != http.StatusNotFound {
+			t.Error(err, code)
+			return
+		}
+	})
 
 	t.Run("aspects", func(t *testing.T) {
 		testAspectList(t, conf)

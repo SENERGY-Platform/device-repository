@@ -342,7 +342,7 @@ func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub,
 		return result, err, http.StatusInternalServerError
 	}
 	if !exists && hub.OwnerId != "" && hub.OwnerId != jwtToken.GetUserId() {
-		return hub, errors.New("new devices must be initialised with the requesting user as owner-id"), http.StatusBadRequest
+		return hub, errors.New("new hub must be initialised with the requesting user as owner-id"), http.StatusBadRequest
 	}
 	if !jwtToken.IsAdmin() && exists {
 		ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.HubTopic, hub.Id, client.Write)

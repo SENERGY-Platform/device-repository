@@ -81,7 +81,7 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 func GetRouterWithoutMiddleware(config configuration.Config, command Controller) http.Handler {
 	router := http.NewServeMux()
 	log.Println("add heart beat endpoint")
-	router.HandleFunc("GET /", func(writer http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("GET /{$}", func(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusOK)
 	})
 	for _, e := range endpoints {

@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -96,14 +97,14 @@ func (this *Mongo) ListDeviceClasses(ctx context.Context, listOptions model.Devi
 func (this *Mongo) GetDeviceClass(ctx context.Context, id string) (deviceClass models.DeviceClass, exists bool, err error) {
 	result := this.deviceClassCollection().FindOne(ctx, bson.M{DeviceClassBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return deviceClass, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&deviceClass)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return deviceClass, false, nil
 	}
 	return deviceClass, true, err
