@@ -16,6 +16,25 @@ definitions:
       name:
         type: string
     type: object
+  client.Resource:
+    properties:
+      group_permissions:
+        additionalProperties:
+          $ref: '#/definitions/model.PermissionsMap'
+        type: object
+      id:
+        type: string
+      role_permissions:
+        additionalProperties:
+          $ref: '#/definitions/model.PermissionsMap'
+        type: object
+      topic_id:
+        type: string
+      user_permissions:
+        additionalProperties:
+          $ref: '#/definitions/model.PermissionsMap'
+        type: object
+    type: object
   model.AdminLoadPermSearchRequest:
     properties:
       dry_run:
@@ -95,6 +114,58 @@ definitions:
         type: string
       interaction:
         $ref: '#/definitions/models.Interaction'
+    type: object
+  model.ImportExport:
+    properties:
+      aspects:
+        items:
+          $ref: '#/definitions/models.Aspect'
+        type: array
+      characteristics:
+        items:
+          $ref: '#/definitions/models.Characteristic'
+        type: array
+      concepts:
+        items:
+          $ref: '#/definitions/models.Concept'
+        type: array
+      device_classes:
+        items:
+          $ref: '#/definitions/models.DeviceClass'
+        type: array
+      device_groups:
+        items:
+          $ref: '#/definitions/models.DeviceGroup'
+        type: array
+      device_types:
+        items:
+          $ref: '#/definitions/models.DeviceType'
+        type: array
+      devices:
+        description: include_owned_information == true
+        items:
+          $ref: '#/definitions/models.Device'
+        type: array
+      functions:
+        items:
+          $ref: '#/definitions/models.Function'
+        type: array
+      hubs:
+        items:
+          $ref: '#/definitions/models.Hub'
+        type: array
+      locations:
+        items:
+          $ref: '#/definitions/models.Location'
+        type: array
+      permissions:
+        items:
+          $ref: '#/definitions/client.Resource'
+        type: array
+      protocols:
+        items:
+          $ref: '#/definitions/models.Protocol'
+        type: array
     type: object
   model.PermissionsMap:
     properties:
@@ -2538,6 +2609,37 @@ paths:
       tags:
       - set
       - devices
+  /export:
+    get:
+      description: export
+      parameters:
+      - description: default false; if true, export includes resources like devices,
+          hubs and locations
+        in: query
+        name: include_owned_information
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ImportExport'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: export
+      tags:
+      - import/export
   /extended-devices:
     get:
       description: list extended-device
@@ -3398,6 +3500,37 @@ paths:
       tags:
       - set
       - hubs
+  /import:
+    put:
+      description: import
+      parameters:
+      - description: default false; if true, import handles resources like devices,
+          hubs and locations
+        in: query
+        name: include_owned_information
+        type: boolean
+      - description: import
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.ImportExport'
+      responses:
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: import
+      tags:
+      - import/export
   /invalid/device-type:
     get:
       description: validate existing device-types

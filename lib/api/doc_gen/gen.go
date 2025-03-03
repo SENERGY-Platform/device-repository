@@ -19,8 +19,7 @@ package main
 import "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 
 //go:generate go run gen.go
-//go:generate go install github.com/swaggo/swag/cmd/swag@latest
-//go:generate swag init --instanceName devicerepository -o ../../../docs --parseDependency -d .. -g api.go
+//go:generate go tool swag init --instanceName devicerepository -o ../../../docs --parseDependency -d .. -g api.go
 
 // generates lib/api/permissions.go
 // which enables swag init to generate documentation for permissions endpoints

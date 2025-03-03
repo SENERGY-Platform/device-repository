@@ -2807,6 +2807,54 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
+        "/export": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "export",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "import/export"
+                ],
+                "summary": "export",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "default false; if true, export includes resources like devices, hubs and locations",
+                        "name": "include_owned_information",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ImportExport"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/extended-devices": {
             "get": {
                 "security": [
@@ -4086,6 +4134,54 @@ const docTemplatedevicerepository = `{
                             "$ref": "#/definitions/models.Hub"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/import": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "import",
+                "tags": [
+                    "import/export"
+                ],
+                "summary": "import",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "default false; if true, import handles resources like devices, hubs and locations",
+                        "name": "include_owned_information",
+                        "in": "query"
+                    },
+                    {
+                        "description": "import",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ImportExport"
+                        }
+                    }
+                ],
+                "responses": {
                     "400": {
                         "description": "Bad Request"
                     },
@@ -6932,6 +7028,35 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
+        "client.Resource": {
+            "type": "object",
+            "properties": {
+                "group_permissions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/model.PermissionsMap"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role_permissions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/model.PermissionsMap"
+                    }
+                },
+                "topic_id": {
+                    "type": "string"
+                },
+                "user_permissions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/model.PermissionsMap"
+                    }
+                }
+            }
+        },
         "model.AdminLoadPermSearchRequest": {
             "type": "object",
             "properties": {
@@ -7050,6 +7175,84 @@ const docTemplatedevicerepository = `{
                 },
                 "interaction": {
                     "$ref": "#/definitions/models.Interaction"
+                }
+            }
+        },
+        "model.ImportExport": {
+            "type": "object",
+            "properties": {
+                "aspects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Aspect"
+                    }
+                },
+                "characteristics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Characteristic"
+                    }
+                },
+                "concepts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Concept"
+                    }
+                },
+                "device_classes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceClass"
+                    }
+                },
+                "device_groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceGroup"
+                    }
+                },
+                "device_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceType"
+                    }
+                },
+                "devices": {
+                    "description": "include_owned_information == true",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Device"
+                    }
+                },
+                "functions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Function"
+                    }
+                },
+                "hubs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Hub"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Location"
+                    }
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/client.Resource"
+                    }
+                },
+                "protocols": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Protocol"
+                    }
                 }
             }
         },
