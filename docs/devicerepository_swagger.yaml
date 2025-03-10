@@ -2618,6 +2618,15 @@ paths:
         in: query
         name: include_owned_information
         type: boolean
+      - description: comma separated list of resource-types; export only given resource-types
+          (device-types,aspects,functions...)
+        in: query
+        name: filter_resource_types
+        type: string
+      - description: comma separated list of ids; export only given ids
+        in: query
+        name: filter_ids
+        type: string
       produces:
       - application/json
       responses:

@@ -34,7 +34,7 @@ type Right struct {
 	Administrate bool `json:"administrate"`
 }
 
-func (this *ResourceRights) ToPermV2Permissions() client.ResourcePermissions {
+func (this ResourceRights) ToPermV2Permissions() client.ResourcePermissions {
 	result := client.ResourcePermissions{
 		UserPermissions:  map[string]model2.PermissionsMap{},
 		GroupPermissions: map[string]model2.PermissionsMap{},

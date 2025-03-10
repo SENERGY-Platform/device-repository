@@ -16,7 +16,14 @@
 
 package model
 
-import "github.com/SENERGY-Platform/models/go/models"
+import (
+	"github.com/SENERGY-Platform/models/go/models"
+	"strings"
+)
+
+func DeviceIdToGeneratedDeviceGroupId(deviceId string) string {
+	return models.URN_PREFIX + "device-group:" + strings.TrimPrefix(deviceId, models.URN_PREFIX+"device:")
+}
 
 type DeviceTypeCriteria struct {
 	IsIdModified          bool        `json:"is_id_modified"`

@@ -2820,6 +2820,18 @@
                         "description": "default false; if true, export includes resources like devices, hubs and locations",
                         "name": "include_owned_information",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "comma separated list of resource-types; export only given resource-types (device-types,aspects,functions...)",
+                        "name": "filter_resource_types",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "comma separated list of ids; export only given ids",
+                        "name": "filter_ids",
+                        "in": "query"
                     }
                 ],
                 "responses": {

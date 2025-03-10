@@ -88,7 +88,7 @@ func (this *Controller) RemoveGeneratedDeviceGroup(deviceid string, owner string
 }
 
 func (this *Controller) DeviceIdToGeneratedDeviceGroupId(deviceId string) string {
-	return models.URN_PREFIX + "device-group:" + strings.TrimPrefix(deviceId, models.URN_PREFIX+"device:")
+	return model.DeviceIdToGeneratedDeviceGroupId(deviceId)
 }
 
 func (this *Controller) getDeviceGroupCriteria(device models.Device) (result []models.DeviceGroupFilterCriteria, err error, code int) {

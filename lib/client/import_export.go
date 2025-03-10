@@ -20,15 +20,29 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
+	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"net/http"
 	"net/url"
+	"strings"
 )
+
+type ImportExportOptions = model.ImportExportOptions
+type ImportExport = model.ImportExport
+type Resource = permissions.Resource
+type ResourcePermissions = permissions.ResourcePermissions
+type PermissionsMap = permissions.PermissionsMap
 
 func (c *Client) Export(token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int) {
 	queryString := ""
 	query := url.Values{}
 	if options.IncludeOwnedInformation {
 		query.Set("include_owned_information", "true")
+	}
+	if options.FilterIds != nil {
+		query.Set("filter_ids", strings.Join(options.FilterIds, ","))
+	}
+	if options.FilterResourceTypes != nil {
+		query.Set("filter_resource_types", strings.Join(options.FilterResourceTypes, ","))
 	}
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()

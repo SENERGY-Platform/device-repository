@@ -23,6 +23,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func init() {
@@ -38,6 +39,8 @@ type ImportExportEndpoints struct{}
 // @Produce      json
 // @Security Bearer
 // @Param        include_owned_information query bool false "default false; if true, export includes resources like devices, hubs and locations"
+// @Param        filter_resource_types query string false "comma separated list of resource-types; export only given resource-types (device-types,aspects,functions...)"
+// @Param        filter_ids query string false "comma separated list of ids; export only given ids"
 // @Success      200 {object}  model.ImportExport
 // @Failure      400
 // @Failure      401
@@ -52,6 +55,12 @@ func (this *ImportExportEndpoints) Export(config configuration.Config, router *h
 		options := model.ImportExportOptions{}
 		if request.URL.Query().Get("include_owned_information") == "true" {
 			options.IncludeOwnedInformation = true
+		}
+		if request.URL.Query().Has("filter_resource_types") {
+			options.FilterResourceTypes = strings.Split(request.URL.Query().Get("filter_resource_types"), ",")
+		}
+		if request.URL.Query().Has("filter_ids") {
+			options.FilterIds = strings.Split(request.URL.Query().Get("filter_ids"), ",")
 		}
 
 		result, err, code := control.Export(token, options)

@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"net/http"
@@ -53,6 +54,10 @@ func (this *Controller) RemoveRights(topic string, id string) error {
 }
 
 func (this *Controller) getDefaultEntryPermissions(topic string, owner string) (entry model.ResourceRights) {
+	return GetDefaultEntryPermissions(this.config, topic, owner)
+}
+
+func GetDefaultEntryPermissions(config configuration.Config, topic string, owner string) (entry model.ResourceRights) {
 	entry = model.ResourceRights{
 		UserRights:           map[string]model.Right{},
 		GroupRights:          map[string]model.Right{},
@@ -66,7 +71,7 @@ func (this *Controller) getDefaultEntryPermissions(topic string, owner string) (
 			Administrate: true,
 		}
 	}
-	for group, rights := range this.config.InitialGroupRights[topic] {
+	for group, rights := range config.InitialGroupRights[topic] {
 		perm := model.Right{}
 		for _, right := range rights {
 			switch right {

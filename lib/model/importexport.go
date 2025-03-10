@@ -19,16 +19,18 @@ package model
 import (
 	"github.com/SENERGY-Platform/models/go/models"
 	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"slices"
+	"strings"
 )
 
 type ImportExport struct {
-	Protocols       []models.Protocol       `json:"protocols"`
-	Functions       []models.Function       `json:"functions"`
-	Aspects         []models.Aspect         `json:"aspects"`
-	Concepts        []models.Concept        `json:"concepts"`
-	Characteristics []models.Characteristic `json:"characteristics"`
-	DeviceClasses   []models.DeviceClass    `json:"device_classes"`
-	DeviceTypes     []models.DeviceType     `json:"device_types"`
+	Protocols       []models.Protocol       `json:"protocols,omitempty"`
+	Functions       []models.Function       `json:"functions,omitempty"`
+	Aspects         []models.Aspect         `json:"aspects,omitempty"`
+	Concepts        []models.Concept        `json:"concepts,omitempty"`
+	Characteristics []models.Characteristic `json:"characteristics,omitempty"`
+	DeviceClasses   []models.DeviceClass    `json:"device_classes,omitempty"`
+	DeviceTypes     []models.DeviceType     `json:"device_types,omitempty"`
 
 	//include_owned_information == true
 	Devices      []models.Device        `json:"devices,omitempty"`
@@ -39,5 +41,46 @@ type ImportExport struct {
 }
 
 type ImportExportOptions struct {
-	IncludeOwnedInformation bool `json:"include_owned_information"`
+	IncludeOwnedInformation bool     `json:"include_owned_information"`
+	FilterResourceTypes     []string `json:"filter_resource_types"`
+	FilterIds               []string `json:"filter_ids"`
+}
+
+func (this *ImportExport) Sort() {
+	slices.SortFunc(this.Protocols, func(a, b models.Protocol) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Functions, func(a, b models.Function) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Aspects, func(a, b models.Aspect) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Concepts, func(a, b models.Concept) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Characteristics, func(a, b models.Characteristic) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.DeviceClasses, func(a, b models.DeviceClass) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.DeviceTypes, func(a, b models.DeviceType) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Devices, func(a, b models.Device) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.DeviceGroups, func(a, b models.DeviceGroup) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Hubs, func(a, b models.Hub) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Locations, func(a, b models.Location) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.Permissions, func(a, b permissions.Resource) int {
+		return strings.Compare(a.Id, b.Id)
+	})
 }
