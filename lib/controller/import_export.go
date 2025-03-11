@@ -257,139 +257,192 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		return errors.New("only admins may export"), http.StatusForbidden
 	}
 
-	for _, p := range importModel.Protocols {
-		err, code = this.ValidateProtocol(p)
-		if err != nil {
-			return err, code
-		}
-		err = this.setProtocol(p)
-		if err != nil {
-			return err, http.StatusInternalServerError
-		}
-	}
-
-	for _, characteristic := range importModel.Characteristics {
-		err, code = this.ValidateCharacteristics(characteristic)
-		if err != nil {
-			return err, code
-		}
-		err = this.setCharacteristic(characteristic)
-		if err != nil {
-			return err, http.StatusInternalServerError
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "protocols") {
+		for _, p := range importModel.Protocols {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, p.Id) {
+				err, code = this.ValidateProtocol(p)
+				if err != nil {
+					return err, code
+				}
+				err = this.setProtocol(p)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
 		}
 	}
 
-	for _, concept := range importModel.Concepts {
-		err, code = this.ValidateConcept(concept)
-		if err != nil {
-			return err, code
-		}
-		err = this.setConcept(concept)
-		if err != nil {
-			return err, http.StatusInternalServerError
-		}
-	}
-
-	for _, f := range importModel.Functions {
-		err, code = this.ValidateFunction(f)
-		if err != nil {
-			return err, code
-		}
-		err = this.setFunction(f)
-		if err != nil {
-			return err, http.StatusInternalServerError
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "characteristics") {
+		for _, characteristic := range importModel.Characteristics {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, characteristic.Id) {
+				err, code = this.ValidateCharacteristics(characteristic)
+				if err != nil {
+					return err, code
+				}
+				err = this.setCharacteristic(characteristic)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
 		}
 	}
 
-	for _, a := range importModel.Aspects {
-		err, code = this.ValidateAspect(a)
-		if err != nil {
-			return err, code
-		}
-		err = this.setAspect(a)
-		if err != nil {
-			return err, http.StatusInternalServerError
-		}
-	}
-
-	for _, dc := range importModel.DeviceClasses {
-		err, code = this.ValidateDeviceClass(dc)
-		if err != nil {
-			return err, code
-		}
-		err = this.setDeviceClass(dc)
-		if err != nil {
-			return err, http.StatusInternalServerError
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "concepts") {
+		for _, concept := range importModel.Concepts {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, concept.Id) {
+				err, code = this.ValidateConcept(concept)
+				if err != nil {
+					return err, code
+				}
+				err = this.setConcept(concept)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
 		}
 	}
 
-	for _, dt := range importModel.DeviceTypes {
-		err, code = this.ValidateDeviceType(dt, model.ValidationOptions{})
-		if err != nil {
-			return err, code
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "functions") {
+		for _, f := range importModel.Functions {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, f.Id) {
+				err, code = this.ValidateFunction(f)
+				if err != nil {
+					return err, code
+				}
+				err = this.setFunction(f)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
 		}
-		err = this.setDeviceType(dt)
-		if err != nil {
-			return err, http.StatusInternalServerError
+	}
+
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "aspects") {
+		for _, a := range importModel.Aspects {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, a.Id) {
+				err, code = this.ValidateAspect(a)
+				if err != nil {
+					return err, code
+				}
+				err = this.setAspect(a)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
+		}
+	}
+
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-classes") {
+		for _, dc := range importModel.DeviceClasses {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, dc.Id) {
+				err, code = this.ValidateDeviceClass(dc)
+				if err != nil {
+					return err, code
+				}
+				err = this.setDeviceClass(dc)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
+		}
+	}
+
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-types") {
+		for _, dt := range importModel.DeviceTypes {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, dt.Id) {
+				err, code = this.ValidateDeviceType(dt, model.ValidationOptions{})
+				if err != nil {
+					return err, code
+				}
+				err = this.setDeviceType(dt)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
 		}
 	}
 
 	if options.IncludeOwnedInformation {
 		//set permissions before and after local db, to ensure validation and no permission changes
 		for _, p := range importModel.Permissions {
-			_, err, code = this.permissionsV2Client.SetPermission(token, p.TopicId, p.Id, p.ResourcePermissions)
-			if err != nil {
-				return err, code
+			if (options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, p.TopicId)) && (options.FilterIds == nil || slices.Contains(options.FilterIds, p.Id)) {
+				_, err, code = this.permissionsV2Client.SetPermission(token, p.TopicId, p.Id, p.ResourcePermissions)
+				if err != nil {
+					return err, code
+				}
 			}
 		}
-		for _, d := range importModel.Devices {
-			err, code = this.ValidateDevice(token, d)
-			if err != nil {
-				return err, code
-			}
-			_, err, _ = this.setDevice(d)
-			if err != nil {
-				return err, http.StatusInternalServerError
-			}
-		}
-		for _, h := range importModel.Hubs {
-			err, code = this.ValidateHub(token, h)
-			if err != nil {
-				return err, code
-			}
-			err = this.setHub(model.HubWithConnectionState{
-				Hub:             h,
-				ConnectionState: models.ConnectionStateUnknown,
-			})
-			if err != nil {
-				return err, http.StatusInternalServerError
+
+		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "devices") {
+			for _, d := range importModel.Devices {
+				if options.FilterIds == nil || slices.Contains(options.FilterIds, d.Id) {
+					err, code = this.ValidateDevice(token, d)
+					if err != nil {
+						return err, code
+					}
+					_, err, _ = this.setDevice(d)
+					if err != nil {
+						return err, http.StatusInternalServerError
+					}
+				}
 			}
 		}
-		for _, dg := range importModel.DeviceGroups {
-			err, code = this.ValidateDeviceGroup(token, dg)
-			if err != nil {
-				return err, code
-			}
-			err = this.setDeviceGroup(dg, jwtToken.GetUserId())
-			if err != nil {
-				return err, http.StatusInternalServerError
-			}
-		}
-		for _, l := range importModel.Locations {
-			err, code = this.ValidateLocation(l)
-			if err != nil {
-				return err, code
-			}
-			err = this.setLocation(l, jwtToken.GetUserId())
-			if err != nil {
-				return err, http.StatusInternalServerError
+
+		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "hubs") {
+			for _, h := range importModel.Hubs {
+				if options.FilterIds == nil || slices.Contains(options.FilterIds, h.Id) {
+					err, code = this.ValidateHub(token, h)
+					if err != nil {
+						return err, code
+					}
+					err = this.setHub(model.HubWithConnectionState{
+						Hub:             h,
+						ConnectionState: models.ConnectionStateUnknown,
+					})
+					if err != nil {
+						return err, http.StatusInternalServerError
+					}
+				}
 			}
 		}
+
+		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-groups") {
+			for _, dg := range importModel.DeviceGroups {
+				if options.FilterIds == nil || slices.Contains(options.FilterIds, dg.Id) {
+					err, code = this.ValidateDeviceGroup(token, dg)
+					if err != nil {
+						return err, code
+					}
+					err = this.setDeviceGroup(dg, jwtToken.GetUserId())
+					if err != nil {
+						return err, http.StatusInternalServerError
+					}
+				}
+			}
+		}
+
+		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "locations") {
+			for _, l := range importModel.Locations {
+				if options.FilterIds == nil || slices.Contains(options.FilterIds, l.Id) {
+					err, code = this.ValidateLocation(l)
+					if err != nil {
+						return err, code
+					}
+					err = this.setLocation(l, jwtToken.GetUserId())
+					if err != nil {
+						return err, http.StatusInternalServerError
+					}
+				}
+			}
+		}
+
 		//set permissions before and after local db, to ensure validation and no permission changes
 		for _, p := range importModel.Permissions {
-			_, err, code = this.permissionsV2Client.SetPermission(token, p.TopicId, p.Id, p.ResourcePermissions)
-			if err != nil {
-				return err, code
+			if (options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, p.TopicId)) && (options.FilterIds == nil || slices.Contains(options.FilterIds, p.Id)) {
+				_, err, code = this.permissionsV2Client.SetPermission(token, p.TopicId, p.Id, p.ResourcePermissions)
+				if err != nil {
+					return err, code
+				}
 			}
 		}
 	}
