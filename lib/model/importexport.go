@@ -42,8 +42,15 @@ type ImportExport struct {
 
 type ImportExportOptions struct {
 	IncludeOwnedInformation bool     `json:"include_owned_information"`
-	FilterResourceTypes     []string `json:"filter_resource_types"`
-	FilterIds               []string `json:"filter_ids"`
+	FilterResourceTypes     []string `json:"filter_resource_types,omitempty"` //null->all; []->none
+	FilterIds               []string `json:"filter_ids,omitempty"`            //null->all; []->none
+}
+
+type ImportFromOptions struct {
+	FilterResourceTypes    []string `json:"filter_resource_types,omitempty"` //null->all; []->none
+	FilterIds              []string `json:"filter_ids,omitempty"`            //null->all; []->none
+	RemoteDeviceRepository string   `json:"remote_device_repository"`        //address of a remote device-repository, where the data is imported from
+	RemoteAuthToken        string   `json:"remote_auth_token"`               //auth token used for requests to the remote device-repository
 }
 
 func (this *ImportExport) Sort() {

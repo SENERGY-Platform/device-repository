@@ -167,6 +167,26 @@ definitions:
           $ref: '#/definitions/models.Protocol'
         type: array
     type: object
+  model.ImportFromOptions:
+    properties:
+      filter_ids:
+        description: null->all; []->none
+        items:
+          type: string
+        type: array
+      filter_resource_types:
+        description: null->all; []->none
+        items:
+          type: string
+        type: array
+      remote_auth_token:
+        description: auth token used for requests to the remote device-repository
+        type: string
+      remote_device_repository:
+        description: address of a remote device-repository, where the data is imported
+          from
+        type: string
+    type: object
   model.PermissionsMap:
     properties:
       administrate:
@@ -3538,6 +3558,41 @@ paths:
       security:
       - Bearer: []
       summary: import
+      tags:
+      - import/export
+  /import-from:
+    post:
+      description: import-from
+      parameters:
+      - description: default false; if true, import handles resources like devices,
+          hubs and locations
+        in: query
+        name: include_owned_information
+        type: boolean
+      - description: options containing information what should be imported from where;
+          filter_resource_types and filter_ids are optional but empty lists result
+          in empty results; filter_resource_types allows filtering by resource-types
+          like device-type; filter_ids allows filtering by resource id; ref documentation
+          of GET /export
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.ImportFromOptions'
+      responses:
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: import-from
       tags:
       - import/export
   /invalid/device-type:

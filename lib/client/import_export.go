@@ -19,11 +19,11 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 type ImportExportOptions = model.ImportExportOptions
@@ -31,23 +31,10 @@ type ImportExport = model.ImportExport
 type Resource = permissions.Resource
 type ResourcePermissions = permissions.ResourcePermissions
 type PermissionsMap = permissions.PermissionsMap
+type ImportFromOptions = model.ImportFromOptions
 
 func (c *Client) Export(token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int) {
-	queryString := ""
-	query := url.Values{}
-	if options.IncludeOwnedInformation {
-		query.Set("include_owned_information", "true")
-	}
-	if options.FilterIds != nil {
-		query.Set("filter_ids", strings.Join(options.FilterIds, ","))
-	}
-	if options.FilterResourceTypes != nil {
-		query.Set("filter_resource_types", strings.Join(options.FilterResourceTypes, ","))
-	}
-	if len(query) > 0 {
-		queryString = "?" + query.Encode()
-	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/export"+queryString, nil)
+	req, err := controller.GetExportHttpRequest(c.baseUrl, token, options)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -69,6 +56,27 @@ func (c *Client) Import(token string, importModel model.ImportExport, options mo
 		return err, http.StatusBadRequest
 	}
 	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/import"+queryString, bytes.NewBuffer(b))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) ImportFrom(token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int) {
+	b, err := json.Marshal(options)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	queryString := ""
+	query := url.Values{}
+	if includeOwnedInformation {
+		query.Set("include_owned_information", "true")
+	}
+	if len(query) > 0 {
+		queryString = "?" + query.Encode()
+	}
+	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/import-from"+queryString, bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

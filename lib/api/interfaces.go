@@ -136,4 +136,6 @@ type Controller interface {
 
 	Export(token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int)
 	Import(token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int)
+
+	ImportFrom(token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int)
 }

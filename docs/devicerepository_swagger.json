@@ -4204,6 +4204,54 @@
                 }
             }
         },
+        "/import-from": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "import-from",
+                "tags": [
+                    "import/export"
+                ],
+                "summary": "import-from",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "default false; if true, import handles resources like devices, hubs and locations",
+                        "name": "include_owned_information",
+                        "in": "query"
+                    },
+                    {
+                        "description": "options containing information what should be imported from where; filter_resource_types and filter_ids are optional but empty lists result in empty results; filter_resource_types allows filtering by resource-types like device-type; filter_ids allows filtering by resource id; ref documentation of GET /export",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ImportFromOptions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/invalid/device-type": {
             "get": {
                 "security": [
@@ -7257,6 +7305,33 @@
                     "items": {
                         "$ref": "#/definitions/models.Protocol"
                     }
+                }
+            }
+        },
+        "model.ImportFromOptions": {
+            "type": "object",
+            "properties": {
+                "filter_ids": {
+                    "description": "null-\u003eall; []-\u003enone",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "filter_resource_types": {
+                    "description": "null-\u003eall; []-\u003enone",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "remote_auth_token": {
+                    "description": "auth token used for requests to the remote device-repository",
+                    "type": "string"
+                },
+                "remote_device_repository": {
+                    "description": "address of a remote device-repository, where the data is imported from",
+                    "type": "string"
                 }
             }
         },

@@ -56,10 +56,10 @@ func (this *ImportExportEndpoints) Export(config configuration.Config, router *h
 		if request.URL.Query().Get("include_owned_information") == "true" {
 			options.IncludeOwnedInformation = true
 		}
-		if request.URL.Query().Has("filter_resource_types") {
+		if request.URL.Query().Has("filter_resource_types") && request.URL.Query().Get("filter_resource_types") != "" {
 			options.FilterResourceTypes = strings.Split(request.URL.Query().Get("filter_resource_types"), ",")
 		}
-		if request.URL.Query().Has("filter_ids") {
+		if request.URL.Query().Has("filter_ids") && request.URL.Query().Get("filter_ids") != "" {
 			options.FilterIds = strings.Split(request.URL.Query().Get("filter_ids"), ",")
 		}
 
@@ -104,8 +104,52 @@ func (this *ImportExportEndpoints) Import(config configuration.Config, router *h
 		if request.URL.Query().Get("include_owned_information") == "true" {
 			options.IncludeOwnedInformation = true
 		}
+		if request.URL.Query().Has("filter_resource_types") && request.URL.Query().Get("filter_resource_types") != "" {
+			options.FilterResourceTypes = strings.Split(request.URL.Query().Get("filter_resource_types"), ",")
+		}
+		if request.URL.Query().Has("filter_ids") && request.URL.Query().Get("filter_ids") != "" {
+			options.FilterIds = strings.Split(request.URL.Query().Get("filter_ids"), ",")
+		}
 
 		err, code := control.Import(token, importModel, options)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		writer.WriteHeader(http.StatusOK)
+		return
+	})
+}
+
+// ImportFrom godoc
+// @Summary      import-from
+// @Description  import-from
+// @Tags         import/export
+// @Security Bearer
+// @Param        include_owned_information query bool false "default false; if true, import handles resources like devices, hubs and locations"
+// @Param        message body model.ImportFromOptions true "options containing information what should be imported from where; filter_resource_types and filter_ids are optional but empty lists result in empty results; filter_resource_types allows filtering by resource-types like device-type; filter_ids allows filtering by resource id; ref documentation of GET /export"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /import-from [POST]
+func (this *ImportExportEndpoints) ImportFrom(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /import-from", func(writer http.ResponseWriter, request *http.Request) {
+		token := util.GetAuthToken(request)
+		options := model.ImportFromOptions{}
+		err := json.NewDecoder(request.Body).Decode(&options)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		includeOwnedInformation := false
+		if request.URL.Query().Get("include_owned_information") == "true" {
+			includeOwnedInformation = true
+		}
+
+		err, code := control.ImportFrom(token, includeOwnedInformation, options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

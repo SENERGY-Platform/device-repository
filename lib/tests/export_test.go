@@ -38,57 +38,61 @@ func TestExport(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	config, err := configuration.Load("./../../config.json")
-	if err != nil {
-		t.Error(err)
-		return
+	var initRepo = func() (client.Interface, configuration.Config) {
+		config, err := configuration.Load("./../../config.json")
+		if err != nil {
+			t.Error(err)
+			return nil, config
+		}
+
+		config.SyncLockDuration = time.Second.String()
+
+		_, mip, err := docker.MongoDB(ctx, wg)
+		if err != nil {
+			t.Error(err)
+			return nil, config
+		}
+		config.MongoUrl = "mongodb://" + mip + ":27017"
+
+		_, zkIp, err := docker.Zookeeper(ctx, wg)
+		if err != nil {
+			t.Error(err)
+			return nil, config
+		}
+		zookeeperUrl := zkIp + ":2181"
+
+		config.KafkaUrl, err = docker.Kafka(ctx, wg, zookeeperUrl)
+		if err != nil {
+			t.Error(err)
+			return nil, config
+		}
+
+		_, permIp, err := docker.PermissionsV2(ctx, wg, config.MongoUrl, config.KafkaUrl)
+		if err != nil {
+			t.Error(err)
+			return nil, config
+		}
+		config.PermissionsV2Url = "http://" + permIp + ":8080"
+
+		freePort, err := docker.GetFreePort()
+		if err != nil {
+			t.Error(err)
+			return nil, config
+		}
+		config.ServerPort = strconv.Itoa(freePort)
+
+		err = lib.Start(ctx, wg, config)
+		if err != nil {
+			t.Error(err)
+			return nil, config
+		}
+
+		time.Sleep(time.Second)
+
+		return client.NewClient("http://localhost:"+config.ServerPort, nil), config
 	}
 
-	config.SyncLockDuration = time.Second.String()
-
-	_, mip, err := docker.MongoDB(ctx, wg)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	config.MongoUrl = "mongodb://" + mip + ":27017"
-
-	_, zkIp, err := docker.Zookeeper(ctx, wg)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	zookeeperUrl := zkIp + ":2181"
-
-	config.KafkaUrl, err = docker.Kafka(ctx, wg, zookeeperUrl)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	_, permIp, err := docker.PermissionsV2(ctx, wg, config.MongoUrl, config.KafkaUrl)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	config.PermissionsV2Url = "http://" + permIp + ":8080"
-
-	freePort, err := docker.GetFreePort()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	config.ServerPort = strconv.Itoa(freePort)
-
-	err = lib.Start(ctx, wg, config)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	time.Sleep(time.Second)
-
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c, config := initRepo()
 
 	protocolId := ""
 	protocols := []models.Protocol{}
@@ -380,6 +384,203 @@ func TestExport(t *testing.T) {
 		})
 		t.Run("only first device-type and function", func(t *testing.T) {
 			export, err, _ := c.Export(client.InternalAdminToken, client.ImportExportOptions{
+				FilterResourceTypes: []string{"device-types", "functions"},
+				FilterIds:           []string{deviceTypes[0].Id, functions[0].Id},
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := client.ImportExport{
+				DeviceTypes: []models.DeviceType{deviceTypes[0]},
+				Functions:   []models.Function{functions[0]},
+			}
+			expected.Sort()
+			if !reflect.DeepEqual(export, expected) {
+				t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+			}
+		})
+	})
+
+	c2, _ := initRepo()
+
+	t.Run("import-from only concepts", func(t *testing.T) {
+		err, _ := c2.ImportFrom(client.InternalAdminToken, true, client.ImportFromOptions{
+			RemoteDeviceRepository: "http://localhost:" + config.ServerPort,
+			RemoteAuthToken:        client.InternalAdminToken,
+			FilterResourceTypes:    []string{"concepts"},
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
+
+	t.Run("export after import-from concepts", func(t *testing.T) {
+		export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := client.ImportExport{
+			Concepts: concepts,
+		}
+		expected.Sort()
+		if !reflect.DeepEqual(export, expected) {
+			t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+		}
+	})
+
+	t.Run("import-from only function 0 and aspect 1", func(t *testing.T) {
+		err, _ := c2.ImportFrom(client.InternalAdminToken, true, client.ImportFromOptions{
+			RemoteDeviceRepository: "http://localhost:" + config.ServerPort,
+			RemoteAuthToken:        client.InternalAdminToken,
+			FilterResourceTypes:    []string{"functions", "aspects"},
+			FilterIds:              []string{functions[0].Id, aspects[1].Id},
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
+
+	t.Run("export after import-from function 0 and aspect 1", func(t *testing.T) {
+		export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		expected := client.ImportExport{
+			Concepts:  concepts,
+			Functions: []models.Function{functions[0]},
+			Aspects:   []models.Aspect{aspects[1]},
+		}
+		expected.Sort()
+		if !reflect.DeepEqual(export, expected) {
+			t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+		}
+	})
+
+	t.Run("import-from all", func(t *testing.T) {
+		err, _ := c2.ImportFrom(client.InternalAdminToken, true, client.ImportFromOptions{
+			RemoteDeviceRepository: "http://localhost:" + config.ServerPort,
+			RemoteAuthToken:        client.InternalAdminToken,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	})
+
+	t.Run("export after import-from all", func(t *testing.T) {
+		t.Run("default", func(t *testing.T) {
+			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := client.ImportExport{
+				Protocols:   protocols,
+				Functions:   functions,
+				Aspects:     aspects,
+				Concepts:    concepts,
+				DeviceTypes: deviceTypes,
+			}
+			expected.Sort()
+			if !reflect.DeepEqual(export, expected) {
+				t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+			}
+		})
+		t.Run("with devices", func(t *testing.T) {
+			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := client.ImportExport{
+				Protocols:    protocols,
+				Functions:    functions,
+				Aspects:      aspects,
+				Concepts:     concepts,
+				DeviceTypes:  deviceTypes,
+				Devices:      devices,
+				DeviceGroups: devicegroups,
+				Permissions: []client.Resource{
+					{
+						Id:                  model.DeviceIdToGeneratedDeviceGroupId(devices[0].Id),
+						TopicId:             "device-groups",
+						ResourcePermissions: controller.GetDefaultEntryPermissions(config, "device-groups", "dd69ea0d-f553-4336-80f3-7f4567f85c7b").ToPermV2Permissions(),
+					},
+					{
+						Id:                  model.DeviceIdToGeneratedDeviceGroupId(devices[1].Id),
+						TopicId:             "device-groups",
+						ResourcePermissions: controller.GetDefaultEntryPermissions(config, "device-groups", "dd69ea0d-f553-4336-80f3-7f4567f85c7b").ToPermV2Permissions(),
+					},
+					{
+						Id:                  devices[0].Id,
+						TopicId:             "devices",
+						ResourcePermissions: controller.GetDefaultEntryPermissions(config, "devices", "dd69ea0d-f553-4336-80f3-7f4567f85c7b").ToPermV2Permissions(),
+					},
+					{
+						Id:                  devices[1].Id,
+						TopicId:             "devices",
+						ResourcePermissions: controller.GetDefaultEntryPermissions(config, "devices", "dd69ea0d-f553-4336-80f3-7f4567f85c7b").ToPermV2Permissions(),
+					},
+				},
+			}
+			expected.Sort()
+			if !reflect.DeepEqual(export, expected) {
+				t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+			}
+		})
+		t.Run("only device-types", func(t *testing.T) {
+			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types"}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := client.ImportExport{
+				DeviceTypes: deviceTypes,
+			}
+			expected.Sort()
+			if !reflect.DeepEqual(export, expected) {
+				t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+			}
+		})
+		t.Run("only first device-type", func(t *testing.T) {
+			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{
+				FilterResourceTypes: []string{"device-types"},
+				FilterIds:           []string{deviceTypes[0].Id},
+			})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := client.ImportExport{
+				DeviceTypes: []models.DeviceType{deviceTypes[0]},
+			}
+			expected.Sort()
+			if !reflect.DeepEqual(export, expected) {
+				t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+			}
+		})
+		t.Run("only device-types and functions", func(t *testing.T) {
+			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types", "functions"}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expected := client.ImportExport{
+				DeviceTypes: deviceTypes,
+				Functions:   functions,
+			}
+			expected.Sort()
+			if !reflect.DeepEqual(export, expected) {
+				t.Errorf("\na:%#v\ne:%#v\n", export, expected)
+			}
+		})
+		t.Run("only first device-type and function", func(t *testing.T) {
+			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{
 				FilterResourceTypes: []string{"device-types", "functions"},
 				FilterIds:           []string{deviceTypes[0].Id, functions[0].Id},
 			})
