@@ -127,7 +127,7 @@ func (this *ImportExportEndpoints) Import(config configuration.Config, router *h
 // @Tags         import/export
 // @Security Bearer
 // @Param        include_owned_information query bool false "default false; if true, import handles resources like devices, hubs and locations"
-// @Param        message body model.ImportFromOptions true "options containing information what should be imported from where; filter_resource_types and filter_ids are optional but empty lists result in empty results; filter_resource_types allows filtering by resource-types like device-type; filter_ids allows filtering by resource id; ref documentation of GET /export"
+// @Param        message body model.ImportFromOptions true "options containing information what should be imported from where; filter_resource_types and filter_ids are optional but empty lists result in empty results; filter_resource_types allows filtering by resource-types like 'aspects' (plural like the http endpoints); filter_ids allows filtering by resource id; ref documentation of GET /export"
 // @Failure      400
 // @Failure      401
 // @Failure      403
