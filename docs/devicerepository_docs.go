@@ -2846,7 +2846,7 @@ const docTemplatedevicerepository = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.ImportExport"
+                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_lib_model.ImportExport"
                         }
                     },
                     "400": {
@@ -4189,7 +4189,7 @@ const docTemplatedevicerepository = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.ImportExport"
+                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_lib_model.ImportExport"
                         }
                     }
                 ],
@@ -4891,7 +4891,7 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "/permissions/accessible/{topic}": {
+        "/permissions/accessible/device-groups": {
             "get": {
                 "security": [
                     {
@@ -4903,18 +4903,10 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accessible",
-                    "resource"
+                    "permissions-device-groups"
                 ],
                 "summary": "list accessible resource ids",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
@@ -4956,81 +4948,27 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "/permissions/admin/load/permission-search": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "load rights from permission-search, requesting user must have admin right",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin"
-                ],
-                "summary": "load rights from permission-search",
-                "parameters": [
-                    {
-                        "description": "load configuration",
-                        "name": "message",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.AdminLoadPermSearchRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "update count",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/permissions/admin/resources/{topic}": {
+        "/permissions/accessible/devices": {
             "get": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "lists resource ids in topic, requesting user must be in admin group",
+                "description": "list accessible resource ids",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "topics",
-                    "resources",
-                    "admin"
+                    "permissions-devices"
                 ],
-                "summary": "lists resource ids in topic",
+                "summary": "list accessible resource ids",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -5061,31 +4999,34 @@ const docTemplatedevicerepository = `{
                     "401": {
                         "description": "Unauthorized"
                     },
-                    "403": {
-                        "description": "Forbidden"
-                    },
                     "500": {
                         "description": "Internal Server Error"
                     }
                 }
             }
         },
-        "/permissions/admin/topics": {
+        "/permissions/accessible/hubs": {
             "get": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "lists topics with their configuration, requesting user must be admin",
+                "description": "list accessible resource ids",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "topics"
+                    "permissions-hubs"
                 ],
-                "summary": "lists topics with their configuration",
+                "summary": "list accessible resource ids",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "limits size of result; 0 means unlimited",
@@ -5105,7 +5046,7 @@ const docTemplatedevicerepository = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Topic"
+                                "type": "string"
                             }
                         }
                     },
@@ -5115,102 +5056,55 @@ const docTemplatedevicerepository = `{
                     "401": {
                         "description": "Unauthorized"
                     },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "set topic config, requesting user must be admin",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "topics"
-                ],
-                "summary": "set topic config",
-                "parameters": [
-                    {
-                        "description": "Topic",
-                        "name": "message",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Topic"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Topic"
-                        }
-                    },
-                    "202": {
-                        "description": "Accepted",
-                        "schema": {
-                            "$ref": "#/definitions/model.Topic"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
                     "500": {
                         "description": "Internal Server Error"
                     }
                 }
             }
         },
-        "/permissions/admin/topics/{id}": {
+        "/permissions/accessible/locations": {
             "get": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "get topic config, requesting user must be admin",
+                "description": "list accessible resource ids",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "topics"
+                    "permissions-locations"
                 ],
-                "summary": "get topic config",
+                "summary": "list accessible resource ids",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Topic Id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limits size of result; 0 means unlimited",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset to be used in combination with limit",
+                        "name": "offset",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Topic"
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
@@ -5218,112 +5112,6 @@ const docTemplatedevicerepository = `{
                     },
                     "401": {
                         "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "set topic config, requesting user must be admin",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "topics"
-                ],
-                "summary": "set topic config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Topic",
-                        "name": "message",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Topic"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Topic"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "remove topic config, requesting user must be admin",
-                "tags": [
-                    "topics"
-                ],
-                "summary": "remove topic config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -5331,7 +5119,7 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "/permissions/check/{topic}": {
+        "/permissions/check/device-groups": {
             "get": {
                 "security": [
                     {
@@ -5343,17 +5131,10 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "check"
+                    "permissions-device-groups"
                 ],
                 "summary": "check multiple permissions",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Resource Ids, comma seperated",
@@ -5390,7 +5171,7 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "/permissions/check/{topic}/{id}": {
+        "/permissions/check/device-groups/{id}": {
             "get": {
                 "security": [
                     {
@@ -5402,17 +5183,10 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "check"
+                    "permissions-device-groups"
                 ],
                 "summary": "check permission",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Resource Id",
@@ -5446,7 +5220,310 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "/permissions/manage/{topic}": {
+        "/permissions/check/devices": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "check multiple permissions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-devices"
+                ],
+                "summary": "check multiple permissions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Ids, comma seperated",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/check/devices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "check permission",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-devices"
+                ],
+                "summary": "check permission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/check/hubs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "check multiple permissions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-hubs"
+                ],
+                "summary": "check multiple permissions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Ids, comma seperated",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/check/hubs/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "check permission",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-hubs"
+                ],
+                "summary": "check permission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/check/locations": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "check multiple permissions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-locations"
+                ],
+                "summary": "check multiple permissions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Ids, comma seperated",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/check/locations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "check permission",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-locations"
+                ],
+                "summary": "check permission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "checked permissions in the form of 'rwxa', defaults to 'r'",
+                        "name": "permissions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/manage/device-groups": {
             "get": {
                 "security": [
                     {
@@ -5458,18 +5535,10 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "manage",
-                    "resource"
+                    "permissions-device-groups"
                 ],
                 "summary": "lists resources the user has admin rights to",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "limits size of result; 0 means unlimited",
@@ -5508,7 +5577,7 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "/permissions/manage/{topic}/{id}": {
+        "/permissions/manage/device-groups/{id}": {
             "get": {
                 "security": [
                     {
@@ -5520,18 +5589,10 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "manage",
-                    "resource"
+                    "permissions-device-groups"
                 ],
                 "summary": "get resource",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Resource Id",
@@ -5575,18 +5636,10 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "manage",
-                    "resource-rights"
+                    "permissions-device-groups"
                 ],
                 "summary": "set resource rights",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "Resource Id",
@@ -5630,27 +5683,78 @@ const docTemplatedevicerepository = `{
                         "description": "Internal Server Error"
                     }
                 }
-            },
-            "delete": {
+            }
+        },
+        "/permissions/manage/devices": {
+            "get": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "delete resource, requesting user must have admin right on the resource, topic must have NoCqrs=true",
-                "tags": [
-                    "manage",
-                    "resource"
+                "description": "lists resources the user has admin rights to",
+                "produces": [
+                    "application/json"
                 ],
-                "summary": "delete resource",
+                "tags": [
+                    "permissions-devices"
+                ],
+                "summary": "lists resources the user has admin rights to",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
+                        "type": "integer",
+                        "description": "limits size of result; 0 means unlimited",
+                        "name": "limit",
+                        "in": "query"
                     },
+                    {
+                        "type": "integer",
+                        "description": "offset to be used in combination with limit",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Resource"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/manage/devices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get resource, requesting user must have admin right  on the resource",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-devices"
+                ],
+                "summary": "get resource",
+                "parameters": [
                     {
                         "type": "string",
                         "description": "Resource Id",
@@ -5679,33 +5783,410 @@ const docTemplatedevicerepository = `{
                         "description": "Internal Server Error"
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get resource rights, requesting user must have admin right",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-devices"
+                ],
+                "summary": "set resource rights",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if set to true, the response will be sent after the corresponding kafka done signal has been received",
+                        "name": "wait",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Topic",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ResourcePermissions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResourcePermissions"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
             }
         },
-        "/permissions/permissions/{topic}": {
+        "/permissions/manage/hubs": {
             "get": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "list the computed permissions to resources of the given topic and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "description": "lists resources the user has admin rights to",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "permissions",
-                    "check",
-                    "list"
+                    "permissions-hubs"
                 ],
-                "summary": "list the computed permissions to resources of the given topic and ids",
+                "summary": "lists resources the user has admin rights to",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limits size of result; 0 means unlimited",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset to be used in combination with limit",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Resource"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/manage/hubs/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get resource, requesting user must have admin right  on the resource",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-hubs"
+                ],
+                "summary": "get resource",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
+                        "description": "Resource Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Resource"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get resource rights, requesting user must have admin right",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-hubs"
+                ],
+                "summary": "set resource rights",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
+                    {
+                        "type": "boolean",
+                        "description": "if set to true, the response will be sent after the corresponding kafka done signal has been received",
+                        "name": "wait",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Topic",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ResourcePermissions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResourcePermissions"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/manage/locations": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "lists resources the user has admin rights to",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-locations"
+                ],
+                "summary": "lists resources the user has admin rights to",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limits size of result; 0 means unlimited",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset to be used in combination with limit",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Resource"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/manage/locations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get resource, requesting user must have admin right  on the resource",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-locations"
+                ],
+                "summary": "get resource",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Resource"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get resource rights, requesting user must have admin right",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-locations"
+                ],
+                "summary": "set resource rights",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if set to true, the response will be sent after the corresponding kafka done signal has been received",
+                        "name": "wait",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Topic",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ResourcePermissions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResourcePermissions"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/permissions/device-groups": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-device-groups"
+                ],
+                "summary": "list the computed permissions to resources of the given topic (device-groups) and ids",
+                "parameters": [
                     {
                         "type": "string",
                         "description": "Resource Ids, comma seperated",
@@ -5736,32 +6217,313 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "/permissions/query/permissions/{topic}": {
+        "/permissions/permissions/devices": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-devices"
+                ],
+                "summary": "list the computed permissions to resources of the given topic (devices) and ids",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Ids, comma seperated",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ComputedPermissions"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/permissions/hubs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-hubs"
+                ],
+                "summary": "list the computed permissions to resources of the given topic (hubs) and ids",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Ids, comma seperated",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ComputedPermissions"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/permissions/locations": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-locations"
+                ],
+                "summary": "list the computed permissions to resources of the given topic (locations) and ids",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Ids, comma seperated",
+                        "name": "ids",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ComputedPermissions"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/query/permissions/device-groups": {
             "post": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "list the computed permissions to resources of the given topic and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "description": "list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "permissions",
-                    "check",
-                    "list",
-                    "query"
+                    "permissions-device-groups"
                 ],
-                "summary": "list the computed permissions to resources of the given topic and ids",
+                "summary": "list the computed permissions to resources of the given topic (device-groups) and ids",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Topic Id",
-                        "name": "topic",
-                        "in": "path",
-                        "required": true
+                        "description": "Resource Ids",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ComputedPermissions"
+                            }
+                        }
                     },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/query/permissions/devices": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-devices"
+                ],
+                "summary": "list the computed permissions to resources of the given topic (devices) and ids",
+                "parameters": [
+                    {
+                        "description": "Resource Ids",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ComputedPermissions"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/query/permissions/hubs": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-hubs"
+                ],
+                "summary": "list the computed permissions to resources of the given topic (hubs) and ids",
+                "parameters": [
+                    {
+                        "description": "Resource Ids",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ComputedPermissions"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/permissions/query/permissions/locations": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions-locations"
+                ],
+                "summary": "list the computed permissions to resources of the given topic (locations) and ids",
+                "parameters": [
                     {
                         "description": "Resource Ids",
                         "name": "ids",
@@ -7117,26 +7879,81 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "model.AdminLoadPermSearchRequest": {
+        "github_com_SENERGY-Platform_device-repository_lib_model.ImportExport": {
             "type": "object",
             "properties": {
-                "dry_run": {
-                    "description": "true -\u003e log changes without executing them",
-                    "type": "boolean"
+                "aspects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Aspect"
+                    }
                 },
-                "overwrite_existing": {
-                    "description": "false -\u003e skip known elements; true -\u003e force state of permission-search",
-                    "type": "boolean"
+                "characteristics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Characteristic"
+                    }
                 },
-                "permission_search_url": {
-                    "type": "string"
+                "concepts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Concept"
+                    }
                 },
-                "token": {
-                    "type": "string"
+                "device_classes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceClass"
+                    }
                 },
-                "topic_id": {
-                    "description": "topic as used in permissions-v2",
-                    "type": "string"
+                "device_groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceGroup"
+                    }
+                },
+                "device_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceType"
+                    }
+                },
+                "devices": {
+                    "description": "include_owned_information == true",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Device"
+                    }
+                },
+                "functions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Function"
+                    }
+                },
+                "hubs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Hub"
+                    }
+                },
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Location"
+                    }
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/client.Resource"
+                    }
+                },
+                "protocols": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Protocol"
+                    }
                 }
             }
         },
@@ -7235,84 +8052,6 @@ const docTemplatedevicerepository = `{
                 },
                 "interaction": {
                     "$ref": "#/definitions/models.Interaction"
-                }
-            }
-        },
-        "model.ImportExport": {
-            "type": "object",
-            "properties": {
-                "aspects": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Aspect"
-                    }
-                },
-                "characteristics": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Characteristic"
-                    }
-                },
-                "concepts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Concept"
-                    }
-                },
-                "device_classes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.DeviceClass"
-                    }
-                },
-                "device_groups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.DeviceGroup"
-                    }
-                },
-                "device_types": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.DeviceType"
-                    }
-                },
-                "devices": {
-                    "description": "include_owned_information == true",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Device"
-                    }
-                },
-                "functions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Function"
-                    }
-                },
-                "hubs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Hub"
-                    }
-                },
-                "locations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Location"
-                    }
-                },
-                "permissions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/client.Resource"
-                    }
-                },
-                "protocols": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Protocol"
-                    }
                 }
             }
         },
@@ -7479,30 +8218,6 @@ const docTemplatedevicerepository = `{
                     "items": {
                         "$ref": "#/definitions/model.VariableReference"
                     }
-                }
-            }
-        },
-        "model.Topic": {
-            "type": "object",
-            "properties": {
-                "default_permissions": {
-                    "$ref": "#/definitions/model.ResourcePermissions"
-                },
-                "ensure_kafka_topic_init": {
-                    "type": "boolean"
-                },
-                "ensure_kafka_topic_init_partition_number": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "last_update_unix_timestamp": {
-                    "description": "should be ignored by the user; is set by db",
-                    "type": "integer"
-                },
-                "publish_to_kafka_topic": {
-                    "type": "string"
                 }
             }
         },

@@ -16,7 +16,11 @@
 
 package main
 
-import "github.com/SENERGY-Platform/permissions-v2/pkg/client"
+import (
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"net/http"
+	"strings"
+)
 
 //go:generate go run gen.go
 //go:generate go tool swag init --instanceName devicerepository -o ../../../docs --parseDependency -d .. -g api.go
@@ -25,7 +29,31 @@ import "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 // which enables swag init to generate documentation for permissions endpoints
 // which are added by 'permForward := client.New(config.PermissionsV2Url).EmbedPermissionsRequestForwarding("/permissions/", router)'
 func main() {
-	err := client.GenerateGoFileWithSwaggoCommentsForEmbededPermissionsClient("api", "permissions", "../generated_permissions.go")
+	err := client.GenerateGoFileWithSwaggoCommentsForEmbeddedPermissionsClient("api",
+		"permissions",
+		"../generated_permissions.go",
+		[]string{
+			"devices",
+			"device-groups",
+			"hubs",
+			"locations",
+		},
+		func(method string, path string) bool {
+			if method == http.MethodDelete {
+				return false
+			}
+			if strings.Contains(path, "admin") {
+				return false
+			}
+			if strings.Contains(path, "import") {
+				return false
+			}
+			if strings.Contains(path, "export") {
+				return false
+			}
+			return true
+		},
+	)
 	if err != nil {
 		panic(err)
 	}

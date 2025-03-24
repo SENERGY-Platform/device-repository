@@ -28,6 +28,7 @@ import (
 	"net/http"
 	"reflect"
 	"runtime/debug"
+	"strings"
 )
 
 type EndpointMethod = func(config configuration.Config, router *http.ServeMux, ctrl Controller)
@@ -70,7 +71,21 @@ func Start(ctx context.Context, config configuration.Config, control Controller)
 func GetRouter(config configuration.Config, control Controller) http.Handler {
 	handler := GetRouterWithoutMiddleware(config, control)
 	log.Println("add permissions endpoints")
-	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), handler, "/permissions/")
+	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), handler, "/permissions/", func(method string, path string) bool {
+		if method == http.MethodDelete {
+			return false
+		}
+		if strings.Contains(path, "admin") {
+			return false
+		}
+		if strings.Contains(path, "import") {
+			return false
+		}
+		if strings.Contains(path, "export") {
+			return false
+		}
+		return true
+	})
 	log.Println("add cors")
 	corsHandler := util.NewCors(permForward)
 	log.Println("add logging")

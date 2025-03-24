@@ -23,184 +23,163 @@ package api
 
 
 
-// GeneratedListTopics godoc
-// @Summary      lists topics with their configuration
-// @Description  lists topics with their configuration, requesting user must be admin
-// @Tags         topics
+// GeneratedListComputedPermissions_devices godoc
+// @Summary      list the computed permissions to resources of the given topic (devices) and ids
+// @Description  list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-devices
 // @Security Bearer
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array}  model.Topic
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/admin/topics [get]
-func GeneratedListTopics(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedGetTopic godoc
-// @Summary      get topic config
-// @Description  get topic config, requesting user must be admin
-// @Tags         topics
-// @Security Bearer
-// @Param        id path string true "Topic Id"
-// @Produce      json
-// @Success      200 {object}  model.Topic
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      404
-// @Failure      500
-// @Router       /permissions/admin/topics/{id} [get]
-func GeneratedGetTopic(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedSetTopic godoc
-// @Summary      set topic config
-// @Description  set topic config, requesting user must be admin
-// @Tags         topics
-// @Accept       json
-// @Produce      json
-// @Security Bearer
-// @Param        id path string true "Topic Id"
-// @Param        message body model.Topic true "Topic"
-// @Success      200 {object}  model.Topic
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      404
-// @Failure      500
-// @Router       /permissions/admin/topics/{id} [put]
-func GeneratedSetTopic(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedSetTopicByPost godoc
-// @Summary      set topic config
-// @Description  set topic config, requesting user must be admin
-// @Tags         topics
-// @Accept       json
-// @Produce      json
-// @Security Bearer
-// @Param        message body model.Topic true "Topic"
-// @Success      200 {object}  model.Topic
-// @Success      202 {object}  model.Topic
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      404
-// @Failure      500
-// @Router       /permissions/admin/topics [POST]
-func GeneratedSetTopicByPost(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedDeleteTopic godoc
-// @Summary      remove topic config
-// @Description  remove topic config, requesting user must be admin
-// @Tags         topics
-// @Security Bearer
-// @Param        id path string true "Topic Id"
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      404
-// @Failure      500
-// @Router       /permissions/admin/topics/{id} [delete]
-func GeneratedDeleteTopic(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckPermission godoc
-// @Summary      check permission
-// @Description  check permission
-// @Tags         check
-// @Security Bearer
-// @Param        topic path string true "Topic Id"
-// @Param        id path string true "Resource Id"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/{topic}/{id} [get]
-func GeneratedCheckPermission(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckMultiplePermissions godoc
-// @Summary      check multiple permissions
-// @Description  check multiple permissions
-// @Tags         check
-// @Security Bearer
-// @Param        topic path string true "Topic Id"
 // @Param        ids query string true "Resource Ids, comma seperated"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
 // @Produce      json
-// @Success      200 {object} map[string]bool
+// @Success      200 {array} model.ComputedPermissions
 // @Failure      400
 // @Failure      401
 // @Failure      500
-// @Router       /permissions/check/{topic} [get]
-func GeneratedCheckMultiplePermissions(){
+// @Router       /permissions/permissions/devices [get]
+func GeneratedListComputedPermissions_devices(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
 
 
 
-// GeneratedListAccessibleResourceIds godoc
-// @Summary      list accessible resource ids
-// @Description  list accessible resource ids
-// @Tags         accessible, resource
+// GeneratedListComputedPermissions_devicegroups godoc
+// @Summary      list the computed permissions to resources of the given topic (device-groups) and ids
+// @Description  list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-device-groups
 // @Security Bearer
-// @Param        topic path string true "Topic Id"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
+// @Param        ids query string true "Resource Ids, comma seperated"
 // @Produce      json
-// @Success      200 {array} string
+// @Success      200 {array} model.ComputedPermissions
 // @Failure      400
 // @Failure      401
 // @Failure      500
-// @Router       /permissions/accessible/{topic} [get]
-func GeneratedListAccessibleResourceIds(){
+// @Router       /permissions/permissions/device-groups [get]
+func GeneratedListComputedPermissions_devicegroups(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
 
 
 
-// GeneratedListResourcesWithAdminPermission godoc
+// GeneratedListComputedPermissions_hubs godoc
+// @Summary      list the computed permissions to resources of the given topic (hubs) and ids
+// @Description  list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/permissions/hubs [get]
+func GeneratedListComputedPermissions_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListComputedPermissions_locations godoc
+// @Summary      list the computed permissions to resources of the given topic (locations) and ids
+// @Description  list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/permissions/locations [get]
+func GeneratedListComputedPermissions_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_devices godoc
+// @Summary      list the computed permissions to resources of the given topic (devices) and ids
+// @Description  list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/devices [post]
+func GeneratedQueryListComputedPermissions_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_devicegroups godoc
+// @Summary      list the computed permissions to resources of the given topic (device-groups) and ids
+// @Description  list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/device-groups [post]
+func GeneratedQueryListComputedPermissions_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_hubs godoc
+// @Summary      list the computed permissions to resources of the given topic (hubs) and ids
+// @Description  list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/hubs [post]
+func GeneratedQueryListComputedPermissions_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_locations godoc
+// @Summary      list the computed permissions to resources of the given topic (locations) and ids
+// @Description  list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/locations [post]
+func GeneratedQueryListComputedPermissions_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListResourcesWithAdminPermission_devices godoc
 // @Summary      lists resources the user has admin rights to
 // @Description  lists resources the user has admin rights to
-// @Tags         manage, resource
+// @Tags         permissions-devices
 // @Security Bearer
-// @Param        topic path string true "Topic Id"
 // @Param        limit query integer false "limits size of result; 0 means unlimited"
 // @Param        offset query integer false "offset to be used in combination with limit"
 // @Produce      json
@@ -209,20 +188,82 @@ func GeneratedListAccessibleResourceIds(){
 // @Failure      401
 // @Failure      403
 // @Failure      500
-// @Router       /permissions/manage/{topic} [get]
-func GeneratedListResourcesWithAdminPermission(){
+// @Router       /permissions/manage/devices [get]
+func GeneratedListResourcesWithAdminPermission_devices(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
 
 
 
-// GeneratedGetResource godoc
+// GeneratedListResourcesWithAdminPermission_devicegroups godoc
+// @Summary      lists resources the user has admin rights to
+// @Description  lists resources the user has admin rights to
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/device-groups [get]
+func GeneratedListResourcesWithAdminPermission_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListResourcesWithAdminPermission_hubs godoc
+// @Summary      lists resources the user has admin rights to
+// @Description  lists resources the user has admin rights to
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/hubs [get]
+func GeneratedListResourcesWithAdminPermission_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListResourcesWithAdminPermission_locations godoc
+// @Summary      lists resources the user has admin rights to
+// @Description  lists resources the user has admin rights to
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/locations [get]
+func GeneratedListResourcesWithAdminPermission_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedGetResource_devices godoc
 // @Summary      get resource
 // @Description  get resource, requesting user must have admin right  on the resource
-// @Tags         manage, resource
+// @Tags         permissions-devices
 // @Security Bearer
-// @Param        topic path string true "Topic Id"
 // @Param        id path string true "Resource Id"
 // @Produce      json
 // @Success      200 {object}  model.Resource
@@ -230,40 +271,79 @@ func GeneratedListResourcesWithAdminPermission(){
 // @Failure      401
 // @Failure      403
 // @Failure      500
-// @Router       /permissions/manage/{topic}/{id} [get]
-func GeneratedGetResource(){
+// @Router       /permissions/manage/devices/{id} [get]
+func GeneratedGetResource_devices(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
 
 
 
-// GeneratedDeleteResource godoc
-// @Summary      delete resource
-// @Description  delete resource, requesting user must have admin right on the resource, topic must have NoCqrs=true
-// @Tags         manage, resource
+// GeneratedGetResource_devicegroups godoc
+// @Summary      get resource
+// @Description  get resource, requesting user must have admin right  on the resource
+// @Tags         permissions-device-groups
 // @Security Bearer
-// @Param        topic path string true "Topic Id"
 // @Param        id path string true "Resource Id"
+// @Produce      json
 // @Success      200 {object}  model.Resource
 // @Failure      400
 // @Failure      401
 // @Failure      403
 // @Failure      500
-// @Router       /permissions/manage/{topic}/{id} [delete]
-func GeneratedDeleteResource(){
+// @Router       /permissions/manage/device-groups/{id} [get]
+func GeneratedGetResource_devicegroups(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
 
 
 
-// GeneratedSetPermission godoc
+// GeneratedGetResource_hubs godoc
+// @Summary      get resource
+// @Description  get resource, requesting user must have admin right  on the resource
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Produce      json
+// @Success      200 {object}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/hubs/{id} [get]
+func GeneratedGetResource_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedGetResource_locations godoc
+// @Summary      get resource
+// @Description  get resource, requesting user must have admin right  on the resource
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Produce      json
+// @Success      200 {object}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/locations/{id} [get]
+func GeneratedGetResource_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedSetPermission_devices godoc
 // @Summary      set resource rights
 // @Description  get resource rights, requesting user must have admin right
-// @Tags         manage, resource-rights
+// @Tags         permissions-devices
 // @Security Bearer
-// @Param        topic path string true "Topic Id"
 // @Param        id path string true "Resource Id"
 // @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
 // @Param        message body model.ResourcePermissions true "Topic"
@@ -274,48 +354,321 @@ func GeneratedDeleteResource(){
 // @Failure      401
 // @Failure      403
 // @Failure      500
-// @Router       /permissions/manage/{topic}/{id} [put]
-func GeneratedSetPermission(){
+// @Router       /permissions/manage/devices/{id} [put]
+func GeneratedSetPermission_devices(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
 
 
 
-// GeneratedListComputedPermissions godoc
-// @Summary      list the computed permissions to resources of the given topic and ids
-// @Description  list the computed permissions to resources of the given topic and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions, check, list
+// GeneratedSetPermission_devicegroups godoc
+// @Summary      set resource rights
+// @Description  get resource rights, requesting user must have admin right
+// @Tags         permissions-device-groups
 // @Security Bearer
-// @Param        topic path string true "Topic Id"
+// @Param        id path string true "Resource Id"
+// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
+// @Param        message body model.ResourcePermissions true "Topic"
+// @Accept       json
+// @Produce      json
+// @Success      200 {object}  model.ResourcePermissions
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/device-groups/{id} [put]
+func GeneratedSetPermission_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedSetPermission_hubs godoc
+// @Summary      set resource rights
+// @Description  get resource rights, requesting user must have admin right
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
+// @Param        message body model.ResourcePermissions true "Topic"
+// @Accept       json
+// @Produce      json
+// @Success      200 {object}  model.ResourcePermissions
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/hubs/{id} [put]
+func GeneratedSetPermission_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedSetPermission_locations godoc
+// @Summary      set resource rights
+// @Description  get resource rights, requesting user must have admin right
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
+// @Param        message body model.ResourcePermissions true "Topic"
+// @Accept       json
+// @Produce      json
+// @Success      200 {object}  model.ResourcePermissions
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/locations/{id} [put]
+func GeneratedSetPermission_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckPermission_devices godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/devices/{id} [get]
+func GeneratedCheckPermission_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckPermission_devicegroups godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/device-groups/{id} [get]
+func GeneratedCheckPermission_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckPermission_hubs godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/hubs/{id} [get]
+func GeneratedCheckPermission_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckPermission_locations godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/locations/{id} [get]
+func GeneratedCheckPermission_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckMultiplePermissions_devices godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-devices
+// @Security Bearer
 // @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
 // @Produce      json
-// @Success      200 {array} model.ComputedPermissions
+// @Success      200 {object} map[string]bool
 // @Failure      400
 // @Failure      401
 // @Failure      500
-// @Router       /permissions/permissions/{topic} [get]
-func GeneratedListComputedPermissions(){
+// @Router       /permissions/check/devices [get]
+func GeneratedCheckMultiplePermissions_devices(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
 
 
 
-// GeneratedQueryListComputedPermissions godoc
-// @Summary      list the computed permissions to resources of the given topic and ids
-// @Description  list the computed permissions to resources of the given topic and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions, check, list, query
+// GeneratedCheckMultiplePermissions_devicegroups godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-device-groups
 // @Security Bearer
-// @Param        topic path string true "Topic Id"
-// @Param        ids body []string true "Resource Ids"
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
 // @Produce      json
-// @Success      200 {array} model.ComputedPermissions
+// @Success      200 {object} map[string]bool
 // @Failure      400
 // @Failure      401
 // @Failure      500
-// @Router       /permissions/query/permissions/{topic} [post]
-func GeneratedQueryListComputedPermissions(){
+// @Router       /permissions/check/device-groups [get]
+func GeneratedCheckMultiplePermissions_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckMultiplePermissions_hubs godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} map[string]bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/hubs [get]
+func GeneratedCheckMultiplePermissions_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckMultiplePermissions_locations godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} map[string]bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/locations [get]
+func GeneratedCheckMultiplePermissions_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_devices godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/devices [get]
+func GeneratedListAccessibleResourceIds_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_devicegroups godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/device-groups [get]
+func GeneratedListAccessibleResourceIds_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_hubs godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/hubs [get]
+func GeneratedListAccessibleResourceIds_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_locations godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/locations [get]
+func GeneratedListAccessibleResourceIds_locations(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
@@ -324,49 +677,6 @@ func GeneratedQueryListComputedPermissions(){
 
 
 func GeneratedSwagger(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedAdminListResourceIds godoc
-// @Summary      lists resource ids in topic
-// @Description  lists resource ids in topic, requesting user must be in admin group
-// @Tags         topics, resources, admin
-// @Security Bearer
-// @Param        topic path string true "Topic Id"
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array}  string
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/admin/resources/{topic} [get]
-func GeneratedAdminListResourceIds(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedAdminLoadFromPermissionSearch godoc
-// @Summary      load rights from permission-search
-// @Description  load rights from permission-search, requesting user must have admin right
-// @Tags         admin
-// @Security Bearer
-// @Param        message body model.AdminLoadPermSearchRequest true "load configuration"
-// @Accept       json
-// @Produce      json
-// @Success      200 {object}  integer "update count"
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/admin/load/permission-search [post]
-func GeneratedAdminLoadFromPermissionSearch(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
