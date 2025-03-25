@@ -9,7 +9,7 @@ require (
 
 require (
 	github.com/SENERGY-Platform/models/go v0.0.0-20241007061544-de7132ae94e4
-	github.com/SENERGY-Platform/permissions-v2 v0.0.33
+	github.com/SENERGY-Platform/permissions-v2 v0.0.35
 	github.com/SENERGY-Platform/service-commons v0.0.0-20250123095636-6dfc659ee43e
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0

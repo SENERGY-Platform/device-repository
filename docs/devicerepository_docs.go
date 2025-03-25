@@ -5628,7 +5628,7 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "get resource rights, requesting user must have admin right",
+                "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (device-groups) to create",
                 "consumes": [
                     "application/json"
                 ],
@@ -5790,7 +5790,7 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "get resource rights, requesting user must have admin right",
+                "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (devices) to create",
                 "consumes": [
                     "application/json"
                 ],
@@ -5952,7 +5952,7 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "get resource rights, requesting user must have admin right",
+                "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (hubs) to create",
                 "consumes": [
                     "application/json"
                 ],
@@ -6114,7 +6114,7 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "get resource rights, requesting user must have admin right",
+                "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (locations) to create",
                 "consumes": [
                     "application/json"
                 ],
