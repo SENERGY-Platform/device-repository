@@ -77,6 +77,9 @@ type Config struct {
 	SyncLockDuration string `json:"sync_lock_duration"`
 
 	DisableStrictValidationForTesting bool `json:"disable_strict_validation_for_testing"` //only for tests; disables validations and id generations
+
+	StructLoggerLogLevel   string `json:"struct_logger_log_level"`
+	StructLoggerLogHandler string `json:"struct_logger_log_handler"`
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

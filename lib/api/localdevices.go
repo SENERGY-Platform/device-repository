@@ -39,7 +39,7 @@ type LocalDevicesEndpoints struct{}
 // List godoc
 // @Summary      list devices (local-id variant)
 // @Description  list devices (local-id variant)
-// @Tags         list, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        ids query string false "comma separated list of local ids"
@@ -163,7 +163,7 @@ func (this *LocalDevicesEndpoints) List(config configuration.Config, router *htt
 // Get godoc
 // @Summary      get device by local id
 // @Description  get device by local id
-// @Tags         get, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Local Id"
@@ -204,7 +204,7 @@ func (this *LocalDevicesEndpoints) Get(config configuration.Config, router *http
 // Create godoc
 // @Summary      create device (local-id variant)
 // @Description  create device (local-id variant)
-// @Tags         create, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.Device true "element"
@@ -248,7 +248,7 @@ func (this *LocalDevicesEndpoints) Create(config configuration.Config, router *h
 // Set godoc
 // @Summary      set device (local-id variant)
 // @Description  set device (local-id variant)
-// @Tags         set, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Local Id"
@@ -313,7 +313,7 @@ func (this *LocalDevicesEndpoints) Set(config configuration.Config, router *http
 // Delete godoc
 // @Summary      delete device (local-id variant)
 // @Description  delete device (local-id variant)
-// @Tags         delete, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Local Id"

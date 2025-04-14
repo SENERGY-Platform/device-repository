@@ -557,6 +557,7 @@ func (this *Controller) CreateDevice(token string, device models.Device) (result
 	if !this.config.DisableStrictValidationForTesting {
 		err, code = this.ValidateDevice(token, device)
 		if err != nil {
+			this.logger.Warn("device validation failed with error: " + err.Error())
 			return device, err, code
 		}
 	}
@@ -621,6 +622,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 	if !this.config.DisableStrictValidationForTesting {
 		err, code = this.ValidateDevice(token, device)
 		if err != nil {
+			this.logger.Warn("device validation failed with error: " + err.Error())
 			return device, err, code
 		}
 	}

@@ -37,7 +37,7 @@ type ConceptEndpoints struct{}
 // ListConcepts godoc
 // @Summary      list concepts
 // @Description  list concepts
-// @Tags         list, concepts
+// @Tags         concepts
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -111,7 +111,7 @@ func (this *ConceptEndpoints) ListConcepts(config configuration.Config, router *
 // ListConceptsWithCharacteristics godoc
 // @Summary      list concepts with characteristics
 // @Description  list concepts with characteristics
-// @Tags         list, concepts
+// @Tags         concepts
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -185,7 +185,7 @@ func (this *ConceptEndpoints) ListConceptsWithCharacteristics(config configurati
 // Get godoc
 // @Summary      get concept
 // @Description  get concept
-// @Tags         get, concepts
+// @Tags         concepts
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Concepts Id"
@@ -239,7 +239,7 @@ func (this *ConceptEndpoints) Get(config configuration.Config, router *http.Serv
 // Validate godoc
 // @Summary      validate concept
 // @Description  validate concept
-// @Tags         validate, concepts
+// @Tags         concepts
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -277,7 +277,7 @@ func (this *ConceptEndpoints) Validate(config configuration.Config, router *http
 // Delete godoc
 // @Summary      delete concept
 // @Description  delete concept; may only be called by admins; can also be used to only validate deletes
-// @Tags         validate, concepts
+// @Tags         concepts
 // @Security Bearer
 // @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "Concepts Id"
@@ -319,7 +319,7 @@ func (this *ConceptEndpoints) Delete(config configuration.Config, router *http.S
 // Create godoc
 // @Summary      create concept
 // @Description  create concept
-// @Tags         create, concepts
+// @Tags         concepts
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.Concept true "element"
@@ -357,7 +357,7 @@ func (this *ConceptEndpoints) Create(config configuration.Config, router *http.S
 // Set godoc
 // @Summary      set concept
 // @Description  set concept
-// @Tags         set, concepts
+// @Tags         concepts
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Concept Id"

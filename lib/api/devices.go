@@ -43,7 +43,7 @@ const DisplayNameAttributeOrigin = "shared"
 // List godoc
 // @Summary      list devices
 // @Description  list devices
-// @Tags         list, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -178,7 +178,7 @@ func (this *DeviceEndpoints) List(config configuration.Config, router *http.Serv
 // Get godoc
 // @Summary      get device
 // @Description  get device
-// @Tags         get, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Id"
@@ -236,7 +236,7 @@ func (this *DeviceEndpoints) Get(config configuration.Config, router *http.Serve
 // Validate godoc
 // @Summary      validate device
 // @Description  validate device
-// @Tags         validate, devices
+// @Tags         devices
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -274,7 +274,7 @@ func (this *DeviceEndpoints) Validate(config configuration.Config, router *http.
 // Create godoc
 // @Summary      create device
 // @Description  create device
-// @Tags         create, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.Device true "element"
@@ -318,7 +318,7 @@ func (this *DeviceEndpoints) Create(config configuration.Config, router *http.Se
 // Set godoc
 // @Summary      set device
 // @Description  set device; admins may create new devices but only without using the UpdateOnlySameOriginAttributesKey query parameter
-// @Tags         set, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Id"
@@ -371,7 +371,7 @@ func (this *DeviceEndpoints) Set(config configuration.Config, router *http.Serve
 // SetAttributes godoc
 // @Summary      set device attributes
 // @Description  set device attributes
-// @Tags         set, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Id"
@@ -430,7 +430,7 @@ func (this *DeviceEndpoints) SetAttributes(config configuration.Config, router *
 // SetDisplayName godoc
 // @Summary      set device display name
 // @Description  set device display name
-// @Tags         set, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Id"
@@ -490,7 +490,7 @@ func (this *DeviceEndpoints) SetDisplayName(config configuration.Config, router 
 // Delete godoc
 // @Summary      delete device
 // @Description  delete device
-// @Tags         delete, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Id"
@@ -523,7 +523,7 @@ func (this *DeviceEndpoints) Delete(config configuration.Config, router *http.Se
 // DeleteMany godoc
 // @Summary      delete multiple devices
 // @Description  delete multiple devices
-// @Tags         delete, devices
+// @Tags         devices
 // @Produce      json
 // @Security Bearer
 // @Param        message body []string true "ids to be deleted"
@@ -563,7 +563,7 @@ func (this *DeviceEndpoints) DeleteMany(config configuration.Config, router *htt
 // SetConnectionState godoc
 // @Summary      set device connection-state
 // @Description  set device connection-state
-// @Tags         connection-state, devices
+// @Tags         devices
 // @Security Bearer
 // @Param        message body bool true "connected true/false"
 // @Success      200

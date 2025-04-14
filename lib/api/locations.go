@@ -40,7 +40,7 @@ type LocationEndpoints struct{}
 // Get godoc
 // @Summary      get location
 // @Description  get location
-// @Tags         get, locations
+// @Tags         locations
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Location Id"
@@ -71,7 +71,7 @@ func (this *LocationEndpoints) Get(config configuration.Config, router *http.Ser
 // Validate godoc
 // @Summary      validate location
 // @Description  validate location
-// @Tags         validate, locations
+// @Tags         locations
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -109,7 +109,7 @@ func (this *LocationEndpoints) Validate(config configuration.Config, router *htt
 // List godoc
 // @Summary      list location
 // @Description  list location
-// @Tags         list, locations
+// @Tags         locations
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -193,7 +193,7 @@ func (this *LocationEndpoints) List(config configuration.Config, router *http.Se
 // Create godoc
 // @Summary      create location
 // @Description  create location
-// @Tags         create, locations
+// @Tags         locations
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Location Id"
@@ -236,7 +236,7 @@ func (this *LocationEndpoints) Create(config configuration.Config, router *http.
 // Set godoc
 // @Summary      set location
 // @Description  set location
-// @Tags         set, locations
+// @Tags         locations
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Location Id"
@@ -282,7 +282,7 @@ func (this *LocationEndpoints) Set(config configuration.Config, router *http.Ser
 // Delete godoc
 // @Summary      delete location
 // @Description  delete location
-// @Tags         delete, locations
+// @Tags         locations
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Location Id"

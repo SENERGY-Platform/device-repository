@@ -35,7 +35,7 @@ type ProtocolEndpoints struct{}
 // Get godoc
 // @Summary      get protocol
 // @Description  get protocol
-// @Tags         get, protocols
+// @Tags         protocols
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Protocol Id"
@@ -66,7 +66,7 @@ func (this *ProtocolEndpoints) Get(config configuration.Config, router *http.Ser
 // List godoc
 // @Summary      get protocol
 // @Description  get protocol
-// @Tags         get, protocols
+// @Tags         protocols
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100"
@@ -124,7 +124,7 @@ func (this *ProtocolEndpoints) List(config configuration.Config, router *http.Se
 // Validate godoc
 // @Summary      validate protocol
 // @Description  validate protocol
-// @Tags         validate, protocols
+// @Tags         protocols
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -162,7 +162,7 @@ func (this *ProtocolEndpoints) Validate(config configuration.Config, router *htt
 // Create godoc
 // @Summary      create protocol
 // @Description  create protocol
-// @Tags         create, protocols
+// @Tags         protocols
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.Protocol true "element"
@@ -200,7 +200,7 @@ func (this *ProtocolEndpoints) Create(config configuration.Config, router *http.
 // Set godoc
 // @Summary      set protocol
 // @Description  set protocol
-// @Tags         set, protocols
+// @Tags         protocols
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Protocol Id"
@@ -245,7 +245,7 @@ func (this *ProtocolEndpoints) Set(config configuration.Config, router *http.Ser
 // Delete godoc
 // @Summary      delete protocol
 // @Description  delete protocol
-// @Tags         delete, protocols
+// @Tags         protocols
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Protocol Id"

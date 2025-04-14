@@ -23,262 +23,6 @@ package api
 
 
 
-// GeneratedListResourcesWithAdminPermission_devices godoc
-// @Summary      lists resources the user has admin rights to
-// @Description  lists resources the user has admin rights to
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/devices [get]
-func GeneratedListResourcesWithAdminPermission_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListResourcesWithAdminPermission_devicegroups godoc
-// @Summary      lists resources the user has admin rights to
-// @Description  lists resources the user has admin rights to
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/device-groups [get]
-func GeneratedListResourcesWithAdminPermission_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListResourcesWithAdminPermission_hubs godoc
-// @Summary      lists resources the user has admin rights to
-// @Description  lists resources the user has admin rights to
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/hubs [get]
-func GeneratedListResourcesWithAdminPermission_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListResourcesWithAdminPermission_locations godoc
-// @Summary      lists resources the user has admin rights to
-// @Description  lists resources the user has admin rights to
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/locations [get]
-func GeneratedListResourcesWithAdminPermission_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedGetResource_devices godoc
-// @Summary      get resource
-// @Description  get resource, requesting user must have admin right  on the resource
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Produce      json
-// @Success      200 {object}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/devices/{id} [get]
-func GeneratedGetResource_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedGetResource_devicegroups godoc
-// @Summary      get resource
-// @Description  get resource, requesting user must have admin right  on the resource
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Produce      json
-// @Success      200 {object}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/device-groups/{id} [get]
-func GeneratedGetResource_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedGetResource_hubs godoc
-// @Summary      get resource
-// @Description  get resource, requesting user must have admin right  on the resource
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Produce      json
-// @Success      200 {object}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/hubs/{id} [get]
-func GeneratedGetResource_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedGetResource_locations godoc
-// @Summary      get resource
-// @Description  get resource, requesting user must have admin right  on the resource
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Produce      json
-// @Success      200 {object}  model.Resource
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/locations/{id} [get]
-func GeneratedGetResource_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedSetPermission_devices godoc
-// @Summary      set resource rights
-// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (devices) to create
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
-// @Param        message body model.ResourcePermissions true "Topic"
-// @Accept       json
-// @Produce      json
-// @Success      200 {object}  model.ResourcePermissions
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/devices/{id} [put]
-func GeneratedSetPermission_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedSetPermission_devicegroups godoc
-// @Summary      set resource rights
-// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (device-groups) to create
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
-// @Param        message body model.ResourcePermissions true "Topic"
-// @Accept       json
-// @Produce      json
-// @Success      200 {object}  model.ResourcePermissions
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/device-groups/{id} [put]
-func GeneratedSetPermission_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedSetPermission_hubs godoc
-// @Summary      set resource rights
-// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (hubs) to create
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
-// @Param        message body model.ResourcePermissions true "Topic"
-// @Accept       json
-// @Produce      json
-// @Success      200 {object}  model.ResourcePermissions
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/hubs/{id} [put]
-func GeneratedSetPermission_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedSetPermission_locations godoc
-// @Summary      set resource rights
-// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (locations) to create
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
-// @Param        message body model.ResourcePermissions true "Topic"
-// @Accept       json
-// @Produce      json
-// @Success      200 {object}  model.ResourcePermissions
-// @Failure      400
-// @Failure      401
-// @Failure      403
-// @Failure      500
-// @Router       /permissions/manage/locations/{id} [put]
-func GeneratedSetPermission_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
 // GeneratedListComputedPermissions_devices godoc
 // @Summary      list the computed permissions to resources of the given topic (devices) and ids
 // @Description  list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result
@@ -669,6 +413,262 @@ func GeneratedListAccessibleResourceIds_hubs(){
 // @Failure      500
 // @Router       /permissions/accessible/locations [get]
 func GeneratedListAccessibleResourceIds_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListResourcesWithAdminPermission_devices godoc
+// @Summary      lists resources the user has admin rights to
+// @Description  lists resources the user has admin rights to
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/devices [get]
+func GeneratedListResourcesWithAdminPermission_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListResourcesWithAdminPermission_devicegroups godoc
+// @Summary      lists resources the user has admin rights to
+// @Description  lists resources the user has admin rights to
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/device-groups [get]
+func GeneratedListResourcesWithAdminPermission_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListResourcesWithAdminPermission_hubs godoc
+// @Summary      lists resources the user has admin rights to
+// @Description  lists resources the user has admin rights to
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/hubs [get]
+func GeneratedListResourcesWithAdminPermission_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListResourcesWithAdminPermission_locations godoc
+// @Summary      lists resources the user has admin rights to
+// @Description  lists resources the user has admin rights to
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/locations [get]
+func GeneratedListResourcesWithAdminPermission_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedGetResource_devices godoc
+// @Summary      get resource
+// @Description  get resource, requesting user must have admin right  on the resource
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Produce      json
+// @Success      200 {object}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/devices/{id} [get]
+func GeneratedGetResource_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedGetResource_devicegroups godoc
+// @Summary      get resource
+// @Description  get resource, requesting user must have admin right  on the resource
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Produce      json
+// @Success      200 {object}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/device-groups/{id} [get]
+func GeneratedGetResource_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedGetResource_hubs godoc
+// @Summary      get resource
+// @Description  get resource, requesting user must have admin right  on the resource
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Produce      json
+// @Success      200 {object}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/hubs/{id} [get]
+func GeneratedGetResource_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedGetResource_locations godoc
+// @Summary      get resource
+// @Description  get resource, requesting user must have admin right  on the resource
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Produce      json
+// @Success      200 {object}  model.Resource
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/locations/{id} [get]
+func GeneratedGetResource_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedSetPermission_devices godoc
+// @Summary      set resource rights
+// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (devices) to create
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
+// @Param        message body model.ResourcePermissions true "Topic"
+// @Accept       json
+// @Produce      json
+// @Success      200 {object}  model.ResourcePermissions
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/devices/{id} [put]
+func GeneratedSetPermission_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedSetPermission_devicegroups godoc
+// @Summary      set resource rights
+// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (device-groups) to create
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
+// @Param        message body model.ResourcePermissions true "Topic"
+// @Accept       json
+// @Produce      json
+// @Success      200 {object}  model.ResourcePermissions
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/device-groups/{id} [put]
+func GeneratedSetPermission_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedSetPermission_hubs godoc
+// @Summary      set resource rights
+// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (hubs) to create
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
+// @Param        message body model.ResourcePermissions true "Topic"
+// @Accept       json
+// @Produce      json
+// @Success      200 {object}  model.ResourcePermissions
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/hubs/{id} [put]
+func GeneratedSetPermission_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedSetPermission_locations godoc
+// @Summary      set resource rights
+// @Description  get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (locations) to create
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        wait query bool false "if set to true, the response will be sent after the corresponding kafka done signal has been received"
+// @Param        message body model.ResourcePermissions true "Topic"
+// @Accept       json
+// @Produce      json
+// @Success      200 {object}  model.ResourcePermissions
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /permissions/manage/locations/{id} [put]
+func GeneratedSetPermission_locations(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }

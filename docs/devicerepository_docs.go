@@ -26,17 +26,15 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "deprecated list aspect-nodes",
+                "description": "deprecated list aspect-nodes; use GET /v2/aspect-nodes",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspect-nodes",
-                    "aspects",
-                    "deprecated"
+                    "aspect-nodes"
                 ],
-                "summary": "deprecated list aspect-nodes",
+                "summary": "deprecated list aspect-nodes; use GET /v2/aspect-nodes",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -97,9 +95,7 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "aspect-nodes",
-                    "aspects"
+                    "aspect-nodes"
                 ],
                 "summary": "get aspect-node",
                 "parameters": [
@@ -148,10 +144,7 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspect-nodes",
-                    "aspects",
-                    "functions"
+                    "aspect-nodes"
                 ],
                 "summary": "list aspect-node measuring-functions",
                 "parameters": [
@@ -210,16 +203,15 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "deprecated list aspects",
+                "description": "deprecated list aspects; use GET /v2/aspects",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspects",
-                    "deprecated"
+                    "aspects"
                 ],
-                "summary": "deprecated list aspects",
+                "summary": "deprecated list aspects; use GET /v2/aspects",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -278,7 +270,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "aspects"
                 ],
                 "summary": "validate aspect",
@@ -323,7 +314,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "aspects"
                 ],
                 "summary": "create aspect",
@@ -381,7 +371,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "aspects"
                 ],
                 "summary": "get aspect",
@@ -429,7 +418,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "aspects"
                 ],
                 "summary": "set aspect",
@@ -483,7 +471,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "delete aspect; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "aspects"
                 ],
                 "summary": "delete aspect",
@@ -527,9 +514,7 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspects",
-                    "functions"
+                    "aspects"
                 ],
                 "summary": "list aspect measuring-functions",
                 "parameters": [
@@ -593,7 +578,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "characteristics"
                 ],
                 "summary": "list characteristics",
@@ -643,7 +627,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "characteristics"
                 ],
                 "summary": "validate characteristic",
@@ -687,7 +670,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "characteristics"
                 ],
                 "summary": "create characteristic",
@@ -739,7 +721,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "characteristics"
                 ],
                 "summary": "get characteristic",
@@ -787,7 +768,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "characteristics"
                 ],
                 "summary": "set characteristic",
@@ -841,7 +821,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "delete characteristic; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "characteristics"
                 ],
                 "summary": "delete characteristic",
@@ -885,7 +864,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "concepts"
                 ],
                 "summary": "validate concept",
@@ -930,7 +908,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "concepts"
                 ],
                 "summary": "create concept",
@@ -982,7 +959,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "concepts"
                 ],
                 "summary": "get concept",
@@ -1036,7 +1012,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "concepts"
                 ],
                 "summary": "set concept",
@@ -1090,7 +1065,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "delete concept; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "concepts"
                 ],
                 "summary": "delete concept",
@@ -1134,8 +1108,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "controlling-functions",
                     "functions"
                 ],
                 "summary": "list controlling-functions",
@@ -1174,16 +1146,15 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "deprecated list device-classes",
+                "description": "deprecated list device-classes; use GET /v2/device-classes",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "device-classes",
-                    "deprecated"
+                    "device-classes"
                 ],
-                "summary": "deprecated list device-classes",
+                "summary": "deprecated list device-classes; use GET /v2/device-classes",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1230,7 +1201,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-classes"
                 ],
                 "summary": "validate device-class",
@@ -1275,7 +1245,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "device-classes"
                 ],
                 "summary": "create device-class",
@@ -1327,7 +1296,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "device-classes"
                 ],
                 "summary": "get device-class",
@@ -1375,7 +1343,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "device-classes"
                 ],
                 "summary": "set device-class",
@@ -1429,7 +1396,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "delete device-class; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "device-classes"
                 ],
                 "summary": "delete device-class",
@@ -1473,9 +1439,7 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "device-classes",
-                    "functions"
+                    "device-classes"
                 ],
                 "summary": "list device-class functions",
                 "parameters": [
@@ -1527,9 +1491,7 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "device-classes",
-                    "functions"
+                    "device-classes"
                 ],
                 "summary": "list device-class functions",
                 "parameters": [
@@ -1581,7 +1543,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "device-groups"
                 ],
                 "summary": "list device-group",
@@ -1697,7 +1658,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-groups"
                 ],
                 "summary": "validate device-group",
@@ -1742,7 +1702,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "device-groups"
                 ],
                 "summary": "create device-group",
@@ -1794,7 +1753,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "device-groups"
                 ],
                 "summary": "get device-group",
@@ -1848,7 +1806,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "device-groups"
                 ],
                 "summary": "set device-group",
@@ -1902,7 +1859,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "delete device-group; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "device-groups"
                 ],
                 "summary": "delete device-group",
@@ -1946,7 +1902,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "summary": "validate device-type",
@@ -1991,7 +1946,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "device-types"
                 ],
                 "summary": "create device-type",
@@ -2049,7 +2003,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "device-types"
                 ],
                 "summary": "get device-type",
@@ -2097,7 +2050,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "device-types"
                 ],
                 "summary": "set device-type",
@@ -2160,7 +2112,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "device-types"
                 ],
                 "summary": "delete device-type",
@@ -2207,7 +2158,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "devices"
                 ],
                 "summary": "list devices",
@@ -2323,7 +2273,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "devices"
                 ],
                 "summary": "validate device",
@@ -2368,7 +2317,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "devices"
                 ],
                 "summary": "create device",
@@ -2418,7 +2366,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "devices"
                 ],
                 "summary": "delete multiple devices",
@@ -2470,7 +2417,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "devices"
                 ],
                 "summary": "get device",
@@ -2536,7 +2482,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device",
@@ -2599,7 +2544,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "devices"
                 ],
                 "summary": "delete device",
@@ -2646,7 +2590,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device attributes",
@@ -2711,7 +2654,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "set device connection-state",
                 "tags": [
-                    "connection-state",
                     "devices"
                 ],
                 "summary": "set device connection-state",
@@ -2760,7 +2702,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device display name",
@@ -2879,8 +2820,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "devices",
                     "extended-devices"
                 ],
                 "summary": "list extended-device",
@@ -3010,8 +2949,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "devices",
                     "extended-devices"
                 ],
                 "summary": "get extended-device",
@@ -3085,8 +3022,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "hubs",
                     "extended-hubs"
                 ],
                 "summary": "list extended-hubs",
@@ -3180,8 +3115,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "hubs",
                     "extended-hubs"
                 ],
                 "summary": "get extended-hubs",
@@ -3237,7 +3170,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "functions"
                 ],
                 "summary": "list functions",
@@ -3323,7 +3255,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "locations"
                 ],
                 "summary": "validate location",
@@ -3368,7 +3299,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "functions"
                 ],
                 "summary": "create function",
@@ -3420,7 +3350,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "functions"
                 ],
                 "summary": "get function",
@@ -3468,7 +3397,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "functions"
                 ],
                 "summary": "set function",
@@ -3522,7 +3450,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "delete function; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "functions"
                 ],
                 "summary": "delete function",
@@ -3610,7 +3537,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "hubs"
                 ],
                 "summary": "list hubs",
@@ -3696,7 +3622,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "hubs"
                 ],
                 "summary": "validate hub",
@@ -3741,7 +3666,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "hubs"
                 ],
                 "summary": "create hub",
@@ -3793,7 +3717,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "hubs"
                 ],
                 "summary": "get hub",
@@ -3847,7 +3770,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "hubs"
                 ],
                 "summary": "set hub",
@@ -3910,7 +3832,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "hubs"
                 ],
                 "summary": "delete hub",
@@ -3952,7 +3873,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "head hub",
                 "tags": [
-                    "head",
                     "hubs"
                 ],
                 "summary": "head hub",
@@ -4002,7 +3922,6 @@ const docTemplatedevicerepository = `{
                 ],
                 "description": "set hub connection-state",
                 "tags": [
-                    "connection-state",
                     "hubs"
                 ],
                 "summary": "set hub connection-state",
@@ -4051,9 +3970,7 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "hubs",
-                    "devices"
+                    "hubs"
                 ],
                 "summary": "get device ids of hub",
                 "parameters": [
@@ -4117,7 +4034,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "hubs"
                 ],
                 "summary": "set hub name",
@@ -4272,7 +4188,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "parameters": [
@@ -4341,7 +4256,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "devices"
                 ],
                 "summary": "get device by local id",
@@ -4395,7 +4309,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device (local-id variant)",
@@ -4458,7 +4371,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "devices"
                 ],
                 "summary": "create device (local-id variant)",
@@ -4508,7 +4420,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "devices"
                 ],
                 "summary": "delete device (local-id variant)",
@@ -4561,7 +4472,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "locations"
                 ],
                 "summary": "list location",
@@ -4647,7 +4557,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "locations"
                 ],
                 "summary": "create location",
@@ -4706,7 +4615,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "locations"
                 ],
                 "summary": "get location",
@@ -4754,7 +4662,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "locations"
                 ],
                 "summary": "set location",
@@ -4811,7 +4718,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "locations"
                 ],
                 "summary": "delete location",
@@ -4858,8 +4764,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "measuring-functions",
                     "functions"
                 ],
                 "summary": "list measuring-functions",
@@ -6571,7 +6475,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "protocols"
                 ],
                 "summary": "get protocol",
@@ -6633,7 +6536,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "protocols"
                 ],
                 "summary": "validate protocol",
@@ -6678,7 +6580,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "protocols"
                 ],
                 "summary": "create protocol",
@@ -6730,7 +6631,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "protocols"
                 ],
                 "summary": "get protocol",
@@ -6778,7 +6678,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "protocols"
                 ],
                 "summary": "set protocol",
@@ -6835,7 +6734,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "protocols"
                 ],
                 "summary": "delete protocol",
@@ -6885,7 +6783,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "query",
                     "aspect-nodes"
                 ],
                 "summary": "query aspect-nodes",
@@ -6943,7 +6840,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "summary": "validate device-type",
@@ -7022,7 +6918,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "query",
                     "device-types"
                 ],
                 "summary": "query used-in-device-type",
@@ -7068,7 +6963,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "services"
                 ],
                 "summary": "get service",
@@ -7152,7 +7046,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "aspect-nodes"
                 ],
                 "summary": "list aspect-nodes",
@@ -7234,7 +7127,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "aspects"
                 ],
                 "summary": "list aspects",
@@ -7316,7 +7208,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "characteristics"
                 ],
                 "summary": "list characteristics",
@@ -7398,7 +7289,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "concepts"
                 ],
                 "summary": "list concepts",
@@ -7480,7 +7370,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "concepts"
                 ],
                 "summary": "list concepts with characteristics",
@@ -7562,7 +7451,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "device-classes"
                 ],
                 "summary": "list device-classes",
@@ -7647,7 +7535,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "summary": "validate device-type",
@@ -7723,7 +7610,6 @@ const docTemplatedevicerepository = `{
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "device-types"
                 ],
                 "summary": "list device-types",

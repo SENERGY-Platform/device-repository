@@ -35,7 +35,7 @@ type DeviceTypeSelectableEndpoints struct{}
 // Query godoc
 // @Summary      validate device-type
 // @Description  validate device-type
-// @Tags         validate, device-types
+// @Tags         device-types
 // @Accept       json
 // @Produce      json
 // @Security Bearer
@@ -92,7 +92,7 @@ func (this *DeviceTypeSelectableEndpoints) Query(config configuration.Config, ro
 // QueryV2 godoc
 // @Summary      validate device-type
 // @Description  validate device-type
-// @Tags         validate, device-types
+// @Tags         device-types
 // @Accept       json
 // @Produce      json
 // @Security Bearer

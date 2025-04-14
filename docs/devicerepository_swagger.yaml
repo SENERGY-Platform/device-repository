@@ -766,7 +766,8 @@ info:
 paths:
   /aspect-nodes:
     get:
-      description: deprecated list aspect-nodes
+      deprecated: true
+      description: deprecated list aspect-nodes; use GET /v2/aspect-nodes
       parameters:
       - description: filter; only 'measuring-function' is a valid value; if set, returns
           aspect-nodes used in combination with measuring-functions
@@ -804,12 +805,9 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: deprecated list aspect-nodes
+      summary: deprecated list aspect-nodes; use GET /v2/aspect-nodes
       tags:
-      - list
       - aspect-nodes
-      - aspects
-      - deprecated
   /aspect-nodes/{id}:
     get:
       description: get aspect-node
@@ -840,9 +838,7 @@ paths:
       - Bearer: []
       summary: get aspect-node
       tags:
-      - get
       - aspect-nodes
-      - aspects
   /aspect-nodes/{id}/measuring-functions:
     get:
       description: list measuring-functions used in combination with this aspect-node
@@ -885,13 +881,11 @@ paths:
       - Bearer: []
       summary: list aspect-node measuring-functions
       tags:
-      - list
       - aspect-nodes
-      - aspects
-      - functions
   /aspects:
     get:
-      description: deprecated list aspects
+      deprecated: true
+      description: deprecated list aspects; use GET /v2/aspects
       parameters:
       - description: filter; only 'measuring-function' is a valid value; if set, returns
           aspects used in combination with measuring-functions
@@ -929,11 +923,9 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: deprecated list aspects
+      summary: deprecated list aspects; use GET /v2/aspects
       tags:
-      - list
       - aspects
-      - deprecated
     post:
       description: create aspect with generated id
       parameters:
@@ -968,7 +960,6 @@ paths:
       - Bearer: []
       summary: create aspect
       tags:
-      - create
       - aspects
     put:
       consumes:
@@ -997,7 +988,6 @@ paths:
       - Bearer: []
       summary: validate aspect
       tags:
-      - validate
       - aspects
   /aspects/{id}:
     delete:
@@ -1024,7 +1014,6 @@ paths:
       - Bearer: []
       summary: delete aspect
       tags:
-      - validate
       - aspects
     get:
       description: get aspect
@@ -1055,7 +1044,6 @@ paths:
       - Bearer: []
       summary: get aspect
       tags:
-      - get
       - aspects
     put:
       description: set aspect
@@ -1092,7 +1080,6 @@ paths:
       - Bearer: []
       summary: set aspect
       tags:
-      - set
       - aspects
   /aspects/{id}/measuring-functions:
     get:
@@ -1136,9 +1123,7 @@ paths:
       - Bearer: []
       summary: list aspect measuring-functions
       tags:
-      - list
       - aspects
-      - functions
   /characteristics:
     get:
       description: list characteristics
@@ -1171,7 +1156,6 @@ paths:
       - Bearer: []
       summary: list characteristics
       tags:
-      - list
       - characteristics
     post:
       description: create characteristic
@@ -1203,7 +1187,6 @@ paths:
       - Bearer: []
       summary: create characteristic
       tags:
-      - create
       - characteristics
     put:
       consumes:
@@ -1231,7 +1214,6 @@ paths:
       - Bearer: []
       summary: validate characteristic
       tags:
-      - validate
       - characteristics
   /characteristics/{id}:
     delete:
@@ -1258,7 +1240,6 @@ paths:
       - Bearer: []
       summary: delete characteristic
       tags:
-      - validate
       - characteristics
     get:
       description: get characteristic
@@ -1289,7 +1270,6 @@ paths:
       - Bearer: []
       summary: get characteristic
       tags:
-      - get
       - characteristics
     put:
       description: set characteristic
@@ -1326,7 +1306,6 @@ paths:
       - Bearer: []
       summary: set characteristic
       tags:
-      - set
       - characteristics
   /concepts:
     post:
@@ -1359,7 +1338,6 @@ paths:
       - Bearer: []
       summary: create concept
       tags:
-      - create
       - concepts
     put:
       consumes:
@@ -1388,7 +1366,6 @@ paths:
       - Bearer: []
       summary: validate concept
       tags:
-      - validate
       - concepts
   /concepts/{id}:
     delete:
@@ -1415,7 +1392,6 @@ paths:
       - Bearer: []
       summary: delete concept
       tags:
-      - validate
       - concepts
     get:
       description: get concept
@@ -1451,7 +1427,6 @@ paths:
       - Bearer: []
       summary: get concept
       tags:
-      - get
       - concepts
     put:
       description: set concept
@@ -1488,7 +1463,6 @@ paths:
       - Bearer: []
       summary: set concept
       tags:
-      - set
       - concepts
   /controlling-functions:
     get:
@@ -1516,12 +1490,11 @@ paths:
       - Bearer: []
       summary: list controlling-functions
       tags:
-      - list
-      - controlling-functions
       - functions
   /device-classes:
     get:
-      description: deprecated list device-classes
+      deprecated: true
+      description: deprecated list device-classes; use GET /v2/device-classes
       parameters:
       - description: filter; only 'controlling-function' is a valid value; if set,
           returns device-classes used in combination with controlling-function
@@ -1549,11 +1522,9 @@ paths:
           description: Internal Server Error
       security:
       - Bearer: []
-      summary: deprecated list device-classes
+      summary: deprecated list device-classes; use GET /v2/device-classes
       tags:
-      - list
       - device-classes
-      - deprecated
     post:
       description: create device-class
       parameters:
@@ -1584,7 +1555,6 @@ paths:
       - Bearer: []
       summary: create device-class
       tags:
-      - create
       - device-classes
     put:
       consumes:
@@ -1613,7 +1583,6 @@ paths:
       - Bearer: []
       summary: validate device-class
       tags:
-      - validate
       - device-classes
   /device-classes/{id}:
     delete:
@@ -1640,7 +1609,6 @@ paths:
       - Bearer: []
       summary: delete device-class
       tags:
-      - validate
       - device-classes
     get:
       description: get device-class
@@ -1671,7 +1639,6 @@ paths:
       - Bearer: []
       summary: get device-class
       tags:
-      - get
       - device-classes
     put:
       description: set device-class
@@ -1708,7 +1675,6 @@ paths:
       - Bearer: []
       summary: set device-class
       tags:
-      - set
       - device-classes
   /device-classes/{id}/controlling-functions:
     get:
@@ -1742,9 +1708,7 @@ paths:
       - Bearer: []
       summary: list device-class functions
       tags:
-      - list
       - device-classes
-      - functions
   /device-classes/{id}/functions:
     get:
       description: list functions used in combination with this device-class
@@ -1777,9 +1741,7 @@ paths:
       - Bearer: []
       summary: list device-class functions
       tags:
-      - list
       - device-classes
-      - functions
   /device-groups:
     get:
       description: list device-group
@@ -1859,7 +1821,6 @@ paths:
       - Bearer: []
       summary: list device-group
       tags:
-      - list
       - device-groups
     post:
       description: create device-group
@@ -1891,7 +1852,6 @@ paths:
       - Bearer: []
       summary: create device-group
       tags:
-      - create
       - device-groups
     put:
       consumes:
@@ -1920,7 +1880,6 @@ paths:
       - Bearer: []
       summary: validate device-group
       tags:
-      - validate
       - device-groups
   /device-groups/{id}:
     delete:
@@ -1947,7 +1906,6 @@ paths:
       - Bearer: []
       summary: delete device-group
       tags:
-      - validate
       - device-groups
     get:
       description: get device-group
@@ -1983,7 +1941,6 @@ paths:
       - Bearer: []
       summary: get device-group
       tags:
-      - get
       - device-groups
     put:
       description: set device-group
@@ -2020,7 +1977,6 @@ paths:
       - Bearer: []
       summary: set device-group
       tags:
-      - set
       - device-groups
   /device-types:
     post:
@@ -2058,7 +2014,6 @@ paths:
       - Bearer: []
       summary: create device-type
       tags:
-      - create
       - device-types
     put:
       consumes:
@@ -2087,7 +2042,6 @@ paths:
       - Bearer: []
       summary: validate device-type
       tags:
-      - validate
       - device-types
   /device-types/{id}:
     delete:
@@ -2117,7 +2071,6 @@ paths:
       - Bearer: []
       summary: delete device-type
       tags:
-      - delete
       - device-types
     get:
       description: get device-type
@@ -2148,7 +2101,6 @@ paths:
       - Bearer: []
       summary: get device-type
       tags:
-      - get
       - device-types
     put:
       description: set device-type
@@ -2190,7 +2142,6 @@ paths:
       - Bearer: []
       summary: set device-type
       tags:
-      - set
       - device-types
   /devices:
     delete:
@@ -2223,7 +2174,6 @@ paths:
       - Bearer: []
       summary: delete multiple devices
       tags:
-      - delete
       - devices
     get:
       description: list devices
@@ -2305,7 +2255,6 @@ paths:
       - Bearer: []
       summary: list devices
       tags:
-      - list
       - devices
     post:
       description: create device
@@ -2337,7 +2286,6 @@ paths:
       - Bearer: []
       summary: create device
       tags:
-      - create
       - devices
     put:
       consumes:
@@ -2366,7 +2314,6 @@ paths:
       - Bearer: []
       summary: validate device
       tags:
-      - validate
       - devices
   /devices/{id}:
     delete:
@@ -2396,7 +2343,6 @@ paths:
       - Bearer: []
       summary: delete device
       tags:
-      - delete
       - devices
     get:
       description: get device
@@ -2441,7 +2387,6 @@ paths:
       - Bearer: []
       summary: get device
       tags:
-      - get
       - devices
     put:
       description: set device; admins may create new devices but only without using
@@ -2484,7 +2429,6 @@ paths:
       - Bearer: []
       summary: set device
       tags:
-      - set
       - devices
   /devices/{id}/attributes:
     put:
@@ -2529,7 +2473,6 @@ paths:
       - Bearer: []
       summary: set device attributes
       tags:
-      - set
       - devices
   /devices/{id}/connection-state:
     put:
@@ -2558,7 +2501,6 @@ paths:
       - Bearer: []
       summary: set device connection-state
       tags:
-      - connection-state
       - devices
   /devices/{id}/display_name:
     put:
@@ -2596,7 +2538,6 @@ paths:
       - Bearer: []
       summary: set device display name
       tags:
-      - set
       - devices
   /export:
     get:
@@ -2727,8 +2668,6 @@ paths:
       - Bearer: []
       summary: list extended-device
       tags:
-      - list
-      - devices
       - extended-devices
   /extended-devices/{id}:
     get:
@@ -2778,8 +2717,6 @@ paths:
       - Bearer: []
       summary: get extended-device
       tags:
-      - get
-      - devices
       - extended-devices
   /extended-hubs:
     get:
@@ -2842,8 +2779,6 @@ paths:
       - Bearer: []
       summary: list extended-hubs
       tags:
-      - list
-      - hubs
       - extended-hubs
   /extended-hubs/{id}:
     get:
@@ -2880,8 +2815,6 @@ paths:
       - Bearer: []
       summary: get extended-hubs
       tags:
-      - get
-      - hubs
       - extended-hubs
   /functions:
     get:
@@ -2939,7 +2872,6 @@ paths:
       - Bearer: []
       summary: list functions
       tags:
-      - list
       - functions
     post:
       description: create function
@@ -2971,7 +2903,6 @@ paths:
       - Bearer: []
       summary: create function
       tags:
-      - create
       - functions
     put:
       consumes:
@@ -3000,7 +2931,6 @@ paths:
       - Bearer: []
       summary: validate location
       tags:
-      - validate
       - locations
   /functions/{id}:
     delete:
@@ -3027,7 +2957,6 @@ paths:
       - Bearer: []
       summary: delete function
       tags:
-      - validate
       - functions
     get:
       description: get function
@@ -3058,7 +2987,6 @@ paths:
       - Bearer: []
       summary: get function
       tags:
-      - get
       - functions
     put:
       description: set function
@@ -3095,7 +3023,6 @@ paths:
       - Bearer: []
       summary: set function
       tags:
-      - set
       - functions
   /helper/id:
     get:
@@ -3182,7 +3109,6 @@ paths:
       - Bearer: []
       summary: list hubs
       tags:
-      - list
       - hubs
     post:
       description: create hub
@@ -3214,7 +3140,6 @@ paths:
       - Bearer: []
       summary: create hub
       tags:
-      - create
       - hubs
     put:
       consumes:
@@ -3243,7 +3168,6 @@ paths:
       - Bearer: []
       summary: validate hub
       tags:
-      - validate
       - hubs
   /hubs/{id}:
     delete:
@@ -3273,7 +3197,6 @@ paths:
       - Bearer: []
       summary: delete hub
       tags:
-      - delete
       - hubs
     get:
       description: get hub
@@ -3309,7 +3232,6 @@ paths:
       - Bearer: []
       summary: get hub
       tags:
-      - get
       - hubs
     head:
       description: head hub
@@ -3341,7 +3263,6 @@ paths:
       - Bearer: []
       summary: head hub
       tags:
-      - head
       - hubs
     put:
       description: set hub
@@ -3384,7 +3305,6 @@ paths:
       - Bearer: []
       summary: set hub
       tags:
-      - set
       - hubs
   /hubs/{id}/connection-state:
     put:
@@ -3413,7 +3333,6 @@ paths:
       - Bearer: []
       summary: set hub connection-state
       tags:
-      - connection-state
       - hubs
   /hubs/{id}/devices:
     get:
@@ -3457,9 +3376,7 @@ paths:
       - Bearer: []
       summary: get device ids of hub
       tags:
-      - get
       - hubs
-      - devices
   /hubs/{id}/name:
     put:
       description: set hub name
@@ -3496,7 +3413,6 @@ paths:
       - Bearer: []
       summary: set hub name
       tags:
-      - set
       - hubs
   /import:
     put:
@@ -3606,7 +3522,6 @@ paths:
       security:
       - Bearer: []
       tags:
-      - validate
       - device-types
   /local-devices/{id}:
     delete:
@@ -3641,7 +3556,6 @@ paths:
       - Bearer: []
       summary: delete device (local-id variant)
       tags:
-      - delete
       - devices
     get:
       description: get device by local id
@@ -3677,7 +3591,6 @@ paths:
       - Bearer: []
       summary: get device by local id
       tags:
-      - get
       - devices
     post:
       description: create device (local-id variant)
@@ -3709,7 +3622,6 @@ paths:
       - Bearer: []
       summary: create device (local-id variant)
       tags:
-      - create
       - devices
     put:
       description: set device (local-id variant)
@@ -3751,7 +3663,6 @@ paths:
       - Bearer: []
       summary: set device (local-id variant)
       tags:
-      - set
       - devices
   /locations:
     get:
@@ -3809,7 +3720,6 @@ paths:
       - Bearer: []
       summary: list location
       tags:
-      - list
       - locations
     post:
       description: create location
@@ -3846,7 +3756,6 @@ paths:
       - Bearer: []
       summary: create location
       tags:
-      - create
       - locations
   /locations/{id}:
     delete:
@@ -3876,7 +3785,6 @@ paths:
       - Bearer: []
       summary: delete location
       tags:
-      - delete
       - locations
     get:
       description: get location
@@ -3907,7 +3815,6 @@ paths:
       - Bearer: []
       summary: get location
       tags:
-      - get
       - locations
     put:
       description: set location
@@ -3944,7 +3851,6 @@ paths:
       - Bearer: []
       summary: set location
       tags:
-      - set
       - locations
   /measuring-functions:
     get:
@@ -3972,8 +3878,6 @@ paths:
       - Bearer: []
       summary: list measuring-functions
       tags:
-      - list
-      - measuring-functions
       - functions
   /permissions/accessible/device-groups:
     get:
@@ -5104,7 +5008,6 @@ paths:
       - Bearer: []
       summary: get protocol
       tags:
-      - get
       - protocols
     post:
       description: create protocol
@@ -5136,7 +5039,6 @@ paths:
       - Bearer: []
       summary: create protocol
       tags:
-      - create
       - protocols
     put:
       consumes:
@@ -5165,7 +5067,6 @@ paths:
       - Bearer: []
       summary: validate protocol
       tags:
-      - validate
       - protocols
   /protocols/{id}:
     delete:
@@ -5195,7 +5096,6 @@ paths:
       - Bearer: []
       summary: delete protocol
       tags:
-      - delete
       - protocols
     get:
       description: get protocol
@@ -5226,7 +5126,6 @@ paths:
       - Bearer: []
       summary: get protocol
       tags:
-      - get
       - protocols
     put:
       description: set protocol
@@ -5263,7 +5162,6 @@ paths:
       - Bearer: []
       summary: set protocol
       tags:
-      - set
       - protocols
   /query/aspect-nodes:
     post:
@@ -5300,7 +5198,6 @@ paths:
       - Bearer: []
       summary: query aspect-nodes
       tags:
-      - query
       - aspect-nodes
   /query/device-type-selectables:
     post:
@@ -5351,7 +5248,6 @@ paths:
       - Bearer: []
       summary: validate device-type
       tags:
-      - validate
       - device-types
   /query/used-in-device-type:
     post:
@@ -5382,7 +5278,6 @@ paths:
       - Bearer: []
       summary: query used-in-device-type
       tags:
-      - query
       - device-types
   /services/{id}:
     get:
@@ -5414,7 +5309,6 @@ paths:
       - Bearer: []
       summary: get service
       tags:
-      - get
       - services
   /users/{id}:
     delete:
@@ -5488,7 +5382,6 @@ paths:
       - Bearer: []
       summary: list aspect-nodes
       tags:
-      - list
       - aspect-nodes
   /v2/aspects:
     get:
@@ -5541,7 +5434,6 @@ paths:
       - Bearer: []
       summary: list aspects
       tags:
-      - list
       - aspects
   /v2/characteristics:
     get:
@@ -5594,7 +5486,6 @@ paths:
       - Bearer: []
       summary: list characteristics
       tags:
-      - list
       - characteristics
   /v2/concepts:
     get:
@@ -5647,7 +5538,6 @@ paths:
       - Bearer: []
       summary: list concepts
       tags:
-      - list
       - concepts
   /v2/concepts-with-characteristics:
     get:
@@ -5700,7 +5590,6 @@ paths:
       - Bearer: []
       summary: list concepts with characteristics
       tags:
-      - list
       - concepts
   /v2/device-classes:
     get:
@@ -5753,7 +5642,6 @@ paths:
       - Bearer: []
       summary: list device-classes
       tags:
-      - list
       - device-classes
   /v2/query/device-type-selectables:
     post:
@@ -5804,7 +5692,6 @@ paths:
       - Bearer: []
       summary: validate device-type
       tags:
-      - validate
       - device-types
   /v3/device-types:
     get:
@@ -5880,7 +5767,6 @@ paths:
       - Bearer: []
       summary: list device-types
       tags:
-      - list
       - device-types
 securityDefinitions:
   Bearer:

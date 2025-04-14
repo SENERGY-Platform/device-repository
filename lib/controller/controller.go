@@ -20,7 +20,11 @@ import (
 	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/go-service-base/struct-logger"
+	"github.com/SENERGY-Platform/go-service-base/struct-logger/attributes"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"log/slog"
+	"os"
 	"time"
 )
 
@@ -33,6 +37,7 @@ func New(config configuration.Config, db database.Database, p Publisher, permCli
 		db:                  db,
 		config:              config,
 		permissionsV2Client: permClient,
+		logger:              getLogger(config),
 	}
 	if permClient != nil {
 		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
@@ -67,11 +72,24 @@ func New(config configuration.Config, db database.Database, p Publisher, permCli
 	return
 }
 
+func getLogger(config configuration.Config) *slog.Logger {
+	options := &slog.HandlerOptions{
+		AddSource: false,
+		Level:     struct_logger.GetLevel(config.StructLoggerLogLevel, slog.LevelWarn),
+	}
+	handler := struct_logger.GetHandler(config.StructLoggerLogHandler, os.Stdout, options, slog.Default().Handler())
+	handler = handler.WithAttrs([]slog.Attr{
+		slog.String(attributes.Provider.ProjectKey(), "device-repository"),
+	})
+	return slog.New(handler)
+}
+
 type Controller struct {
 	publisher           Publisher
 	db                  database.Database
 	config              configuration.Config
 	permissionsV2Client client.Client
+	logger              *slog.Logger
 }
 
 func getTimeoutContext() (context.Context, context.CancelFunc) {

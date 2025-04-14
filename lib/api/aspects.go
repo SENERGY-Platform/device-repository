@@ -40,7 +40,7 @@ type AspectEndpoints struct{}
 // ListAspects godoc
 // @Summary      list aspects
 // @Description  list aspects
-// @Tags         list, aspects
+// @Tags         aspects
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -112,9 +112,10 @@ func (this *AspectEndpoints) ListAspects(config configuration.Config, router *ht
 }
 
 // List godoc
-// @Summary      deprecated list aspects
-// @Description  deprecated list aspects
-// @Tags         list, aspects, deprecated
+// @Deprecated
+// @Summary      deprecated list aspects; use GET /v2/aspects
+// @Description  deprecated list aspects; use GET /v2/aspects
+// @Tags         aspects
 // @Produce      json
 // @Security Bearer
 // @Param        function query string false "filter; only 'measuring-function' is a valid value; if set, returns aspects used in combination with measuring-functions"
@@ -181,7 +182,7 @@ func (this *AspectEndpoints) List(config configuration.Config, router *http.Serv
 // Get godoc
 // @Summary      get aspect
 // @Description  get aspect
-// @Tags         get, aspects
+// @Tags         aspects
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Aspect Id"
@@ -212,7 +213,7 @@ func (this *AspectEndpoints) Get(config configuration.Config, router *http.Serve
 // Validate godoc
 // @Summary      validate aspect
 // @Description  validate aspect
-// @Tags         validate, aspects
+// @Tags         aspects
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -250,7 +251,7 @@ func (this *AspectEndpoints) Validate(config configuration.Config, router *http.
 // Set godoc
 // @Summary      set aspect
 // @Description  set aspect
-// @Tags         set, aspects
+// @Tags         aspects
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Aspect Id"
@@ -297,7 +298,7 @@ func (this *AspectEndpoints) Set(config configuration.Config, router *http.Serve
 // Create godoc
 // @Summary      create aspect
 // @Description  create aspect with generated id
-// @Tags         create, aspects
+// @Tags         aspects
 // @Produce      json
 // @Security Bearer
 // @Param        wait query bool false "wait for done message in kafka before responding"
@@ -336,7 +337,7 @@ func (this *AspectEndpoints) Create(config configuration.Config, router *http.Se
 // DeleteAspect godoc
 // @Summary      delete aspect
 // @Description  delete aspect; may only be called by admins; can also be used to only validate deletes
-// @Tags         validate, aspects
+// @Tags         aspects
 // @Security Bearer
 // @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "Aspect Id"
@@ -383,7 +384,7 @@ func (this *AspectEndpoints) DeleteAspect(config configuration.Config, router *h
 // GetMeasuringFunctions godoc
 // @Summary      list aspect measuring-functions
 // @Description  list measuring-functions used in combination with this aspect
-// @Tags         list, aspects, functions
+// @Tags         aspects
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Aspect Id"

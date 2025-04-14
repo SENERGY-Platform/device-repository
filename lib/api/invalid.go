@@ -41,7 +41,7 @@ type ValidationError struct {
 // DeviceTypes godoc
 // @Summary
 // @Description  validate existing device-types
-// @Tags         validate, device-types
+// @Tags         device-types
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100; limit of checked device-types not of returned errors"

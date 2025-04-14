@@ -39,7 +39,7 @@ type ExtendedDeviceEndpoints struct{}
 // List godoc
 // @Summary      list extended-device
 // @Description  list extended-device
-// @Tags         list, devices, extended-devices
+// @Tags         extended-devices
 // @Produce      json
 // @Security Bearer
 // @Param        fulldt query bool false "if true, result contains full device-type"
@@ -177,7 +177,7 @@ func (this *ExtendedDeviceEndpoints) List(config configuration.Config, router *h
 // Get godoc
 // @Summary      get extended-device
 // @Description  get extended-device
-// @Tags         get, devices, extended-devices
+// @Tags         extended-devices
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Id"

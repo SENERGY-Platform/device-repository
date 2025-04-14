@@ -18,17 +18,15 @@
                         "Bearer": []
                     }
                 ],
-                "description": "deprecated list aspect-nodes",
+                "description": "deprecated list aspect-nodes; use GET /v2/aspect-nodes",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspect-nodes",
-                    "aspects",
-                    "deprecated"
+                    "aspect-nodes"
                 ],
-                "summary": "deprecated list aspect-nodes",
+                "summary": "deprecated list aspect-nodes; use GET /v2/aspect-nodes",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -89,9 +87,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "aspect-nodes",
-                    "aspects"
+                    "aspect-nodes"
                 ],
                 "summary": "get aspect-node",
                 "parameters": [
@@ -140,10 +136,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspect-nodes",
-                    "aspects",
-                    "functions"
+                    "aspect-nodes"
                 ],
                 "summary": "list aspect-node measuring-functions",
                 "parameters": [
@@ -202,16 +195,15 @@
                         "Bearer": []
                     }
                 ],
-                "description": "deprecated list aspects",
+                "description": "deprecated list aspects; use GET /v2/aspects",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspects",
-                    "deprecated"
+                    "aspects"
                 ],
-                "summary": "deprecated list aspects",
+                "summary": "deprecated list aspects; use GET /v2/aspects",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -270,7 +262,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "aspects"
                 ],
                 "summary": "validate aspect",
@@ -315,7 +306,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "aspects"
                 ],
                 "summary": "create aspect",
@@ -373,7 +363,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "aspects"
                 ],
                 "summary": "get aspect",
@@ -421,7 +410,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "aspects"
                 ],
                 "summary": "set aspect",
@@ -475,7 +463,6 @@
                 ],
                 "description": "delete aspect; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "aspects"
                 ],
                 "summary": "delete aspect",
@@ -519,9 +506,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "aspects",
-                    "functions"
+                    "aspects"
                 ],
                 "summary": "list aspect measuring-functions",
                 "parameters": [
@@ -585,7 +570,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "characteristics"
                 ],
                 "summary": "list characteristics",
@@ -635,7 +619,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "characteristics"
                 ],
                 "summary": "validate characteristic",
@@ -679,7 +662,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "characteristics"
                 ],
                 "summary": "create characteristic",
@@ -731,7 +713,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "characteristics"
                 ],
                 "summary": "get characteristic",
@@ -779,7 +760,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "characteristics"
                 ],
                 "summary": "set characteristic",
@@ -833,7 +813,6 @@
                 ],
                 "description": "delete characteristic; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "characteristics"
                 ],
                 "summary": "delete characteristic",
@@ -877,7 +856,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "concepts"
                 ],
                 "summary": "validate concept",
@@ -922,7 +900,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "concepts"
                 ],
                 "summary": "create concept",
@@ -974,7 +951,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "concepts"
                 ],
                 "summary": "get concept",
@@ -1028,7 +1004,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "concepts"
                 ],
                 "summary": "set concept",
@@ -1082,7 +1057,6 @@
                 ],
                 "description": "delete concept; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "concepts"
                 ],
                 "summary": "delete concept",
@@ -1126,8 +1100,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "controlling-functions",
                     "functions"
                 ],
                 "summary": "list controlling-functions",
@@ -1166,16 +1138,15 @@
                         "Bearer": []
                     }
                 ],
-                "description": "deprecated list device-classes",
+                "description": "deprecated list device-classes; use GET /v2/device-classes",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "device-classes",
-                    "deprecated"
+                    "device-classes"
                 ],
-                "summary": "deprecated list device-classes",
+                "summary": "deprecated list device-classes; use GET /v2/device-classes",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "string",
@@ -1222,7 +1193,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-classes"
                 ],
                 "summary": "validate device-class",
@@ -1267,7 +1237,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "device-classes"
                 ],
                 "summary": "create device-class",
@@ -1319,7 +1288,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "device-classes"
                 ],
                 "summary": "get device-class",
@@ -1367,7 +1335,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "device-classes"
                 ],
                 "summary": "set device-class",
@@ -1421,7 +1388,6 @@
                 ],
                 "description": "delete device-class; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "device-classes"
                 ],
                 "summary": "delete device-class",
@@ -1465,9 +1431,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "device-classes",
-                    "functions"
+                    "device-classes"
                 ],
                 "summary": "list device-class functions",
                 "parameters": [
@@ -1519,9 +1483,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "device-classes",
-                    "functions"
+                    "device-classes"
                 ],
                 "summary": "list device-class functions",
                 "parameters": [
@@ -1573,7 +1535,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "device-groups"
                 ],
                 "summary": "list device-group",
@@ -1689,7 +1650,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-groups"
                 ],
                 "summary": "validate device-group",
@@ -1734,7 +1694,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "device-groups"
                 ],
                 "summary": "create device-group",
@@ -1786,7 +1745,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "device-groups"
                 ],
                 "summary": "get device-group",
@@ -1840,7 +1798,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "device-groups"
                 ],
                 "summary": "set device-group",
@@ -1894,7 +1851,6 @@
                 ],
                 "description": "delete device-group; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "device-groups"
                 ],
                 "summary": "delete device-group",
@@ -1938,7 +1894,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "summary": "validate device-type",
@@ -1983,7 +1938,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "device-types"
                 ],
                 "summary": "create device-type",
@@ -2041,7 +1995,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "device-types"
                 ],
                 "summary": "get device-type",
@@ -2089,7 +2042,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "device-types"
                 ],
                 "summary": "set device-type",
@@ -2152,7 +2104,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "device-types"
                 ],
                 "summary": "delete device-type",
@@ -2199,7 +2150,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "devices"
                 ],
                 "summary": "list devices",
@@ -2315,7 +2265,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "devices"
                 ],
                 "summary": "validate device",
@@ -2360,7 +2309,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "devices"
                 ],
                 "summary": "create device",
@@ -2410,7 +2358,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "devices"
                 ],
                 "summary": "delete multiple devices",
@@ -2462,7 +2409,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "devices"
                 ],
                 "summary": "get device",
@@ -2528,7 +2474,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device",
@@ -2591,7 +2536,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "devices"
                 ],
                 "summary": "delete device",
@@ -2638,7 +2582,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device attributes",
@@ -2703,7 +2646,6 @@
                 ],
                 "description": "set device connection-state",
                 "tags": [
-                    "connection-state",
                     "devices"
                 ],
                 "summary": "set device connection-state",
@@ -2752,7 +2694,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device display name",
@@ -2871,8 +2812,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "devices",
                     "extended-devices"
                 ],
                 "summary": "list extended-device",
@@ -3002,8 +2941,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "devices",
                     "extended-devices"
                 ],
                 "summary": "get extended-device",
@@ -3077,8 +3014,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "hubs",
                     "extended-hubs"
                 ],
                 "summary": "list extended-hubs",
@@ -3172,8 +3107,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "hubs",
                     "extended-hubs"
                 ],
                 "summary": "get extended-hubs",
@@ -3229,7 +3162,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "functions"
                 ],
                 "summary": "list functions",
@@ -3315,7 +3247,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "locations"
                 ],
                 "summary": "validate location",
@@ -3360,7 +3291,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "functions"
                 ],
                 "summary": "create function",
@@ -3412,7 +3342,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "functions"
                 ],
                 "summary": "get function",
@@ -3460,7 +3389,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "functions"
                 ],
                 "summary": "set function",
@@ -3514,7 +3442,6 @@
                 ],
                 "description": "delete function; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
-                    "validate",
                     "functions"
                 ],
                 "summary": "delete function",
@@ -3602,7 +3529,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "hubs"
                 ],
                 "summary": "list hubs",
@@ -3688,7 +3614,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "hubs"
                 ],
                 "summary": "validate hub",
@@ -3733,7 +3658,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "hubs"
                 ],
                 "summary": "create hub",
@@ -3785,7 +3709,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "hubs"
                 ],
                 "summary": "get hub",
@@ -3839,7 +3762,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "hubs"
                 ],
                 "summary": "set hub",
@@ -3902,7 +3824,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "hubs"
                 ],
                 "summary": "delete hub",
@@ -3944,7 +3865,6 @@
                 ],
                 "description": "head hub",
                 "tags": [
-                    "head",
                     "hubs"
                 ],
                 "summary": "head hub",
@@ -3994,7 +3914,6 @@
                 ],
                 "description": "set hub connection-state",
                 "tags": [
-                    "connection-state",
                     "hubs"
                 ],
                 "summary": "set hub connection-state",
@@ -4043,9 +3962,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
-                    "hubs",
-                    "devices"
+                    "hubs"
                 ],
                 "summary": "get device ids of hub",
                 "parameters": [
@@ -4109,7 +4026,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "hubs"
                 ],
                 "summary": "set hub name",
@@ -4264,7 +4180,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "parameters": [
@@ -4333,7 +4248,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "devices"
                 ],
                 "summary": "get device by local id",
@@ -4387,7 +4301,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "devices"
                 ],
                 "summary": "set device (local-id variant)",
@@ -4450,7 +4363,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "devices"
                 ],
                 "summary": "create device (local-id variant)",
@@ -4500,7 +4412,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "devices"
                 ],
                 "summary": "delete device (local-id variant)",
@@ -4553,7 +4464,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "locations"
                 ],
                 "summary": "list location",
@@ -4639,7 +4549,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "locations"
                 ],
                 "summary": "create location",
@@ -4698,7 +4607,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "locations"
                 ],
                 "summary": "get location",
@@ -4746,7 +4654,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "locations"
                 ],
                 "summary": "set location",
@@ -4803,7 +4710,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "locations"
                 ],
                 "summary": "delete location",
@@ -4850,8 +4756,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
-                    "measuring-functions",
                     "functions"
                 ],
                 "summary": "list measuring-functions",
@@ -6563,7 +6467,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "protocols"
                 ],
                 "summary": "get protocol",
@@ -6625,7 +6528,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "protocols"
                 ],
                 "summary": "validate protocol",
@@ -6670,7 +6572,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "create",
                     "protocols"
                 ],
                 "summary": "create protocol",
@@ -6722,7 +6623,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "protocols"
                 ],
                 "summary": "get protocol",
@@ -6770,7 +6670,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "set",
                     "protocols"
                 ],
                 "summary": "set protocol",
@@ -6827,7 +6726,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "delete",
                     "protocols"
                 ],
                 "summary": "delete protocol",
@@ -6877,7 +6775,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "query",
                     "aspect-nodes"
                 ],
                 "summary": "query aspect-nodes",
@@ -6935,7 +6832,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "summary": "validate device-type",
@@ -7014,7 +6910,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "query",
                     "device-types"
                 ],
                 "summary": "query used-in-device-type",
@@ -7060,7 +6955,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "get",
                     "services"
                 ],
                 "summary": "get service",
@@ -7144,7 +7038,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "aspect-nodes"
                 ],
                 "summary": "list aspect-nodes",
@@ -7226,7 +7119,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "aspects"
                 ],
                 "summary": "list aspects",
@@ -7308,7 +7200,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "characteristics"
                 ],
                 "summary": "list characteristics",
@@ -7390,7 +7281,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "concepts"
                 ],
                 "summary": "list concepts",
@@ -7472,7 +7362,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "concepts"
                 ],
                 "summary": "list concepts with characteristics",
@@ -7554,7 +7443,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "device-classes"
                 ],
                 "summary": "list device-classes",
@@ -7639,7 +7527,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "validate",
                     "device-types"
                 ],
                 "summary": "validate device-type",
@@ -7715,7 +7602,6 @@
                     "application/json"
                 ],
                 "tags": [
-                    "list",
                     "device-types"
                 ],
                 "summary": "list device-types",

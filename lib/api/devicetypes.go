@@ -37,7 +37,7 @@ type DeviceTypeEndpoints struct{}
 // Get godoc
 // @Summary      get device-type
 // @Description  get device-type
-// @Tags         get, device-types
+// @Tags         device-types
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device-Type Id"
@@ -68,7 +68,7 @@ func (this *DeviceTypeEndpoints) Get(config configuration.Config, router *http.S
 // ListV3 godoc
 // @Summary      list device-types
 // @Description  list device-types
-// @Tags         list, device-types
+// @Tags         device-types
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -306,7 +306,7 @@ func (this *DeviceTypeEndpoints) List(config configuration.Config, router *http.
 // Validate godoc
 // @Summary      validate device-type
 // @Description  validate device-type
-// @Tags         validate, device-types
+// @Tags         device-types
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -349,7 +349,7 @@ func (this *DeviceTypeEndpoints) Validate(config configuration.Config, router *h
 // Create godoc
 // @Summary      create device-type
 // @Description  create device-type
-// @Tags         create, device-types
+// @Tags         device-types
 // @Produce      json
 // @Security Bearer
 // @Param        distinct_attributes query string false "comma separated list of attribute keys; no other device-type with the same attribute key/value may exist"
@@ -394,7 +394,7 @@ func (this *DeviceTypeEndpoints) Create(config configuration.Config, router *htt
 // Set godoc
 // @Summary      set device-type
 // @Description  set device-type
-// @Tags         set, device-types
+// @Tags         device-types
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "DeviceType Id"
@@ -447,7 +447,7 @@ func (this *DeviceTypeEndpoints) Set(config configuration.Config, router *http.S
 // Delete godoc
 // @Summary      delete device-type
 // @Description  delete device-type
-// @Tags         delete, device-types
+// @Tags         device-types
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "DeviceType Id"

@@ -37,7 +37,7 @@ type DeviceGroupEndpoints struct{}
 // List godoc
 // @Summary      list device-group
 // @Description  list device-group
-// @Tags         list, device-groups
+// @Tags         device-groups
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -164,7 +164,7 @@ func (this *DeviceGroupEndpoints) List(config configuration.Config, router *http
 // Get godoc
 // @Summary      get device-group
 // @Description  get device-group
-// @Tags         get, device-groups
+// @Tags         device-groups
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Group Id"
@@ -201,7 +201,7 @@ func (this *DeviceGroupEndpoints) Get(config configuration.Config, router *http.
 // Validate godoc
 // @Summary      validate device-group
 // @Description  validate device-group
-// @Tags         validate, device-groups
+// @Tags         device-groups
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -239,7 +239,7 @@ func (this *DeviceGroupEndpoints) Validate(config configuration.Config, router *
 // Delete godoc
 // @Summary      delete device-group
 // @Description  delete device-group; may only be called by admins; can also be used to only validate deletes
-// @Tags         validate, device-groups
+// @Tags         device-groups
 // @Security Bearer
 // @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "DeviceGroup Id"
@@ -281,7 +281,7 @@ func (this *DeviceGroupEndpoints) Delete(config configuration.Config, router *ht
 // Create godoc
 // @Summary      create device-group
 // @Description  create device-group
-// @Tags         create, device-groups
+// @Tags         device-groups
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.DeviceGroup true "element"
@@ -324,7 +324,7 @@ func (this *DeviceGroupEndpoints) Create(config configuration.Config, router *ht
 // Set godoc
 // @Summary      set device-group
 // @Description  set device-group
-// @Tags         set, device-groups
+// @Tags         device-groups
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "DeviceGroup Id"

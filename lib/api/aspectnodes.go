@@ -43,7 +43,7 @@ type AspectNodeQuery struct {
 // Query godoc
 // @Summary      query aspect-nodes
 // @Description  query aspect-nodes
-// @Tags         query, aspect-nodes
+// @Tags         aspect-nodes
 // @Accept       json
 // @Produce      json
 // @Security Bearer
@@ -84,7 +84,7 @@ func (this *AspectNodeEndpoints) Query(config configuration.Config, router *http
 // ListAspectNodes godoc
 // @Summary      list aspect-nodes
 // @Description  list aspect-nodes
-// @Tags         list, aspect-nodes
+// @Tags         aspect-nodes
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -156,9 +156,10 @@ func (this *AspectEndpoints) ListAspectNodes(config configuration.Config, router
 }
 
 // List godoc
-// @Summary      deprecated list aspect-nodes
-// @Description  deprecated list aspect-nodes
-// @Tags         list, aspect-nodes, aspects, deprecated
+// @Deprecated
+// @Summary      deprecated list aspect-nodes; use GET /v2/aspect-nodes
+// @Description  deprecated list aspect-nodes; use GET /v2/aspect-nodes
+// @Tags         aspect-nodes
 // @Produce      json
 // @Security Bearer
 // @Param        function query string false "filter; only 'measuring-function' is a valid value; if set, returns aspect-nodes used in combination with measuring-functions"
@@ -225,7 +226,7 @@ func (this *AspectNodeEndpoints) List(config configuration.Config, router *http.
 // Get godoc
 // @Summary      get aspect-node
 // @Description  get aspect-node
-// @Tags         get, aspect-nodes, aspects
+// @Tags         aspect-nodes
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Aspect-Node Id"
@@ -256,7 +257,7 @@ func (this *AspectNodeEndpoints) Get(config configuration.Config, router *http.S
 // ListMeasuringFunctions godoc
 // @Summary      list aspect-node measuring-functions
 // @Description  list measuring-functions used in combination with this aspect-node
-// @Tags         list, aspect-nodes, aspects, functions
+// @Tags         aspect-nodes
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Aspect-Node Id"

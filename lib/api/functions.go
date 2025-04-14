@@ -40,7 +40,7 @@ type FunctionsEndpoints struct{}
 // ListFunctions godoc
 // @Summary      list functions
 // @Description  list functions
-// @Tags         list, functions
+// @Tags         functions
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -117,7 +117,7 @@ func (this *FunctionsEndpoints) ListFunctions(config configuration.Config, route
 // ListControllingFunctions godoc
 // @Summary      list controlling-functions
 // @Description  list controlling-functions
-// @Tags         list, controlling-functions, functions
+// @Tags         functions
 // @Produce      json
 // @Security Bearer
 // @Success      200 {array}  models.Function
@@ -146,7 +146,7 @@ func (this *FunctionsEndpoints) ListControllingFunctions(config configuration.Co
 // ListMeasuringFunctions godoc
 // @Summary      list measuring-functions
 // @Description  list measuring-functions
-// @Tags         list, measuring-functions, functions
+// @Tags         functions
 // @Produce      json
 // @Security Bearer
 // @Success      200 {array}  models.Function
@@ -175,7 +175,7 @@ func (this *FunctionsEndpoints) ListMeasuringFunctions(config configuration.Conf
 // Get godoc
 // @Summary      get function
 // @Description  get function
-// @Tags         get, functions
+// @Tags         functions
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Function Id"
@@ -206,7 +206,7 @@ func (this *FunctionsEndpoints) Get(config configuration.Config, router *http.Se
 // Validate godoc
 // @Summary      validate function
 // @Description  validate function
-// @Tags         validate, functions
+// @Tags         functions
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -245,7 +245,7 @@ func (this *FunctionsEndpoints) Validate(config configuration.Config, router *ht
 // Delete godoc
 // @Summary      delete function
 // @Description  delete function; may only be called by admins; can also be used to only validate deletes
-// @Tags         validate, functions
+// @Tags         functions
 // @Security Bearer
 // @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "Functions Id"
@@ -287,7 +287,7 @@ func (this *FunctionsEndpoints) Delete(config configuration.Config, router *http
 // Create godoc
 // @Summary      create function
 // @Description  create function
-// @Tags         create, functions
+// @Tags         functions
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.Function true "element"
@@ -325,7 +325,7 @@ func (this *FunctionsEndpoints) Create(config configuration.Config, router *http
 // Set godoc
 // @Summary      set function
 // @Description  set function
-// @Tags         set, functions
+// @Tags         functions
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Function Id"

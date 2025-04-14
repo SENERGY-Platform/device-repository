@@ -38,7 +38,7 @@ type ExtendedHubEndpoints struct{}
 // Get godoc
 // @Summary      get extended-hubs
 // @Description  get extended-hubs
-// @Tags         get, hubs, extended-hubs
+// @Tags         extended-hubs
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Hub Id"
@@ -78,7 +78,7 @@ func (this *ExtendedHubEndpoints) Get(config configuration.Config, router *http.
 // List godoc
 // @Summary      list extended-hubs
 // @Description  list extended-hubs
-// @Tags         list, hubs, extended-hubs
+// @Tags         extended-hubs
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"

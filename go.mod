@@ -1,6 +1,6 @@
 module github.com/SENERGY-Platform/device-repository
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/segmentio/kafka-go v0.4.47
@@ -27,6 +27,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/SENERGY-Platform/developer-notifications v0.0.4 // indirect
+	github.com/SENERGY-Platform/go-service-base/struct-logger v0.4.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect

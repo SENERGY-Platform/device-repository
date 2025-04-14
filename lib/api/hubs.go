@@ -39,7 +39,7 @@ type HubEndpoints struct{}
 // Get godoc
 // @Summary      get hub
 // @Description  get hub
-// @Tags         get, hubs
+// @Tags         hubs
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Hub Id"
@@ -79,7 +79,7 @@ func (this *HubEndpoints) Get(config configuration.Config, router *http.ServeMux
 // List godoc
 // @Summary      list hubs
 // @Description  list hubs
-// @Tags         list, hubs
+// @Tags         hubs
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -175,7 +175,7 @@ func (this *HubEndpoints) List(config configuration.Config, router *http.ServeMu
 // GetDevices godoc
 // @Summary      get device ids of hub
 // @Description  get device ids of hub
-// @Tags         get, hubs, devices
+// @Tags         hubs
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Hub Id"
@@ -232,7 +232,7 @@ func (this *HubEndpoints) GetDevices(config configuration.Config, router *http.S
 // Head godoc
 // @Summary      head hub
 // @Description  head hub
-// @Tags         head, hubs
+// @Tags         hubs
 // @Security Bearer
 // @Param        id path string true "Hub Id"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
@@ -263,7 +263,7 @@ func (this *HubEndpoints) Head(config configuration.Config, router *http.ServeMu
 // Validate godoc
 // @Summary      validate hub
 // @Description  validate hub
-// @Tags         validate, hubs
+// @Tags         hubs
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -301,7 +301,7 @@ func (this *HubEndpoints) Validate(config configuration.Config, router *http.Ser
 // Create godoc
 // @Summary      create hub
 // @Description  create hub
-// @Tags         create, hubs
+// @Tags         hubs
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.Hub true "element"
@@ -344,7 +344,7 @@ func (this *HubEndpoints) Create(config configuration.Config, router *http.Serve
 // Set godoc
 // @Summary      set hub
 // @Description  set hub
-// @Tags         set, hubs
+// @Tags         hubs
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Hub Id"
@@ -404,7 +404,7 @@ func (this *HubEndpoints) Set(config configuration.Config, router *http.ServeMux
 // SetName godoc
 // @Summary      set hub name
 // @Description  set hub name
-// @Tags         set, hubs
+// @Tags         hubs
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Hub Id"
@@ -450,7 +450,7 @@ func (this *HubEndpoints) SetName(config configuration.Config, router *http.Serv
 // Delete godoc
 // @Summary      delete hub
 // @Description  delete hub
-// @Tags         delete, hubs
+// @Tags         hubs
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Hub Id"
@@ -482,7 +482,7 @@ func (this *HubEndpoints) Delete(config configuration.Config, router *http.Serve
 // SetConnectionState godoc
 // @Summary      set hub connection-state
 // @Description  set hub connection-state
-// @Tags         connection-state, hubs
+// @Tags         hubs
 // @Security Bearer
 // @Param        message body bool true "connected true/false"
 // @Success      200

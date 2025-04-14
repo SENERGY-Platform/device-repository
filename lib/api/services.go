@@ -32,7 +32,7 @@ type ServiceEndpoints struct{}
 // Get godoc
 // @Summary      get service
 // @Description  get service
-// @Tags         get, services
+// @Tags         services
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Service Id"

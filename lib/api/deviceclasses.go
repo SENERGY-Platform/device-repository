@@ -40,7 +40,7 @@ type DeviceClassEndpoints struct{}
 // ListDeviceClasses godoc
 // @Summary      list device-classes
 // @Description  list device-classes
-// @Tags         list, device-classes
+// @Tags         device-classes
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -112,9 +112,10 @@ func (this *DeviceClassEndpoints) ListDeviceClasses(config configuration.Config,
 }
 
 // List godoc
-// @Summary      deprecated list device-classes
-// @Description  deprecated list device-classes
-// @Tags         list, device-classes, deprecated
+// @Deprecated
+// @Summary      deprecated list device-classes; use GET /v2/device-classes
+// @Description  deprecated list device-classes; use GET /v2/device-classes
+// @Tags         device-classes
 // @Produce      json
 // @Security Bearer
 // @Param        function query string false "filter; only 'controlling-function' is a valid value; if set, returns device-classes used in combination with controlling-function"
@@ -161,7 +162,7 @@ func (this *DeviceClassEndpoints) List(config configuration.Config, router *http
 // Get godoc
 // @Summary      get device-class
 // @Description  get device-class
-// @Tags         get, device-classes
+// @Tags         device-classes
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Class Id"
@@ -192,7 +193,7 @@ func (this *DeviceClassEndpoints) Get(config configuration.Config, router *http.
 // GetFunctions godoc
 // @Summary      list device-class functions
 // @Description  list functions used in combination with this device-class
-// @Tags         list, device-classes, functions
+// @Tags         device-classes
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Class Id"
@@ -223,7 +224,7 @@ func (this *DeviceClassEndpoints) GetFunctions(config configuration.Config, rout
 // GetControllingFunctions godoc
 // @Summary      list device-class functions
 // @Description  list controlling-functions used in combination with this device-class
-// @Tags         list, device-classes, functions
+// @Tags         device-classes
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Device Class Id"
@@ -254,7 +255,7 @@ func (this *DeviceClassEndpoints) GetControllingFunctions(config configuration.C
 // Validate godoc
 // @Summary      validate device-class
 // @Description  validate device-class
-// @Tags         validate, device-classes
+// @Tags         device-classes
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool true "must be true; reminder, that this is not an update but a validation"
@@ -292,7 +293,7 @@ func (this *DeviceClassEndpoints) Validate(config configuration.Config, router *
 // Delete godoc
 // @Summary      delete device-class
 // @Description  delete device-class; may only be called by admins; can also be used to only validate deletes
-// @Tags         validate, device-classes
+// @Tags         device-classes
 // @Security Bearer
 // @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "DeviceClasses Id"
@@ -334,7 +335,7 @@ func (this *DeviceClassEndpoints) Delete(config configuration.Config, router *ht
 // Create godoc
 // @Summary      create device-class
 // @Description  create device-class
-// @Tags         create, device-classes
+// @Tags         device-classes
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.DeviceClass true "element"
@@ -372,7 +373,7 @@ func (this *DeviceClassEndpoints) Create(config configuration.Config, router *ht
 // Set godoc
 // @Summary      set device-class
 // @Description  set device-class
-// @Tags         set, device-classes
+// @Tags         device-classes
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "DeviceClass Id"

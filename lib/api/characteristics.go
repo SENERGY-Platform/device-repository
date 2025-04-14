@@ -37,7 +37,7 @@ type CharacteristicsEndpoints struct{}
 // ListCharacteristics godoc
 // @Summary      list characteristics
 // @Description  list characteristics
-// @Tags         list, characteristics
+// @Tags         characteristics
 // @Produce      json
 // @Security Bearer
 // @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
@@ -111,7 +111,7 @@ func (this *CharacteristicsEndpoints) ListCharacteristics(config configuration.C
 // List godoc
 // @Summary      list characteristics
 // @Description  list characteristics
-// @Tags         list, characteristics
+// @Tags         characteristics
 // @Produce      json
 // @Security Bearer
 // @Param        leafsOnly query bool false "default=true; filter; return only characteristics that have no sub-characteristics"
@@ -153,7 +153,7 @@ func (this *CharacteristicsEndpoints) List(config configuration.Config, router *
 // Get godoc
 // @Summary      get characteristic
 // @Description  get characteristic
-// @Tags         get, characteristics
+// @Tags         characteristics
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Characteristic Id"
@@ -184,7 +184,7 @@ func (this *CharacteristicsEndpoints) Get(config configuration.Config, router *h
 // Validate godoc
 // @Summary      validate characteristic
 // @Description  validate characteristic
-// @Tags         validate, characteristics
+// @Tags         characteristics
 // @Accept       json
 // @Security Bearer
 // @Param        dry-run query bool false "must be true; reminder, that this is not an update but a validation"
@@ -222,7 +222,7 @@ func (this *CharacteristicsEndpoints) Validate(config configuration.Config, rout
 // Delete godoc
 // @Summary      delete characteristic
 // @Description  delete characteristic; may only be called by admins; can also be used to only validate deletes
-// @Tags         validate, characteristics
+// @Tags         characteristics
 // @Security Bearer
 // @Param        dry-run query bool false "only validate deletion"
 // @Param        id path string true "Characteristics Id"
@@ -269,7 +269,7 @@ func (this *CharacteristicsEndpoints) Delete(config configuration.Config, router
 // Create godoc
 // @Summary      create characteristic
 // @Description  create characteristic
-// @Tags         create, characteristics
+// @Tags         characteristics
 // @Produce      json
 // @Security Bearer
 // @Param        message body models.Characteristic true "element"
@@ -307,7 +307,7 @@ func (this *CharacteristicsEndpoints) Create(config configuration.Config, router
 // Update godoc
 // @Summary      set characteristic
 // @Description  set characteristic
-// @Tags         set, characteristics
+// @Tags         characteristics
 // @Produce      json
 // @Security Bearer
 // @Param        id path string true "Characteristic Id"

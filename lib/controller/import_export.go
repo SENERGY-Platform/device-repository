@@ -384,6 +384,7 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 				if options.FilterIds == nil || slices.Contains(options.FilterIds, d.Id) {
 					err, code = this.ValidateDevice(token, d)
 					if err != nil {
+						this.logger.Warn("device validation failed with error: " + err.Error())
 						return err, code
 					}
 					_, err, _ = this.setDevice(d)

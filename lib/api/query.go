@@ -33,7 +33,7 @@ type QueryEndpoint struct{}
 // Query godoc
 // @Summary      query used-in-device-type
 // @Description  query used-in-device-type
-// @Tags         query, device-types
+// @Tags         device-types
 // @Accept       json
 // @Produce      json
 // @Security Bearer
