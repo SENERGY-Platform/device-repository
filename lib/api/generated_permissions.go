@@ -23,158 +23,6 @@ package api
 
 
 
-// GeneratedListComputedPermissions_devices godoc
-// @Summary      list the computed permissions to resources of the given topic (devices) and ids
-// @Description  list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/permissions/devices [get]
-func GeneratedListComputedPermissions_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListComputedPermissions_devicegroups godoc
-// @Summary      list the computed permissions to resources of the given topic (device-groups) and ids
-// @Description  list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/permissions/device-groups [get]
-func GeneratedListComputedPermissions_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListComputedPermissions_hubs godoc
-// @Summary      list the computed permissions to resources of the given topic (hubs) and ids
-// @Description  list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/permissions/hubs [get]
-func GeneratedListComputedPermissions_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListComputedPermissions_locations godoc
-// @Summary      list the computed permissions to resources of the given topic (locations) and ids
-// @Description  list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/permissions/locations [get]
-func GeneratedListComputedPermissions_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedQueryListComputedPermissions_devices godoc
-// @Summary      list the computed permissions to resources of the given topic (devices) and ids
-// @Description  list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        ids body []string true "Resource Ids"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/query/permissions/devices [post]
-func GeneratedQueryListComputedPermissions_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedQueryListComputedPermissions_devicegroups godoc
-// @Summary      list the computed permissions to resources of the given topic (device-groups) and ids
-// @Description  list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        ids body []string true "Resource Ids"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/query/permissions/device-groups [post]
-func GeneratedQueryListComputedPermissions_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedQueryListComputedPermissions_hubs godoc
-// @Summary      list the computed permissions to resources of the given topic (hubs) and ids
-// @Description  list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        ids body []string true "Resource Ids"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/query/permissions/hubs [post]
-func GeneratedQueryListComputedPermissions_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedQueryListComputedPermissions_locations godoc
-// @Summary      list the computed permissions to resources of the given topic (locations) and ids
-// @Description  list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        ids body []string true "Resource Ids"
-// @Produce      json
-// @Success      200 {array} model.ComputedPermissions
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/query/permissions/locations [post]
-func GeneratedQueryListComputedPermissions_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
 // GeneratedCheckPermission_devices godoc
 // @Summary      check permission
 // @Description  check permission
@@ -413,6 +261,166 @@ func GeneratedListAccessibleResourceIds_hubs(){
 // @Failure      500
 // @Router       /permissions/accessible/locations [get]
 func GeneratedListAccessibleResourceIds_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+
+func GeneratedSwagger(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListComputedPermissions_devices godoc
+// @Summary      list the computed permissions to resources of the given topic (devices) and ids
+// @Description  list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/permissions/devices [get]
+func GeneratedListComputedPermissions_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListComputedPermissions_devicegroups godoc
+// @Summary      list the computed permissions to resources of the given topic (device-groups) and ids
+// @Description  list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/permissions/device-groups [get]
+func GeneratedListComputedPermissions_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListComputedPermissions_hubs godoc
+// @Summary      list the computed permissions to resources of the given topic (hubs) and ids
+// @Description  list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/permissions/hubs [get]
+func GeneratedListComputedPermissions_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListComputedPermissions_locations godoc
+// @Summary      list the computed permissions to resources of the given topic (locations) and ids
+// @Description  list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/permissions/locations [get]
+func GeneratedListComputedPermissions_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_devices godoc
+// @Summary      list the computed permissions to resources of the given topic (devices) and ids
+// @Description  list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/devices [post]
+func GeneratedQueryListComputedPermissions_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_devicegroups godoc
+// @Summary      list the computed permissions to resources of the given topic (device-groups) and ids
+// @Description  list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/device-groups [post]
+func GeneratedQueryListComputedPermissions_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_hubs godoc
+// @Summary      list the computed permissions to resources of the given topic (hubs) and ids
+// @Description  list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/hubs [post]
+func GeneratedQueryListComputedPermissions_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedQueryListComputedPermissions_locations godoc
+// @Summary      list the computed permissions to resources of the given topic (locations) and ids
+// @Description  list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        ids body []string true "Resource Ids"
+// @Produce      json
+// @Success      200 {array} model.ComputedPermissions
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/query/permissions/locations [post]
+func GeneratedQueryListComputedPermissions_locations(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }
@@ -669,14 +677,6 @@ func GeneratedSetPermission_hubs(){
 // @Failure      500
 // @Router       /permissions/manage/locations/{id} [put]
 func GeneratedSetPermission_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-
-func GeneratedSwagger(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }

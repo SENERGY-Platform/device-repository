@@ -114,6 +114,49 @@ func (this *FunctionsEndpoints) ListFunctions(config configuration.Config, route
 	})
 }
 
+// QueryFunctions godoc
+// @Summary      list functions
+// @Description  list functions
+// @Tags         functions
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        query body model.FunctionListOptions true "list options"
+// @Success      200 {array}  models.Function
+// @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /query/functions [POST]
+func (this *FunctionsEndpoints) QueryFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /query/functions", func(writer http.ResponseWriter, request *http.Request) {
+		listoptions := model.FunctionListOptions{}
+		err := json.NewDecoder(request.Body).Decode(&listoptions)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if listoptions.Limit == 0 {
+			listoptions.Limit = 100
+		}
+		result, total, err, errCode := control.ListFunctions(listoptions)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+
+		writer.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			log.Println("ERROR: unable to encode response", err)
+		}
+		return
+	})
+}
+
 // ListControllingFunctions godoc
 // @Summary      list controlling-functions
 // @Description  list controlling-functions

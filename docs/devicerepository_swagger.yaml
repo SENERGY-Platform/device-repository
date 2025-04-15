@@ -151,6 +151,29 @@ definitions:
       interaction:
         $ref: '#/definitions/models.Interaction'
     type: object
+  model.FunctionListOptions:
+    properties:
+      ids:
+        description: filter; ignores limit/offset if Ids != nil; ignored if Ids ==
+          nil; Ids == []string{} will return an empty list;
+        items:
+          type: string
+        type: array
+      limit:
+        description: default 100, will be ignored if 'ids' is set (Ids != nil)
+        type: integer
+      offset:
+        description: default 0, will be ignored if 'ids' is set (Ids != nil)
+        type: integer
+      rdfType:
+        description: model.SES_ONTOLOGY_CONTROLLING_FUNCTION || model.SES_ONTOLOGY_MEASURING_FUNCTION
+        type: string
+      search:
+        type: string
+      sortBy:
+        description: default name.asc
+        type: string
+    type: object
   model.ImportFromOptions:
     properties:
       filter_ids:
@@ -5249,6 +5272,46 @@ paths:
       summary: validate device-type
       tags:
       - device-types
+  /query/functions:
+    post:
+      consumes:
+      - application/json
+      description: list functions
+      parameters:
+      - description: list options
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/model.FunctionListOptions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list functions
+      tags:
+      - functions
   /query/used-in-device-type:
     post:
       consumes:

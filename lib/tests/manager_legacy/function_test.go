@@ -18,6 +18,7 @@ package tests
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
 	"io"
@@ -73,6 +74,19 @@ func testFunction(port string) func(t *testing.T) {
 
 		if result.Name != "foo" {
 			t.Fatal(result)
+		}
+
+		resultList, _, err, _ := client.NewClient("http://localhost:"+port, nil).ListFunctions(client.FunctionListOptions{
+			Ids: []string{function.Id},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(resultList) != 1 {
+			t.Fatal(resultList)
+		}
+		if resultList[0].Name != "foo" {
+			t.Fatal(resultList[0])
 		}
 
 		resp, err = helper.Jwtdelete(adminjwt, "http://localhost:"+port+"/functions/"+url.PathEscape(function.Id)+"?wait=true")

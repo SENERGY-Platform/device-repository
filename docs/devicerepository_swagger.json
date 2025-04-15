@@ -6895,6 +6895,69 @@
                 }
             }
         },
+        "/query/functions": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "list functions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "functions"
+                ],
+                "summary": "list functions",
+                "parameters": [
+                    {
+                        "description": "list options",
+                        "name": "query",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.FunctionListOptions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/query/used-in-device-type": {
             "post": {
                 "security": [
@@ -7930,6 +7993,37 @@
                 },
                 "interaction": {
                     "$ref": "#/definitions/models.Interaction"
+                }
+            }
+        },
+        "model.FunctionListOptions": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "description": "filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "description": "default 100, will be ignored if 'ids' is set (Ids != nil)",
+                    "type": "integer"
+                },
+                "offset": {
+                    "description": "default 0, will be ignored if 'ids' is set (Ids != nil)",
+                    "type": "integer"
+                },
+                "rdfType": {
+                    "description": "model.SES_ONTOLOGY_CONTROLLING_FUNCTION || model.SES_ONTOLOGY_MEASURING_FUNCTION",
+                    "type": "string"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sortBy": {
+                    "description": "default name.asc",
+                    "type": "string"
                 }
             }
         },
