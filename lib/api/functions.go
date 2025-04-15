@@ -141,6 +141,9 @@ func (this *FunctionsEndpoints) QueryFunctions(config configuration.Config, rout
 		if listoptions.Limit == 0 {
 			listoptions.Limit = 100
 		}
+		if listoptions.SortBy == "" {
+			listoptions.SortBy = "name.asc"
+		}
 		result, total, err, errCode := control.ListFunctions(listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
