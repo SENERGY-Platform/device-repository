@@ -1789,6 +1789,10 @@ paths:
         in: query
         name: ids
         type: string
+      - description: filter; comma-seperated list
+        in: query
+        name: device-ids
+        type: string
       - description: filter; remove generated groups from result
         in: query
         name: ignore-generated

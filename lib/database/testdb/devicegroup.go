@@ -30,6 +30,10 @@ func (db *DB) SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup
 	})
 }
 
+func (db *DB) GetDeviceGroupSyncUser(ctx context.Context, deviceGroupId string) (syncUser string, exists bool, err error) {
+	return "", false, nil
+}
+
 func (db *DB) RemoveDeviceGroup(ctx context.Context, id string, syncDeleteHandler func(models.DeviceGroup) error) error {
 	return del(id, db.deviceGroups, syncDeleteHandler)
 }

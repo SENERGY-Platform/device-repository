@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
@@ -64,10 +65,13 @@ func (this *Controller) EnsureGeneratedDeviceGroup(oldDevice models.Device, devi
 			Origin: "device-repository",
 		}},
 	}
-	dg.Criteria, err, _ = this.getDeviceGroupCriteria(device)
+	dg.Criteria, err, _ = this.getDeviceGroupCriteriaOfDevice(device)
 	if err != nil {
 		return err
 	}
+	slices.SortFunc(dg.Criteria, func(a, b models.DeviceGroupFilterCriteria) int {
+		return strings.Compare(a.Short(), b.Short())
+	})
 	dg.SetShortCriteria()
 	return this.setDeviceGroup(dg, device.OwnerId)
 }
@@ -107,7 +111,32 @@ func (this *Controller) DeviceIdToGeneratedDeviceGroupId(deviceId string) string
 	return model.DeviceIdToGeneratedDeviceGroupId(deviceId)
 }
 
-func (this *Controller) getDeviceGroupCriteria(device models.Device) (result []models.DeviceGroupFilterCriteria, err error, code int) {
+func (this *Controller) GetDeviceGroupCriteria(deviceIds []string) (result []models.DeviceGroupFilterCriteria, err error, code int) {
+	devices, _, err := this.db.ListDevices(context.Background(), model.DeviceListOptions{Ids: deviceIds}, false)
+	currentSet := map[string]models.DeviceGroupFilterCriteria{}
+	for i, device := range devices {
+		deviceCriterias, err, code := this.getDeviceGroupCriteriaOfDevice(device.Device)
+		if err != nil {
+			return result, err, code
+		}
+		nextSet := map[string]models.DeviceGroupFilterCriteria{}
+		for _, criteria := range deviceCriterias {
+			criteriaHash := criteriaHash(criteria)
+			_, usedInCurrent := currentSet[criteriaHash]
+			if i == 0 || usedInCurrent {
+				nextSet[criteriaHash] = criteria
+			}
+		}
+		currentSet = nextSet
+	}
+	result = []models.DeviceGroupFilterCriteria{}
+	for _, element := range currentSet {
+		result = append(result, element)
+	}
+	return result, nil, http.StatusOK
+}
+
+func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (result []models.DeviceGroupFilterCriteria, err error, code int) {
 	ctx, _ := getTimeoutContext()
 	deviceType, _, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 	if err != nil {

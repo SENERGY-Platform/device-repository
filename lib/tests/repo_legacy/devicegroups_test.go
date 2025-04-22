@@ -69,6 +69,13 @@ func TestListDeviceGroups(t *testing.T) {
 		return strings.Compare(a.Name, b.Name)
 	})
 
+	expectedResultOfDeviceFilter := []models.DeviceGroup{}
+	for _, dt := range all {
+		if slices.Contains(dt.DeviceIds, "urn:infai:ses:device:dd32c70a-5948-4ffa-a143-699d3928ed2a") {
+			expectedResultOfDeviceFilter = append(expectedResultOfDeviceFilter, dt)
+		}
+	}
+
 	reverse := make([]models.DeviceGroup, len(all))
 	copy(reverse, all)
 	slices.Reverse(reverse)
@@ -106,6 +113,10 @@ func TestListDeviceGroups(t *testing.T) {
 			}
 		}
 	}
+
+	t.Run("filter by device", f(client.DeviceGroupListOptions{
+		DeviceIds: []string{"urn:infai:ses:device:dd32c70a-5948-4ffa-a143-699d3928ed2a"},
+	}, 3, expectedResultOfDeviceFilter))
 
 	t.Run("other user may not access", func(t *testing.T) {
 		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(SecondOwnerToken, client.DeviceGroupListOptions{})

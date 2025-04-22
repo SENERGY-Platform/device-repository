@@ -1578,6 +1578,12 @@ const docTemplatedevicerepository = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "filter; comma-seperated list",
+                        "name": "device-ids",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
                         "description": "filter; remove generated groups from result",
                         "name": "ignore-generated",

@@ -111,10 +111,13 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.Devic
 	}
 
 	if listOptions.AttributeKeys != nil {
-		filter[DeviceTypeBson.Attributes[0].Key] = bson.M{"$in": listOptions.AttributeKeys}
+		filter[DeviceGroupBson.Attributes[0].Key] = bson.M{"$in": listOptions.AttributeKeys}
 	}
 	if listOptions.AttributeValues != nil {
-		filter[DeviceTypeBson.Attributes[0].Value] = bson.M{"$in": listOptions.AttributeValues}
+		filter[DeviceGroupBson.Attributes[0].Value] = bson.M{"$in": listOptions.AttributeValues}
+	}
+	if listOptions.DeviceIds != nil {
+		filter[DeviceGroupBson.DeviceIds[0]] = bson.M{"$in": listOptions.DeviceIds}
 	}
 
 	if listOptions.Criteria != nil {
@@ -190,6 +193,24 @@ type DeviceGroupWithSyncInfo struct {
 	models.DeviceGroup `bson:",inline"`
 	SyncInfo           `bson:",inline"`
 	SyncUser           string `bson:"sync_user"`
+}
+
+func (this *Mongo) GetDeviceGroupSyncUser(ctx context.Context, deviceGroupId string) (syncUser string, exists bool, err error) {
+	result := this.deviceGroupCollection().FindOne(ctx, bson.M{DeviceGroupBson.Id: deviceGroupId})
+	err = result.Err()
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return "", false, nil
+	}
+	if err != nil {
+		return
+	}
+	deviceGroup := DeviceGroupWithSyncInfo{}
+	err = result.Decode(&deviceGroup)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return syncUser, false, nil
+	}
+	syncUser = deviceGroup.SyncUser
+	return syncUser, true, err
 }
 
 func (this *Mongo) SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup, syncHandler func(dg models.DeviceGroup, user string) error, user string) error {

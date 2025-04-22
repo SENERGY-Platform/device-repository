@@ -28,6 +28,7 @@ import (
 	"net/http"
 	"runtime/debug"
 	"slices"
+	"strings"
 )
 
 const FilterDevicesOfGroupByAccess = true
@@ -484,9 +485,11 @@ func permissionListFromString(str string) (result client.PermissionList, err err
 }
 
 func (this *Controller) setDeviceGroupSyncHandler(dg models.DeviceGroup, user string) error {
-	err := this.EnsureInitialRights(this.config.DeviceGroupTopic, dg.Id, user)
-	if err != nil {
-		return err
+	if user != "" {
+		err := this.EnsureInitialRights(this.config.DeviceGroupTopic, dg.Id, user)
+		if err != nil {
+			return err
+		}
 	}
 	return this.publisher.PublishDeviceGroup(dg)
 }
@@ -544,4 +547,24 @@ func (this *Controller) deleteDeviceGroup(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (this *Controller) UpdateDeviceGroupCriteria(dg models.DeviceGroup) (err error) {
+	user, exists, err := this.db.GetDeviceGroupSyncUser(context.Background(), dg.Id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		log.Println("WARNING: tried to update unknown device-group criteria")
+		return nil
+	}
+	dg.Criteria, err, _ = this.GetDeviceGroupCriteria(dg.DeviceIds)
+	if err != nil {
+		return err
+	}
+	slices.SortFunc(dg.Criteria, func(a, b models.DeviceGroupFilterCriteria) int {
+		return strings.Compare(a.Short(), b.Short())
+	})
+	dg.SetShortCriteria()
+	return this.setDeviceGroup(dg, user)
 }

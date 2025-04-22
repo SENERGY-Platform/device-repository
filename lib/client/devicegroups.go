@@ -79,6 +79,15 @@ func (c *Client) ListDeviceGroups(token string, options model.DeviceGroupListOpt
 		}
 		query.Set("criteria", string(criteriaJson))
 	}
+	if options.DeviceIds != nil {
+		query.Set("device-ids", strings.Join(options.DeviceIds, ","))
+	}
+	if options.AttributeValues != nil {
+		query.Set("attr-values", strings.Join(options.AttributeValues, ","))
+	}
+	if options.AttributeKeys != nil {
+		query.Set("attr-keys", strings.Join(options.AttributeKeys, ","))
+	}
 	if options.SortBy != "" {
 		query.Set("sort", options.SortBy)
 	}

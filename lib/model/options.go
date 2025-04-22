@@ -144,6 +144,7 @@ type DeviceTypeListOptions struct {
 
 type DeviceGroupListOptions struct {
 	Ids                            []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	DeviceIds                      []string //filter; find device-groups with any of the listed devices
 	Search                         string
 	Limit                          int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
 	Offset                         int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)

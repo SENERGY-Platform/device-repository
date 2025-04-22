@@ -70,6 +70,7 @@ type Database interface {
 	GetDeviceGroup(ctx context.Context, id string) (deviceGroup models.DeviceGroup, exists bool, err error)
 	ListDeviceGroups(ctx context.Context, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error)
 
+	GetDeviceGroupSyncUser(ctx context.Context, deviceGroupId string) (syncUser string, exists bool, err error)
 	SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup, syncHandler func(dg models.DeviceGroup, user string) error, user string) error
 	RemoveDeviceGroup(ctx context.Context, id string, syncDeleteHandler func(models.DeviceGroup) error) error
 	RetryDeviceGroupSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceGroup) error, syncHandler func(dg models.DeviceGroup, user string) error) error

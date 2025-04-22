@@ -45,6 +45,7 @@ type DeviceGroupEndpoints struct{}
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
 // @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        device-ids query string false "filter; comma-seperated list"
 // @Param        ignore-generated query bool false "filter; remove generated groups from result"
 // @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
 // @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
@@ -134,6 +135,11 @@ func (this *DeviceGroupEndpoints) List(config configuration.Config, router *http
 			} else {
 				deviceGroupListOptions.AttributeValues = []string{}
 			}
+		}
+
+		deviceIdsParam := request.URL.Query().Get("device-ids")
+		if request.URL.Query().Has("device-ids") && deviceIdsParam != "" {
+			deviceGroupListOptions.DeviceIds = strings.Split(strings.TrimSpace(deviceIdsParam), ",")
 		}
 
 		deviceGroupListOptions.Permission, err = model.GetPermissionFlagFromQuery(request.URL.Query())

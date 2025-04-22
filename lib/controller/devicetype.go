@@ -612,6 +612,29 @@ func (this *Controller) SetDeviceType(token string, dt models.DeviceType, option
 }
 
 func (this *Controller) setDeviceTypeSyncHandler(dt models.DeviceType) (err error) {
+	devices, _, err := this.db.ListDevices(context.Background(), model.DeviceListOptions{DeviceTypeIds: []string{dt.Id}}, false)
+	if err != nil {
+		return err
+	}
+	deviceIds := []string{}
+	for _, device := range devices {
+		deviceIds = append(deviceIds, device.Id)
+	}
+	if len(deviceIds) > 0 {
+		dgList, _, err := this.db.ListDeviceGroups(context.Background(), model.DeviceGroupListOptions{
+			DeviceIds: deviceIds,
+		})
+		if err != nil {
+			return err
+		}
+		for _, dg := range dgList {
+			err = this.UpdateDeviceGroupCriteria(dg)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return this.publisher.PublishDeviceType(dt)
 }
 
