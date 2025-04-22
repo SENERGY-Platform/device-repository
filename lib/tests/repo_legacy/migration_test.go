@@ -162,12 +162,12 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 		},
 		{
 			Id:        models.URN_PREFIX + "device-group:2",
-			Name:      "2_group",
+			Name:      "2",
 			DeviceIds: []string{models.URN_PREFIX + "device:1"},
 		},
 		{
 			Id:        models.URN_PREFIX + "device-group:3",
-			Name:      "3_group",
+			Name:      "3",
 			DeviceIds: []string{},
 		},
 	}
@@ -182,7 +182,7 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 
 		for _, device := range devices {
 			timeout, _ := getTimeoutContext()
-			err = db.SetDevice(timeout, device, func(state model.DeviceWithConnectionState) error { return nil })
+			err = db.SetDevice(timeout, device, func(old model.DeviceWithConnectionState, state model.DeviceWithConnectionState) error { return nil })
 			if err != nil {
 				t.Error(err)
 				return
@@ -244,7 +244,7 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 		expected := []models.DeviceGroup{
 			{
 				Id:        models.URN_PREFIX + "device-group:1",
-				Name:      "1_group",
+				Name:      "1",
 				DeviceIds: []string{models.URN_PREFIX + "device:1"},
 				Attributes: []models.Attribute{{
 					Key:    "platform/generated",
@@ -256,17 +256,17 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 			},
 			{
 				Id:        models.URN_PREFIX + "device-group:2",
-				Name:      "2_group",
+				Name:      "2",
 				DeviceIds: []string{models.URN_PREFIX + "device:1"},
 			},
 			{
 				Id:        models.URN_PREFIX + "device-group:3",
-				Name:      "3_group",
+				Name:      "3",
 				DeviceIds: []string{},
 			},
 			{
 				Id:        models.URN_PREFIX + "device-group:4",
-				Name:      "4n_group",
+				Name:      "4n",
 				DeviceIds: []string{models.URN_PREFIX + "device:4"},
 				Attributes: []models.Attribute{{
 					Key:    "platform/generated",

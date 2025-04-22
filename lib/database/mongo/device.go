@@ -119,11 +119,20 @@ type DeviceWithSyncInfo struct {
 	SyncInfo                        `bson:",inline"`
 }
 
-func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(model.DeviceWithConnectionState) error) error {
+func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(old model.DeviceWithConnectionState, new model.DeviceWithConnectionState) error) error {
 	device.DisplayName = getDisplayName(device)
 	timestamp := time.Now().Unix()
 	collection := this.deviceCollection()
-	_, err := collection.ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, DeviceWithSyncInfo{
+
+	oldDevice, exists, err := this.GetDevice(ctx, device.Id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		oldDevice = model.DeviceWithConnectionState{}
+	}
+
+	_, err = collection.ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, DeviceWithSyncInfo{
 		DeviceWithConnectionState: device,
 		SyncInfo: SyncInfo{
 			SyncTodo:          true,
@@ -134,7 +143,7 @@ func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnect
 	if err != nil {
 		return err
 	}
-	err = syncHandler(device)
+	err = syncHandler(oldDevice, device)
 	if err != nil {
 		log.Printf("WARNING: error in SetDevice::syncHandler %v, will be retried later\n", err)
 		return nil

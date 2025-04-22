@@ -34,8 +34,8 @@ func (db *DB) RetryDeviceSync(lockduration time.Duration, syncDeleteHandler func
 	return nil
 }
 
-func (db *DB) SetDevice(_ context.Context, device model.DeviceWithConnectionState, syncHandler func(model.DeviceWithConnectionState) error) error {
-	return set(device.Id, db.devices, device, syncHandler)
+func (db *DB) SetDevice(_ context.Context, device model.DeviceWithConnectionState, syncHandler func(old model.DeviceWithConnectionState, new model.DeviceWithConnectionState) error) error {
+	return setWithOld(device.Id, db.devices, device, syncHandler)
 }
 
 func (db *DB) RemoveDevice(_ context.Context, id string, syncDeleteHandler func(model.DeviceWithConnectionState) error) error {

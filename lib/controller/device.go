@@ -673,13 +673,13 @@ func (this *Controller) setDevice(device models.Device) (result models.Device, e
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) setDeviceSyncHandler(device model.DeviceWithConnectionState) (err error) {
+func (this *Controller) setDeviceSyncHandler(oldDevice model.DeviceWithConnectionState, device model.DeviceWithConnectionState) (err error) {
 	err = this.EnsureInitialRights(this.config.DeviceTopic, device.Id, device.OwnerId)
 	if err != nil {
 		return err
 	}
 
-	err = this.EnsureGeneratedDeviceGroup(device.Device)
+	err = this.EnsureGeneratedDeviceGroup(oldDevice.Device, device.Device)
 	if err != nil {
 		return err
 	}

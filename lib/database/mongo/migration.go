@@ -38,7 +38,7 @@ func (this *Mongo) RunStartupMigrations(helper GeneratedDeviceGroupMigrationMeth
 
 type GeneratedDeviceGroupMigrationMethods interface {
 	DeviceIdToGeneratedDeviceGroupId(deviceId string) string
-	EnsureGeneratedDeviceGroup(device models.Device) (err error)
+	EnsureGeneratedDeviceGroup(old models.Device, device models.Device) (err error)
 }
 
 func (this *Mongo) runDeviceGroupMigration(helper GeneratedDeviceGroupMigrationMethods) error {
@@ -67,7 +67,7 @@ func (this *Mongo) runDeviceGroupMigration(helper GeneratedDeviceGroupMigrationM
 		}
 		if !exists {
 			log.Printf("generate device-group for %v %v\n", device.Id, device.Name)
-			err = helper.EnsureGeneratedDeviceGroup(device)
+			err = helper.EnsureGeneratedDeviceGroup(device, device)
 			if err != nil {
 				debug.PrintStack()
 				return err

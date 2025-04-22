@@ -86,6 +86,15 @@ func set[T any](id string, m map[string]T, t T, syncHandler func(T) error) error
 	return syncHandler(t)
 }
 
+func setWithOld[T any](id string, m map[string]T, t T, syncHandler func(T, T) error) error {
+	old := m[id]
+	m[id] = t
+	if syncHandler == nil {
+		return nil
+	}
+	return syncHandler(old, t)
+}
+
 func del[T any](id string, m map[string]T, syncDeleteHandler func(T) error) error {
 	var err error
 	e, ok := m[id]

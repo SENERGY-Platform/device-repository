@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"log"
 	"time"
 )
@@ -42,7 +43,9 @@ func (this *Controller) StartSyncLoop(ctx context.Context, interval time.Duratio
 }
 
 func (this *Controller) Sync(lockduration time.Duration) (err error) {
-	err = errors.Join(err, this.db.RetryDeviceSync(lockduration, this.deleteDeviceSyncHandler, this.setDeviceSyncHandler))
+	err = errors.Join(err, this.db.RetryDeviceSync(lockduration, this.deleteDeviceSyncHandler, func(state model.DeviceWithConnectionState) error {
+		return this.setDeviceSyncHandler(model.DeviceWithConnectionState{}, state)
+	}))
 	err = errors.Join(err, this.db.RetryAspectSync(lockduration, this.deleteAspectSyncHandler, this.setAspectSyncHandler))
 	err = errors.Join(err, this.db.RetryCharacteristicSync(lockduration, this.deleteCharacteristicSyncHandler, this.setCharacteristicSyncHandler))
 	err = errors.Join(err, this.db.RetryConceptSync(lockduration, this.deleteConceptSyncHandler, this.setConceptSyncHandler))

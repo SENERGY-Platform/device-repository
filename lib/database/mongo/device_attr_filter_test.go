@@ -156,7 +156,7 @@ func TestDeviceAttributeFilter(t *testing.T) {
 
 	t.Run("create devices", func(t *testing.T) {
 		for _, d := range devices {
-			err = m.SetDevice(context.Background(), d, func(state model.DeviceWithConnectionState) error { return nil })
+			err = m.SetDevice(context.Background(), d, func(old model.DeviceWithConnectionState, state model.DeviceWithConnectionState) error { return nil })
 			if err != nil {
 				t.Error(err)
 				return

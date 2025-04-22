@@ -34,7 +34,7 @@ type Database interface {
 	SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error
 	DeviceLocalIdsToIds(ctx context.Context, owner string, localIds []string) ([]string, error)
 
-	SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(model.DeviceWithConnectionState) error) error
+	SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(old model.DeviceWithConnectionState, new model.DeviceWithConnectionState) error) error
 	RemoveDevice(ctx context.Context, id string, syncDeleteHandler func(model.DeviceWithConnectionState) error) error
 	RetryDeviceSync(lockduration time.Duration, syncDeleteHandler func(model.DeviceWithConnectionState) error, syncHandler func(model.DeviceWithConnectionState) error) error
 
