@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"runtime/debug"
 	"slices"
+	"strings"
 	"sync"
 )
 
@@ -414,7 +415,17 @@ func (this *Controller) completeHub(token string, edit models.Hub) (result model
 			return result, err, code
 		}
 		if len(devices) != len(edit.DeviceLocalIds) {
-			return result, errors.New("not all local device ids found"), http.StatusBadRequest
+			missing := []string{}
+			foundLocalIds := []string{}
+			for _, d := range devices {
+				foundLocalIds = append(foundLocalIds, d.LocalId)
+			}
+			for _, localId := range edit.DeviceLocalIds {
+				if !slices.Contains(foundLocalIds, localId) {
+					missing = append(missing, localId)
+				}
+			}
+			return result, fmt.Errorf("not all local device ids found (missing %v)", strings.Join(missing, ",")), http.StatusBadRequest
 		}
 		for _, device := range devices {
 			if !slices.Contains(result.DeviceLocalIds, device.LocalId) {

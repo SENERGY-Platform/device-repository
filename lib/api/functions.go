@@ -139,6 +139,9 @@ func (this *FunctionsEndpoints) QueryFunctions(config configuration.Config, rout
 			return
 		}
 		if listoptions.Limit == 0 {
+			listoptions.Limit = int64(len(listoptions.Ids))
+		}
+		if listoptions.Limit == 0 {
 			listoptions.Limit = 100
 		}
 		if listoptions.SortBy == "" {
