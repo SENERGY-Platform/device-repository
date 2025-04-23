@@ -230,7 +230,7 @@ func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.
 	if err != nil {
 		return nil, err
 	}
-	cursor, err := this.deviceClassCollection().Find(ctx, bson.M{DeviceClassBson.Id: bson.M{"$in": deviceClassIds, NotDeletedFilterKey: NotDeletedFilterValue}})
+	cursor, err := this.deviceClassCollection().Find(ctx, bson.M{DeviceClassBson.Id: bson.M{"$in": deviceClassIds}, NotDeletedFilterKey: NotDeletedFilterValue})
 	if err != nil {
 		return nil, err
 	}
