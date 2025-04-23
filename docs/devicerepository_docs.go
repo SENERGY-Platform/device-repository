@@ -7553,6 +7553,12 @@ const docTemplatedevicerepository = `{
                         "description": "filter; ignores limit/offset; comma-seperated list",
                         "name": "ids",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; only 'true' is a valid value; if set, returns device-classes used in combination with controlling-function",
+                        "name": "used_with_controlling_function",
+                        "in": "query"
                     }
                 ],
                 "responses": {

@@ -26,6 +26,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"regexp"
+	"runtime/debug"
+	"slices"
 	"strings"
 	"time"
 )
@@ -70,6 +72,29 @@ func (this *Mongo) ListDeviceClasses(ctx context.Context, listOptions model.Devi
 	opt.SetSort(bson.D{{sortby, direction}})
 
 	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
+
+	if listOptions.UsedWithControllingFunction {
+		deviceClassIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.DeviceClassId, bson.M{
+			deviceTypeCriteriaIsControllingFunctionKey: true,
+			DeviceTypeCriteriaBson.DeviceClassId:       bson.M{"$exists": true, "$ne": ""},
+		})
+		if err != nil {
+			return nil, 0, err
+		}
+		idList := []string{}
+		for _, dcId := range deviceClassIds {
+			id, ok := dcId.(string)
+			if !ok {
+				debug.PrintStack()
+				return nil, 0, errors.New("unexpected type for device class id")
+			}
+			if listOptions.Ids == nil || slices.Contains(listOptions.Ids, id) {
+				idList = append(idList, id)
+			}
+		}
+		listOptions.Ids = idList
+	}
+
 	if listOptions.Ids != nil {
 		filter[DeviceClassBson.Id] = bson.M{"$in": listOptions.Ids}
 	}

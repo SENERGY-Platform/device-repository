@@ -76,11 +76,12 @@ type ConceptListOptions struct {
 }
 
 type DeviceClassListOptions struct {
-	Ids    []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
-	Search string
-	Limit  int64  //default 100, will be ignored if 'ids' is set (Ids != nil)
-	Offset int64  //default 0, will be ignored if 'ids' is set (Ids != nil)
-	SortBy string //default name.asc
+	Ids                         []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	UsedWithControllingFunction bool     //filter; ignore if false; if true, only return device-classes that are used with a controlling function
+	Search                      string
+	Limit                       int64  //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset                      int64  //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy                      string //default name.asc
 }
 
 type ExtendedDeviceListOptions struct {

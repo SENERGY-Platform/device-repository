@@ -204,7 +204,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 		}
 	})
 
-	t.Run("list controlling functions deprecated", func(t *testing.T) {
+	t.Run("deprecated list controlling functions", func(t *testing.T) {
 		//req, err := http.NewRequest(http.MethodGet, "http://localhost:"+config.ServerPort+"/device-classes?function=controlling-function", nil)
 		resp, err := http.Get("http://localhost:" + config.ServerPort + "/device-classes?function=controlling-function")
 		if err != nil {
@@ -232,4 +232,55 @@ func TestListControllingDeviceClasses(t *testing.T) {
 		}
 	})
 
+	t.Run("list controlling functions", func(t *testing.T) {
+		dcList, _, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{
+			UsedWithControllingFunction: true,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if len(dcList) != 1 {
+			t.Error("unexpected device-class list", dcList)
+			return
+		}
+		if dcList[0].Id != "a" {
+			t.Error("unexpected device-class list", dcList)
+			return
+		}
+	})
+
+	t.Run("list controlling functions filtered by ids (included)", func(t *testing.T) {
+		dcList, _, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{
+			Ids:                         []string{"a", "b", "c"},
+			UsedWithControllingFunction: true,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if len(dcList) != 1 {
+			t.Error("unexpected device-class list", dcList)
+			return
+		}
+		if dcList[0].Id != "a" {
+			t.Error("unexpected device-class list", dcList)
+			return
+		}
+	})
+
+	t.Run("list controlling functions filtered by ids (excluded)", func(t *testing.T) {
+		dcList, _, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{
+			Ids:                         []string{"b", "c"},
+			UsedWithControllingFunction: true,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if len(dcList) != 0 {
+			t.Error("unexpected device-class list", dcList)
+			return
+		}
+	})
 }

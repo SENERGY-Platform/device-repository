@@ -5682,6 +5682,11 @@ paths:
         in: query
         name: ids
         type: string
+      - description: filter; only 'true' is a valid value; if set, returns device-classes
+          used in combination with controlling-function
+        in: query
+        name: used_with_controlling_function
+        type: boolean
       produces:
       - application/json
       responses:

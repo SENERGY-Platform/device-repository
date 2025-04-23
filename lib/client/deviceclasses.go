@@ -60,6 +60,9 @@ func (c *Client) ListDeviceClasses(options model.DeviceClassListOptions) (result
 	if options.Search != "" {
 		query.Set("search", options.Search)
 	}
+	if options.UsedWithControllingFunction {
+		query.Set("used_with_controlling_function", "true")
+	}
 	if options.Ids != nil {
 		query.Set("ids", strings.Join(options.Ids, ","))
 	}

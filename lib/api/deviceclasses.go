@@ -48,6 +48,7 @@ type DeviceClassEndpoints struct{}
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
 // @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        used_with_controlling_function query bool false "filter; only 'true' is a valid value; if set, returns device-classes used in combination with controlling-function"
 // @Success      200 {array}  models.DeviceClass
 // @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
 // @Failure      400
@@ -87,6 +88,14 @@ func (this *DeviceClassEndpoints) ListDeviceClasses(config configuration.Config,
 				listoptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
 			} else {
 				listoptions.Ids = []string{}
+			}
+		}
+
+		if request.URL.Query().Has("used_with_controlling_function") {
+			listoptions.UsedWithControllingFunction, err = strconv.ParseBool(request.URL.Query().Get("used_with_controlling_function"))
+			if err != nil {
+				http.Error(writer, "unable to parse used_with_controlling_function as bool: "+err.Error(), http.StatusBadRequest)
+				return
 			}
 		}
 
