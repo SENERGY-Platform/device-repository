@@ -279,6 +279,9 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	if listOptions.Owner != "" {
 		filter[DeviceBson.OwnerId] = listOptions.Owner
 	}
+	if listOptions.LocalIds != nil {
+		filter[DeviceBson.LocalId] = bson.M{"$in": listOptions.LocalIds}
+	}
 	if listOptions.DeviceTypeIds != nil {
 		filter[DeviceBson.DeviceTypeId] = bson.M{"$in": listOptions.DeviceTypeIds}
 	}

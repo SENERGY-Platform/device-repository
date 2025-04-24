@@ -191,15 +191,11 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 		return result, err, http.StatusBadRequest
 	}
 
-	if options.LocalIds != nil {
-		if options.Owner == "" {
-			options.Owner = jwtToken.GetUserId()
-		}
-		ctx, _ := getTimeoutContext()
-		options.Ids, err = this.db.DeviceLocalIdsToIds(ctx, options.Owner, options.LocalIds)
-		if err != nil {
-			return result, err, http.StatusInternalServerError
-		}
+	if options.Owner != "" && options.Owner != jwtToken.GetUserId() && !jwtToken.IsAdmin() {
+		return result, errors.New("invalid owner"), http.StatusBadRequest
+	}
+	if options.LocalIds != nil && options.Owner == "" {
+		options.Owner = jwtToken.GetUserId()
 	}
 
 	if options.Ids == nil {
@@ -773,8 +769,27 @@ func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 		return err
 	}
 	for _, hub := range hubs {
-		hub.DeviceLocalIds = filter(hub.DeviceLocalIds, old.LocalId)
-		hub.DeviceIds = filter(hub.DeviceIds, old.Id)
+		filterOptions := model.DeviceListOptions{
+			Ids:      hub.DeviceIds,
+			LocalIds: hub.DeviceLocalIds,
+			Owner:    hub.OwnerId,
+		}
+		if filterOptions.Ids == nil {
+			filterOptions.Ids = []string{}
+		}
+		if filterOptions.LocalIds == nil {
+			filterOptions.LocalIds = []string{}
+		}
+		devices, _, err := this.db.ListDevices(ctx, filterOptions, false)
+		if err != nil {
+			return err
+		}
+		hub.DeviceIds = []string{}
+		hub.DeviceLocalIds = []string{}
+		for _, d := range devices {
+			hub.DeviceIds = append(hub.DeviceIds, d.Id)
+			hub.DeviceLocalIds = append(hub.DeviceLocalIds, d.LocalId)
+		}
 		hub.Hash = ""
 		err = this.setHub(hub)
 		if err != nil {
