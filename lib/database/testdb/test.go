@@ -26,21 +26,22 @@ import (
 )
 
 type DB struct {
-	config          configuration.Config
-	devices         map[string]model.DeviceWithConnectionState
-	hubs            map[string]model.HubWithConnectionState
-	deviceTypes     map[string]models.DeviceType
-	deviceGroups    map[string]models.DeviceGroup
-	protocols       map[string]models.Protocol
-	aspects         map[string]models.Aspect
-	aspectNodes     map[string]models.AspectNode
-	characteristics map[string]models.Characteristic
-	concepts        map[string]models.Concept
-	deviceClasses   map[string]models.DeviceClass
-	functions       map[string]models.Function
-	locations       map[string]models.Location
-	permissions     []Resource
-	mux             sync.Mutex
+	config                  configuration.Config
+	defaultDeviceAttributes map[string][]models.Attribute
+	devices                 map[string]model.DeviceWithConnectionState
+	hubs                    map[string]model.HubWithConnectionState
+	deviceTypes             map[string]models.DeviceType
+	deviceGroups            map[string]models.DeviceGroup
+	protocols               map[string]models.Protocol
+	aspects                 map[string]models.Aspect
+	aspectNodes             map[string]models.AspectNode
+	characteristics         map[string]models.Characteristic
+	concepts                map[string]models.Concept
+	deviceClasses           map[string]models.DeviceClass
+	functions               map[string]models.Function
+	locations               map[string]models.Location
+	permissions             []Resource
+	mux                     sync.Mutex
 }
 
 type Resource struct {
@@ -51,19 +52,20 @@ type Resource struct {
 
 func NewTestDB(config configuration.Config) database.Database {
 	return &DB{
-		config:          config,
-		devices:         make(map[string]model.DeviceWithConnectionState),
-		hubs:            make(map[string]model.HubWithConnectionState),
-		deviceTypes:     make(map[string]models.DeviceType),
-		deviceGroups:    make(map[string]models.DeviceGroup),
-		protocols:       make(map[string]models.Protocol),
-		aspects:         make(map[string]models.Aspect),
-		aspectNodes:     make(map[string]models.AspectNode),
-		characteristics: make(map[string]models.Characteristic),
-		concepts:        make(map[string]models.Concept),
-		deviceClasses:   make(map[string]models.DeviceClass),
-		functions:       make(map[string]models.Function),
-		locations:       make(map[string]models.Location),
+		config:                  config,
+		defaultDeviceAttributes: make(map[string][]models.Attribute),
+		devices:                 make(map[string]model.DeviceWithConnectionState),
+		hubs:                    make(map[string]model.HubWithConnectionState),
+		deviceTypes:             make(map[string]models.DeviceType),
+		deviceGroups:            make(map[string]models.DeviceGroup),
+		protocols:               make(map[string]models.Protocol),
+		aspects:                 make(map[string]models.Aspect),
+		aspectNodes:             make(map[string]models.AspectNode),
+		characteristics:         make(map[string]models.Characteristic),
+		concepts:                make(map[string]models.Concept),
+		deviceClasses:           make(map[string]models.DeviceClass),
+		functions:               make(map[string]models.Function),
+		locations:               make(map[string]models.Location),
 	}
 }
 

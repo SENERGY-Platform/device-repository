@@ -138,4 +138,7 @@ type Controller interface {
 	Import(token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int)
 
 	ImportFrom(token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int)
+
+	GetDefaultDeviceAttributes(token string) (attributes []models.Attribute, err error, code int)
+	SetDefaultDeviceAttributes(token string, attributes []models.Attribute) (err error, code int)
 }

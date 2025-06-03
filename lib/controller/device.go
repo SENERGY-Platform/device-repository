@@ -100,6 +100,10 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
+	devices, err = this.applyDefaultDeviceAttributesToList(devices)
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
 
 	for _, device := range devices {
 		if len(pureIdToRawIds[device.Id]) == 0 {
@@ -241,6 +245,10 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
+	devices, err = this.applyDefaultDeviceAttributesToList(devices)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
 	for _, device := range devices {
 		if len(pureIdToRawIds[device.Id]) == 0 {
 			pureIdToRawIds[device.Id] = []string{device.Id}
@@ -310,6 +318,10 @@ func (this *Controller) readDevice(id string) (result model.DeviceWithConnection
 		return result, errors.New("not found"), http.StatusNotFound
 	}
 	device.Id = id
+	device, err = this.applyDefaultDeviceAttributes(device)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
 	if modifier != nil && len(modifier) > 0 {
 		device.Device, err, errCode = this.modifyDevice(device.Device, modifier)
 		if err != nil {
@@ -382,6 +394,10 @@ func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, toke
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
+	device, err = this.applyDefaultDeviceAttributes(device)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
 	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -400,6 +416,10 @@ func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId stri
 	}
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
+	}
+	device, err = this.applyDefaultDeviceAttributes(device)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
 	}
 	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Permission(action))
 	if err != nil {

@@ -149,4 +149,7 @@ type Database interface {
 	CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
 	CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error)
 	ConceptIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
+
+	GetDefaultDeviceAttributes(ctx context.Context, userId string) ([]models.Attribute, error)
+	SetDefaultDeviceAttributes(ctx context.Context, userId string, attributes []models.Attribute) error
 }

@@ -27,6 +27,7 @@
     "mongo_device_class_collection": "deviceclass",
     "mongo_function_collection": "functions",
     "mongo_location_collection": "locations",
+    "mongo_default_device_attributes_collection": "default_device_attributes",
     "kafka_url": "kafka-broker-url:9092",
     "debug": false,
     "http_client_timeout": "30s",
