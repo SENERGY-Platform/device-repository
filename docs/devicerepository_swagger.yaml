@@ -1516,7 +1516,8 @@ paths:
       - functions
   /defaults/devices/attributes:
     get:
-      description: get default device attributes of the requesting user
+      description: get default attributes for devices where the owner is the requesting
+        user
       produces:
       - application/json
       responses:
@@ -1544,7 +1545,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: set default device attributes of the requesting user
+      description: set default attributes for devices where the owner is the requesting
+        user
       parameters:
       - description: attributes
         in: body

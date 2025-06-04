@@ -1146,7 +1146,7 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "get default device attributes of the requesting user",
+                "description": "get default attributes for devices where the owner is the requesting user",
                 "produces": [
                     "application/json"
                 ],
@@ -1187,7 +1187,7 @@ const docTemplatedevicerepository = `{
                         "Bearer": []
                     }
                 ],
-                "description": "set default device attributes of the requesting user",
+                "description": "set default attributes for devices where the owner is the requesting user",
                 "consumes": [
                     "application/json"
                 ],

@@ -81,6 +81,8 @@ type Config struct {
 
 	StructLoggerLogLevel   string `json:"struct_logger_log_level"`
 	StructLoggerLogHandler string `json:"struct_logger_log_handler"`
+
+	ApiDocsProviderBaseUrl string `json:"api_docs_provider_base_url"`
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

@@ -1,0 +1,1019 @@
+{
+    "asyncapi": "3.0.0",
+    "info": {
+        "title": "Device-Repository",
+        "version": ""
+    },
+    "servers": {
+        "kafka": {
+            "host": "kafka-broker-url:9092",
+            "protocol": "kafka"
+        }
+    },
+    "channels": {
+        "aspects": {
+            "address": "aspects",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherAspectCommand"
+                }
+            }
+        },
+        "characteristics": {
+            "address": "characteristics",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherCharacteristicCommand"
+                }
+            }
+        },
+        "concepts": {
+            "address": "concepts",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherConceptCommand"
+                }
+            }
+        },
+        "device-classes": {
+            "address": "device-classes",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherDeviceClassCommand"
+                }
+            }
+        },
+        "device-groups": {
+            "address": "device-groups",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherDeviceGroupCommand"
+                }
+            }
+        },
+        "device-types": {
+            "address": "device-types",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherDeviceTypeCommand"
+                }
+            }
+        },
+        "devices": {
+            "address": "devices",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherDeviceCommand"
+                }
+            }
+        },
+        "functions": {
+            "address": "functions",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherFunctionCommand"
+                }
+            }
+        },
+        "hubs": {
+            "address": "hubs",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherHubCommand"
+                }
+            }
+        },
+        "locations": {
+            "address": "locations",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherLocationCommand"
+                }
+            }
+        },
+        "protocols": {
+            "address": "protocols",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherProtocolCommand"
+                }
+            }
+        }
+    },
+    "operations": {
+        "aspects.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/aspects"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/aspects/messages/subscribe.message"
+                }
+            ]
+        },
+        "characteristics.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/characteristics"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/characteristics/messages/subscribe.message"
+                }
+            ]
+        },
+        "concepts.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/concepts"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/concepts/messages/subscribe.message"
+                }
+            ]
+        },
+        "device-classes.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/device-classes"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/device-classes/messages/subscribe.message"
+                }
+            ]
+        },
+        "device-groups.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/device-groups"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/device-groups/messages/subscribe.message"
+                }
+            ]
+        },
+        "device-types.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/device-types"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/device-types/messages/subscribe.message"
+                }
+            ]
+        },
+        "devices.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/devices"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/devices/messages/subscribe.message"
+                }
+            ]
+        },
+        "functions.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/functions"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/functions/messages/subscribe.message"
+                }
+            ]
+        },
+        "hubs.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/hubs"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/hubs/messages/subscribe.message"
+                }
+            ]
+        },
+        "locations.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/locations"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/locations/messages/subscribe.message"
+                }
+            ]
+        },
+        "protocols.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/protocols"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/protocols/messages/subscribe.message"
+                }
+            ]
+        }
+    },
+    "components": {
+        "schemas": {
+            "ModelsAspect": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "sub_aspects": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAspect"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsAttribute": {
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "origin": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsCharacteristic": {
+                "properties": {
+                    "allowed_values": {
+                        "items": {},
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "display_unit": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "max_value": {},
+                    "min_value": {},
+                    "name": {
+                        "type": "string"
+                    },
+                    "sub_characteristics": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsCharacteristic"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/ModelsType"
+                    },
+                    "value": {}
+                },
+                "type": "object"
+            },
+            "ModelsConcept": {
+                "properties": {
+                    "base_characteristic_id": {
+                        "type": "string"
+                    },
+                    "characteristic_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "conversions": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsConverterExtension"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsContent": {
+                "properties": {
+                    "content_variable": {
+                        "$ref": "#/components/schemas/ModelsContentVariable"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "protocol_segment_id": {
+                        "type": "string"
+                    },
+                    "serialization": {
+                        "$ref": "#/components/schemas/ModelsSerialization"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsContentVariable": {
+                "properties": {
+                    "aspect_id": {
+                        "type": "string"
+                    },
+                    "characteristic_id": {
+                        "type": "string"
+                    },
+                    "function_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "is_void": {
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "omit_empty": {
+                        "type": "boolean"
+                    },
+                    "serialization_options": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "sub_content_variables": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsContentVariable"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/ModelsType"
+                    },
+                    "unit_reference": {
+                        "type": "string"
+                    },
+                    "value": {}
+                },
+                "type": "object"
+            },
+            "ModelsConverterExtension": {
+                "properties": {
+                    "distance": {
+                        "type": "integer"
+                    },
+                    "formula": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string"
+                    },
+                    "placeholder_name": {
+                        "type": "string"
+                    },
+                    "to": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsDevice": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "device_type_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "local_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "owner_id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsDeviceClass": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "image": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsDeviceGroup": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "auto_generated_by_device": {
+                        "type": "string"
+                    },
+                    "criteria": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsDeviceGroupFilterCriteria"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "criteria_short": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    },
+                    "device_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "image": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsDeviceGroupFilterCriteria": {
+                "properties": {
+                    "aspect_id": {
+                        "type": "string"
+                    },
+                    "device_class_id": {
+                        "type": "string"
+                    },
+                    "function_id": {
+                        "type": "string"
+                    },
+                    "interaction": {
+                        "$ref": "#/components/schemas/ModelsInteraction"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsDeviceType": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "device_class_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "service_groups": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsServiceGroup"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "services": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsService"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsFunction": {
+                "properties": {
+                    "concept_id": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "rdf_type": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsHub": {
+                "properties": {
+                    "device_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "device_local_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "hash": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "owner_id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsInteraction": {
+                "type": "string"
+            },
+            "ModelsLocation": {
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "device_group_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "device_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "image": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsProtocol": {
+                "properties": {
+                    "constraints": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "handler": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "protocol_segments": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsProtocolSegment"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsProtocolSegment": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsSerialization": {
+                "type": "string"
+            },
+            "ModelsService": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "inputs": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsContent"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "interaction": {
+                        "$ref": "#/components/schemas/ModelsInteraction"
+                    },
+                    "local_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "outputs": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsContent"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "protocol_id": {
+                        "type": "string"
+                    },
+                    "service_group_key": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsServiceGroup": {
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsType": {
+                "type": "string"
+            },
+            "PublisherAspectCommand": {
+                "properties": {
+                    "aspect": {
+                        "$ref": "#/components/schemas/ModelsAspect"
+                    },
+                    "command": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherCharacteristicCommand": {
+                "properties": {
+                    "characteristic": {
+                        "$ref": "#/components/schemas/ModelsCharacteristic"
+                    },
+                    "command": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherConceptCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "concept": {
+                        "$ref": "#/components/schemas/ModelsConcept"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherDeviceClassCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "device_class": {
+                        "$ref": "#/components/schemas/ModelsDeviceClass"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherDeviceCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "device": {
+                        "$ref": "#/components/schemas/ModelsDevice"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherDeviceGroupCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "device_group": {
+                        "$ref": "#/components/schemas/ModelsDeviceGroup"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherDeviceTypeCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "device_type": {
+                        "$ref": "#/components/schemas/ModelsDeviceType"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherFunctionCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "function": {
+                        "$ref": "#/components/schemas/ModelsFunction"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherHubCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "hub": {
+                        "$ref": "#/components/schemas/ModelsHub"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherLocationCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "$ref": "#/components/schemas/ModelsLocation"
+                    }
+                },
+                "type": "object"
+            },
+            "PublisherProtocolCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "protocol": {
+                        "$ref": "#/components/schemas/ModelsProtocol"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "messages": {
+            "PublisherAspectCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherAspectCommand"
+                },
+                "name": "AspectCommand",
+                "title": "AspectCommand"
+            },
+            "PublisherCharacteristicCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherCharacteristicCommand"
+                },
+                "name": "CharacteristicCommand",
+                "title": "CharacteristicCommand"
+            },
+            "PublisherConceptCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherConceptCommand"
+                },
+                "name": "ConceptCommand",
+                "title": "ConceptCommand"
+            },
+            "PublisherDeviceClassCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherDeviceClassCommand"
+                },
+                "name": "DeviceClassCommand",
+                "title": "DeviceClassCommand"
+            },
+            "PublisherDeviceCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherDeviceCommand"
+                },
+                "name": "DeviceCommand",
+                "title": "DeviceCommand"
+            },
+            "PublisherDeviceGroupCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherDeviceGroupCommand"
+                },
+                "name": "DeviceGroupCommand",
+                "title": "DeviceGroupCommand"
+            },
+            "PublisherDeviceTypeCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherDeviceTypeCommand"
+                },
+                "name": "DeviceTypeCommand",
+                "title": "DeviceTypeCommand"
+            },
+            "PublisherFunctionCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherFunctionCommand"
+                },
+                "name": "FunctionCommand",
+                "title": "FunctionCommand"
+            },
+            "PublisherHubCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherHubCommand"
+                },
+                "name": "HubCommand",
+                "title": "HubCommand"
+            },
+            "PublisherLocationCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherLocationCommand"
+                },
+                "name": "LocationCommand",
+                "title": "LocationCommand"
+            },
+            "PublisherProtocolCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherProtocolCommand"
+                },
+                "name": "ProtocolCommand",
+                "title": "ProtocolCommand"
+            }
+        }
+    }
+}

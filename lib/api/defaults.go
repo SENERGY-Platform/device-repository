@@ -33,7 +33,7 @@ type DefaultsEndpoints struct{}
 
 // GetDefaultDeviceAttributes godoc
 // @Summary      get default device attributes
-// @Description  get default attributes of devices where the owner is the requesting user
+// @Description  get default attributes for devices where the owner is the requesting user
 // @Tags         defaults
 // @Produce      json
 // @Security Bearer
@@ -63,7 +63,7 @@ func (this *DefaultsEndpoints) GetDefaultDeviceAttributes(config configuration.C
 
 // SetDefaultDeviceAttributes godoc
 // @Summary      set default device attributes
-// @Description  set default attributes of devices where the owner is the requesting user
+// @Description  set default attributes for devices where the owner is the requesting user
 // @Tags         defaults
 // @Accept       json
 // @Security Bearer
