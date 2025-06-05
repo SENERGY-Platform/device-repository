@@ -296,7 +296,7 @@ func (this *Controller) selectionMatchesCriteria(
 
 	device, ok := (*dcache)[deviceId]
 	if !ok {
-		temp, err, code := this.readDevice(deviceId)
+		temp, err, code := this.readDevice(deviceId, true)
 		if err != nil {
 			return fmt.Errorf("unable to read device %v: %w", deviceId, err), code
 		}

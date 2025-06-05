@@ -270,7 +270,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 }
 
 func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
-	temp, err, errCode := this.readDevice(id)
+	temp, err, errCode := this.readDevice(id, true)
 	if err != nil {
 		return result, err, errCode
 	}
@@ -286,7 +286,7 @@ func (this *Controller) ReadDevice(id string, token string, action model.AuthAct
 }
 
 func (this *Controller) ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
-	temp, err, errCode := this.readDevice(id)
+	temp, err, errCode := this.readDevice(id, true)
 	if err != nil {
 		return result, err, errCode
 	}
@@ -307,7 +307,7 @@ func (this *Controller) ReadExtendedDevice(id string, token string, action model
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) readDevice(id string) (result model.DeviceWithConnectionState, err error, errCode int) {
+func (this *Controller) readDevice(id string, addDefaultAttributes bool) (result model.DeviceWithConnectionState, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
 	pureId, modifier := idmodifier.SplitModifier(id)
 	device, exists, err := this.db.GetDevice(ctx, pureId)
@@ -318,9 +318,11 @@ func (this *Controller) readDevice(id string) (result model.DeviceWithConnection
 		return result, errors.New("not found"), http.StatusNotFound
 	}
 	device.Id = id
-	device, err = this.applyDefaultDeviceAttributes(device)
-	if err != nil {
-		return result, err, http.StatusInternalServerError
+	if addDefaultAttributes {
+		device, err = this.applyDefaultDeviceAttributes(device)
+		if err != nil {
+			return result, err, http.StatusInternalServerError
+		}
 	}
 	if modifier != nil && len(modifier) > 0 {
 		device.Device, err, errCode = this.modifyDevice(device.Device, modifier)
@@ -601,7 +603,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 
 	var original model.DeviceWithConnectionState
 	var exists bool
-	original, err, code = this.readDevice(device.Id)
+	original, err, code = this.readDevice(device.Id, false)
 	if err != nil && code != http.StatusNotFound {
 		return device, err, code
 	}

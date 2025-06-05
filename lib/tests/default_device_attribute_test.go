@@ -333,5 +333,75 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 				})
 			}
 		})
+
+		t.Run("set default attr key", func(t *testing.T) {
+			_, err, _ = c.SetDevice(client.InternalAdminToken, models.Device{
+				Id:           d2.Id,
+				LocalId:      d2.LocalId,
+				Name:         d2.Name,
+				DeviceTypeId: d2.DeviceTypeId,
+				OwnerId:      d2.OwnerId,
+				Attributes: []models.Attribute{
+					{
+						Key:    "a1",
+						Value:  "1",
+						Origin: "test",
+					},
+					{
+						Key:    "a2",
+						Value:  "a2-test",
+						Origin: "test",
+					},
+					{
+						Key:    "a2",
+						Value:  "da2",
+						Origin: "default",
+					},
+					{
+						Key:    "a3",
+						Value:  "da3",
+						Origin: "default",
+					},
+				},
+			}, client.DeviceUpdateOptions{UpdateOnlySameOriginAttributes: []string{"shared", "web-ui", "test"}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			result, err, _ := c.ReadDevice(d2.Id, client.InternalAdminToken, models.Read)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			expectedDevice := models.Device{
+				Id:           d2.Id,
+				LocalId:      d2.LocalId,
+				Name:         d2.Name,
+				DeviceTypeId: d2.DeviceTypeId,
+				OwnerId:      d2.OwnerId,
+				Attributes: []models.Attribute{
+					{
+						Key:    "a1",
+						Value:  "1",
+						Origin: "test",
+					},
+					{
+						Key:    "a2",
+						Value:  "a2-test",
+						Origin: "test",
+					},
+					{
+						Key:    "a3",
+						Value:  "da3",
+						Origin: "default",
+					},
+				},
+			}
+			if !reflect.DeepEqual(result, expectedDevice) {
+				t.Errorf("\nr=%#v\ne=%#v\n", result, expectedDevice)
+				return
+			}
+		})
 	})
 }
