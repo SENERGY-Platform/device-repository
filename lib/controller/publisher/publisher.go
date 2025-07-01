@@ -44,22 +44,24 @@ type Publisher struct {
 }
 
 func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
-	log.Println("ensure kafka topics")
-	err := InitTopic(
-		conf.KafkaUrl,
-		conf.DeviceTypeTopic,
-		conf.DeviceGroupTopic,
-		conf.ProtocolTopic,
-		conf.DeviceTopic,
-		conf.HubTopic,
-		conf.ConceptTopic,
-		conf.CharacteristicTopic,
-		conf.AspectTopic,
-		conf.FunctionTopic,
-		conf.DeviceClassTopic,
-		conf.LocationTopic)
-	if err != nil {
-		return nil, err
+	if conf.InitTopics {
+		log.Println("ensure kafka topics")
+		err := InitTopic(
+			conf.KafkaUrl,
+			conf.DeviceTypeTopic,
+			conf.DeviceGroupTopic,
+			conf.ProtocolTopic,
+			conf.DeviceTopic,
+			conf.HubTopic,
+			conf.ConceptTopic,
+			conf.CharacteristicTopic,
+			conf.AspectTopic,
+			conf.FunctionTopic,
+			conf.DeviceClassTopic,
+			conf.LocationTopic)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	log.Println("Produce to ", conf.DeviceTypeTopic, conf.ProtocolTopic, conf.DeviceTopic, conf.HubTopic, conf.ConceptTopic, conf.CharacteristicTopic, conf.LocationTopic)

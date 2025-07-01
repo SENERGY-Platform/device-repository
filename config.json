@@ -44,6 +44,8 @@
     "sync_interval": "10m",
     "sync_lock_duration": "1m",
 
+    "init_topics": false,
+
     "initial_group_rights": {
         "devices": {"admin": "rwxa"},
         "device-groups": {"system": "rwxa"},

@@ -38,6 +38,7 @@ func TestConfigurables(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	conf.InitTopics = true
 
 	interaction := models.EVENT_AND_REQUEST
 
