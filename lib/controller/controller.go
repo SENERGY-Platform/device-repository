@@ -18,14 +18,15 @@ package controller
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/go-service-base/struct-logger"
-	"github.com/SENERGY-Platform/go-service-base/struct-logger/attributes"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/database"
+	struct_logger "github.com/SENERGY-Platform/go-service-base/struct-logger"
+	"github.com/SENERGY-Platform/go-service-base/struct-logger/attributes"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 
 func New(config configuration.Config, db database.Database, p Publisher, permClient client.Client) (ctrl *Controller, err error) {
@@ -39,7 +40,7 @@ func New(config configuration.Config, db database.Database, p Publisher, permCli
 		permissionsV2Client: permClient,
 		logger:              getLogger(config),
 	}
-	if permClient != nil {
+	if permClient != nil && config.RunStartupMigrations {
 		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
 			Id:                  config.DeviceTopic,
 			PublishToKafkaTopic: config.DeviceTopic,

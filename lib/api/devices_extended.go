@@ -18,16 +18,18 @@ package api
 
 import (
 	"encoding/json"
+	"log"
+	"net/http"
+	"net/url"
+	"slices"
+	"strconv"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"log"
-	"net/http"
-	"slices"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -53,6 +55,7 @@ type ExtendedDeviceEndpoints struct{}
 // @Param        device-type-ids query string false "filter; comma-seperated list"
 // @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
 // @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        device-attribute-blacklist query string false "JSON encoded []models.Attribute, attribute value and origin will only be checked if set, otherwise all values or origins will be blacklisted"
 // @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
 // @Success      200 {array}  models.ExtendedDevice
@@ -157,6 +160,22 @@ func (this *ExtendedDeviceEndpoints) List(config configuration.Config, router *h
 		}
 		if deviceListOptions.Permission == models.UnsetPermissionFlag {
 			deviceListOptions.Permission = model.READ
+		}
+
+		deviceAttributeBlacklistParam := request.URL.Query().Get("device-attribute-blacklist")
+		if deviceAttributeBlacklistParam != "" {
+			deviceAttributeBlacklistParam, err = url.QueryUnescape(deviceAttributeBlacklistParam)
+			if err != nil {
+				http.Error(writer, "unable to decode device-attribute-blacklist: "+err.Error(), http.StatusBadRequest)
+				return
+			}
+			var blacklist []models.Attribute
+			err = json.Unmarshal([]byte(deviceAttributeBlacklistParam), &blacklist)
+			if err != nil {
+				http.Error(writer, "unable to parse device-attribute-blacklist: "+err.Error(), http.StatusBadRequest)
+				return
+			}
+			deviceListOptions.DeviceAttributeBlacklist = blacklist
 		}
 
 		result, total, err, errCode := control.ListExtendedDevices(util.GetAuthToken(request), deviceListOptions)

@@ -23,6 +23,250 @@ package api
 
 
 
+// GeneratedCheckPermission_devices godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/devices/{id} [get]
+func GeneratedCheckPermission_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckPermission_devicegroups godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/device-groups/{id} [get]
+func GeneratedCheckPermission_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckPermission_hubs godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/hubs/{id} [get]
+func GeneratedCheckPermission_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckPermission_locations godoc
+// @Summary      check permission
+// @Description  check permission
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        id path string true "Resource Id"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/locations/{id} [get]
+func GeneratedCheckPermission_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckMultiplePermissions_devices godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} map[string]bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/devices [get]
+func GeneratedCheckMultiplePermissions_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckMultiplePermissions_devicegroups godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} map[string]bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/device-groups [get]
+func GeneratedCheckMultiplePermissions_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckMultiplePermissions_hubs godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} map[string]bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/hubs [get]
+func GeneratedCheckMultiplePermissions_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedCheckMultiplePermissions_locations godoc
+// @Summary      check multiple permissions
+// @Description  check multiple permissions
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        ids query string true "Resource Ids, comma seperated"
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Produce      json
+// @Success      200 {object} map[string]bool
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/check/locations [get]
+func GeneratedCheckMultiplePermissions_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_devices godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-devices
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/devices [get]
+func GeneratedListAccessibleResourceIds_devices(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_devicegroups godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-device-groups
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/device-groups [get]
+func GeneratedListAccessibleResourceIds_devicegroups(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_hubs godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-hubs
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/hubs [get]
+func GeneratedListAccessibleResourceIds_hubs(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
+// GeneratedListAccessibleResourceIds_locations godoc
+// @Summary      list accessible resource ids
+// @Description  list accessible resource ids
+// @Tags         permissions-locations
+// @Security Bearer
+// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
+// @Param        limit query integer false "limits size of result; 0 means unlimited"
+// @Param        offset query integer false "offset to be used in combination with limit"
+// @Produce      json
+// @Success      200 {array} string
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /permissions/accessible/locations [get]
+func GeneratedListAccessibleResourceIds_locations(){
+	//this method is only used as anchor for swagger documentation
+	panic("this method is only used as anchor for swagger documentation")
+}
+
+
+
 // GeneratedListResourcesWithAdminPermission_devices godoc
 // @Summary      lists resources the user has admin rights to
 // @Description  lists resources the user has admin rights to
@@ -433,250 +677,6 @@ func GeneratedQueryListComputedPermissions_hubs(){
 // @Failure      500
 // @Router       /permissions/query/permissions/locations [post]
 func GeneratedQueryListComputedPermissions_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckPermission_devices godoc
-// @Summary      check permission
-// @Description  check permission
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/devices/{id} [get]
-func GeneratedCheckPermission_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckPermission_devicegroups godoc
-// @Summary      check permission
-// @Description  check permission
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/device-groups/{id} [get]
-func GeneratedCheckPermission_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckPermission_hubs godoc
-// @Summary      check permission
-// @Description  check permission
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/hubs/{id} [get]
-func GeneratedCheckPermission_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckPermission_locations godoc
-// @Summary      check permission
-// @Description  check permission
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        id path string true "Resource Id"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/locations/{id} [get]
-func GeneratedCheckPermission_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckMultiplePermissions_devices godoc
-// @Summary      check multiple permissions
-// @Description  check multiple permissions
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} map[string]bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/devices [get]
-func GeneratedCheckMultiplePermissions_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckMultiplePermissions_devicegroups godoc
-// @Summary      check multiple permissions
-// @Description  check multiple permissions
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} map[string]bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/device-groups [get]
-func GeneratedCheckMultiplePermissions_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckMultiplePermissions_hubs godoc
-// @Summary      check multiple permissions
-// @Description  check multiple permissions
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} map[string]bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/hubs [get]
-func GeneratedCheckMultiplePermissions_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedCheckMultiplePermissions_locations godoc
-// @Summary      check multiple permissions
-// @Description  check multiple permissions
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        ids query string true "Resource Ids, comma seperated"
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Produce      json
-// @Success      200 {object} map[string]bool
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/check/locations [get]
-func GeneratedCheckMultiplePermissions_locations(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListAccessibleResourceIds_devices godoc
-// @Summary      list accessible resource ids
-// @Description  list accessible resource ids
-// @Tags         permissions-devices
-// @Security Bearer
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array} string
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/accessible/devices [get]
-func GeneratedListAccessibleResourceIds_devices(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListAccessibleResourceIds_devicegroups godoc
-// @Summary      list accessible resource ids
-// @Description  list accessible resource ids
-// @Tags         permissions-device-groups
-// @Security Bearer
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array} string
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/accessible/device-groups [get]
-func GeneratedListAccessibleResourceIds_devicegroups(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListAccessibleResourceIds_hubs godoc
-// @Summary      list accessible resource ids
-// @Description  list accessible resource ids
-// @Tags         permissions-hubs
-// @Security Bearer
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array} string
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/accessible/hubs [get]
-func GeneratedListAccessibleResourceIds_hubs(){
-	//this method is only used as anchor for swagger documentation
-	panic("this method is only used as anchor for swagger documentation")
-}
-
-
-
-// GeneratedListAccessibleResourceIds_locations godoc
-// @Summary      list accessible resource ids
-// @Description  list accessible resource ids
-// @Tags         permissions-locations
-// @Security Bearer
-// @Param        permissions query string false "checked permissions in the form of 'rwxa', defaults to 'r'"
-// @Param        limit query integer false "limits size of result; 0 means unlimited"
-// @Param        offset query integer false "offset to be used in combination with limit"
-// @Produce      json
-// @Success      200 {array} string
-// @Failure      400
-// @Failure      401
-// @Failure      500
-// @Router       /permissions/accessible/locations [get]
-func GeneratedListAccessibleResourceIds_locations(){
 	//this method is only used as anchor for swagger documentation
 	panic("this method is only used as anchor for swagger documentation")
 }

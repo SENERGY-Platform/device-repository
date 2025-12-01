@@ -19,18 +19,19 @@ package model
 import "github.com/SENERGY-Platform/models/go/models"
 
 type DeviceListOptions struct {
-	Ids             []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
-	LocalIds        []string                //filter; in combination with owner; fills ids filter; comma-seperated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
-	Owner           string                  //used in combination with local_ids to fill ids filter; defaults to requesting user
-	DeviceTypeIds   []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
-	ConnectionState *models.ConnectionState //filter
-	Search          string
-	Limit           int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
-	Offset          int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
-	SortBy          string                //default name.asc
-	Permission      models.PermissionFlag //defaults to read
-	AttributeKeys   []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
-	AttributeValues []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	Ids                      []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	LocalIds                 []string                //filter; in combination with owner; fills ids filter; comma-seperated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
+	Owner                    string                  //used in combination with local_ids to fill ids filter; defaults to requesting user
+	DeviceTypeIds            []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
+	ConnectionState          *models.ConnectionState //filter
+	Search                   string
+	Limit                    int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset                   int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy                   string                //default name.asc
+	Permission               models.PermissionFlag //defaults to read
+	AttributeKeys            []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	AttributeValues          []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	DeviceAttributeBlacklist []models.Attribute    //filter; attribute value and origin will only be checked if set, otherwise all values or origins will be blacklisted
 }
 
 type LocationListOptions struct {
@@ -85,35 +86,37 @@ type DeviceClassListOptions struct {
 }
 
 type ExtendedDeviceListOptions struct {
-	Ids             []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
-	LocalIds        []string                //filter; in combination with owner; fills ids filter; comma-seperated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
-	Owner           string                  //used in combination with local_ids to fill ids filter; defaults to requesting user
-	DeviceTypeIds   []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
-	ConnectionState *models.ConnectionState //filter
-	Search          string
-	Limit           int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
-	Offset          int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
-	SortBy          string                //default name.asc
-	Permission      models.PermissionFlag //defaults to read
-	AttributeKeys   []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
-	AttributeValues []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
-	FullDt          bool                  //if true, result contains full device-type
+	Ids                      []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	LocalIds                 []string                //filter; in combination with owner; fills ids filter; comma-seperated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
+	Owner                    string                  //used in combination with local_ids to fill ids filter; defaults to requesting user
+	DeviceTypeIds            []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
+	ConnectionState          *models.ConnectionState //filter
+	Search                   string
+	Limit                    int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset                   int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy                   string                //default name.asc
+	Permission               models.PermissionFlag //defaults to read
+	AttributeKeys            []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	AttributeValues          []string              //filter; ignored if nil; AttributeKeys and AttributeValues are independently evaluated, needs local filtering if a search like "attr1"="value1" is needed
+	FullDt                   bool                  //if true, result contains full device-type
+	DeviceAttributeBlacklist []models.Attribute    //filter; attribute value and origin will only be checked if set, otherwise all values or origins will be blacklisted
 }
 
 func (this ExtendedDeviceListOptions) ToDeviceListOptions() DeviceListOptions {
 	return DeviceListOptions{
-		Ids:             this.Ids,
-		DeviceTypeIds:   this.DeviceTypeIds,
-		ConnectionState: this.ConnectionState,
-		Search:          this.Search,
-		Limit:           this.Limit,
-		Offset:          this.Offset,
-		SortBy:          this.SortBy,
-		Permission:      this.Permission,
-		AttributeKeys:   this.AttributeKeys,
-		AttributeValues: this.AttributeValues,
-		Owner:           this.Owner,
-		LocalIds:        this.LocalIds,
+		Ids:                      this.Ids,
+		DeviceTypeIds:            this.DeviceTypeIds,
+		ConnectionState:          this.ConnectionState,
+		Search:                   this.Search,
+		Limit:                    this.Limit,
+		Offset:                   this.Offset,
+		SortBy:                   this.SortBy,
+		Permission:               this.Permission,
+		AttributeKeys:            this.AttributeKeys,
+		AttributeValues:          this.AttributeValues,
+		Owner:                    this.Owner,
+		LocalIds:                 this.LocalIds,
+		DeviceAttributeBlacklist: this.DeviceAttributeBlacklist,
 	}
 }
 

@@ -2331,6 +2331,12 @@ const docTemplatedevicerepository = `{
                         "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
                         "name": "p",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "JSON encoded []models.Attribute, attribute value and origin will only be checked if set, otherwise all values or origins will be blacklisted",
+                        "name": "device-attribute-blacklist",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2986,6 +2992,12 @@ const docTemplatedevicerepository = `{
                         "type": "string",
                         "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
                         "name": "attr-values",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "JSON encoded []models.Attribute, attribute value and origin will only be checked if set, otherwise all values or origins will be blacklisted",
+                        "name": "device-attribute-blacklist",
                         "in": "query"
                     },
                     {

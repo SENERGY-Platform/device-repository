@@ -120,6 +120,13 @@ func (c *Client) ListDevices(token string, options DeviceListOptions) (result []
 	if options.AttributeValues != nil {
 		query.Set("attr-values", strings.Join(options.AttributeValues, ","))
 	}
+	if options.DeviceAttributeBlacklist != nil {
+		b, err := json.Marshal(options.DeviceAttributeBlacklist)
+		if err != nil {
+			return result, err, http.StatusBadRequest
+		}
+		query.Set("device-attribute-blacklist", url.QueryEscape(string(b)))
+	}
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}

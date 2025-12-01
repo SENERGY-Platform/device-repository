@@ -47,7 +47,7 @@ func Kafka(ctx context.Context, wg *sync.WaitGroup, zookeeperUrl string) (kafkaU
 	log.Println("kafkaUrl url: ", kafkaUrl)
 	c, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Image: "bitnami/kafka:3.4.0-debian-11-r21",
+			Image: "bitnamilegacy/kafka:3.4.0-debian-11-r21",
 			Tmpfs: map[string]string{},
 			WaitingFor: wait.ForAll(
 				wait.ForLog("INFO Awaiting socket connections on"),

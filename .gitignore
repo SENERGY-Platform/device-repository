@@ -1,2 +1,4 @@
 .idea
 device-repository
+.vscode
+__debug*

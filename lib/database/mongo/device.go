@@ -19,15 +19,16 @@ package mongo
 import (
 	"context"
 	"errors"
+	"log"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var DeviceBson = getBsonFieldObject[model.DeviceWithConnectionState]()
@@ -290,6 +291,23 @@ func (this *Mongo) ListDevices(ctx context.Context, listOptions model.DeviceList
 	}
 	if listOptions.AttributeValues != nil {
 		filter[DeviceBson.Attributes[0].Value] = bson.M{"$in": listOptions.AttributeValues}
+	}
+	if listOptions.DeviceAttributeBlacklist != nil {
+		for _, attr := range listOptions.DeviceAttributeBlacklist {
+			attrFilter := bson.M{}
+			attrFilter["key"] = attr.Key
+			if attr.Value != "" {
+				attrFilter["value"] = attr.Value
+			}
+			if attr.Origin != "" {
+				attrFilter["origin"] = attr.Origin
+			}
+			andFilter = append(andFilter, bson.M{
+				"$nor": []interface{}{
+					bson.M{"attributes": bson.M{"$elemMatch": attrFilter}},
+				},
+			})
+		}
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {

@@ -2319,6 +2319,11 @@ paths:
         in: query
         name: p
         type: string
+      - description: JSON encoded []models.Attribute, attribute value and origin will
+          only be checked if set, otherwise all values or origins will be blacklisted
+        in: query
+        name: device-attribute-blacklist
+        type: string
       produces:
       - application/json
       responses:
@@ -2717,6 +2722,11 @@ paths:
           an attribute value that is in the given list
         in: query
         name: attr-values
+        type: string
+      - description: JSON encoded []models.Attribute, attribute value and origin will
+          only be checked if set, otherwise all values or origins will be blacklisted
+        in: query
+        name: device-attribute-blacklist
         type: string
       - description: filter; valid values are 'online', 'offline' and an empty string
           for unknown states

@@ -17,12 +17,14 @@
 package client
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 const extendedDevicePath = "extended-devices"
@@ -67,6 +69,13 @@ func (c *Client) ListExtendedDevices(token string, options model.ExtendedDeviceL
 	}
 	if options.FullDt {
 		query.Set("fulldt", "true")
+	}
+	if options.DeviceAttributeBlacklist != nil {
+		b, err := json.Marshal(options.DeviceAttributeBlacklist)
+		if err != nil {
+			return result, 0, err, http.StatusBadRequest
+		}
+		query.Set("device-attribute-blacklist", url.QueryEscape(string(b)))
 	}
 	queryString := ""
 	if len(query) > 0 {
