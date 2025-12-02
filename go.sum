@@ -23,6 +23,8 @@ github.com/SENERGY-Platform/go-service-base/struct-logger v0.4.1 h1:FF4jhIpxYbXk
 github.com/SENERGY-Platform/go-service-base/struct-logger v0.4.1/go.mod h1:WuvuHGXhnLtXn2ry2kfTaQwco3EY3XTCefLeNqUT+jg=
 github.com/SENERGY-Platform/models/go v0.0.0-20241007061544-de7132ae94e4 h1:zS65f1cmjAoBQUA432nmJl2TXAwqqqJMz7sp2DHLAGc=
 github.com/SENERGY-Platform/models/go v0.0.0-20241007061544-de7132ae94e4/go.mod h1:bCREPNRN4P8oxLgpC3/ZKK4jXSy4MSPXoiomhohE+aw=
+github.com/SENERGY-Platform/models/go v0.0.0-20251202070403-e7e5579f7111 h1:FuKWD5CANJ9q9cBVUrOag0FY0WFDB+qPtwXHn2fxO50=
+github.com/SENERGY-Platform/models/go v0.0.0-20251202070403-e7e5579f7111/go.mod h1:bCREPNRN4P8oxLgpC3/ZKK4jXSy4MSPXoiomhohE+aw=
 github.com/SENERGY-Platform/permissions-v2 v0.0.35 h1:MGlpAODe3HfIwVPUrQHQkUwVHacrS6mMa/71m/UMqoU=
 github.com/SENERGY-Platform/permissions-v2 v0.0.35/go.mod h1:AvaBgIMYADHvbeHhwT9marWxWiCEwNInpKytEYrSGr0=
 github.com/SENERGY-Platform/service-commons v0.0.0-20250123095636-6dfc659ee43e h1:JyCPmb5tYkGlET39UG23MMw+CNNKHqoXdYL2oC3ChiI=

@@ -68,6 +68,14 @@ func (c *Client) ValidateLocation(location models.Location) (err error, code int
 }
 
 func (c *Client) ListLocations(token string, options model.LocationListOptions) (result []models.Location, total int64, err error, errCode int) {
+	return listLocations[models.Location](c, token, options, "/locations")
+}
+
+func (c *Client) ListExtendedLocations(token string, options model.LocationListOptions) (result []models.ExtendedLocation, total int64, err error, errCode int) {
+	return listLocations[models.ExtendedLocation](c, token, options, "/extended-locations")
+}
+
+func listLocations[T any](c *Client, token string, options model.LocationListOptions, path string) (result []T, total int64, err error, errCode int) {
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
 		query.Set("p", string(options.Permission))
@@ -91,10 +99,10 @@ func (c *Client) ListLocations(token string, options model.LocationListOptions) 
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/locations"+queryString, nil)
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+path+queryString, nil)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doWithTotalInResult[[]T](req, c.optionalAuthTokenForApiGatewayRequest)
 }

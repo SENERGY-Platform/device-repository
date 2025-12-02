@@ -19,13 +19,15 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+	"sync"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
-	"net/url"
-	"strings"
 )
 
 func (this *Controller) SetLocation(token string, location models.Location) (result models.Location, err error, errCode int) {
@@ -215,4 +217,51 @@ func (this *Controller) ListLocations(token string, options model.LocationListOp
 	}
 
 	return result, total, nil, http.StatusOK
+}
+
+func (this *Controller) ListExtendedLocations(token string, options model.LocationListOptions) (result []models.ExtendedLocation, total int64, err error, errCode int) {
+	locations, total, err, code := this.ListLocations(token, options)
+	if err != nil {
+		return result, total, err, code
+	}
+
+	result = make([]models.ExtendedLocation, len(locations))
+	wg := sync.WaitGroup{}
+	mux := sync.Mutex{}
+	for i, location := range locations {
+		wg.Add(1)
+		go func(h models.Location, resultIndex int) {
+			defer wg.Done()
+			extended, temperr := this.extendLocation(token, h)
+			mux.Lock()
+			defer mux.Unlock()
+			err = errors.Join(err, temperr)
+			result[resultIndex] = extended
+		}(location, i)
+	}
+	wg.Wait()
+	if err != nil {
+		return result, total, err, http.StatusInternalServerError
+	}
+	return result, total, nil, http.StatusOK
+}
+
+func (this *Controller) extendLocation(token string, location models.Location) (models.ExtendedLocation, error) {
+	computedPermList, err, _ := this.permissionsV2Client.ListComputedPermissions(token, this.config.LocationTopic, []string{location.Id})
+	if err != nil {
+		return models.ExtendedLocation{}, err
+	}
+	if len(computedPermList) == 0 {
+		return models.ExtendedLocation{}, errors.New("no computation permissions")
+	}
+	permissions := models.Permissions{
+		Read:         computedPermList[0].Read,
+		Write:        computedPermList[0].Write,
+		Execute:      computedPermList[0].Execute,
+		Administrate: computedPermList[0].Administrate,
+	}
+	return models.ExtendedLocation{
+		Location:    location,
+		Permissions: permissions,
+	}, nil
 }
