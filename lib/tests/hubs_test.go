@@ -18,16 +18,17 @@ package tests
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
-	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestHubResetOnDeviceDelete(t *testing.T) {
@@ -142,19 +143,13 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 	})
 
 	t.Run("delete devices", func(t *testing.T) {
-		wg := sync.WaitGroup{}
 		for _, id := range deviceIds[2:] {
-			wg.Add(1)
-			go func(id string) {
-				defer wg.Done()
-				err, _ := c.DeleteDevice(client.InternalAdminToken, id)
-				if err != nil {
-					t.Error(err)
-					return
-				}
-			}(id)
+			err, _ := c.DeleteDevice(client.InternalAdminToken, id)
+			if err != nil {
+				t.Error(err)
+				return
+			}
 		}
-		wg.Wait()
 	})
 
 	t.Run("check hubs", func(t *testing.T) {
@@ -163,7 +158,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		if !reflect.DeepEqual(hubs, []models.Hub{
+		expected := []models.Hub{
 			{
 				Id:             "h1",
 				Name:           "h1",
@@ -180,8 +175,9 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 				DeviceIds:      []string{deviceIds[0]},
 				OwnerId:        "dd69ea0d-f553-4336-80f3-7f4567f85c7b",
 			},
-		}) {
-			t.Errorf("%#v", hubs)
+		}
+		if !reflect.DeepEqual(hubs, expected) {
+			t.Errorf("\na=%#v\ne=%#v\n", hubs, expected)
 		}
 	})
 }

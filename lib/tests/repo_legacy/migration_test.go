@@ -18,6 +18,12 @@ package repo_legacy
 
 import (
 	"context"
+	"log"
+	"reflect"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
@@ -26,11 +32,6 @@ import (
 	docker2 "github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"log"
-	"reflect"
-	"sync"
-	"testing"
-	"time"
 )
 
 func TestGeneratedDeviceGroupMigration(t *testing.T) {
@@ -53,14 +54,7 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 	}
 	conf.MongoUrl = "mongodb://" + ip + ":27017"
 
-	_, zkIp, err := docker2.Zookeeper(ctx, wg)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	zookeeperUrl := zkIp + ":2181"
-
-	conf.KafkaUrl, err = docker2.Kafka(ctx, wg, zookeeperUrl)
+	conf.KafkaUrl, err = docker2.Kafka(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return

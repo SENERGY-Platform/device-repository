@@ -19,13 +19,14 @@ package docker
 import (
 	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"log"
 	"net"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 )
 
 func GetFreePort() (int, error) {
@@ -84,13 +85,7 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configurati
 	}
 	config.MongoUrl = "mongodb://" + ip + ":27017"
 
-	_, zkIp, err := Zookeeper(ctx, wg)
-	if err != nil {
-		return config, err
-	}
-	zookeeperUrl := zkIp + ":2181"
-
-	config.KafkaUrl, err = Kafka(ctx, wg, zookeeperUrl)
+	config.KafkaUrl, err = Kafka(ctx, wg)
 	if err != nil {
 		return config, err
 	}

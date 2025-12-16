@@ -18,6 +18,12 @@ package tests
 
 import (
 	"context"
+	"reflect"
+	"strconv"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
@@ -25,11 +31,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"reflect"
-	"strconv"
-	"sync"
-	"testing"
-	"time"
 )
 
 func TestExport(t *testing.T) {
@@ -54,14 +55,7 @@ func TestExport(t *testing.T) {
 		}
 		config.MongoUrl = "mongodb://" + mip + ":27017"
 
-		_, zkIp, err := docker.Zookeeper(ctx, wg)
-		if err != nil {
-			t.Error(err)
-			return nil, config
-		}
-		zookeeperUrl := zkIp + ":2181"
-
-		config.KafkaUrl, err = docker.Kafka(ctx, wg, zookeeperUrl)
+		config.KafkaUrl, err = docker.Kafka(ctx, wg)
 		if err != nil {
 			t.Error(err)
 			return nil, config

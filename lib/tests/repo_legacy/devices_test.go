@@ -19,6 +19,17 @@ package repo_legacy
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"net/http"
+	"net/url"
+	"reflect"
+	"slices"
+	"strconv"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
@@ -30,16 +41,6 @@ import (
 	"github.com/SENERGY-Platform/models/go/models"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/google/uuid"
-	"io"
-	"net/http"
-	"net/url"
-	"reflect"
-	"slices"
-	"strconv"
-	"strings"
-	"sync"
-	"testing"
-	"time"
 )
 
 var device1id = "urn:infai:ses:device:1"
@@ -994,14 +995,7 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 	}
 	conf.MongoUrl = "mongodb://" + ip + ":27017"
 
-	_, zkIp, err := docker2.Zookeeper(ctx, wg)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	zookeeperUrl := zkIp + ":2181"
-
-	conf.KafkaUrl, err = docker2.Kafka(ctx, wg, zookeeperUrl)
+	conf.KafkaUrl, err = docker2.Kafka(ctx, wg)
 	if err != nil {
 		t.Error(err)
 		return
