@@ -40,7 +40,7 @@ func New(config configuration.Config, db database.Database, p Publisher, permCli
 		permissionsV2Client: permClient,
 		logger:              getLogger(config),
 	}
-	if permClient != nil && config.RunStartupMigrations {
+	if permClient != nil && config.InitPermissionsTopics {
 		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
 			Id:                  config.DeviceTopic,
 			PublishToKafkaTopic: config.DeviceTopic,

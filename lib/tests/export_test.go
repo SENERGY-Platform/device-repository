@@ -47,6 +47,7 @@ func TestExport(t *testing.T) {
 		}
 
 		config.SyncLockDuration = time.Second.String()
+		config.InitPermissionsTopics = true
 
 		_, mip, err := docker.MongoDB(ctx, wg)
 		if err != nil {

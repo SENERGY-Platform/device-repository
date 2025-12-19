@@ -981,6 +981,8 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 	conf.DisableStrictValidationForTesting = true
 	conf.Debug = true
 	conf.LocalIdUniqueForOwner = true
+	conf.InitPermissionsTopics = true
+
 	whPort, err := docker2.GetFreePort()
 	if err != nil {
 		t.Error(err)

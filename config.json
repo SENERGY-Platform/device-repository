@@ -45,6 +45,7 @@
     "sync_lock_duration": "1m",
 
     "init_topics": false,
+    "init_permissions_topics": true,
 
     "initial_group_rights": {
         "devices": {"admin": "rwxa"},

@@ -72,6 +72,8 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configurati
 		}
 	}()
 
+	config.InitPermissionsTopics = true
+
 	whPort, err := GetFreePort()
 	if err != nil {
 		log.Println("unable to find free port", err)

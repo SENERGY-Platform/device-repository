@@ -19,17 +19,6 @@ package repo_legacy
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
-	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/resources"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
-	"github.com/SENERGY-Platform/models/go/models"
-	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"io"
 	"io/ioutil"
 	"log"
@@ -42,6 +31,18 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
+	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/resources"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/models/go/models"
+	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 
 func TestListDeviceGroups(t *testing.T) {
@@ -740,6 +741,7 @@ func TestDeviceGroupsDeviceFilter(t *testing.T) {
 
 	conf.DeviceGroupTopic = "device-group"
 	conf.DeviceTopic = "devices"
+	conf.InitPermissionsTopics = true
 
 	db := testdb.NewTestDB(conf)
 	pclient, err := permclient.NewTestClient(ctx)

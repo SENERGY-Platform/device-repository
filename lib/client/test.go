@@ -18,6 +18,7 @@ package client
 
 import (
 	"context"
+
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
@@ -44,6 +45,7 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		HttpClientTimeout:                        "30s",
 		DeviceServiceGroupSelectionAllowNotFound: true,
 		LocalIdUniqueForOwner:                    true,
+		InitPermissionsTopics:                    true,
 	}
 	db = testdb.NewTestDB(conf)
 

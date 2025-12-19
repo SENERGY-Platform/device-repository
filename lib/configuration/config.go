@@ -66,8 +66,9 @@ type Config struct {
 	DeviceServiceGroupSelectionAllowNotFound     bool `json:"device_service_group_selection_allow_not_found"`
 	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
 
-	InitialGroupRights   map[string]map[string]string `json:"initial_group_rights"`
-	RunStartupMigrations bool                         `json:"run_startup_migrations"`
+	InitialGroupRights    map[string]map[string]string `json:"initial_group_rights"`
+	RunStartupMigrations  bool                         `json:"run_startup_migrations"`
+	InitPermissionsTopics bool                         `json:"init_permissions_topics"`
 
 	LocalIdUniqueForOwner               bool `json:"local_id_unique_for_owner"`
 	SkipDeviceGroupGenerationFromDevice bool `json:"skip_device_group_generation_from_device"`
