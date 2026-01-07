@@ -22,7 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -102,7 +101,7 @@ func (this *CharacteristicsEndpoints) ListCharacteristics(config configuration.C
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -143,7 +142,7 @@ func (this *CharacteristicsEndpoints) List(config configuration.Config, router *
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 
 		return
@@ -175,7 +174,7 @@ func (this *CharacteristicsEndpoints) Get(config configuration.Config, router *h
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -260,7 +259,7 @@ func (this *CharacteristicsEndpoints) Delete(config configuration.Config, router
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(true)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -298,7 +297,7 @@ func (this *CharacteristicsEndpoints) Create(config configuration.Config, router
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -345,7 +344,7 @@ func (this *CharacteristicsEndpoints) Update(config configuration.Config, router
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

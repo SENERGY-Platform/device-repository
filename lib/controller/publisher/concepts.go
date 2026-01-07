@@ -19,11 +19,11 @@ package publisher
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"runtime/debug"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/segmentio/kafka-go"
 )
 
 type ConceptCommand struct {
@@ -46,9 +46,7 @@ func (this *Publisher) PublishConceptDelete(id string) error {
 }
 
 func (this *Publisher) PublishConceptCommand(cmd ConceptCommand) error {
-	if this.config.Debug {
-		log.Println("DEBUG: produce concept", cmd)
-	}
+	this.config.GetLogger().Debug("publish concept command", "command", cmd)
 
 	message, err := json.Marshal(cmd)
 	if err != nil {

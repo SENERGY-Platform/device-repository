@@ -18,7 +18,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/url"
 	"slices"
@@ -188,7 +187,7 @@ func (this *DeviceEndpoints) List(config configuration.Config, router *http.Serv
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -246,7 +245,7 @@ func (this *DeviceEndpoints) Get(config configuration.Config, router *http.Serve
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -328,7 +327,7 @@ func (this *DeviceEndpoints) Create(config configuration.Config, router *http.Se
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -381,7 +380,7 @@ func (this *DeviceEndpoints) Set(config configuration.Config, router *http.Serve
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -440,7 +439,7 @@ func (this *DeviceEndpoints) SetAttributes(config configuration.Config, router *
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -500,7 +499,7 @@ func (this *DeviceEndpoints) SetDisplayName(config configuration.Config, router 
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -533,7 +532,7 @@ func (this *DeviceEndpoints) Delete(config configuration.Config, router *http.Se
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(true)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -573,7 +572,7 @@ func (this *DeviceEndpoints) DeleteMany(config configuration.Config, router *htt
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(true)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -615,7 +614,7 @@ func (this *DeviceEndpoints) SetConnectionState(config configuration.Config, rou
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(true)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

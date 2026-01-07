@@ -19,16 +19,17 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"regexp"
+	"slices"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"slices"
-	"strings"
-	"time"
 )
 
 var ConceptBson = getBsonFieldObject[models.Concept]()
@@ -69,12 +70,12 @@ func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept, syncH
 	}
 	err = syncHandler(concept)
 	if err != nil {
-		log.Printf("WARNING: error in SetConcept::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetConcept::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, ConceptBson.Id, concept.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetConcept::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetConcept::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -95,12 +96,12 @@ func (this *Mongo) RemoveConcept(ctx context.Context, id string, syncDeleteHandl
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveConcept::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveConcept::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{ConceptBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveConcept::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveConcept::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -121,25 +122,25 @@ func (this *Mongo) RetryConceptSync(lockduration time.Duration, syncDeleteHandle
 		if job.SyncDelete {
 			err = syncDeleteHandler(job.Concept)
 			if err != nil {
-				log.Printf("WARNING: error in RetryConceptSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{ConceptBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryConceptSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			err = syncHandler(job.Concept)
 			if err != nil {
-				log.Printf("WARNING: error in RetryConceptSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			err = this.setSynced(ctx, collection, ConceptBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryConceptSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

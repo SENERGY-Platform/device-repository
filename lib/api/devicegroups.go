@@ -22,7 +22,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -161,7 +160,7 @@ func (this *DeviceGroupEndpoints) List(config configuration.Config, router *http
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -198,7 +197,7 @@ func (this *DeviceGroupEndpoints) Get(config configuration.Config, router *http.
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -321,7 +320,7 @@ func (this *DeviceGroupEndpoints) Create(config configuration.Config, router *ht
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -367,7 +366,7 @@ func (this *DeviceGroupEndpoints) Set(config configuration.Config, router *http.
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

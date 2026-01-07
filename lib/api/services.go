@@ -19,7 +19,6 @@ package api
 import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"log"
 	"net/http"
 )
 
@@ -54,7 +53,7 @@ func (this *ServiceEndpoints) Get(config configuration.Config, router *http.Serv
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

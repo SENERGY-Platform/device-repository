@@ -18,15 +18,15 @@ package mongo
 
 import (
 	"context"
+	"runtime/debug"
+
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
-	"log"
-	"runtime/debug"
 )
 
 func (this *Mongo) RunStartupMigrations(helper GeneratedDeviceGroupMigrationMethods) error {
 	if !this.config.RunStartupMigrations {
-		log.Println("INFO: skip startup migration because config.RunStartupMigrations=false")
+		this.config.GetLogger().Info("skip startup migration because config.RunStartupMigrations=false")
 		return nil
 	}
 	err := this.runDeviceGroupMigration(helper)
@@ -42,7 +42,7 @@ type GeneratedDeviceGroupMigrationMethods interface {
 }
 
 func (this *Mongo) runDeviceGroupMigration(helper GeneratedDeviceGroupMigrationMethods) error {
-	log.Println("start runDeviceGroupMigration()")
+	this.config.GetLogger().Info("start runDeviceGroupMigration()")
 	cursor, err := this.deviceCollection().Find(context.Background(), bson.M{})
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (this *Mongo) runDeviceGroupMigration(helper GeneratedDeviceGroupMigrationM
 			return err
 		}
 		if !exists {
-			log.Printf("generate device-group for %v %v\n", device.Id, device.Name)
+			this.config.GetLogger().Debug("generate device-group", "deviceId", device.Id, "deviceName", device.Name)
 			err = helper.EnsureGeneratedDeviceGroup(device, device)
 			if err != nil {
 				debug.PrintStack()

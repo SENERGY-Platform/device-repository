@@ -19,11 +19,11 @@ package publisher
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"runtime/debug"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/segmentio/kafka-go"
 )
 
 type CharacteristicCommand struct {
@@ -46,10 +46,7 @@ func (this *Publisher) PublishCharacteristicDelete(id string) error {
 }
 
 func (this *Publisher) PublishCharacteristicCommand(cmd CharacteristicCommand) error {
-	if this.config.Debug {
-		log.Println("DEBUG: produce devicetype", cmd)
-	}
-
+	this.config.GetLogger().Debug("publish characteristic command", "command", cmd)
 	message, err := json.Marshal(cmd)
 	if err != nil {
 		debug.PrintStack()

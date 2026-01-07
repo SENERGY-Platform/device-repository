@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -55,7 +54,7 @@ func (this *HelperEndpoints) Id(config configuration.Config, router *http.ServeM
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

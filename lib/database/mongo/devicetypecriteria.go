@@ -18,14 +18,14 @@ package mongo
 
 import (
 	"context"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
-	"strings"
 )
 
 var DeviceTypeCriteriaBson = getBsonFieldObject[model.DeviceTypeCriteria]()
@@ -323,8 +323,7 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 		if exists {
 			filter[DeviceTypeCriteriaBson.AspectId] = bson.M{"$in": append(node.DescendentIds, node.Id)}
 		} else {
-			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
-			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
+			this.config.GetLogger().Warn("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", "aspectId", criteria.AspectId)
 			filter[DeviceTypeCriteriaBson.AspectId] = criteria.AspectId
 		}
 	}

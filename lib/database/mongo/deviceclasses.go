@@ -19,17 +19,18 @@ package mongo
 import (
 	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
+	"fmt"
 	"regexp"
 	"runtime/debug"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var DeviceClassBson = getBsonFieldObject[models.DeviceClass]()
@@ -151,12 +152,12 @@ func (this *Mongo) SetDeviceClass(ctx context.Context, deviceClass models.Device
 	}
 	err = syncHandler(deviceClass)
 	if err != nil {
-		log.Printf("WARNING: error in SetDeviceClass::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceClass::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, DeviceClassBson.Id, deviceClass.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDeviceClass::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceClass::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -177,12 +178,12 @@ func (this *Mongo) RemoveDeviceClass(ctx context.Context, id string, syncDeleteH
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveDeviceClass::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceClass::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{DeviceClassBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveDeviceClass::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceClass::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -203,25 +204,25 @@ func (this *Mongo) RetryDeviceClassSync(lockduration time.Duration, syncDeleteHa
 		if job.SyncDelete {
 			err = syncDeleteHandler(job.DeviceClass)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceClassSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{DeviceClassBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceClassSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			err = syncHandler(job.DeviceClass)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceClassSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			err = this.setSynced(ctx, collection, DeviceClassBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceClassSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

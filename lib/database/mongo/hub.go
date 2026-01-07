@@ -19,15 +19,16 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var HubBson = getBsonFieldObject[model.HubWithConnectionState]()
@@ -97,12 +98,12 @@ func (this *Mongo) SetHub(ctx context.Context, hub model.HubWithConnectionState,
 	}
 	err = syncHandler(hub)
 	if err != nil {
-		log.Printf("WARNING: error in SetHub::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetHub::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, HubBson.Id, hub.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetHub::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetHub::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -123,12 +124,12 @@ func (this *Mongo) RemoveHub(ctx context.Context, id string, syncDeleteHandler f
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveHub::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveHub::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{HubBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveHub::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveHub::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -144,25 +145,25 @@ func (this *Mongo) RetryHubSync(lockduration time.Duration, syncDeleteHandler fu
 		if job.SyncDelete {
 			err = syncDeleteHandler(job.HubWithConnectionState)
 			if err != nil {
-				log.Printf("WARNING: error in RetryHubSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryHubSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{HubBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryHubSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryHubSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			err = syncHandler(job.HubWithConnectionState)
 			if err != nil {
-				log.Printf("WARNING: error in RetryHubSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryHubSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			err = this.setSynced(ctx, collection, HubBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryHubSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryHubSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

@@ -19,11 +19,11 @@ package publisher
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"runtime/debug"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/segmentio/kafka-go"
 )
 
 type ProtocolCommand struct {
@@ -46,10 +46,7 @@ func (this *Publisher) PublishProtocolDelete(id string) error {
 }
 
 func (this *Publisher) PublishProtocolCommand(cmd ProtocolCommand) error {
-	if this.config.Debug {
-		log.Println("DEBUG: produce protocol", cmd)
-	}
-
+	this.config.GetLogger().Debug("publish protocol command", "command", cmd)
 	message, err := json.Marshal(cmd)
 	if err != nil {
 		debug.PrintStack()

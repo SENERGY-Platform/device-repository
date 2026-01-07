@@ -18,18 +18,20 @@ package mongo
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"fmt"
 	"log"
 	"regexp"
 	"runtime/debug"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var DeviceTypeBson = getBsonFieldObject[models.DeviceType]()
@@ -350,17 +352,17 @@ func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceTy
 	}
 	err = this.setDeviceTypeCriteria(ctx, deviceType)
 	if err != nil {
-		log.Printf("WARNING: error in SetDeviceType::setDeviceTypeCriteria %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceType::setDeviceTypeCriteria %v, will be retried later\n", err))
 		return nil
 	}
 	err = syncHandler(deviceType)
 	if err != nil {
-		log.Printf("WARNING: error in SetDeviceType::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceType::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, DeviceTypeBson.Id, deviceType.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDeviceType::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceType::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -381,17 +383,17 @@ func (this *Mongo) RemoveDeviceType(ctx context.Context, id string, syncDeleteHa
 	}
 	err = this.removeDeviceTypeCriteriaByDeviceType(ctx, id)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveDeviceType::removeDeviceTypeCriteriaByDeviceType %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceType::removeDeviceTypeCriteriaByDeviceType %v, will be retried later\n", err))
 		return nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveDeviceType::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceType::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{DeviceTypeBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveDeviceType::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceType::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -408,36 +410,36 @@ func (this *Mongo) RetryDeviceTypeSync(lockduration time.Duration, syncDeleteHan
 			ctx, _ := getTimeoutContext()
 			err = this.removeDeviceTypeCriteriaByDeviceType(ctx, job.Id)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceTypeSync::removeDeviceTypeCriteriaByDeviceType %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::removeDeviceTypeCriteriaByDeviceType %v, will be retried later\n", err))
 				continue
 			}
 			err = syncDeleteHandler(job.DeviceType)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceTypeSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ = getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{DeviceTypeBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceTypeSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			ctx, _ := getTimeoutContext()
 			err = this.setDeviceTypeCriteria(ctx, job.DeviceType)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceTypeSync::setDeviceTypeCriteria %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::setDeviceTypeCriteria %v, will be retried later\n", err))
 				return nil
 			}
 			err = syncHandler(job.DeviceType)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceTypeSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ = getTimeoutContext()
 			err = this.setSynced(ctx, collection, DeviceTypeBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceTypeSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

@@ -19,15 +19,16 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var DeviceGroupBson = getBsonFieldObject[models.DeviceGroup]()
@@ -230,12 +231,12 @@ func (this *Mongo) SetDeviceGroup(ctx context.Context, deviceGroup models.Device
 	}
 	err = syncHandler(deviceGroup, user)
 	if err != nil {
-		log.Printf("WARNING: error in SetDeviceGroup::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceGroup::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, DeviceGroupBson.Id, deviceGroup.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetDeviceGroup::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceGroup::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -256,12 +257,12 @@ func (this *Mongo) RemoveDeviceGroup(ctx context.Context, id string, syncDeleteH
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveDeviceGroup::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceGroup::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{DeviceGroupBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveDeviceGroup::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceGroup::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -277,25 +278,25 @@ func (this *Mongo) RetryDeviceGroupSync(lockduration time.Duration, syncDeleteHa
 		if job.SyncDelete {
 			err = syncDeleteHandler(job.DeviceGroup)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceGroupSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceGroupSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{DeviceGroupBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceGroupSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceGroupSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			err = syncHandler(job.DeviceGroup, job.SyncUser)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceGroupSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceGroupSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			err = this.setSynced(ctx, collection, DeviceGroupBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryDeviceGroupSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceGroupSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

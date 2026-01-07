@@ -19,11 +19,11 @@ package publisher
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"runtime/debug"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/segmentio/kafka-go"
 )
 
 type DeviceCommand struct {
@@ -46,9 +46,7 @@ func (this *Publisher) PublishDeviceDelete(id string) error {
 }
 
 func (this *Publisher) PublishDeviceCommand(cmd DeviceCommand) error {
-	if this.config.Debug {
-		log.Println("DEBUG: produce device", cmd)
-	}
+	this.config.GetLogger().Debug("publish device command", "command", cmd)
 	message, err := json.Marshal(cmd)
 	if err != nil {
 		debug.PrintStack()

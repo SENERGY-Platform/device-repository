@@ -19,18 +19,18 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"log"
 	"net/http"
 	"runtime/debug"
 	"slices"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
 func (this *Controller) ListExtendedDevices(token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
@@ -125,7 +125,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 			if exists {
 				deviceTypes = append(deviceTypes, dt)
 			} else {
-				log.Println("WARNING: unable to find device type for ListExtendedDevices device.id=", device.Id)
+				this.config.GetLogger().Warn("unable to find device type for ListExtendedDevices", "device-id", device.Id)
 			}
 		}
 	}
@@ -647,7 +647,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 
 	rights, err, code := this.permissionsV2Client.GetResource(token, this.config.DeviceTopic, device.Id)
 	if err != nil && code != http.StatusNotFound {
-		log.Println("ERROR:", err)
+		this.config.GetLogger().Error("unable to get permission resource", "error", err)
 		debug.PrintStack()
 		return device, err, code
 	}

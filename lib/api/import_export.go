@@ -21,7 +21,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -71,7 +70,7 @@ func (this *ImportExportEndpoints) Export(config configuration.Config, router *h
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

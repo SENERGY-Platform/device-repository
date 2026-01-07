@@ -19,11 +19,11 @@ package publisher
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"runtime/debug"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/segmentio/kafka-go"
 )
 
 type FunctionCommand struct {
@@ -46,9 +46,7 @@ func (this *Publisher) PublishFunctionDelete(id string) error {
 }
 
 func (this *Publisher) PublishFunctionCommand(cmd FunctionCommand) error {
-	if this.config.Debug {
-		log.Println("DEBUG: produce function", cmd)
-	}
+	this.config.GetLogger().Debug("publish function command", "command", cmd)
 
 	message, err := json.Marshal(cmd)
 	if err != nil {

@@ -18,14 +18,14 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"log"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -102,7 +102,7 @@ func (this *ConceptEndpoints) ListConcepts(config configuration.Config, router *
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -176,7 +176,7 @@ func (this *ConceptEndpoints) ListConceptsWithCharacteristics(config configurati
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -230,7 +230,7 @@ func (this *ConceptEndpoints) Get(config configuration.Config, router *http.Serv
 			err = json.NewEncoder(writer).Encode(resultConcept)
 		}
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -348,7 +348,7 @@ func (this *ConceptEndpoints) Create(config configuration.Config, router *http.S
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -394,7 +394,7 @@ func (this *ConceptEndpoints) Set(config configuration.Config, router *http.Serv
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

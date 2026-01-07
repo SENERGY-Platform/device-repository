@@ -18,15 +18,16 @@ package mongo
 
 import (
 	"context"
+	"fmt"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var FunctionBson = getBsonFieldObject[models.Function]()
@@ -145,12 +146,12 @@ func (this *Mongo) SetFunction(ctx context.Context, function models.Function, sy
 	}
 	err = syncHandler(function)
 	if err != nil {
-		log.Printf("WARNING: error in SetFunction::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetFunction::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, FunctionBson.Id, function.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetFunction::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetFunction::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -171,12 +172,12 @@ func (this *Mongo) RemoveFunction(ctx context.Context, id string, syncDeleteHand
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveFunction::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveFunction::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{FunctionBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveFunction::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveFunction::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -192,25 +193,25 @@ func (this *Mongo) RetryFunctionSync(lockduration time.Duration, syncDeleteHandl
 		if job.SyncDelete {
 			err = syncDeleteHandler(job.Function)
 			if err != nil {
-				log.Printf("WARNING: error in RetryFunctionSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{FunctionBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryFunctionSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			err = syncHandler(job.Function)
 			if err != nil {
-				log.Printf("WARNING: error in RetryFunctionSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			err = this.setSynced(ctx, collection, FunctionBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryFunctionSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

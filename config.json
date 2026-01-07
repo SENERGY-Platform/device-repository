@@ -30,6 +30,7 @@
     "mongo_default_device_attributes_collection": "default_device_attributes",
     "kafka_url": "kafka.kafka:9092",
     "debug": false,
+    "log_level": "info",
     "http_client_timeout": "30s",
     "device_service_group_selection_allow_not_found": true,
     "allow_none_leaf_aspect_nodes_in_device_types_default": true,

@@ -20,15 +20,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"github.com/SENERGY-Platform/service-commons/pkg/accesslog"
 	"log"
 	"net/http"
 	"reflect"
 	"runtime/debug"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/api/util"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/accesslog"
 )
 
 type EndpointMethod = func(config configuration.Config, router *http.ServeMux, ctrl Controller)
@@ -36,7 +37,7 @@ type EndpointMethod = func(config configuration.Config, router *http.ServeMux, c
 var endpoints = []interface{}{} //list of objects with EndpointMethod
 
 func Start(ctx context.Context, config configuration.Config, control Controller) (err error) {
-	log.Println("start api")
+	config.GetLogger().Info("start api")
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New(fmt.Sprint(r))
@@ -45,15 +46,16 @@ func Start(ctx context.Context, config configuration.Config, control Controller)
 	router := GetRouter(config, control)
 	server := &http.Server{Addr: ":" + config.ServerPort, Handler: router}
 	go func() {
-		log.Println("listening on ", server.Addr)
+		config.GetLogger().Info("listening on " + server.Addr)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			debug.PrintStack()
+			config.GetLogger().Error("fatal error while starting api", "error", err)
 			log.Fatal("FATAL:", err)
 		}
 	}()
 	go func() {
 		<-ctx.Done()
-		log.Println("api shutdown", server.Shutdown(context.Background()))
+		config.GetLogger().Info("api shutdown", "shutdown_return", server.Shutdown(context.Background()))
 	}()
 	return
 }
@@ -70,7 +72,7 @@ func Start(ctx context.Context, config configuration.Config, control Controller)
 // @description Type "Bearer" followed by a space and JWT token.
 func GetRouter(config configuration.Config, control Controller) http.Handler {
 	handler := GetRouterWithoutMiddleware(config, control)
-	log.Println("add permissions endpoints")
+	config.GetLogger().Info("add permissions endpoints")
 	permForward := client.EmbedPermissionsClientIntoRouter(client.New(config.PermissionsV2Url), handler, "/permissions/", func(method string, path string) bool {
 		if method == http.MethodDelete {
 			return false
@@ -86,22 +88,22 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 		}
 		return true
 	})
-	log.Println("add cors")
+	config.GetLogger().Info("add cors")
 	corsHandler := util.NewCors(permForward)
-	log.Println("add logging")
+	config.GetLogger().Info("add logging")
 	logger := accesslog.New(corsHandler)
 	return logger
 }
 
 func GetRouterWithoutMiddleware(config configuration.Config, command Controller) http.Handler {
 	router := http.NewServeMux()
-	log.Println("add heart beat endpoint")
+	config.GetLogger().Info("add heart beat endpoint")
 	router.HandleFunc("GET /{$}", func(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusOK)
 	})
 	for _, e := range endpoints {
 		for name, call := range getEndpointMethods(e) {
-			log.Println("add endpoint " + name)
+			config.GetLogger().Info("add endpoint " + name)
 			call(config, router, command)
 		}
 	}

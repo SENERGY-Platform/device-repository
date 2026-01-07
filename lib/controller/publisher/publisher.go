@@ -18,14 +18,14 @@ package publisher
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/segmentio/kafka-go"
-	"io"
-	"log"
+	"fmt"
+	"log/slog"
 	"net"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/segmentio/kafka-go"
 )
 
 type Publisher struct {
@@ -45,7 +45,7 @@ type Publisher struct {
 
 func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 	if conf.InitTopics {
-		log.Println("ensure kafka topics")
+		conf.GetLogger().Info("ensure kafka topics")
 		err := InitTopic(
 			conf.KafkaUrl,
 			conf.DeviceTypeTopic,
@@ -63,19 +63,18 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 			return nil, err
 		}
 	}
-
-	log.Println("Produce to ", conf.DeviceTypeTopic, conf.ProtocolTopic, conf.DeviceTopic, conf.HubTopic, conf.ConceptTopic, conf.CharacteristicTopic, conf.LocationTopic)
-	devicetypes := getProducer(ctx, conf.KafkaUrl, conf.DeviceTypeTopic, conf.Debug)
-	devicegroups := getProducer(ctx, conf.KafkaUrl, conf.DeviceGroupTopic, conf.Debug)
-	devices := getProducer(ctx, conf.KafkaUrl, conf.DeviceTopic, conf.Debug)
-	hubs := getProducer(ctx, conf.KafkaUrl, conf.HubTopic, conf.Debug)
-	protocol := getProducer(ctx, conf.KafkaUrl, conf.ProtocolTopic, conf.Debug)
-	concepts := getProducer(ctx, conf.KafkaUrl, conf.ConceptTopic, conf.Debug)
-	characteristics := getProducer(ctx, conf.KafkaUrl, conf.CharacteristicTopic, conf.Debug)
-	aspect := getProducer(ctx, conf.KafkaUrl, conf.AspectTopic, conf.Debug)
-	function := getProducer(ctx, conf.KafkaUrl, conf.FunctionTopic, conf.Debug)
-	deviceclass := getProducer(ctx, conf.KafkaUrl, conf.DeviceClassTopic, conf.Debug)
-	location := getProducer(ctx, conf.KafkaUrl, conf.LocationTopic, conf.Debug)
+	conf.GetLogger().Info(fmt.Sprintf("produce to: %#v", []string{conf.DeviceTypeTopic, conf.ProtocolTopic, conf.DeviceTopic, conf.HubTopic, conf.ConceptTopic, conf.CharacteristicTopic, conf.LocationTopic}))
+	devicetypes := getProducer(ctx, conf.KafkaUrl, conf.DeviceTypeTopic, conf.GetLogger())
+	devicegroups := getProducer(ctx, conf.KafkaUrl, conf.DeviceGroupTopic, conf.GetLogger())
+	devices := getProducer(ctx, conf.KafkaUrl, conf.DeviceTopic, conf.GetLogger())
+	hubs := getProducer(ctx, conf.KafkaUrl, conf.HubTopic, conf.GetLogger())
+	protocol := getProducer(ctx, conf.KafkaUrl, conf.ProtocolTopic, conf.GetLogger())
+	concepts := getProducer(ctx, conf.KafkaUrl, conf.ConceptTopic, conf.GetLogger())
+	characteristics := getProducer(ctx, conf.KafkaUrl, conf.CharacteristicTopic, conf.GetLogger())
+	aspect := getProducer(ctx, conf.KafkaUrl, conf.AspectTopic, conf.GetLogger())
+	function := getProducer(ctx, conf.KafkaUrl, conf.FunctionTopic, conf.GetLogger())
+	deviceclass := getProducer(ctx, conf.KafkaUrl, conf.DeviceClassTopic, conf.GetLogger())
+	location := getProducer(ctx, conf.KafkaUrl, conf.LocationTopic, conf.GetLogger())
 	return &Publisher{
 		config:          conf,
 		devicetypes:     devicetypes,
@@ -92,26 +91,23 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 	}, nil
 }
 
-func getProducer(ctx context.Context, broker string, topic string, debug bool) (writer *kafka.Writer) {
-	var logger *log.Logger
-	if debug {
-		logger = log.New(os.Stdout, "[KAFKA-PRODUCER] ", 0)
-	} else {
-		logger = log.New(io.Discard, "", 0)
-	}
+func getProducer(ctx context.Context, broker string, topic string, logger *slog.Logger) (writer *kafka.Writer) {
+	kafkaLogger := slog.NewLogLogger(logger.Handler(), slog.LevelDebug)
+	kafkaLogger.SetPrefix("[KAFKA-PRODUCER] ")
 	writer = &kafka.Writer{
 		Addr:        kafka.TCP(broker),
 		Topic:       topic,
 		MaxAttempts: 10,
-		Logger:      logger,
+		Logger:      kafkaLogger,
 		BatchSize:   1,
 		Balancer:    &KeySeparationBalancer{SubBalancer: &kafka.Hash{}, Seperator: "/"},
+		Compression: kafka.Snappy,
 	}
 	go func() {
 		<-ctx.Done()
 		err := writer.Close()
 		if err != nil {
-			log.Println("ERROR: unable to close producer for", topic, err)
+			logger.Error("ERROR: unable to close producer", "topic", topic, "error", err)
 		}
 	}()
 	return writer

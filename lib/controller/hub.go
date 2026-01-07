@@ -19,16 +19,16 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"log"
 	"net/http"
 	"runtime/debug"
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
 func (this *Controller) ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int) {
@@ -376,7 +376,7 @@ func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub,
 
 	permissions, err, code := this.permissionsV2Client.GetResource(token, this.config.HubTopic, hub.Id)
 	if err != nil && code != http.StatusNotFound {
-		log.Println("ERROR:", err)
+		this.config.GetLogger().Error("unable to get hub permission resource", "error", err, "code", code, "hubId", hub.Id)
 		debug.PrintStack()
 		return hub, err, code
 	}
@@ -504,7 +504,7 @@ func (this *Controller) setHubSyncHandler(hub model.HubWithConnectionState) (err
 
 func (this *Controller) setHub(hub model.HubWithConnectionState) (err error) {
 	if hub.Id == "" {
-		log.Println("ERROR: received hub without id")
+		this.config.GetLogger().Error("received hub without id")
 		return nil
 	}
 	ctx, _ := getTimeoutContext()

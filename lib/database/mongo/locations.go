@@ -19,15 +19,16 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var LocationBson = getBsonFieldObject[models.Location]()
@@ -87,12 +88,12 @@ func (this *Mongo) SetLocation(ctx context.Context, location models.Location, sy
 	}
 	err = syncHandler(location, user)
 	if err != nil {
-		log.Printf("WARNING: error in SetLocation::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetLocation::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, LocationBson.Id, location.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetLocation::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetLocation::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -113,12 +114,12 @@ func (this *Mongo) RemoveLocation(ctx context.Context, id string, syncDeleteHand
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveLocation::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveLocation::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{LocationBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveLocation::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveLocation::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -134,25 +135,25 @@ func (this *Mongo) RetryLocationSync(lockduration time.Duration, syncDeleteHandl
 		if job.SyncDelete {
 			err = syncDeleteHandler(job.Location)
 			if err != nil {
-				log.Printf("WARNING: error in RetryLocationSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryLocationSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{LocationBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryLocationSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryLocationSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			err = syncHandler(job.Location, job.SyncUser)
 			if err != nil {
-				log.Printf("WARNING: error in RetryLocationSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryLocationSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			err = this.setSynced(ctx, collection, LocationBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryLocationSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryLocationSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

@@ -18,15 +18,15 @@ package lib
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/api"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"log"
-	"sync"
-	"time"
 )
 
 // set wg if you want to wait for clean disconnects after ctx is done
@@ -39,7 +39,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 	}()
 	db, err := database.New(conf)
 	if err != nil {
-		log.Println("ERROR: unable to connect to database", err)
+		conf.GetLogger().Error("unable to connect to database", "error", err)
 		return err
 	}
 	if wg != nil {
@@ -59,21 +59,21 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 	if conf.KafkaUrl == "" || conf.KafkaUrl == "-" {
 		publisher.VoidPublisherError = nil
 		p = publisher.Void{}
-		log.Println("WARNING: kafka not configured, no publishing of events")
+		conf.GetLogger().Warn("kafka not configured, no publishing of events")
 	} else {
 		p, err = publisher.New(conf, ctx)
 	}
 
 	if err != nil {
 		db.Disconnect()
-		log.Println("ERROR: unable to start control", err)
+		conf.GetLogger().Error("unable to start control", "error", err)
 		return err
 	}
 
 	ctrl, err := controller.New(conf, db, p, permClient)
 	if err != nil {
 		db.Disconnect()
-		log.Println("ERROR: unable to start control", err)
+		conf.GetLogger().Error("unable to start control", "error", err)
 		return err
 	}
 
@@ -81,7 +81,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 		err = db.RunStartupMigrations(ctrl)
 		if err != nil {
 			db.Disconnect()
-			log.Println("ERROR: RunStartupMigrations()", err)
+			conf.GetLogger().Error("unable to run startup migrations", "error", err)
 			return err
 		}
 	}
@@ -99,7 +99,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 
 	err = api.Start(ctx, conf, ctrl)
 	if err != nil {
-		log.Println("ERROR: unable to start api", err)
+		conf.GetLogger().Error("unable to start api", "error", err)
 		return err
 	}
 

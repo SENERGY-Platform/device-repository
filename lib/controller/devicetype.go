@@ -20,17 +20,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"log"
 	"net/http"
 	"runtime/debug"
 	"slices"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
 func (this *Controller) ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int) {
@@ -357,11 +357,11 @@ func (this *Controller) getAspectNodeForDeviceTypeSelectables(aspectCache *map[s
 		ctx, _ := getTimeoutContext()
 		aspectNode, ok, err = this.db.GetAspectNode(ctx, aspectId)
 		if err != nil {
-			log.Println("WARNING: unable to load aspect node", aspectId, err)
+			this.config.GetLogger().Warn("unable to load aspect node", "aspectId", aspectId, "error", err)
 			return aspectNode, err
 		}
 		if !ok {
-			log.Println("WARNING: unknown aspect node", aspectId)
+			this.config.GetLogger().Warn("unknown aspect node", "aspectId", aspectId)
 			return aspectNode, err
 		}
 		(*aspectCache)[aspectId] = aspectNode

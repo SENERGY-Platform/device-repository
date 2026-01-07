@@ -20,15 +20,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"log"
 	"net/http"
 	"runtime/debug"
 	"slices"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
 const FilterDevicesOfGroupByAccess = true
@@ -140,8 +140,8 @@ func (this *Controller) FilterDevicesOfGroupByAccess(token string, group models.
 	for _, id := range group.DeviceIds {
 		if access[id] {
 			result.DeviceIds = append(result.DeviceIds, id)
-		} else if this.config.Debug {
-			log.Println("DEBUG: filtered " + id + " from result, because user lost execution access to the device")
+		} else {
+			this.config.GetLogger().Debug("filtered " + id + " from result, because user lost execution access to the device")
 		}
 	}
 	return result, nil, http.StatusOK
@@ -456,7 +456,7 @@ func (this *Controller) filterInvalidDeviceIds(token string, ids []string, right
 		if deviceIsAccessible[id] {
 			result = append(result, id)
 		} else {
-			log.Println("WARNING: remove device from device-group because its inaccessible", id)
+			this.config.GetLogger().Warn("remove device from device-group because its inaccessible", "id", id)
 		}
 	}
 	return result, nil
@@ -555,7 +555,7 @@ func (this *Controller) UpdateDeviceGroupCriteria(dg models.DeviceGroup) (err er
 		return err
 	}
 	if !exists {
-		log.Println("WARNING: tried to update unknown device-group criteria")
+		this.config.GetLogger().Warn("tried to update unknown device-group criteria")
 		return nil
 	}
 	dg.Criteria, err, _ = this.GetDeviceGroupCriteria(dg.DeviceIds)

@@ -19,13 +19,14 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"strings"
-	"time"
 )
 
 var ProtocolBson = getBsonFieldObject[models.Protocol]()
@@ -125,12 +126,12 @@ func (this *Mongo) SetProtocol(ctx context.Context, protocol models.Protocol, sy
 	}
 	err = syncHandler(protocol)
 	if err != nil {
-		log.Printf("WARNING: error in SetProtocol::syncHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetProtocol::syncHandler %v, will be retried later\n", err))
 		return nil
 	}
 	err = this.setSynced(ctx, collection, ProtocolBson.Id, protocol.Id, timestamp)
 	if err != nil {
-		log.Printf("WARNING: error in SetProtocol::setSynced %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in SetProtocol::setSynced %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -151,12 +152,12 @@ func (this *Mongo) RemoveProtocol(ctx context.Context, id string, syncDeleteHand
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
-		log.Printf("WARNING: error in RemoveProtocol::syncDeleteHandler %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveProtocol::syncDeleteHandler %v, will be retried later\n", err))
 		return nil
 	}
 	_, err = collection.DeleteOne(ctx, bson.M{ProtocolBson.Id: id})
 	if err != nil {
-		log.Printf("WARNING: error in RemoveProtocol::DeleteOne %v, will be retried later\n", err)
+		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveProtocol::DeleteOne %v, will be retried later\n", err))
 		return nil
 	}
 	return nil
@@ -172,25 +173,25 @@ func (this *Mongo) RetryProtocolSync(lockduration time.Duration, syncDeleteHandl
 		if job.SyncDelete {
 			err = syncDeleteHandler(job.Protocol)
 			if err != nil {
-				log.Printf("WARNING: error in RetryProtocolSync::syncDeleteHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{ProtocolBson.Id: job.Id})
 			if err != nil {
-				log.Printf("WARNING: error in RetryProtocolSync::DeleteOne %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::DeleteOne %v, will be retried later\n", err))
 				continue
 			}
 		} else if job.SyncTodo {
 			err = syncHandler(job.Protocol)
 			if err != nil {
-				log.Printf("WARNING: error in RetryProtocolSync::syncHandler %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::syncHandler %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
 			err = this.setSynced(ctx, collection, ProtocolBson.Id, job.Id, job.SyncUnixTimestamp)
 			if err != nil {
-				log.Printf("WARNING: error in RetryProtocolSync::setSynced %v, will be retried later\n", err)
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::setSynced %v, will be retried later\n", err))
 				continue
 			}
 		}

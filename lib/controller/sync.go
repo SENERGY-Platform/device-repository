@@ -19,9 +19,9 @@ package controller
 import (
 	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"log"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 )
 
 func (this *Controller) StartSyncLoop(ctx context.Context, interval time.Duration, lockduration time.Duration) {
@@ -33,7 +33,7 @@ func (this *Controller) StartSyncLoop(ctx context.Context, interval time.Duratio
 			case <-ticker.C:
 				err := this.Sync(lockduration)
 				if err != nil {
-					log.Printf("ERROR: while db sync run: %v", err)
+					this.config.GetLogger().Error("error while db sync run", "error", err)
 				}
 			case <-ctx.Done():
 				return

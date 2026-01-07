@@ -19,11 +19,11 @@ package publisher
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"runtime/debug"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/segmentio/kafka-go"
 )
 
 type AspectCommand struct {
@@ -46,9 +46,7 @@ func (this *Publisher) PublishAspectDelete(id string) error {
 }
 
 func (this *Publisher) PublishAspectCommand(cmd AspectCommand) error {
-	if this.config.Debug {
-		log.Println("DEBUG: produce aspect", cmd)
-	}
+	this.config.GetLogger().Debug("publish aspect command", "command", cmd)
 	message, err := json.Marshal(cmd)
 	if err != nil {
 		debug.PrintStack()

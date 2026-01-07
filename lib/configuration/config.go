@@ -20,13 +20,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"reflect"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
+
+	struct_logger "github.com/SENERGY-Platform/go-service-base/struct-logger"
 )
 
 type Config struct {
@@ -86,6 +90,9 @@ type Config struct {
 	ApiDocsProviderBaseUrl string `json:"api_docs_provider_base_url"`
 
 	InitTopics bool `json:"init_topics"`
+
+	LogLevel string       `json:"log_level"`
+	logger   *slog.Logger `json:"-"`
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
@@ -174,4 +181,34 @@ func setDefaultHttpClient(config Config) {
 	if err != nil {
 		log.Println("WARNING: invalid http timeout --> no timeouts\n", err)
 	}
+}
+
+func (this *Config) GetLogger() *slog.Logger {
+	if this.logger == nil {
+		if this.Debug {
+			this.LogLevel = "debug"
+		}
+		info, ok := debug.ReadBuildInfo()
+		project := ""
+		org := ""
+		if ok {
+			if parts := strings.Split(info.Main.Path, "/"); len(parts) > 2 {
+				project = strings.Join(parts[2:], "/")
+				org = strings.Join(parts[:2], "/")
+			}
+		}
+		this.logger = struct_logger.New(
+			struct_logger.Config{
+				Handler:    struct_logger.JsonHandlerSelector,
+				Level:      this.LogLevel,
+				TimeFormat: time.RFC3339Nano,
+				TimeUtc:    true,
+				AddMeta:    true,
+			},
+			os.Stdout,
+			org,
+			project,
+		)
+	}
+	return this.logger
 }

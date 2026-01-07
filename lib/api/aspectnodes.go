@@ -21,13 +21,13 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func init() {
@@ -72,7 +72,7 @@ func (this *AspectNodeEndpoints) Query(config configuration.Config, router *http
 			writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			err = json.NewEncoder(writer).Encode(result)
 			if err != nil {
-				log.Println("ERROR: unable to encode response", err)
+				config.GetLogger().Info("unable to encode response", "error", err.Error())
 			}
 			return
 		}
@@ -149,7 +149,7 @@ func (this *AspectEndpoints) ListAspectNodes(config configuration.Config, router
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -217,7 +217,7 @@ func (this *AspectNodeEndpoints) List(config configuration.Config, router *http.
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -248,7 +248,7 @@ func (this *AspectNodeEndpoints) Get(config configuration.Config, router *http.S
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})
@@ -300,7 +300,7 @@ func (this *AspectNodeEndpoints) ListMeasuringFunctions(config configuration.Con
 		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 		err = json.NewEncoder(writer).Encode(result)
 		if err != nil {
-			log.Println("ERROR: unable to encode response", err)
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
 		}
 		return
 	})

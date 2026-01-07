@@ -19,11 +19,11 @@ package publisher
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/segmentio/kafka-go"
-	"log"
 	"runtime/debug"
 	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/segmentio/kafka-go"
 )
 
 type HubCommand struct {
@@ -46,14 +46,11 @@ func (this *Publisher) PublishHubDelete(id string) error {
 }
 
 func (this *Publisher) PublishHubCommand(cmd HubCommand) error {
-
+	this.config.GetLogger().Debug("publish hub command", "command", cmd)
 	message, err := json.Marshal(cmd)
 	if err != nil {
 		debug.PrintStack()
 		return err
-	}
-	if this.config.Debug {
-		log.Printf("DEBUG: produce hub %v\n", string(message))
 	}
 	err = this.hubs.WriteMessages(
 		context.Background(),
