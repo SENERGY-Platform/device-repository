@@ -1,6 +1,6 @@
 module github.com/SENERGY-Platform/device-repository
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/segmentio/kafka-go v0.4.49
@@ -9,16 +9,15 @@ require (
 
 require (
 	github.com/SENERGY-Platform/api-docs-provider/lib/client v0.0.3
-	github.com/SENERGY-Platform/go-service-base/struct-logger v0.4.1
+	github.com/SENERGY-Platform/go-service-base/struct-logger v0.6.0
 	github.com/SENERGY-Platform/models/go v0.0.0-20251202070403-e7e5579f7111
-	github.com/SENERGY-Platform/permissions-v2 v0.0.38
-	github.com/SENERGY-Platform/service-commons v0.0.0-20251120132821-0c66860f211e
+	github.com/SENERGY-Platform/permissions-v2 v0.0.40
+	github.com/SENERGY-Platform/service-commons v0.0.0-20260106114257-16bca4ba28e7
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.4
 	github.com/testcontainers/testcontainers-go v0.40.0
-	github.com/testcontainers/testcontainers-go/modules/kafka v0.40.0
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 )
 
@@ -56,7 +55,6 @@ require (
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -81,7 +79,7 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
-	github.com/pierrec/lz4/v4 v4.1.22 // indirect
+	github.com/pierrec/lz4/v4 v4.1.23 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
@@ -106,7 +104,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.28.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	golang.org/x/crypto v0.43.0 // indirect
-	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/net v0.45.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
