@@ -656,6 +656,13 @@ func (this *Controller) DeleteDeviceType(token string, id string) (err error, co
 		return errors.New("only admins may delete device-types"), http.StatusForbidden
 	}
 	ctx, _ := getTimeoutContext()
+	_, total, err := this.db.ListDevices(ctx, model.DeviceListOptions{DeviceTypeIds: []string{id}, Limit: 1}, true)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if total > 0 {
+		return errors.New("device-type is still in use"), http.StatusBadRequest
+	}
 	err = this.db.RemoveDeviceType(ctx, id, this.deleteDeviceTypeSyncHandler)
 	if err != nil {
 		return err, http.StatusInternalServerError
