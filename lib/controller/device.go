@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -146,6 +147,11 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 	index := 0
 	for _, device := range devices {
 		for _, id := range pureIdToRawIds[device.Id] {
+			var clone model.DeviceWithConnectionState
+			err = cloneDeviceWithConnectionState(&device, &clone)
+			if err != nil {
+				return result, total, err, http.StatusInternalServerError
+			}
 			wg.Add(1)
 			go func(d model.DeviceWithConnectionState, rawId string, resultIndex int) {
 				defer wg.Done()
@@ -173,7 +179,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 				mux.Lock()
 				defer mux.Unlock()
 				result[resultIndex] = extendedDevice
-			}(device, id, index)
+			}(clone, id, index)
 			index = index + 1
 		}
 	}
@@ -871,4 +877,12 @@ func (this *Controller) SetDeviceConnectionState(token string, id string, connec
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
+}
+
+func cloneDeviceWithConnectionState(src, dst *model.DeviceWithConnectionState) error {
+	bytes, err := json.Marshal(src)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bytes, dst)
 }
