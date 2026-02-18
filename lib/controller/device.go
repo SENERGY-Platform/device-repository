@@ -486,7 +486,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 	}
 	if exists {
 		if original.DeviceTypeId != device.DeviceTypeId {
-			return errors.New("device type id mismatch"), http.StatusBadRequest
+			return errors.New("device.device_type_id may not be updated"), http.StatusBadRequest
 		}
 		if device.OwnerId != original.OwnerId {
 			resource, err, code := this.permissionsV2Client.GetResource(token, this.config.DeviceTopic, device.Id)
