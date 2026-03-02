@@ -774,7 +774,7 @@ func (this *Controller) deleteDeviceSyncHandler(old model.DeviceWithConnectionSt
 	if err != nil {
 		return err
 	}
-	err = this.publisher.PublishDeviceDelete(old.Id)
+	err = this.publisher.PublishDeviceDelete(old.Device)
 	if err != nil {
 		return err
 	}

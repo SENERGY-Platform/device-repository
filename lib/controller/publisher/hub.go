@@ -40,8 +40,8 @@ func (this *Publisher) PublishHub(hub models.Hub) (err error) {
 	return this.PublishHubCommand(cmd)
 }
 
-func (this *Publisher) PublishHubDelete(id string) error {
-	cmd := HubCommand{Command: "DELETE", Id: id}
+func (this *Publisher) PublishHubDelete(hub models.Hub) error {
+	cmd := HubCommand{Command: "DELETE", Id: hub.Id, Hub: hub}
 	return this.PublishHubCommand(cmd)
 }
 

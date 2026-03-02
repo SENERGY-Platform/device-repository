@@ -543,7 +543,7 @@ func (this *Controller) deleteHubSyncHandler(hub model.HubWithConnectionState) (
 	if err != nil {
 		return err
 	}
-	return this.publisher.PublishHubDelete(hub.Id)
+	return this.publisher.PublishHubDelete(hub.Hub)
 }
 
 func (this *Controller) deleteHub(id string) (err error) {

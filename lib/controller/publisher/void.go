@@ -28,7 +28,7 @@ func (this Void) PublishDevice(device models.Device) (err error) {
 	return VoidPublisherError
 }
 
-func (this Void) PublishDeviceDelete(id string) error {
+func (this Void) PublishDeviceDelete(device models.Device) error {
 	return VoidPublisherError
 }
 
@@ -60,7 +60,7 @@ func (this Void) PublishHub(hub models.Hub) (err error) {
 	return VoidPublisherError
 }
 
-func (this Void) PublishHubDelete(id string) error {
+func (this Void) PublishHubDelete(hub models.Hub) error {
 	return VoidPublisherError
 }
 

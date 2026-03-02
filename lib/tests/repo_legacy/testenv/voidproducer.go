@@ -28,7 +28,7 @@ func (v VoidProducerMock) PublishDevice(device models.Device) (err error) {
 	return nil
 }
 
-func (v VoidProducerMock) PublishDeviceDelete(id string) error {
+func (v VoidProducerMock) PublishDeviceDelete(device models.Device) error {
 	return nil
 }
 
@@ -60,7 +60,7 @@ func (v VoidProducerMock) PublishHub(hub models.Hub) (err error) {
 	return nil
 }
 
-func (v VoidProducerMock) PublishHubDelete(id string) error {
+func (v VoidProducerMock) PublishHubDelete(hub models.Hub) error {
 	return nil
 }
 

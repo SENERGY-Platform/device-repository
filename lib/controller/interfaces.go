@@ -20,7 +20,7 @@ import "github.com/SENERGY-Platform/models/go/models"
 
 type Publisher interface {
 	PublishDevice(device models.Device) (err error)
-	PublishDeviceDelete(id string) error
+	PublishDeviceDelete(device models.Device) error
 
 	PublishDeviceType(device models.DeviceType) (err error)
 	PublishDeviceTypeDelete(id string) error
@@ -32,7 +32,7 @@ type Publisher interface {
 	PublishProtocolDelete(id string) error
 
 	PublishHub(hub models.Hub) (err error)
-	PublishHubDelete(id string) error
+	PublishHubDelete(hub models.Hub) error
 
 	PublishConcept(concept models.Concept) (err error)
 	PublishConceptDelete(id string) error

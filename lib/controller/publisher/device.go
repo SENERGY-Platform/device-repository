@@ -40,8 +40,8 @@ func (this *Publisher) PublishDevice(device models.Device) (err error) {
 	return this.PublishDeviceCommand(cmd)
 }
 
-func (this *Publisher) PublishDeviceDelete(id string) error {
-	cmd := DeviceCommand{Command: "DELETE", Id: id}
+func (this *Publisher) PublishDeviceDelete(device models.Device) error {
+	cmd := DeviceCommand{Command: "DELETE", Id: device.Id, Device: device}
 	return this.PublishDeviceCommand(cmd)
 }
 
