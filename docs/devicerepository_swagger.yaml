@@ -161,9 +161,11 @@ definitions:
         type: array
       limit:
         description: default 100, will be ignored if 'ids' is set (Ids != nil)
+        format: int64
         type: integer
       offset:
         description: default 0, will be ignored if 'ids' is set (Ids != nil)
+        format: int64
         type: integer
       rdfType:
         description: model.SES_ONTOLOGY_CONTROLLING_FUNCTION || model.SES_ONTOLOGY_MEASURING_FUNCTION
@@ -591,6 +593,10 @@ definitions:
     type: object
   models.ExtendedHub:
     properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
       connection_state:
         type: string
       device_ids:
@@ -657,6 +663,10 @@ definitions:
     type: object
   models.Hub:
     properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
       device_ids:
         items:
           type: string
@@ -3454,6 +3464,11 @@ paths:
           hub does not exist
         in: query
         name: user_id
+        type: string
+      - description: comma separated list; ensure that no attribute from another origin
+          is overwritten
+        in: query
+        name: update-only-same-origin-attributes
         type: string
       - description: element
         in: body

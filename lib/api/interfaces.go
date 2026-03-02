@@ -38,7 +38,7 @@ type Controller interface {
 	ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int)
 	ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int)
 	ValidateHub(token string, hub models.Hub) (err error, code int)
-	SetHub(token string, hub models.Hub) (result models.Hub, err error, errCode int)
+	SetHub(token string, hub models.Hub, options model.HubUpdateOptions) (result models.Hub, err error, errCode int)
 	DeleteHub(token string, id string) (err error, code int)
 
 	ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, total int64, err error, errCode int)

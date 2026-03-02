@@ -21,15 +21,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 var hub1id = "urn:infai:ses:device:1"
@@ -96,7 +98,7 @@ func TestHubs(t *testing.T) {
 		OwnerId:        userid,
 	}
 
-	_, err, _ = c.SetHub(userjwt, h1)
+	_, err, _ = c.SetHub(userjwt, h1, model.HubUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return

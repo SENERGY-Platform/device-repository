@@ -168,3 +168,7 @@ type DeviceUpdateOptions struct {
 type DeviceTypeUpdateOptions struct {
 	DistinctAttributes []string
 }
+
+type HubUpdateOptions struct {
+	UpdateOnlySameOriginAttributes []string
+}

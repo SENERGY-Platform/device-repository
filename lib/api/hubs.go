@@ -327,7 +327,7 @@ func (this *HubEndpoints) Create(config configuration.Config, router *http.Serve
 			return
 		}
 
-		result, err, errCode := control.SetHub(token, hub)
+		result, err, errCode := control.SetHub(token, hub, model.HubUpdateOptions{})
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -349,6 +349,7 @@ func (this *HubEndpoints) Create(config configuration.Config, router *http.Serve
 // @Security Bearer
 // @Param        id path string true "Hub Id"
 // @Param        user_id query string false "only admins may set user_id; overwrites hub.OwnerId; defaults to existing hub.OwnerId and falls back to user-id of requesting user if hub does not exist"
+// @Param        update-only-same-origin-attributes query string false "comma separated list; ensure that no attribute from another origin is overwritten"
 // @Param        message body models.Hub true "element"
 // @Success      200 {object}  models.Hub
 // @Failure      400
@@ -372,6 +373,12 @@ func (this *HubEndpoints) Set(config configuration.Config, router *http.ServeMux
 			return
 		}
 
+		options := model.HubUpdateOptions{}
+		if request.URL.Query().Has(UpdateOnlySameOriginAttributesKey) {
+			temp := request.URL.Query().Get(UpdateOnlySameOriginAttributesKey)
+			options.UpdateOnlySameOriginAttributes = strings.Split(temp, ",")
+		}
+
 		token := util.GetAuthToken(request)
 		jwtToken, err := jwt.Parse(token)
 		if err != nil {
@@ -387,7 +394,7 @@ func (this *HubEndpoints) Set(config configuration.Config, router *http.ServeMux
 			hub.OwnerId = userId
 		}
 
-		result, err, errCode := control.SetHub(token, hub)
+		result, err, errCode := control.SetHub(token, hub, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -433,7 +440,7 @@ func (this *HubEndpoints) SetName(config configuration.Config, router *http.Serv
 		}
 		hub.Name = name
 
-		result, err, errCode := control.SetHub(token, hub)
+		result, err, errCode := control.SetHub(token, hub, model.HubUpdateOptions{})
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

@@ -27,6 +27,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib"
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 )
@@ -124,7 +125,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 			Hash:           "foo",
 			DeviceLocalIds: deviceIds[1:],
 			DeviceIds:      deviceIds[1:],
-		})
+		}, model.HubUpdateOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -135,7 +136,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 			Hash:           "bar",
 			DeviceLocalIds: []string{deviceIds[0]},
 			DeviceIds:      []string{deviceIds[0]},
-		})
+		}, model.HubUpdateOptions{})
 		if err != nil {
 			t.Error(err)
 			return

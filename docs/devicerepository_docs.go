@@ -21,11 +21,6 @@ const docTemplatedevicerepository = `{
     "paths": {
         "/aspect-nodes": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "deprecated list aspect-nodes; use GET /v2/aspect-nodes",
                 "produces": [
                     "application/json"
@@ -80,16 +75,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/aspect-nodes/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/aspect-nodes/{id}": {
+            "get": {
                 "description": "get aspect-node",
                 "produces": [
                     "application/json"
@@ -129,16 +124,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/aspect-nodes/{id}/measuring-functions": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/aspect-nodes/{id}/measuring-functions": {
+            "get": {
                 "description": "list measuring-functions used in combination with this aspect-node",
                 "produces": [
                     "application/json"
@@ -193,16 +188,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/aspects": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/aspects": {
+            "get": {
                 "description": "deprecated list aspects; use GET /v2/aspects",
                 "produces": [
                     "application/json"
@@ -257,14 +252,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate aspect",
                 "consumes": [
                     "application/json"
@@ -301,14 +296,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create aspect with generated id",
                 "produces": [
                     "application/json"
@@ -356,16 +351,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/aspects/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/aspects/{id}": {
+            "get": {
                 "description": "get aspect",
                 "produces": [
                     "application/json"
@@ -405,14 +400,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set aspect",
                 "produces": [
                     "application/json"
@@ -461,14 +456,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete aspect; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
                     "aspects"
@@ -499,16 +494,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/aspects/{id}/measuring-functions": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/aspects/{id}/measuring-functions": {
+            "get": {
                 "description": "list measuring-functions used in combination with this aspect",
                 "produces": [
                     "application/json"
@@ -563,16 +558,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/characteristics": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/characteristics": {
+            "get": {
                 "description": "list characteristics",
                 "produces": [
                     "application/json"
@@ -614,14 +609,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate characteristic",
                 "consumes": [
                     "application/json"
@@ -657,14 +652,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create characteristic",
                 "produces": [
                     "application/json"
@@ -706,16 +701,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/characteristics/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/characteristics/{id}": {
+            "get": {
                 "description": "get characteristic",
                 "produces": [
                     "application/json"
@@ -755,14 +750,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set characteristic",
                 "produces": [
                     "application/json"
@@ -811,14 +806,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete characteristic; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
                     "characteristics"
@@ -849,16 +844,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/concepts": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/concepts": {
+            "put": {
                 "description": "validate concept",
                 "consumes": [
                     "application/json"
@@ -895,14 +890,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create concept",
                 "produces": [
                     "application/json"
@@ -944,16 +939,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/concepts/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/concepts/{id}": {
+            "get": {
                 "description": "get concept",
                 "produces": [
                     "application/json"
@@ -999,14 +994,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set concept",
                 "produces": [
                     "application/json"
@@ -1055,14 +1050,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete concept; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
                     "concepts"
@@ -1093,16 +1088,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/controlling-functions": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/controlling-functions": {
+            "get": {
                 "description": "list controlling-functions",
                 "produces": [
                     "application/json"
@@ -1136,16 +1131,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/defaults/devices/attributes": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/defaults/devices/attributes": {
+            "get": {
                 "description": "get default attributes for devices where the owner is the requesting user",
                 "produces": [
                     "application/json"
@@ -1179,14 +1174,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set default attributes for devices where the owner is the requesting user",
                 "consumes": [
                     "application/json"
@@ -1228,16 +1223,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-classes": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-classes": {
+            "get": {
                 "description": "deprecated list device-classes; use GET /v2/device-classes",
                 "produces": [
                     "application/json"
@@ -1280,14 +1275,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate device-class",
                 "consumes": [
                     "application/json"
@@ -1324,14 +1319,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create device-class",
                 "produces": [
                     "application/json"
@@ -1373,16 +1368,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-classes/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-classes/{id}": {
+            "get": {
                 "description": "get device-class",
                 "produces": [
                     "application/json"
@@ -1422,14 +1417,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set device-class",
                 "produces": [
                     "application/json"
@@ -1478,14 +1473,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete device-class; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
                     "device-classes"
@@ -1516,16 +1511,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-classes/{id}/controlling-functions": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-classes/{id}/controlling-functions": {
+            "get": {
                 "description": "list controlling-functions used in combination with this device-class",
                 "produces": [
                     "application/json"
@@ -1568,16 +1563,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-classes/{id}/functions": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-classes/{id}/functions": {
+            "get": {
                 "description": "list functions used in combination with this device-class",
                 "produces": [
                     "application/json"
@@ -1620,16 +1615,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-groups": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-groups": {
+            "get": {
                 "description": "list device-group",
                 "produces": [
                     "application/json"
@@ -1743,14 +1738,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate device-group",
                 "consumes": [
                     "application/json"
@@ -1787,14 +1782,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create device-group",
                 "produces": [
                     "application/json"
@@ -1836,16 +1831,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-groups/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-groups/{id}": {
+            "get": {
                 "description": "get device-group",
                 "produces": [
                     "application/json"
@@ -1891,14 +1886,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set device-group",
                 "produces": [
                     "application/json"
@@ -1947,14 +1942,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete device-group; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
                     "device-groups"
@@ -1985,16 +1980,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-types": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-types": {
+            "put": {
                 "description": "validate device-type",
                 "consumes": [
                     "application/json"
@@ -2031,14 +2026,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create device-type",
                 "produces": [
                     "application/json"
@@ -2086,16 +2081,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/device-types/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/device-types/{id}": {
+            "get": {
                 "description": "get device-type",
                 "produces": [
                     "application/json"
@@ -2135,14 +2130,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set device-type",
                 "produces": [
                     "application/json"
@@ -2197,14 +2192,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete device-type",
                 "produces": [
                     "application/json"
@@ -2241,16 +2236,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/devices": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/devices": {
+            "get": {
                 "description": "list devices",
                 "produces": [
                     "application/json"
@@ -2364,14 +2359,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate device",
                 "consumes": [
                     "application/json"
@@ -2408,14 +2403,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create device",
                 "produces": [
                     "application/json"
@@ -2457,14 +2452,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete multiple devices",
                 "produces": [
                     "application/json"
@@ -2506,16 +2501,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/devices/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/devices/{id}": {
+            "get": {
                 "description": "get device",
                 "produces": [
                     "application/json"
@@ -2573,14 +2568,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set device; admins may create new devices but only without using the UpdateOnlySameOriginAttributesKey query parameter",
                 "produces": [
                     "application/json"
@@ -2635,14 +2630,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete device",
                 "produces": [
                     "application/json"
@@ -2679,16 +2674,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/devices/{id}/attributes": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/devices/{id}/attributes": {
+            "put": {
                 "description": "set device attributes",
                 "produces": [
                     "application/json"
@@ -2746,16 +2741,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/devices/{id}/connection-state": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/devices/{id}/connection-state": {
+            "put": {
                 "description": "set device connection-state",
                 "tags": [
                     "devices"
@@ -2791,16 +2786,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/devices/{id}/display_name": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/devices/{id}/display_name": {
+            "put": {
                 "description": "set device display name",
                 "produces": [
                     "application/json"
@@ -2849,16 +2844,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/export": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/export": {
+            "get": {
                 "description": "export",
                 "produces": [
                     "application/json"
@@ -2909,16 +2904,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/extended-devices": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/extended-devices": {
+            "get": {
                 "description": "list extended-device",
                 "produces": [
                     "application/json"
@@ -3044,16 +3039,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/extended-devices/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/extended-devices/{id}": {
+            "get": {
                 "description": "get extended-device",
                 "produces": [
                     "application/json"
@@ -3117,16 +3112,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/extended-hubs": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/extended-hubs": {
+            "get": {
                 "description": "list extended-hubs",
                 "produces": [
                     "application/json"
@@ -3210,16 +3205,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/extended-hubs/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/extended-hubs/{id}": {
+            "get": {
                 "description": "get extended-hubs",
                 "produces": [
                     "application/json"
@@ -3265,16 +3260,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/extended-locations": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/extended-locations": {
+            "get": {
                 "description": "list extended locations",
                 "produces": [
                     "application/json"
@@ -3352,16 +3347,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/functions": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/functions": {
+            "get": {
                 "description": "list functions",
                 "produces": [
                     "application/json"
@@ -3439,14 +3434,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate location",
                 "consumes": [
                     "application/json"
@@ -3483,14 +3478,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create function",
                 "produces": [
                     "application/json"
@@ -3532,16 +3527,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/functions/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/functions/{id}": {
+            "get": {
                 "description": "get function",
                 "produces": [
                     "application/json"
@@ -3581,14 +3576,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set function",
                 "produces": [
                     "application/json"
@@ -3637,14 +3632,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete function; may only be called by admins; can also be used to only validate deletes",
                 "tags": [
                     "functions"
@@ -3675,16 +3670,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/helper/id": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/helper/id": {
+            "get": {
                 "description": "transforms short id to long id",
                 "produces": [
                     "application/json"
@@ -3719,16 +3714,16 @@ const docTemplatedevicerepository = `{
                     "400": {
                         "description": "Bad Request"
                     }
-                }
-            }
-        },
-        "/hubs": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/hubs": {
+            "get": {
                 "description": "list hubs",
                 "produces": [
                     "application/json"
@@ -3806,14 +3801,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate hub",
                 "consumes": [
                     "application/json"
@@ -3850,14 +3845,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create hub",
                 "produces": [
                     "application/json"
@@ -3899,16 +3894,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/hubs/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/hubs/{id}": {
+            "get": {
                 "description": "get hub",
                 "produces": [
                     "application/json"
@@ -3954,14 +3949,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set hub",
                 "produces": [
                     "application/json"
@@ -3982,6 +3977,12 @@ const docTemplatedevicerepository = `{
                         "type": "string",
                         "description": "only admins may set user_id; overwrites hub.OwnerId; defaults to existing hub.OwnerId and falls back to user-id of requesting user if hub does not exist",
                         "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "comma separated list; ensure that no attribute from another origin is overwritten",
+                        "name": "update-only-same-origin-attributes",
                         "in": "query"
                     },
                     {
@@ -4016,14 +4017,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete hub",
                 "produces": [
                     "application/json"
@@ -4060,14 +4061,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "head": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "head": {
                 "description": "head hub",
                 "tags": [
                     "hubs"
@@ -4107,16 +4108,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/hubs/{id}/connection-state": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/hubs/{id}/connection-state": {
+            "put": {
                 "description": "set hub connection-state",
                 "tags": [
                     "hubs"
@@ -4152,16 +4153,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/hubs/{id}/devices": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/hubs/{id}/devices": {
+            "get": {
                 "description": "get device ids of hub",
                 "produces": [
                     "application/json"
@@ -4216,16 +4217,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/hubs/{id}/name": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/hubs/{id}/name": {
+            "put": {
                 "description": "set hub name",
                 "produces": [
                     "application/json"
@@ -4274,16 +4275,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/import": {
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/import": {
+            "put": {
                 "description": "import",
                 "tags": [
                     "import/export"
@@ -4322,16 +4323,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/import-from": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/import-from": {
+            "post": {
                 "description": "import-from",
                 "tags": [
                     "import/export"
@@ -4370,16 +4371,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/invalid/device-type": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/invalid/device-type": {
+            "get": {
                 "description": "validate existing device-types",
                 "produces": [
                     "application/json"
@@ -4438,16 +4439,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/local-devices/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/local-devices/{id}": {
+            "get": {
                 "description": "get device by local id",
                 "produces": [
                     "application/json"
@@ -4493,14 +4494,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set device (local-id variant)",
                 "produces": [
                     "application/json"
@@ -4555,14 +4556,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create device (local-id variant)",
                 "produces": [
                     "application/json"
@@ -4604,14 +4605,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete device (local-id variant)",
                 "produces": [
                     "application/json"
@@ -4654,16 +4655,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/locations": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/locations": {
+            "get": {
                 "description": "list location",
                 "produces": [
                     "application/json"
@@ -4741,14 +4742,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create location",
                 "produces": [
                     "application/json"
@@ -4797,16 +4798,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/locations/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/locations/{id}": {
+            "get": {
                 "description": "get location",
                 "produces": [
                     "application/json"
@@ -4846,14 +4847,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set location",
                 "produces": [
                     "application/json"
@@ -4902,14 +4903,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete location",
                 "produces": [
                     "application/json"
@@ -4946,16 +4947,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/measuring-functions": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/measuring-functions": {
+            "get": {
                 "description": "list measuring-functions",
                 "produces": [
                     "application/json"
@@ -4989,16 +4990,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/accessible/device-groups": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "list accessible resource ids",
                 "produces": [
                     "application/json"
@@ -5046,16 +5047,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/accessible/devices": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "list accessible resource ids",
                 "produces": [
                     "application/json"
@@ -5103,16 +5104,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/accessible/hubs": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "list accessible resource ids",
                 "produces": [
                     "application/json"
@@ -5160,16 +5161,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/accessible/locations": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "list accessible resource ids",
                 "produces": [
                     "application/json"
@@ -5217,16 +5218,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/check/device-groups": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "check multiple permissions",
                 "produces": [
                     "application/json"
@@ -5269,16 +5270,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/check/device-groups/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "check permission",
                 "produces": [
                     "application/json"
@@ -5318,16 +5319,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/check/devices": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "check multiple permissions",
                 "produces": [
                     "application/json"
@@ -5370,16 +5371,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/check/devices/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "check permission",
                 "produces": [
                     "application/json"
@@ -5419,16 +5420,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/check/hubs": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "check multiple permissions",
                 "produces": [
                     "application/json"
@@ -5471,16 +5472,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/check/hubs/{id}": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "check permission",
                 "produces": [
                     "application/json"
@@ -5520,16 +5521,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/check/locations": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/check/locations": {
+            "get": {
                 "description": "check multiple permissions",
                 "produces": [
                     "application/json"
@@ -5572,16 +5573,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/check/locations/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/check/locations/{id}": {
+            "get": {
                 "description": "check permission",
                 "produces": [
                     "application/json"
@@ -5621,16 +5622,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/device-groups": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/device-groups": {
+            "get": {
                 "description": "lists resources the user has admin rights to",
                 "produces": [
                     "application/json"
@@ -5675,16 +5676,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/device-groups/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/device-groups/{id}": {
+            "get": {
                 "description": "get resource, requesting user must have admin right  on the resource",
                 "produces": [
                     "application/json"
@@ -5721,14 +5722,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (device-groups) to create",
                 "consumes": [
                     "application/json"
@@ -5783,16 +5784,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/devices": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/devices": {
+            "get": {
                 "description": "lists resources the user has admin rights to",
                 "produces": [
                     "application/json"
@@ -5837,16 +5838,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/devices/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/devices/{id}": {
+            "get": {
                 "description": "get resource, requesting user must have admin right  on the resource",
                 "produces": [
                     "application/json"
@@ -5883,14 +5884,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (devices) to create",
                 "consumes": [
                     "application/json"
@@ -5945,16 +5946,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/hubs": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/hubs": {
+            "get": {
                 "description": "lists resources the user has admin rights to",
                 "produces": [
                     "application/json"
@@ -5999,16 +6000,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/hubs/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/hubs/{id}": {
+            "get": {
                 "description": "get resource, requesting user must have admin right  on the resource",
                 "produces": [
                     "application/json"
@@ -6045,14 +6046,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (hubs) to create",
                 "consumes": [
                     "application/json"
@@ -6107,16 +6108,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/locations": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/locations": {
+            "get": {
                 "description": "lists resources the user has admin rights to",
                 "produces": [
                     "application/json"
@@ -6161,16 +6162,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/manage/locations/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/manage/locations/{id}": {
+            "get": {
                 "description": "get resource, requesting user must have admin right  on the resource",
                 "produces": [
                     "application/json"
@@ -6207,14 +6208,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "get resource rights, requesting user must have admin right on resource to update, requesting user must have admin rights on topic (locations) to create",
                 "consumes": [
                     "application/json"
@@ -6269,16 +6270,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/permissions/device-groups": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6315,16 +6316,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/permissions/permissions/devices": {
             "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
                 "description": "list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6361,16 +6362,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/permissions/hubs": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/permissions/hubs": {
+            "get": {
                 "description": "list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6407,16 +6408,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/permissions/locations": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/permissions/locations": {
+            "get": {
                 "description": "list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6453,16 +6454,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/query/permissions/device-groups": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/query/permissions/device-groups": {
+            "post": {
                 "description": "list the computed permissions to resources of the given topic (device-groups) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6504,16 +6505,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/query/permissions/devices": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/query/permissions/devices": {
+            "post": {
                 "description": "list the computed permissions to resources of the given topic (devices) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6555,16 +6556,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/query/permissions/hubs": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/query/permissions/hubs": {
+            "post": {
                 "description": "list the computed permissions to resources of the given topic (hubs) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6606,16 +6607,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/permissions/query/permissions/locations": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/permissions/query/permissions/locations": {
+            "post": {
                 "description": "list the computed permissions to resources of the given topic (locations) and ids, group and user permissions are merged, unknown ids will get entries in the result",
                 "produces": [
                     "application/json"
@@ -6657,16 +6658,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/protocols": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/protocols": {
+            "get": {
                 "description": "get protocol",
                 "produces": [
                     "application/json"
@@ -6720,14 +6721,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "validate protocol",
                 "consumes": [
                     "application/json"
@@ -6764,14 +6765,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "create protocol",
                 "produces": [
                     "application/json"
@@ -6813,16 +6814,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/protocols/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/protocols/{id}": {
+            "get": {
                 "description": "get protocol",
                 "produces": [
                     "application/json"
@@ -6862,14 +6863,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "set protocol",
                 "produces": [
                     "application/json"
@@ -6918,14 +6919,14 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "delete protocol",
                 "produces": [
                     "application/json"
@@ -6962,16 +6963,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/query/aspect-nodes": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/query/aspect-nodes": {
+            "post": {
                 "description": "query aspect-nodes",
                 "consumes": [
                     "application/json"
@@ -7019,16 +7020,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/query/device-type-selectables": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/query/device-type-selectables": {
+            "post": {
                 "description": "validate device-type",
                 "consumes": [
                     "application/json"
@@ -7097,16 +7098,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/query/functions": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/query/functions": {
+            "post": {
                 "description": "list functions",
                 "consumes": [
                     "application/json"
@@ -7160,16 +7161,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/query/used-in-device-type": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/query/used-in-device-type": {
+            "post": {
                 "description": "query used-in-device-type",
                 "consumes": [
                     "application/json"
@@ -7208,16 +7209,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/services/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/services/{id}": {
+            "get": {
                 "description": "get service",
                 "produces": [
                     "application/json"
@@ -7257,16 +7258,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/users/{id}": {
-            "delete": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/users/{id}": {
+            "delete": {
                 "description": "delete user; only admins may use this method",
                 "tags": [
                     "users"
@@ -7291,16 +7292,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v2/aspect-nodes": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v2/aspect-nodes": {
+            "get": {
                 "description": "list aspect-nodes",
                 "produces": [
                     "application/json"
@@ -7372,16 +7373,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v2/aspects": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v2/aspects": {
+            "get": {
                 "description": "list aspects",
                 "produces": [
                     "application/json"
@@ -7453,16 +7454,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v2/characteristics": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v2/characteristics": {
+            "get": {
                 "description": "list characteristics",
                 "produces": [
                     "application/json"
@@ -7534,16 +7535,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v2/concepts": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v2/concepts": {
+            "get": {
                 "description": "list concepts",
                 "produces": [
                     "application/json"
@@ -7615,16 +7616,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v2/concepts-with-characteristics": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v2/concepts-with-characteristics": {
+            "get": {
                 "description": "list concepts with characteristics",
                 "produces": [
                     "application/json"
@@ -7696,16 +7697,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v2/device-classes": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v2/device-classes": {
+            "get": {
                 "description": "list device-classes",
                 "produces": [
                     "application/json"
@@ -7783,16 +7784,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v2/query/device-type-selectables": {
-            "post": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v2/query/device-type-selectables": {
+            "post": {
                 "description": "validate device-type",
                 "consumes": [
                     "application/json"
@@ -7861,16 +7862,16 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
-            }
-        },
-        "/v3/device-types": {
-            "get": {
+                },
                 "security": [
                     {
                         "Bearer": []
                     }
-                ],
+                ]
+            }
+        },
+        "/v3/device-types": {
+            "get": {
                 "description": "list device-types",
                 "produces": [
                     "application/json"
@@ -7972,7 +7973,12 @@ const docTemplatedevicerepository = `{
                     "500": {
                         "description": "Internal Server Error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         }
     },
@@ -8219,11 +8225,13 @@ const docTemplatedevicerepository = `{
                 },
                 "limit": {
                     "description": "default 100, will be ignored if 'ids' is set (Ids != nil)",
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int64"
                 },
                 "offset": {
                     "description": "default 0, will be ignored if 'ids' is set (Ids != nil)",
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int64"
                 },
                 "rdfType": {
                     "description": "model.SES_ONTOLOGY_CONTROLLING_FUNCTION || model.SES_ONTOLOGY_MEASURING_FUNCTION",
@@ -8866,6 +8874,12 @@ const docTemplatedevicerepository = `{
         "models.ExtendedHub": {
             "type": "object",
             "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
                 "connection_state": {
                     "type": "string"
                 },
@@ -8970,6 +8984,12 @@ const docTemplatedevicerepository = `{
         "models.Hub": {
             "type": "object",
             "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
                 "device_ids": {
                     "type": "array",
                     "items": {

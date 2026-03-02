@@ -325,7 +325,7 @@ func (this *Controller) ValidateHubDevices(hub models.Hub) (err error, code int)
 	return nil, http.StatusOK
 }
 
-func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub, err error, code int) {
+func (this *Controller) SetHub(token string, hub models.Hub, options model.HubUpdateOptions) (result models.Hub, err error, code int) {
 	hub, err, code = this.completeHub(token, hub)
 	if err != nil {
 		return hub, err, code
@@ -384,6 +384,12 @@ func (this *Controller) SetHub(token string, hub models.Hub) (result models.Hub,
 	//new device owner-id must be existing admin user (ignore for new devices or devices with unchanged owner)
 	if code != http.StatusNotFound && hub.OwnerId != old.OwnerId && !permissions.UserPermissions[hub.OwnerId].Administrate {
 		return hub, errors.New("new owner must have existing user admin permissions"), http.StatusBadRequest
+	}
+
+	if hub.Attributes == nil {
+		hub.Attributes = old.Attributes
+	} else if exists && len(options.UpdateOnlySameOriginAttributes) > 0 {
+		hub.Attributes = updateSameOriginAttributes(old.Attributes, hub.Attributes, options.UpdateOnlySameOriginAttributes)
 	}
 
 	err, code = this.ValidateHub(token, hub)

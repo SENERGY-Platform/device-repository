@@ -18,12 +18,14 @@ package repo_legacy
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/google/uuid"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/google/uuid"
 )
 
 func TestConnectionStateHandling(t *testing.T) {
@@ -152,7 +154,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetHub(userjwt, h1)
+	_, err, _ = c.SetHub(userjwt, h1, model.HubUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -178,7 +180,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetHub(userjwt, h2)
+	_, err, _ = c.SetHub(userjwt, h2, model.HubUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -204,7 +206,7 @@ func TestConnectionStateHandling(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetHub(userjwt, h3)
+	_, err, _ = c.SetHub(userjwt, h3, model.HubUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return

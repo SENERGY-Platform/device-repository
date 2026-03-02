@@ -19,12 +19,13 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (c *Client) SetHubConnectionState(token string, id string, connected bool) (error, int) {
@@ -40,16 +41,22 @@ func (c *Client) SetHubConnectionState(token string, id string, connected bool) 
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) SetHub(token string, hub models.Hub) (result models.Hub, err error, code int) {
+type HubUpdateOptions = model.HubUpdateOptions
+
+func (c *Client) SetHub(token string, hub models.Hub, options HubUpdateOptions) (result models.Hub, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(hub)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
+	query := url.Values{}
+	if options.UpdateOnlySameOriginAttributes != nil {
+		query.Set("update-only-same-origin-attributes", strings.Join(options.UpdateOnlySameOriginAttributes, ","))
+	}
 	if hub.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/hubs", bytes.NewBuffer(b))
+		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/hubs?"+query.Encode(), bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(hub.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(hub.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
