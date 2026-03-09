@@ -489,7 +489,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 			return errors.New("device.device_type_id may not be updated"), http.StatusBadRequest
 		}
 		if device.OwnerId != original.OwnerId {
-			resource, err, code := this.permissionsV2Client.GetResource(token, this.config.DeviceTopic, device.Id)
+			resource, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.DeviceTopic, device.Id)
 			if err != nil {
 				return err, code
 			}
@@ -651,7 +651,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 		}
 	}
 
-	rights, err, code := this.permissionsV2Client.GetResource(token, this.config.DeviceTopic, device.Id)
+	rights, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.DeviceTopic, device.Id)
 	if err != nil && code != http.StatusNotFound {
 		this.config.GetLogger().Error("unable to get permission resource", "error", err)
 		debug.PrintStack()

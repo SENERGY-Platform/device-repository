@@ -267,7 +267,7 @@ func (this *Controller) ValidateHub(token string, hub models.Hub) (err error, co
 	}
 	if exists {
 		if hub.OwnerId != original.OwnerId {
-			resource, err, code := this.permissionsV2Client.GetResource(token, this.config.HubTopic, hub.Id)
+			resource, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.HubTopic, hub.Id)
 			if err != nil {
 				return err, code
 			}
@@ -374,7 +374,7 @@ func (this *Controller) SetHub(token string, hub models.Hub, options model.HubUp
 		}
 	}
 
-	permissions, err, code := this.permissionsV2Client.GetResource(token, this.config.HubTopic, hub.Id)
+	permissions, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.HubTopic, hub.Id)
 	if err != nil && code != http.StatusNotFound {
 		this.config.GetLogger().Error("unable to get hub permission resource", "error", err, "code", code, "hubId", hub.Id)
 		debug.PrintStack()
