@@ -150,6 +150,10 @@ func (this *Mongo) SetDeviceClass(ctx context.Context, deviceClass models.Device
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceClassCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(deviceClass)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceClass::syncHandler %v, will be retried later\n", err))
@@ -175,6 +179,10 @@ func (this *Mongo) RemoveDeviceClass(ctx context.Context, id string, syncDeleteH
 	err = this.setDeleted(ctx, collection, DeviceClassBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceClassCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

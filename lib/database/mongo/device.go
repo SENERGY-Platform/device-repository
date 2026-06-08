@@ -144,6 +144,10 @@ func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnect
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceCollection, device.OwnerId)
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(oldDevice, device)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDevice::syncHandler %v, will be retried later\n", err))
@@ -169,6 +173,10 @@ func (this *Mongo) RemoveDevice(ctx context.Context, id string, syncDeleteHandle
 	err = this.setDeleted(ctx, collection, DeviceBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceCollection, old.OwnerId)
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

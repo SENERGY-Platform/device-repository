@@ -229,6 +229,10 @@ func (this *Mongo) SetDeviceGroup(ctx context.Context, deviceGroup models.Device
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceGroupCollection, user)
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(deviceGroup, user)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceGroup::syncHandler %v, will be retried later\n", err))

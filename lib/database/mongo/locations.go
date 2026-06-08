@@ -86,6 +86,10 @@ func (this *Mongo) SetLocation(ctx context.Context, location models.Location, sy
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoLocationCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(location, user)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetLocation::syncHandler %v, will be retried later\n", err))
@@ -111,6 +115,10 @@ func (this *Mongo) RemoveLocation(ctx context.Context, id string, syncDeleteHand
 	err = this.setDeleted(ctx, collection, LocationBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoLocationCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

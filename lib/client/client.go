@@ -20,12 +20,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/lib/api"
-	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/SENERGY-Platform/device-repository/lib/api"
+	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 
 type Interface interface {

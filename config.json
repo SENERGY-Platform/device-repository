@@ -28,6 +28,7 @@
     "mongo_function_collection": "functions",
     "mongo_location_collection": "locations",
     "mongo_default_device_attributes_collection": "default_device_attributes",
+    "mongo_last_update_timestamps_collection": "last_update_timestamps",
     "kafka_url": "kafka.kafka:9092",
     "debug": false,
     "log_level": "info",
@@ -52,5 +53,11 @@
         "devices": {"admin": "rwxa"},
         "device-groups": {"system": "rwxa"},
         "hubs": {"admin": "rwxa"}
-    }
+    },
+
+    "as_mgw_mirror": false,
+    "mgw_mirror_user_id": "",
+    "mgw_cert_manager_url": "",
+    "mgw_mirror_source_url": "",
+    "mgw_mirror_update_interval": ""
 }

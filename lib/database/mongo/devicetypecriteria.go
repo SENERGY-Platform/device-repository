@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
@@ -112,6 +113,13 @@ func (this *Mongo) addDeviceTypeCriteria(ctx context.Context, deviceTypeCriteria
 
 func (this *Mongo) removeDeviceTypeCriteriaByDeviceType(ctx context.Context, deviceTypeId string) error {
 	_, err := this.deviceTypeCriteriaCollection().DeleteMany(ctx, bson.M{DeviceTypeCriteriaBson.PureDeviceTypeId: deviceTypeId})
+	if err != nil {
+		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, getDeviceTypeCriteriaCollectionName(this.config), "")
+	if err != nil {
+		err = nil
+	}
 	return err
 }
 
@@ -376,7 +384,7 @@ func (this *Mongo) AspectIsUsed(ctx context.Context, id string) (result bool, wh
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return false, nil, nil
 	}
 	if err != nil {
@@ -393,7 +401,7 @@ func (this *Mongo) FunctionIsUsed(ctx context.Context, id string) (result bool, 
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return false, nil, nil
 	}
 	if err != nil {
@@ -410,7 +418,7 @@ func (this *Mongo) DeviceClassIsUsed(ctx context.Context, id string) (result boo
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return false, nil, nil
 	}
 	if err != nil {

@@ -197,6 +197,15 @@ definitions:
           from
         type: string
     type: object
+  model.LastUpdateTimestamp:
+    properties:
+      collection:
+        type: string
+      unix_timestamp:
+        type: integer
+      user_id:
+        type: string
+    type: object
   model.PermissionsMap:
     properties:
       administrate:
@@ -3715,6 +3724,39 @@ paths:
       - Bearer: []
       tags:
       - device-types
+  /last-update-timestamps:
+    get:
+      description: list last update timestamps for a user
+      parameters:
+      - description: admins may explicitly set the userId which is by default inferred
+          from the jwt
+        in: query
+        name: user_id
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-seperated list
+        in: query
+        name: ids
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.LastUpdateTimestamp'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: last update timestamps
   /local-devices/{id}:
     delete:
       description: delete device (local-id variant)

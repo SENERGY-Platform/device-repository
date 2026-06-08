@@ -19,15 +19,16 @@ package mongo
 import (
 	"context"
 	"errors"
+	"log"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var CharacteristicBson = getBsonFieldObject[models.Characteristic]()
@@ -124,6 +125,10 @@ func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic models.
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoCharacteristicCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(characteristic)
 	if err != nil {
 		log.Printf("WARNING: error in SetCharacteristic::syncHandler %v, will be retried later\n", err)
@@ -149,6 +154,10 @@ func (this *Mongo) RemoveCharacteristic(ctx context.Context, id string, syncDele
 	err = this.setDeleted(ctx, collection, CharacteristicBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoCharacteristicCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

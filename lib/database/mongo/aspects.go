@@ -18,15 +18,17 @@ package mongo
 
 import (
 	"context"
+	"errors"
+	"log"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"regexp"
-	"strings"
-	"time"
 )
 
 var AspectBson = getBsonFieldObject[models.Aspect]()
@@ -96,14 +98,14 @@ func (this *Mongo) ListAspects(ctx context.Context, listOptions model.AspectList
 func (this *Mongo) GetAspect(ctx context.Context, id string) (aspect models.Aspect, exists bool, err error) {
 	result := this.aspectCollection().FindOne(ctx, bson.M{AspectBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return aspect, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&aspect)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return aspect, false, nil
 	}
 	return aspect, true, err
@@ -127,6 +129,10 @@ func (this *Mongo) SetAspect(ctx context.Context, aspect models.Aspect, syncHand
 	}, options.Replace().SetUpsert(true))
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoAspectCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncHandler(aspect)
 	if err != nil {
@@ -153,6 +159,10 @@ func (this *Mongo) RemoveAspect(ctx context.Context, id string, syncDeleteHandle
 	err = this.setDeleted(ctx, collection, AspectBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoAspectCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

@@ -17,6 +17,7 @@
 package configuration
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -31,6 +32,7 @@ import (
 	"time"
 
 	struct_logger "github.com/SENERGY-Platform/go-service-base/struct-logger"
+	"github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib/client"
 )
 
 type Config struct {
@@ -64,6 +66,7 @@ type Config struct {
 	MongoFunctionCollection                string `json:"mongo_function_collection"`
 	MongoLocationCollection                string `json:"mongo_location_collection"`
 	MongoDefaultDeviceAttributesCollection string `json:"mongo_default_device_attributes_collection"`
+	MongoLastUpdateTimestampsCollection    string `json:"mongo_last_update_timestamps_collection"`
 	Debug                                  bool   `json:"debug"`
 	HttpClientTimeout                      string `json:"http_client_timeout"`
 
@@ -93,6 +96,12 @@ type Config struct {
 
 	LogLevel string       `json:"log_level"`
 	logger   *slog.Logger `json:"-"`
+
+	AsMgwMirror             bool   `json:"as_mgw_mirror"`
+	MgwMirrorUserId         string `json:"mgw_mirror_user_id"`   //may be set by using MgwMirrorUserId
+	MgwCertManagerUrl       string `json:"mgw_cert_manager_url"` //used to get MgwMirrorUserId if not set
+	MgwMirrorSourceUrl      string `json:"mgw_mirror_source_url"`
+	MgwMirrorUpdateInterval string `json:"mgw_mirror_update_interval"`
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
@@ -110,6 +119,13 @@ func Load(location string) (config Config, err error) {
 	}
 	handleEnvironmentVars(&config)
 	setDefaultHttpClient(config)
+
+	if config.MgwCertManagerUrl != "" && config.MgwCertManagerUrl != "-" {
+		_, err = config.GetMgwMirrorUserId()
+		if err != nil {
+			return config, err
+		}
+	}
 
 	return config, nil
 }
@@ -213,4 +229,19 @@ func (this *Config) GetLogger() *slog.Logger {
 		slog.SetLogLoggerLevel(slog.LevelInfo)
 	}
 	return this.logger
+}
+
+func (this *Config) GetMgwMirrorUserId() (string, error) {
+	if this.MgwMirrorUserId != "" && this.MgwMirrorUserId != "-" {
+		return this.MgwMirrorUserId, nil
+	}
+	if this.MgwCertManagerUrl == "" || this.MgwCertManagerUrl == "-" {
+		return "", fmt.Errorf("mgw_cert_manager_url not set")
+	}
+	network, err := client.New(http.DefaultClient, this.MgwCertManagerUrl).NetworkInfo(context.Background(), false, "")
+	if err != nil {
+		return "", fmt.Errorf("error while getting network info: %w", err)
+	}
+	this.MgwMirrorUserId = network.UserID
+	return this.MgwMirrorUserId, nil
 }

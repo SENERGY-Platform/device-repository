@@ -124,6 +124,10 @@ func (this *Mongo) SetProtocol(ctx context.Context, protocol models.Protocol, sy
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoProtocolCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(protocol)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetProtocol::syncHandler %v, will be retried later\n", err))
@@ -149,6 +153,10 @@ func (this *Mongo) RemoveProtocol(ctx context.Context, id string, syncDeleteHand
 	err = this.setDeleted(ctx, collection, ProtocolBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoProtocolCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

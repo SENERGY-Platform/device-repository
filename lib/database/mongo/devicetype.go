@@ -350,6 +350,10 @@ func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceTy
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceTypeCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = this.setDeviceTypeCriteria(ctx, deviceType)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceType::setDeviceTypeCriteria %v, will be retried later\n", err))
@@ -380,6 +384,10 @@ func (this *Mongo) RemoveDeviceType(ctx context.Context, id string, syncDeleteHa
 	err = this.setDeleted(ctx, collection, DeviceTypeBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceTypeCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = this.removeDeviceTypeCriteriaByDeviceType(ctx, id)
 	if err != nil {

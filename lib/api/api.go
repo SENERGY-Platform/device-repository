@@ -92,6 +92,9 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 	corsHandler := util.NewCors(permForward)
 	config.GetLogger().Info("add logging")
 	logger := accesslog.New(corsHandler)
+	if config.AsMgwMirror {
+		return util.NewMirrorMiddleware(logger, config)
+	}
 	return logger
 }
 

@@ -96,6 +96,10 @@ func (this *Mongo) SetHub(ctx context.Context, hub model.HubWithConnectionState,
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoHubCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(hub)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetHub::syncHandler %v, will be retried later\n", err))
@@ -121,6 +125,10 @@ func (this *Mongo) RemoveHub(ctx context.Context, id string, syncDeleteHandler f
 	err = this.setDeleted(ctx, collection, HubBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoHubCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

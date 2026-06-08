@@ -26,6 +26,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/lib/mgwmirror"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 
@@ -53,7 +54,12 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 		}
 	}()
 
-	permClient := client.New(conf.PermissionsV2Url)
+	var permClient client.Client
+	if conf.AsMgwMirror {
+		permClient = mgwmirror.NewMgwMirrorPerm(conf, db)
+	} else {
+		permClient = client.New(conf.PermissionsV2Url)
+	}
 
 	var p controller.Publisher
 	if conf.KafkaUrl == "" || conf.KafkaUrl == "-" {
@@ -77,7 +83,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 		return err
 	}
 
-	if conf.RunStartupMigrations {
+	if conf.RunStartupMigrations && !conf.AsMgwMirror {
 		err = db.RunStartupMigrations(ctrl)
 		if err != nil {
 			db.Disconnect()
@@ -96,6 +102,14 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 	}
 
 	ctrl.StartSyncLoop(ctx, syncInterval, syncLockDuration)
+
+	if conf.AsMgwMirror {
+		err = mgwmirror.StartSourcePullWorker(ctx, wg, conf, db)
+		if err != nil {
+			conf.GetLogger().Error("unable to start mgw mirror source pull worker", "error", err)
+			return err
+		}
+	}
 
 	err = api.Start(ctx, conf, ctrl)
 	if err != nil {

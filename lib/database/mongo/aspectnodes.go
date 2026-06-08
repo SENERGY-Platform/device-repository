@@ -18,15 +18,17 @@ package mongo
 
 import (
 	"context"
+	"errors"
+	"regexp"
+	"sort"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"regexp"
-	"sort"
-	"strings"
 )
 
 var aspectNodeDescendentIdsFieldName, aspectNodeDescendentIdsKey = "DescendentIds", ""
@@ -45,7 +47,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		collection := db.client.Database(db.config.MongoTable).Collection(getAspectNodeCollectionName(db.config))
+		collection := db.client.Database(db.config.MongoTable).Collection(GetAspectNodeCollectionName(db.config))
 		err = db.ensureIndex(collection, "aspectNodeidindex", AspectNodeBson.Id, true, true)
 		if err != nil {
 			return err
@@ -66,12 +68,12 @@ func init() {
 	})
 }
 
-func getAspectNodeCollectionName(config configuration.Config) string {
+func GetAspectNodeCollectionName(config configuration.Config) string {
 	return config.MongoAspectCollection + "_node"
 }
 
 func (this *Mongo) aspectNodeCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(getAspectNodeCollectionName(this.config))
+	return this.client.Database(this.config.MongoTable).Collection(GetAspectNodeCollectionName(this.config))
 }
 
 func (this *Mongo) ListAspectNodes(ctx context.Context, listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error) {
@@ -130,7 +132,7 @@ func (this *Mongo) GetAspectNode(ctx context.Context, id string) (aspectNode mod
 		return
 	}
 	err = result.Decode(&aspectNode)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return aspectNode, false, nil
 	}
 	sortSubIds(&aspectNode)
@@ -140,11 +142,25 @@ func (this *Mongo) GetAspectNode(ctx context.Context, id string) (aspectNode mod
 func (this *Mongo) SetAspectNode(ctx context.Context, aspectNode models.AspectNode) error {
 	//_, err := this.aspectNodeCollection().InsertOne(ctx, aspectNode)
 	_, err := this.aspectNodeCollection().ReplaceOne(ctx, bson.M{AspectNodeBson.Id: aspectNode.Id}, aspectNode, options.Replace().SetUpsert(true))
+	if err != nil {
+		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, GetAspectNodeCollectionName(this.config), "")
+	if err != nil {
+		err = nil
+	}
 	return err
 }
 
 func (this *Mongo) RemoveAspectNodesByRootId(ctx context.Context, id string) error {
 	_, err := this.aspectNodeCollection().DeleteMany(ctx, bson.M{AspectNodeBson.RootId: id})
+	if err != nil {
+		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, GetAspectNodeCollectionName(this.config), "")
+	if err != nil {
+		err = nil
+	}
 	return err
 }
 

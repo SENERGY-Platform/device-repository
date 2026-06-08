@@ -18,10 +18,11 @@ package database
 
 import (
 	"context"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"time"
 )
 
 type Database interface {
@@ -152,4 +153,6 @@ type Database interface {
 
 	GetDefaultDeviceAttributes(ctx context.Context, userId string) ([]models.Attribute, error)
 	SetDefaultDeviceAttributes(ctx context.Context, userId string, attributes []models.Attribute) error
+
+	GetLastUpdateTimestampsForUser(ctx context.Context, userId string) (result []model.LastUpdateTimestamp, err error)
 }

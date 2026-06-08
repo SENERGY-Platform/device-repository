@@ -4439,6 +4439,57 @@
                 ]
             }
         },
+        "/last-update-timestamps": {
+            "get": {
+                "description": "list last update timestamps for a user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "last update timestamps",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "admins may explicitly set the userId which is by default inferred from the jwt",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "name": "ids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.LastUpdateTimestamp"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/local-devices/{id}": {
             "get": {
                 "description": "get device by local id",
@@ -8261,6 +8312,20 @@
                 },
                 "remote_device_repository": {
                     "description": "address of a remote device-repository, where the data is imported from",
+                    "type": "string"
+                }
+            }
+        },
+        "model.LastUpdateTimestamp": {
+            "type": "object",
+            "properties": {
+                "collection": {
+                    "type": "string"
+                },
+                "unix_timestamp": {
+                    "type": "integer"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }

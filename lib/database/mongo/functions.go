@@ -144,6 +144,10 @@ func (this *Mongo) SetFunction(ctx context.Context, function models.Function, sy
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoFunctionCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(function)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetFunction::syncHandler %v, will be retried later\n", err))
@@ -169,6 +173,10 @@ func (this *Mongo) RemoveFunction(ctx context.Context, id string, syncDeleteHand
 	err = this.setDeleted(ctx, collection, FunctionBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoFunctionCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {

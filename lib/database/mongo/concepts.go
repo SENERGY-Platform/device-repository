@@ -68,6 +68,10 @@ func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept, syncH
 	if err != nil {
 		return err
 	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoConceptCollection, "")
+	if err != nil {
+		err = nil
+	}
 	err = syncHandler(concept)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetConcept::syncHandler %v, will be retried later\n", err))
@@ -93,6 +97,10 @@ func (this *Mongo) RemoveConcept(ctx context.Context, id string, syncDeleteHandl
 	err = this.setDeleted(ctx, collection, ConceptBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoConceptCollection, "")
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
