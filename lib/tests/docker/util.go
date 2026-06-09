@@ -19,6 +19,7 @@ package docker
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -27,6 +28,7 @@ import (
 
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 func GetFreePort() (int, error) {
@@ -122,4 +124,12 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configurati
 	time.Sleep(5 * time.Second)
 
 	return
+}
+
+type LogConsumer struct {
+	Prefix string
+}
+
+func (this LogConsumer) Accept(l testcontainers.Log) {
+	fmt.Print(this.Prefix + string(l.Content))
 }

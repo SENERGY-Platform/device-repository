@@ -96,7 +96,7 @@ func (this *Mongo) SetHub(ctx context.Context, hub model.HubWithConnectionState,
 	if err != nil {
 		return err
 	}
-	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoHubCollection, "")
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoHubCollection, hub.OwnerId)
 	if err != nil {
 		err = nil
 	}
@@ -126,7 +126,7 @@ func (this *Mongo) RemoveHub(ctx context.Context, id string, syncDeleteHandler f
 	if err != nil {
 		return err
 	}
-	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoHubCollection, "")
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoHubCollection, old.OwnerId)
 	if err != nil {
 		err = nil
 	}

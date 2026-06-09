@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 InfAI (CC SES)
+ * Copyright 2026 InfAI (CC SES)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,30 +18,35 @@ package docker
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"log"
-	"strings"
+	"os"
 	"sync"
 
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string, kafkaUrl string) (hostPort string, ipAddress string, err error) {
-	log.Println("start permissions-v2")
+func DeviceRepo(ctx context.Context, wg *sync.WaitGroup, relativePathToRoot string, kafkaUrl string, mongoUrl string, permv2Url string) (hostPort string, ipAddress string, err error) {
+	log.Println("start device-repository")
 	c, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
-			Image: "ghcr.io/senergy-platform/permissions-v2:dev",
+			FromDockerfile: testcontainers.FromDockerfile{
+				Context:        relativePathToRoot,
+				Repo:           "ghcr.io/senergy-platform/device-repository",
+				Tag:            "dev",
+				BuildLogWriter: os.Stdout,
+			},
+			//Image:          "ghcr.io/senergy-platform/device-repository:dev",
 			Env: map[string]string{
-				"DEV_NOTIFIER_URL": "",
-				"MONGO_URL":        mongoUrl,
-				"KAFKA_URL":        kafkaUrl,
+				"DEBUG":              "true",
+				"KAFKA_URL":          kafkaUrl,
+				"PERMISSIONS_V2_URL": permv2Url,
+				"MONGO_URL":          mongoUrl,
 			},
 			ExposedPorts:    []string{"8080/tcp"},
 			WaitingFor:      wait.ForListeningPort("8080/tcp"),
 			AlwaysPullImage: true,
-			LogConsumerCfg:  &testcontainers.LogConsumerConfig{Consumers: []testcontainers.LogConsumer{LogConsumer{Prefix: "PERMISSIONS: "}}},
+			LogConsumerCfg:  &testcontainers.LogConsumerConfig{Consumers: []testcontainers.LogConsumer{LogConsumer{Prefix: "DEVICE-REPOSITORY: "}}},
 		},
 		Started: true,
 	})
@@ -51,20 +56,8 @@ func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string, kaf
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		defer func() {
-			log.Println("DEBUG: remove container permissions-v2", c.Terminate(context.Background()))
-		}()
 		<-ctx.Done()
-		reader, err := c.Logs(context.Background())
-		if err != nil {
-			log.Println("ERROR: unable to get container log")
-			return
-		}
-		buf := new(strings.Builder)
-		io.Copy(buf, reader)
-		fmt.Println("PERMISSIONS-V2 LOGS: ------------------------------------------")
-		fmt.Println(buf.String())
-		fmt.Println("\n---------------------------------------------------------------")
+		log.Println("DEBUG: remove container device-repository", c.Terminate(context.Background()))
 	}()
 
 	ipAddress, err = c.ContainerIP(ctx)

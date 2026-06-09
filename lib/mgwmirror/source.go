@@ -39,7 +39,7 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 	if err != nil {
 		return err
 	}
-	pull(config, db, false)
+	go pull(config, db, false)
 	ticker := time.NewTicker(interval)
 	if wg != nil {
 		wg.Add(1)
@@ -62,6 +62,8 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 }
 
 func pull(config configuration.Config, db database.Database, checkLastUpdate bool) {
+	config.GetLogger().Info("start mgw mirror pull")
+	defer config.GetLogger().Info("finished mgw mirror pull")
 	c := client.NewClient(config.MgwMirrorSourceUrl, nil)
 	token := ""
 
@@ -105,16 +107,23 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			localIndex := slices.IndexFunc(localLastUpdateTimestamps, func(timestamp model.LastUpdateTimestamp) bool {
 				return timestamp.Collection == collection
 			})
-			if localIndex == -1 {
-				return true
-			}
 			sourceIndex := slices.IndexFunc(sourceLastUpdateTimestamps, func(timestamp model.LastUpdateTimestamp) bool {
 				return timestamp.Collection == collection
 			})
+			if localIndex == -1 && sourceIndex == -1 {
+				config.GetLogger().Debug("no local and source last update timestamps for collection", "collection", collection)
+				return false
+			}
+			if localIndex == -1 {
+				config.GetLogger().Debug("no local last update timestamps for collection", "collection", collection)
+				return true
+			}
 			if sourceIndex == -1 {
+				config.GetLogger().Debug("no source last update timestamps for collection", "collection", collection)
 				return true
 			}
 			if localLastUpdateTimestamps[localIndex].UnixTimestamp < sourceLastUpdateTimestamps[sourceIndex].UnixTimestamp {
+				config.GetLogger().Debug("local last update timestamp is older than source last update timestamp", "collection", collection, "local_timestamp", localLastUpdateTimestamps[localIndex], "source_timestamp", sourceLastUpdateTimestamps[sourceIndex])
 				return true
 			}
 			return false

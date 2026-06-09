@@ -673,6 +673,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 
 func (this *Controller) setDevice(device models.Device) (result models.Device, err error, code int) {
 	//update hub about changed device.local_id
+	this.config.GetLogger().Debug("create/update device", "id", device.Id, "name", device.Name)
 	ctx, _ := getTimeoutContext()
 	old, exists, err := this.db.GetDevice(ctx, device.Id)
 	if err != nil {
@@ -700,25 +701,25 @@ func (this *Controller) setDevice(device models.Device) (result models.Device, e
 func (this *Controller) setDeviceSyncHandler(oldDevice model.DeviceWithConnectionState, device model.DeviceWithConnectionState) (err error) {
 	err = this.EnsureInitialRights(this.config.DeviceTopic, device.Id, device.OwnerId)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to ensure initial device permissions: %w", err)
 	}
 
 	err = this.EnsureGeneratedDeviceGroup(oldDevice.Device, device.Device)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to generate device group: %w", err)
 	}
 
 	//ensure that changed device-local-ids are mirrored in hubs
 	ctx, _ := getTimeoutContext()
 	hubs, err := this.db.GetHubsByDeviceId(ctx, device.Id)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get hubs by device id to ensure changed device-local-ids are mirrored in hubs: %w", err)
 	}
 	for _, hub := range hubs {
 		if !slices.Contains(hub.DeviceLocalIds, device.LocalId) {
 			devices, _, err := this.db.ListDevices(ctx, model.DeviceListOptions{Ids: hub.DeviceIds}, false)
 			if err != nil {
-				return err
+				return fmt.Errorf("unable get devices from db: %w", err)
 			}
 			hub.DeviceLocalIds = []string{}
 			for _, d := range devices {
@@ -727,13 +728,13 @@ func (this *Controller) setDeviceSyncHandler(oldDevice model.DeviceWithConnectio
 			hub.Hash = ""
 			err = this.setHub(hub)
 			if err != nil {
-				return err
+				return fmt.Errorf("unable to update hub to ensure that changed device-local-ids are mirrored in hubs: %w", err)
 			}
 		}
 	}
 	err = this.publisher.PublishDevice(device.Device)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to send device update to kafka: %w", err)
 	}
 	return nil
 }
