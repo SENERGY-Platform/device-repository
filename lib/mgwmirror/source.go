@@ -110,20 +110,16 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			sourceIndex := slices.IndexFunc(sourceLastUpdateTimestamps, func(timestamp model.LastUpdateTimestamp) bool {
 				return timestamp.Collection == collection
 			})
-			if localIndex == -1 && sourceIndex == -1 {
-				config.GetLogger().Debug("no local and source last update timestamps for collection", "collection", collection)
+			if sourceIndex == -1 {
+				config.GetLogger().Debug("no source last update timestamps for collection --> skip update", "collection", collection)
 				return false
 			}
 			if localIndex == -1 {
-				config.GetLogger().Debug("no local last update timestamps for collection", "collection", collection)
-				return true
-			}
-			if sourceIndex == -1 {
-				config.GetLogger().Debug("no source last update timestamps for collection", "collection", collection)
+				config.GetLogger().Debug("no local last update timestamps for collection --> update", "collection", collection)
 				return true
 			}
 			if localLastUpdateTimestamps[localIndex].UnixTimestamp < sourceLastUpdateTimestamps[sourceIndex].UnixTimestamp {
-				config.GetLogger().Debug("local last update timestamp is older than source last update timestamp", "collection", collection, "local_timestamp", localLastUpdateTimestamps[localIndex], "source_timestamp", sourceLastUpdateTimestamps[sourceIndex])
+				config.GetLogger().Debug("local last update timestamp is older than source last update timestamp --> update", "collection", collection, "local_timestamp", localLastUpdateTimestamps[localIndex], "source_timestamp", sourceLastUpdateTimestamps[sourceIndex])
 				return true
 			}
 			return false
