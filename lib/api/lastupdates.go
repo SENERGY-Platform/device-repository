@@ -39,8 +39,6 @@ type LastUpdateTimestampsEndpoints struct{}
 // @Produce      json
 // @Security Bearer
 // @Param        user_id query string false "admins may explicitly set the userId which is by default inferred from the jwt"
-// @Param        sort query string false "default name.asc"
-// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
 // @Success      200 {array}  model.LastUpdateTimestamp
 // @Failure      400
 // @Failure      500

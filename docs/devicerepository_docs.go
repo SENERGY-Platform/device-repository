@@ -4460,18 +4460,6 @@ const docTemplatedevicerepository = `{
                         "description": "admins may explicitly set the userId which is by default inferred from the jwt",
                         "name": "user_id",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "default name.asc",
-                        "name": "sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
-                        "name": "ids",
-                        "in": "query"
                     }
                 ],
                 "responses": {

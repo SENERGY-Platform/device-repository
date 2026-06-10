@@ -3733,14 +3733,6 @@ paths:
         in: query
         name: user_id
         type: string
-      - description: default name.asc
-        in: query
-        name: sort
-        type: string
-      - description: filter; ignores limit/offset; comma-seperated list
-        in: query
-        name: ids
-        type: string
       produces:
       - application/json
       responses:
