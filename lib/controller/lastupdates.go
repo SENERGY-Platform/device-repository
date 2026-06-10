@@ -36,7 +36,7 @@ func (this *Controller) GetLastUpdateTimestamps(token string, userId string) (re
 		userId = jwtToken.GetUserId()
 	}
 	ctx, _ := getTimeoutContext()
-	result, err = this.db.GetLastUpdateTimestampsForUser(ctx, jwtToken.GetUserId())
+	result, err = this.db.GetLastUpdateTimestampsForUser(ctx, userId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
