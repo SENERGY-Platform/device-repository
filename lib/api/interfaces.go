@@ -144,4 +144,6 @@ type Controller interface {
 	SetDefaultDeviceAttributes(token string, attributes []models.Attribute) (err error, code int)
 
 	GetLastUpdateTimestamps(token string, userId string) (result []model.LastUpdateTimestamp, err error, code int)
+
+	MirrorUpdate() error
 }

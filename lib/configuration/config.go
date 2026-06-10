@@ -119,6 +119,7 @@ func Load(location string) (config Config, err error) {
 	}
 	handleEnvironmentVars(&config)
 	setDefaultHttpClient(config)
+	config.GetLogger()
 
 	if config.MgwCertManagerUrl != "" && config.MgwCertManagerUrl != "-" {
 		_, err = config.GetMgwMirrorUserId()
@@ -197,6 +198,11 @@ func setDefaultHttpClient(config Config) {
 	if err != nil {
 		log.Println("WARNING: invalid http timeout --> no timeouts\n", err)
 	}
+}
+
+func (this *Config) RestLogger() {
+	this.logger = nil
+	this.GetLogger()
 }
 
 func (this *Config) GetLogger() *slog.Logger {

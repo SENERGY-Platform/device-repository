@@ -58,7 +58,7 @@ func (this *Mongo) GetLastUpdateTimestampsForUser(ctx context.Context, userId st
 }
 
 func (this *Mongo) SetLastUpdateTimestamp(ctx context.Context, collection string, userId string) (err error) {
-	timestamp := time.Now().Unix()
+	timestamp := time.Now().UnixMilli()
 	filter := bson.M{LastUpdateTimestampsBson.Collection: collection, LastUpdateTimestampsBson.UserId: userId}
 	_, err = this.lastUpdateTimestampsCollection().ReplaceOne(ctx, filter, model.LastUpdateTimestamp{
 		UnixTimestamp: timestamp,

@@ -39,7 +39,7 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 	if err != nil {
 		return err
 	}
-	go pull(config, db, false)
+	go Pull(config, db, false)
 	ticker := time.NewTicker(interval)
 	if wg != nil {
 		wg.Add(1)
@@ -54,14 +54,14 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				pull(config, db, true)
+				Pull(config, db, true)
 			}
 		}
 	}()
 	return nil
 }
 
-func pull(config configuration.Config, db database.Database, checkLastUpdate bool) {
+func Pull(config configuration.Config, db database.Database, checkLastUpdate bool) {
 	config.GetLogger().Info("start mgw mirror pull")
 	defer config.GetLogger().Info("finished mgw mirror pull")
 	c := client.NewClient(config.MgwMirrorSourceUrl, nil)
@@ -84,6 +84,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			config.GetLogger().Error("error while getting source last update timestamps for mgw mirror pull", "error", err)
 			return
 		}
+		config.GetLogger().Debug("source last update timestamps", "source_last_update_timestamps", fmt.Sprintf("%#v", sourceLastUpdateTimestamps))
 
 		localLastUpdateTimestamps, err := db.GetLastUpdateTimestampsForUser(context.Background(), userId)
 		if err != nil {

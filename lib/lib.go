@@ -109,6 +109,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 			conf.GetLogger().Error("unable to start mgw mirror source pull worker", "error", err)
 			return err
 		}
+		ctrl.SetMirrorPullCallback(mgwmirror.Pull)
 	}
 
 	err = api.Start(ctx, conf, ctrl)

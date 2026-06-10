@@ -18,6 +18,7 @@ package util
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -27,27 +28,74 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func NewMirrorMiddleware(handler http.Handler, config configuration.Config) *MirrorMiddleware {
-	return &MirrorMiddleware{handler: handler, config: config}
+type MirrorPull interface {
+	MirrorUpdate() error
+}
+
+func NewMirrorMiddleware(handler http.Handler, config configuration.Config, pull MirrorPull) *MirrorMiddleware {
+	return &MirrorMiddleware{handler: handler, config: config, pull: pull}
 }
 
 type MirrorMiddleware struct {
 	handler http.Handler
 	config  configuration.Config
 	token   string
+	pull    MirrorPull
 }
 
-func (this *MirrorMiddleware) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if !strings.Contains(req.URL.String(), "query") && (req.Method == http.MethodPost || req.Method == http.MethodPut || req.Method == http.MethodDelete) {
-		http.Redirect(res, req, "mirror does not allow changes to the dataset", http.StatusBadRequest)
+func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if !strings.Contains(r.URL.String(), "query") && (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) {
+		//forward request to source
+		this.config.GetLogger().Info("forward update request to mirror source", "method", r.Method, "url", r.URL.String())
+		endpoint := r.URL.Path
+		if len(r.URL.Query()) > 0 {
+			endpoint += "?" + r.URL.Query().Encode()
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		req, err := http.NewRequest(r.Method, this.config.MgwMirrorSourceUrl+endpoint, strings.NewReader(string(body)))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		req.Header = r.Header
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if resp.StatusCode < 300 {
+			err = this.pull.MirrorUpdate()
+			if err != nil {
+				this.config.GetLogger().Error("unable to update mirror", "error", err)
+			}
+		} else {
+			this.config.GetLogger().Error("forwarded request returned unexpected status-code", "status", resp.StatusCode)
+		}
+
+		defer resp.Body.Close()
+		for k, vv := range resp.Header {
+			for _, v := range vv {
+				w.Header().Add(k, v)
+			}
+		}
+		w.WriteHeader(resp.StatusCode)
+		_, err = io.Copy(w, resp.Body)
+		if err != nil {
+			this.config.GetLogger().Error("unable to copy response body", "error", err)
+		}
 	} else {
 		token, err := this.GetToken()
 		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		req.Header.Set("Authorization", token)
-		this.handler.ServeHTTP(res, req)
+		r.Header.Set("Authorization", token)
+		this.handler.ServeHTTP(w, r)
 	}
 }
 

@@ -56,6 +56,7 @@ func TestMirror(t *testing.T) {
 
 	config.SyncLockDuration = time.Second.String()
 	config.Debug = true
+	config.RestLogger()
 
 	_, mongoIp, err := docker.MongoDB(ctx, wg)
 	if err != nil {
@@ -223,7 +224,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		device, err, _ := sourceClient.CreateDevice(testenv.SecondOwnerToken, models.Device{
+		_, err, _ = sourceClient.CreateDevice(testenv.SecondOwnerToken, models.Device{
 			LocalId:      "d1",
 			Name:         "d1",
 			DeviceTypeId: dt1.Id,
@@ -233,7 +234,6 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		t.Logf("device: %#v", device)
 
 		_, err, _ = sourceClient.CreateDevice(testenv.TestToken, models.Device{
 			LocalId:      "shouldNotBeFound",
@@ -760,6 +760,188 @@ func TestMirror(t *testing.T) {
 			if proxyReqCount.Load() > 2 || proxyReqCount.Load() < 1 {
 				t.Error("unexpected request count: ", proxyReqCount.Load(), " (expected: 2 or 1 for timestamp requests)")
 			}
+		})
+	})
+
+	t.Run("forward updates", func(t *testing.T) {
+		t.Run("create resources via mirror", func(t *testing.T) {
+			protocols, err, _ := mirrorClient.ListProtocols("", 100, 0, "")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if len(protocols) == 0 {
+				t.Error("missing protocols")
+				return
+			}
+			p3 := protocols[0]
+
+			dt3, err, _ := mirrorClient.SetDeviceType("", models.DeviceType{
+				Name: "dt3",
+				Services: []models.Service{
+					{
+						LocalId:     "s3",
+						Name:        "s3",
+						Interaction: models.EVENT_AND_REQUEST,
+						ProtocolId:  p3.Id,
+						Outputs: []models.Content{
+							{
+								ContentVariable: models.ContentVariable{
+									Name: "cv3",
+									Type: models.String,
+								},
+								Serialization:     models.JSON,
+								ProtocolSegmentId: p3.ProtocolSegments[0].Id,
+							},
+						},
+					},
+				},
+			}, client.DeviceTypeUpdateOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			t.Run("create device", func(t *testing.T) {
+				_, err, _ = mirrorClient.CreateDevice("", models.Device{
+					LocalId:      "d3",
+					Name:         "d3",
+					DeviceTypeId: dt3.Id,
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+
+			t.Run("create hub", func(t *testing.T) {
+				_, err, _ = mirrorClient.SetHub("", models.Hub{
+					Id:   "h3",
+					Name: "h3",
+				}, client.HubUpdateOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+
+			t.Run("create device-group", func(t *testing.T) {
+				_, err, _ = mirrorClient.SetDeviceGroup("", models.DeviceGroup{
+					Name: "dg3",
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			})
+
+		})
+
+		t.Run("check mirror", func(t *testing.T) {
+			t.Run("devices", func(t *testing.T) {
+				result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 3 {
+					t.Error("unexpected result: ", len(result))
+					return
+				}
+			})
+			t.Run("device-groups", func(t *testing.T) {
+				result, total, err, _ := mirrorClient.ListDeviceGroups("", client.DeviceGroupListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 6 {
+					t.Errorf("unexpected result: len=%v\n%#v", len(result), result)
+					return
+				}
+				if total != 6 {
+					t.Error("unexpected total: ", total)
+				}
+			})
+			t.Run("hubs", func(t *testing.T) {
+				result, err, _ := mirrorClient.ListHubs("", client.HubListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 3 {
+					t.Error("unexpected result: ", len(result))
+					return
+				}
+			})
+			t.Run("device-types", func(t *testing.T) {
+				result, total, err, _ := mirrorClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 3 {
+					t.Error("unexpected result: ", len(result))
+					return
+				}
+				if total != 3 {
+					t.Error("unexpected total: ", total)
+					return
+				}
+			})
+		})
+		t.Run("check source", func(t *testing.T) {
+			t.Run("devices", func(t *testing.T) {
+				result, err, _ := sourceClient.ListDevices(testenv.SecondOwnerToken, client.DeviceListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 3 {
+					t.Error("unexpected result: ", len(result))
+					return
+				}
+			})
+			t.Run("device-groups", func(t *testing.T) {
+				result, total, err, _ := sourceClient.ListDeviceGroups(testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 6 {
+					t.Error("unexpected result: ", len(result))
+					return
+				}
+				if total != 6 {
+					t.Error("unexpected total: ", total)
+				}
+			})
+			t.Run("hubs", func(t *testing.T) {
+				result, err, _ := sourceClient.ListHubs(testenv.SecondOwnerToken, client.HubListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 3 {
+					t.Error("unexpected result: ", len(result))
+					return
+				}
+			})
+			t.Run("device-types", func(t *testing.T) {
+				result, total, err, _ := sourceClient.ListDeviceTypesV3(testenv.SecondOwnerToken, client.DeviceTypeListOptions{})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(result) != 3 {
+					t.Error("unexpected result: ", len(result))
+					return
+				}
+				if total != 3 {
+					t.Error("unexpected total: ", total)
+					return
+				}
+			})
 		})
 	})
 

@@ -51,6 +51,10 @@ func NewClient(baseUrl string, optionalAuthTokenForApiGatewayRequest func() (tok
 	return &Client{baseUrl: baseUrl, optionalAuthTokenForApiGatewayRequest: optionalAuthTokenForApiGatewayRequest}
 }
 
+func (c *Client) MirrorUpdate() error {
+	return nil
+}
+
 func do[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (result T, err error, code int) {
 	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
 		token, err := optionalAuthTokenForApiGatewayRequest()
