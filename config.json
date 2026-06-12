@@ -55,6 +55,8 @@
         "hubs": {"admin": "rwxa"}
     },
 
+    "enable_perm_resource_sync_on_startup": true,
+
     "as_mgw_mirror": false,
     "mgw_mirror_user_id": "",
     "mgw_cert_manager_url": "",

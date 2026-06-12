@@ -18,12 +18,13 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"regexp"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (db *DB) SetLocation(ctx context.Context, location models.Location, syncHandler func(l models.Location, user string) error, user string) error {
@@ -98,4 +99,8 @@ func (db *DB) ListLocations(ctx context.Context, options model.LocationListOptio
 	}
 
 	return locations, total, nil
+}
+
+func (db *DB) DesyncUnknownLocations(ctx context.Context, knownLocations []string) (err error) {
+	return nil
 }

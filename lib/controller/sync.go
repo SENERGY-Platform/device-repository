@@ -25,6 +25,10 @@ import (
 )
 
 func (this *Controller) StartSyncLoop(ctx context.Context, interval time.Duration, lockduration time.Duration) {
+	err := this.Sync(lockduration)
+	if err != nil {
+		this.config.GetLogger().Error("error while db sync run", "error", err)
+	}
 	ticker := time.NewTicker(interval)
 	go func() {
 		defer ticker.Stop()

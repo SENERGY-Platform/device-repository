@@ -28,6 +28,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/mgwmirror"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/util"
 )
 
 // set wg if you want to wait for clean disconnects after ctx is done
@@ -59,6 +60,12 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 		permClient = mgwmirror.NewMgwMirrorPerm(conf, db)
 	} else {
 		permClient = client.New(conf.PermissionsV2Url)
+		if conf.EnablePermResourceSyncOnStartup {
+			err = SyncPermResources(ctx, conf, permClient, db)
+			if err != nil {
+				conf.GetLogger().Error("unable to sync permissions resources", "error", err)
+			}
+		}
 	}
 
 	var p controller.Publisher
@@ -119,4 +126,104 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 	}
 
 	return err
+}
+
+func deleteUnknownPermissions(ctx context.Context, config configuration.Config, permClient client.Client, topic string, check func(id string) (bool, error)) error {
+	for id, err := range util.IterBatch(500, func(limit int64, offset int64) (ids []string, err error) {
+		ids, err, _ = permClient.AdminListResourceIds(client.InternalAdminToken, topic, client.ListOptions{
+			Limit:  limit,
+			Offset: offset,
+		})
+		return ids, err
+	}) {
+		if err != nil {
+			config.GetLogger().Error("error while listing permission resource for syncPermResource", "error", err, "topic", topic)
+			return err
+		}
+		exists, err := check(id)
+		if err != nil {
+			config.GetLogger().Error("error while checking permission resource existence in local db for syncPermResource", "error", err, "topic", topic, "id", id)
+			return err
+		}
+		if !exists {
+			config.GetLogger().Info("removed permission resource for syncPermResource", "topic", topic, "id", id)
+			err, _ = permClient.RemoveResource(client.InternalAdminToken, topic, id)
+			if err != nil {
+				config.GetLogger().Error("error while removing permission resource for syncPermResource", "error", err, "topic", topic, "id", id)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func SyncPermResources(ctx context.Context, config configuration.Config, permClient client.Client, db database.Database) error {
+	devicesKnownInPermissions := []string{}
+	err := deleteUnknownPermissions(ctx, config, permClient, config.DeviceTopic, func(id string) (bool, error) {
+		_, exists, err := db.GetDevice(ctx, id)
+		if err != nil {
+			return false, err
+		}
+		devicesKnownInPermissions = append(devicesKnownInPermissions, id)
+		return exists, nil
+	})
+	if err != nil {
+		return err
+	}
+	err = db.DesyncUnknownDevices(ctx, devicesKnownInPermissions)
+	if err != nil {
+		return err
+	}
+
+	deviceGroupsKnownInPermissions := []string{}
+	err = deleteUnknownPermissions(ctx, config, permClient, config.DeviceGroupTopic, func(id string) (bool, error) {
+		_, exists, err := db.GetDeviceGroup(ctx, id)
+		if err != nil {
+			return false, err
+		}
+		deviceGroupsKnownInPermissions = append(deviceGroupsKnownInPermissions, id)
+		return exists, nil
+	})
+	if err != nil {
+		return err
+	}
+	err = db.DesyncUnknownDeviceGroups(ctx, deviceGroupsKnownInPermissions)
+	if err != nil {
+		return err
+	}
+
+	hubsKnownInPermissions := []string{}
+	err = deleteUnknownPermissions(ctx, config, permClient, config.HubTopic, func(id string) (bool, error) {
+		_, exists, err := db.GetHub(ctx, id)
+		if err != nil {
+			return false, err
+		}
+		hubsKnownInPermissions = append(hubsKnownInPermissions, id)
+		return exists, nil
+	})
+	if err != nil {
+		return err
+	}
+	err = db.DesyncUnknownHubs(ctx, hubsKnownInPermissions)
+	if err != nil {
+		return err
+	}
+
+	locationsKnownInPermissions := []string{}
+	err = deleteUnknownPermissions(ctx, config, permClient, config.LocationTopic, func(id string) (bool, error) {
+		_, exists, err := db.GetLocation(ctx, id)
+		if err != nil {
+			return false, err
+		}
+		locationsKnownInPermissions = append(locationsKnownInPermissions, id)
+		return exists, nil
+	})
+	if err != nil {
+		return err
+	}
+	err = db.DesyncUnknownLocations(ctx, locationsKnownInPermissions)
+	if err != nil {
+		return err
+	}
+	return nil
 }

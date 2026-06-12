@@ -19,10 +19,12 @@ package mongo
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type SyncInfo struct {
@@ -67,9 +69,25 @@ func (this *Mongo) setDeleted(ctx context.Context, collection *mongo.Collection,
 	return err
 }
 
+func (this *Mongo) desyncUnknown(ctx context.Context, collection *mongo.Collection, idField string, knownIds []string) error {
+	result, err := collection.UpdateOne(ctx, bson.M{
+		idField: bson.M{"$nin": knownIds},
+	}, bson.M{
+		"$set": bson.M{SyncTodoBson: true},
+	})
+	if err != nil {
+		return err
+	}
+	this.config.GetLogger().Info("desynced unknown elements", "collection", collection.Name(), "affected", result.ModifiedCount)
+	return nil
+}
+
 const FetchSyncJobsDefaultBatchSize = 1000
 
 func FetchSyncJobs[OutputType any](collection *mongo.Collection, syncLockDuration time.Duration, maxBatchSize int) (jobs []OutputType, err error) {
+	defer func() {
+		slog.Debug("fetch sync jobs", "collection", collection.Name(), "jobs", len(jobs), "error", err)
+	}()
 	now := time.Now()
 	cutoff := now.Add(-syncLockDuration)
 	loopBreakTime := now.Add(syncLockDuration)

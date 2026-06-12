@@ -264,3 +264,7 @@ func (this *Mongo) SetHubConnectionState(ctx context.Context, id string, state m
 	})
 	return err
 }
+
+func (this *Mongo) DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error) {
+	return this.desyncUnknown(ctx, this.hubCollection(), HubBson.Id, knownHubs)
+}

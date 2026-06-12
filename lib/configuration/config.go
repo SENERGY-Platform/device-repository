@@ -97,6 +97,8 @@ type Config struct {
 	LogLevel string       `json:"log_level"`
 	logger   *slog.Logger `json:"-"`
 
+	EnablePermResourceSyncOnStartup bool `json:"enable_perm_resource_sync_on_startup"`
+
 	AsMgwMirror             bool   `json:"as_mgw_mirror"`
 	MgwMirrorUserId         string `json:"mgw_mirror_user_id"`   //may be set by using MgwMirrorUserId
 	MgwCertManagerUrl       string `json:"mgw_cert_manager_url"` //used to get MgwMirrorUserId if not set

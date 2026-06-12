@@ -219,3 +219,7 @@ func (this *Mongo) ListLocations(ctx context.Context, listOptions model.Location
 	}
 	return result, total, err
 }
+
+func (this *Mongo) DesyncUnknownLocations(ctx context.Context, knownLocations []string) (err error) {
+	return this.desyncUnknown(ctx, this.locationCollection(), LocationBson.Id, knownLocations)
+}

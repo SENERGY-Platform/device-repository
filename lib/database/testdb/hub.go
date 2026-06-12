@@ -18,12 +18,13 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"regexp"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (db *DB) SetHub(ctx context.Context, hub model.HubWithConnectionState, syncHandler func(model.HubWithConnectionState) error) error {
@@ -119,4 +120,8 @@ func (db *DB) SetHubConnectionState(ctx context.Context, id string, state models
 	}
 	hub.ConnectionState = state
 	return db.SetHub(ctx, hub, nil)
+}
+
+func (db *DB) DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error) {
+	return nil
 }

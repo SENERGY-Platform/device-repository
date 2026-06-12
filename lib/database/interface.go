@@ -155,4 +155,9 @@ type Database interface {
 	SetDefaultDeviceAttributes(ctx context.Context, userId string, attributes []models.Attribute) error
 
 	GetLastUpdateTimestampsForUser(ctx context.Context, userId string) (result []model.LastUpdateTimestamp, err error)
+
+	DesyncUnknownLocations(ctx context.Context, knownLocations []string) (err error)
+	DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error)
+	DesyncUnknownDeviceGroups(ctx context.Context, knownDeviceGroups []string) (err error)
+	DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error)
 }

@@ -18,12 +18,13 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"regexp"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (db *DB) GetDevice(_ context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error) {
@@ -131,4 +132,8 @@ func (db *DB) SetDeviceConnectionState(ctx context.Context, id string, state mod
 	}
 	device.ConnectionState = state
 	return db.SetDevice(ctx, device, nil)
+}
+
+func (db *DB) DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error) {
+	return nil
 }

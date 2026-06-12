@@ -307,3 +307,7 @@ func (this *Mongo) RetryDeviceGroupSync(lockduration time.Duration, syncDeleteHa
 	}
 	return nil
 }
+
+func (this *Mongo) DesyncUnknownDeviceGroups(ctx context.Context, knownDeviceGroups []string) (err error) {
+	return this.desyncUnknown(ctx, this.deviceGroupCollection(), DeviceGroupBson.Id, knownDeviceGroups)
+}

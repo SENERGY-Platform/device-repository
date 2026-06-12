@@ -391,3 +391,7 @@ func (this *Mongo) SetDeviceConnectionState(ctx context.Context, id string, stat
 	})
 	return err
 }
+
+func (this *Mongo) DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error) {
+	return this.desyncUnknown(ctx, this.deviceCollection(), DeviceBson.Id, knownDevices)
+}
