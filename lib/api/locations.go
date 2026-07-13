@@ -21,13 +21,14 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -115,7 +116,7 @@ func (this *LocationEndpoints) Validate(config configuration.Config, router *htt
 // @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
-// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
 // @Success      200 {array}  models.Location
 // @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
@@ -195,8 +196,7 @@ func (this *LocationEndpoints) List(config configuration.Config, router *http.Se
 // @Tags         locations
 // @Produce      json
 // @Security Bearer
-// @Param        id path string true "Location Id"
-// @Param        message body models.Location true "element"
+// @Param        message body models.Location true "location"
 // @Success      200 {object}  models.Location
 // @Failure      400
 // @Failure      401

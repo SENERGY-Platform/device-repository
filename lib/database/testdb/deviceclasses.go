@@ -18,12 +18,13 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"golang.org/x/exp/maps"
+	"maps"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (db *DB) SetDeviceClass(ctx context.Context, class models.DeviceClass, syncHandler func(models.DeviceClass) error) error {
@@ -54,7 +55,7 @@ func (db *DB) ListDeviceClasses(ctx context.Context, options model.DeviceClassLi
 }
 
 func (db *DB) ListAllDeviceClasses(_ context.Context) ([]models.DeviceClass, error) {
-	return maps.Values(db.deviceClasses), nil
+	return iterToSlice(maps.Values(db.deviceClasses)), nil
 }
 func (db *DB) ListAllDeviceClassesUsedWithControllingFunctions(_ context.Context) ([]models.DeviceClass, error) {
 	panic("not implemented")

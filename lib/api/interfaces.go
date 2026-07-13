@@ -143,6 +143,11 @@ type Controller interface {
 	GetDefaultDeviceAttributes(token string) (attributes []models.Attribute, err error, code int)
 	SetDefaultDeviceAttributes(token string, attributes []models.Attribute) (err error, code int)
 
+	ListGraphs(token string, options model.GraphListOptions) (result []models.Graph, total int64, err error, errCode int)
+	ReadGraph(token string, id string) (result models.Graph, err error, errCode int)
+	SetGraph(token string, graph models.Graph) (result models.Graph, err error, code int)
+	DeleteGraph(token string, id string) (error, int)
+
 	GetLastUpdateTimestamps(token string, userId string) (result []model.LastUpdateTimestamp, err error, code int)
 
 	MirrorUpdate() error

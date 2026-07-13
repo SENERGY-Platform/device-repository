@@ -47,7 +47,7 @@ type ExtendedLocationEndpoints struct{}
 // @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
-// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
 // @Success      200 {array}  models.ExtendedLocation
 // @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"

@@ -244,14 +244,14 @@ func (this *Mongo) GetDeviceByLocalId(ctx context.Context, ownerId string, local
 	}
 	result := this.deviceCollection().FindOne(ctx, filter)
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return device, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&device)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return device, false, nil
 	}
 	return device, true, err

@@ -156,8 +156,15 @@ type Database interface {
 
 	GetLastUpdateTimestampsForUser(ctx context.Context, userId string) (result []model.LastUpdateTimestamp, err error)
 
+	SetGraph(ctx context.Context, graph models.Graph, syncHandler func(models.Graph) error) error
+	RemoveGraph(ctx context.Context, id string, syncDeleteHandler func(models.Graph) error) error
+	GetGraph(ctx context.Context, id string) (graph models.Graph, exists bool, err error)
+	ListGraphs(ctx context.Context, listOptions model.GraphListOptions) (result []models.Graph, total int64, err error)
+	RetryGraphSync(lockduration time.Duration, syncDeleteHandler func(models.Graph) error, syncHandler func(models.Graph) error) error
+
 	DesyncUnknownLocations(ctx context.Context, knownLocations []string) (err error)
 	DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error)
 	DesyncUnknownDeviceGroups(ctx context.Context, knownDeviceGroups []string) (err error)
 	DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error)
+	DesyncUnknownGraphs(ctx context.Context, knownGraphs []string) (err error)
 }

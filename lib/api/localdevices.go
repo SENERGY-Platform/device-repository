@@ -49,9 +49,9 @@ type LocalDevicesEndpoints struct{}
 // @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
-// @Param        device-type-ids query string false "filter; comma-seperated list"
-// @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
-// @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        device-type-ids query string false "filter; comma-separated list"
+// @Param        attr-keys query string false "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list"
 // @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
 // @Param        device-attribute-blacklist query string false "JSON encoded []models.Attribute, attribute value and origin will only be checked if set, otherwise all values or origins will be blacklisted"
 // @Success      200 {array}  models.Device

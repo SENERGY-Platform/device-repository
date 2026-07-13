@@ -50,6 +50,7 @@ type Config struct {
 	FunctionTopic                          string `json:"function_topic"`
 	DeviceClassTopic                       string `json:"device_class_topic"`
 	LocationTopic                          string `json:"location_topic"`
+	GraphTopic                             string `json:"graph_topic"`
 	PermissionsV2Url                       string `json:"permissions_v2_url"`
 	MongoUrl                               string `json:"mongo_url"`
 	MongoTable                             string `json:"mongo_table"`
@@ -67,6 +68,7 @@ type Config struct {
 	MongoLocationCollection                string `json:"mongo_location_collection"`
 	MongoDefaultDeviceAttributesCollection string `json:"mongo_default_device_attributes_collection"`
 	MongoLastUpdateTimestampsCollection    string `json:"mongo_last_update_timestamps_collection"`
+	MongoGraphCollection                   string `json:"mongo_graph_collection"`
 	Debug                                  bool   `json:"debug"`
 	HttpClientTimeout                      string `json:"http_client_timeout"`
 

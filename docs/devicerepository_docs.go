@@ -1660,13 +1660,13 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list",
+                        "description": "filter; comma-separated list",
                         "name": "device-ids",
                         "in": "query"
                     },
@@ -1678,13 +1678,13 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list",
                         "name": "attr-keys",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list",
                         "name": "attr-values",
                         "in": "query"
                     },
@@ -2281,13 +2281,13 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "in combination with owner; fills ids filter; comma-seperated list",
+                        "description": "in combination with owner; fills ids filter; comma-separated list",
                         "name": "local_ids",
                         "in": "query"
                     },
@@ -2299,19 +2299,19 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list",
+                        "description": "filter; comma-separated list",
                         "name": "device-type-ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list",
                         "name": "attr-keys",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list",
                         "name": "attr-values",
                         "in": "query"
                     },
@@ -2955,13 +2955,13 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "in combination with owner; fills ids filter; comma-seperated list",
+                        "description": "in combination with owner; fills ids filter; comma-separated list",
                         "name": "local_ids",
                         "in": "query"
                     },
@@ -2973,19 +2973,19 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list",
+                        "description": "filter; comma-separated list",
                         "name": "device-type-ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list",
                         "name": "attr-keys",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list",
                         "name": "attr-values",
                         "in": "query"
                     },
@@ -3157,7 +3157,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
@@ -3305,7 +3305,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
@@ -3398,7 +3398,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     }
@@ -3678,6 +3678,309 @@ const docTemplatedevicerepository = `{
                 ]
             }
         },
+        "/graphs": {
+            "get": {
+                "description": "list graph",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "graphs"
+                ],
+                "summary": "list graph",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-separated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list of device ids that must be found in a node resource_id with resource_type 'device'",
+                        "name": "device_ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list of key value pairs, value is optional; lists elements only if they have an attribute that is in the given list, example: ?attributes=attrKey1,attrKey2:attrVal2,attrKey3",
+                        "name": "attributes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; json encoded []model.Attribute, alternative for attributes query parameter, may be useful if if the attribute origin is important or the key/value contains ',' or ':'",
+                        "name": "attributes_json",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Graph"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "create graph",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "graphs"
+                ],
+                "summary": "create graph",
+                "parameters": [
+                    {
+                        "description": "graph",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Graph"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Graph"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/graphs/{id}": {
+            "get": {
+                "description": "get graph",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "graphs"
+                ],
+                "summary": "get graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Graph Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Graph"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "description": "set graph",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "graphs"
+                ],
+                "summary": "set graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Graph Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "element",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Graph"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Graph"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "delete graph",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "graphs"
+                ],
+                "summary": "delete graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Graph Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/helper/id": {
             "get": {
                 "description": "transforms short id to long id",
@@ -3759,7 +4062,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
@@ -4739,7 +5042,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
@@ -4799,14 +5102,7 @@ const docTemplatedevicerepository = `{
                 "summary": "create location",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Location Id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "element",
+                        "description": "location",
                         "name": "message",
                         "in": "body",
                         "required": true,
@@ -7376,7 +7672,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     }
@@ -7457,7 +7753,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     }
@@ -7538,7 +7834,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     }
@@ -7619,7 +7915,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     }
@@ -7700,7 +7996,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     }
@@ -7781,7 +8077,7 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
@@ -7946,25 +8242,25 @@ const docTemplatedevicerepository = `{
                     },
                     {
                         "type": "string",
-                        "description": "filter; ignores limit/offset; comma-seperated list",
+                        "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they use a protocol that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they use a protocol that is in the given list",
                         "name": "protocol-ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list",
                         "name": "attr-keys",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list",
                         "name": "attr-values",
                         "in": "query"
                     },
@@ -8868,6 +9164,29 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
+        "models.Edge": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "from_node_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "to_node_id": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.ExtendedDevice": {
             "type": "object",
             "properties": {
@@ -9034,6 +9353,44 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
+        "models.Graph": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "edges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Edge"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Node"
+                    }
+                },
+                "owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GraphResourceType": {
+            "type": "string",
+            "enum": [
+                "device"
+            ],
+            "x-enum-varnames": [
+                "GraphResourceTypeDevice"
+            ]
+        },
         "models.Hub": {
             "type": "object",
             "properties": {
@@ -9108,6 +9465,26 @@ const docTemplatedevicerepository = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Node": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "resource_id": {
+                    "type": "string"
+                },
+                "resource_type": {
+                    "$ref": "#/definitions/models.GraphResourceType"
                 }
             }
         },

@@ -170,3 +170,67 @@ func (this *MgwMirrorPerm) RemoveResource(token string, topicId string, id strin
 func (this *MgwMirrorPerm) SetPermission(token string, topicId string, id string, permissions model2.ResourcePermissions) (result model2.ResourcePermissions, err error, code int) {
 	return permissions, nil, 200
 }
+
+func (this *MgwMirrorPerm) CheckPermissionContext(ctx context.Context, token string, topicId string, id string, permissions ...model2.Permission) (access bool, err error, code int) {
+	return this.CheckPermission(token, topicId, id, permissions...)
+}
+
+func (this *MgwMirrorPerm) CheckMultiplePermissionsContext(ctx context.Context, token string, topicId string, ids []string, permissions ...model2.Permission) (access map[string]bool, err error, code int) {
+	return this.CheckMultiplePermissions(token, topicId, ids, permissions...)
+}
+
+func (this *MgwMirrorPerm) ListAccessibleResourceIdsContext(ctx context.Context, token string, topicId string, options model2.ListOptions, permissions ...model2.Permission) (ids []string, err error, code int) {
+	return this.ListAccessibleResourceIds(token, topicId, options, permissions...)
+}
+
+func (this *MgwMirrorPerm) ListComputedPermissionsContext(ctx context.Context, token string, topic string, ids []string) (result []model2.ComputedPermissions, err error, code int) {
+	return this.ListComputedPermissions(token, topic, ids)
+}
+
+func (this *MgwMirrorPerm) ListTopicsContext(ctx context.Context, token string, options model2.ListOptions) (result []model2.Topic, err error, code int) {
+	return this.ListTopics(token, options)
+}
+
+func (this *MgwMirrorPerm) GetTopicContext(ctx context.Context, token string, id string) (result model2.Topic, err error, code int) {
+	return this.GetTopic(token, id)
+}
+
+func (this *MgwMirrorPerm) RemoveTopicContext(ctx context.Context, token string, id string) (err error, code int) {
+	return this.RemoveTopic(token, id)
+}
+
+func (this *MgwMirrorPerm) SetTopicContext(ctx context.Context, token string, topic model2.Topic) (result model2.Topic, err error, code int) {
+	return this.SetTopic(token, topic)
+}
+
+func (this *MgwMirrorPerm) AdminListResourceIdsContext(ctx context.Context, tokenStr string, topicId string, options model2.ListOptions) (ids []string, err error, code int) {
+	return this.AdminListResourceIds(tokenStr, topicId, options)
+}
+
+func (this *MgwMirrorPerm) AdminLoadFromPermissionSearchContext(ctx context.Context, req model2.AdminLoadPermSearchRequest) (updateCount int, err error, code int) {
+	return this.AdminLoadFromPermissionSearch(req)
+}
+
+func (this *MgwMirrorPerm) ExportContext(ctx context.Context, token string, options model2.ImportExportOptions) (result model2.ImportExport, err error, code int) {
+	return this.Export(token, options)
+}
+
+func (this *MgwMirrorPerm) ImportContext(ctx context.Context, token string, importModel model2.ImportExport, options model2.ImportExportOptions) (err error, code int) {
+	return this.Import(token, importModel, options)
+}
+
+func (this *MgwMirrorPerm) ListResourcesWithAdminPermissionContext(ctx context.Context, token string, topicId string, options model2.ListOptions) (result []model2.Resource, err error, code int) {
+	return this.ListResourcesWithAdminPermission(token, topicId, options)
+}
+
+func (this *MgwMirrorPerm) GetResourceContext(ctx context.Context, token string, topicId string, id string) (result model2.Resource, err error, code int) {
+	return this.GetResource(token, topicId, id)
+}
+
+func (this *MgwMirrorPerm) RemoveResourceContext(ctx context.Context, token string, topicId string, id string) (err error, code int) {
+	return this.RemoveResource(token, topicId, id)
+}
+
+func (this *MgwMirrorPerm) SetPermissionContext(ctx context.Context, token string, topicId string, id string, permissions model2.ResourcePermissions) (result model2.ResourcePermissions, err error, code int) {
+	return this.SetPermission(token, topicId, id, permissions)
+}

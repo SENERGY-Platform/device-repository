@@ -565,6 +565,21 @@ definitions:
           $ref: '#/definitions/models.Service'
         type: array
     type: object
+  models.Edge:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      from_node_id:
+        type: string
+      id:
+        type: string
+      to_node_id:
+        type: string
+      weight:
+        type: integer
+    type: object
   models.ExtendedDevice:
     properties:
       attributes:
@@ -670,6 +685,31 @@ definitions:
       rdf_type:
         type: string
     type: object
+  models.Graph:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      edges:
+        items:
+          $ref: '#/definitions/models.Edge'
+        type: array
+      id:
+        type: string
+      nodes:
+        items:
+          $ref: '#/definitions/models.Node'
+        type: array
+      owner:
+        type: string
+    type: object
+  models.GraphResourceType:
+    enum:
+    - device
+    type: string
+    x-enum-varnames:
+    - GraphResourceTypeDevice
   models.Hub:
     properties:
       attributes:
@@ -721,6 +761,19 @@ definitions:
         type: string
       name:
         type: string
+    type: object
+  models.Node:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      id:
+        type: string
+      resource_id:
+        type: string
+      resource_type:
+        $ref: '#/definitions/models.GraphResourceType'
     type: object
   models.Permissions:
     properties:
@@ -1887,11 +1940,11 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
-      - description: filter; comma-seperated list
+      - description: filter; comma-separated list
         in: query
         name: device-ids
         type: string
@@ -1899,12 +1952,12 @@ paths:
         in: query
         name: ignore-generated
         type: boolean
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute key that is in the given list
         in: query
         name: attr-keys
         type: string
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute value that is in the given list
         in: query
         name: attr-values
@@ -2323,11 +2376,11 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
-      - description: in combination with owner; fills ids filter; comma-seperated
+      - description: in combination with owner; fills ids filter; comma-separated
           list
         in: query
         name: local_ids
@@ -2337,16 +2390,16 @@ paths:
         in: query
         name: owner
         type: string
-      - description: filter; comma-seperated list
+      - description: filter; comma-separated list
         in: query
         name: device-type-ids
         type: string
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute key that is in the given list
         in: query
         name: attr-keys
         type: string
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute value that is in the given list
         in: query
         name: attr-values
@@ -2737,11 +2790,11 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
-      - description: in combination with owner; fills ids filter; comma-seperated
+      - description: in combination with owner; fills ids filter; comma-separated
           list
         in: query
         name: local_ids
@@ -2751,16 +2804,16 @@ paths:
         in: query
         name: owner
         type: string
-      - description: filter; comma-seperated list
+      - description: filter; comma-separated list
         in: query
         name: device-type-ids
         type: string
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute key that is in the given list
         in: query
         name: attr-keys
         type: string
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute value that is in the given list
         in: query
         name: attr-values
@@ -2877,7 +2930,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -2975,7 +3028,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -3037,7 +3090,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -3220,6 +3273,206 @@ paths:
       summary: set function
       tags:
       - functions
+  /graphs:
+    get:
+      description: list graph
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-separated list
+        in: query
+        name: ids
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      - description: filter; comma-separated list of device ids that must be found
+          in a node resource_id with resource_type 'device'
+        in: query
+        name: device_ids
+        type: string
+      - description: 'filter; comma-separated list of key value pairs, value is optional;
+          lists elements only if they have an attribute that is in the given list,
+          example: ?attributes=attrKey1,attrKey2:attrVal2,attrKey3'
+        in: query
+        name: attributes
+        type: string
+      - description: filter; json encoded []model.Attribute, alternative for attributes
+          query parameter, may be useful if if the attribute origin is important or
+          the key/value contains ',' or ':'
+        in: query
+        name: attributes_json
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.Graph'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list graph
+      tags:
+      - graphs
+    post:
+      description: create graph
+      parameters:
+      - description: graph
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Graph'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Graph'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create graph
+      tags:
+      - graphs
+  /graphs/{id}:
+    delete:
+      description: delete graph
+      parameters:
+      - description: Graph Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete graph
+      tags:
+      - graphs
+    get:
+      description: get graph
+      parameters:
+      - description: Graph Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Graph'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get graph
+      tags:
+      - graphs
+    put:
+      description: set graph
+      parameters:
+      - description: Graph Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Graph'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Graph'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set graph
+      tags:
+      - graphs
   /helper/id:
     get:
       description: transforms short id to long id
@@ -3268,7 +3521,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -3910,7 +4163,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -3950,12 +4203,7 @@ paths:
     post:
       description: create location
       parameters:
-      - description: Location Id
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: element
+      - description: location
         in: body
         name: message
         required: true
@@ -5617,7 +5865,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -5669,7 +5917,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -5721,7 +5969,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -5773,7 +6021,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -5825,7 +6073,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -5877,7 +6125,7 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
@@ -5984,21 +6232,21 @@ paths:
         in: query
         name: sort
         type: string
-      - description: filter; ignores limit/offset; comma-seperated list
+      - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
         type: string
-      - description: filter; comma-seperated list; lists elements only if they use
+      - description: filter; comma-separated list; lists elements only if they use
           a protocol that is in the given list
         in: query
         name: protocol-ids
         type: string
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute key that is in the given list
         in: query
         name: attr-keys
         type: string
-      - description: filter; comma-seperated list; lists elements only if they have
+      - description: filter; comma-separated list; lists elements only if they have
           an attribute value that is in the given list
         in: query
         name: attr-values

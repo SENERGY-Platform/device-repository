@@ -17,6 +17,7 @@
 package testdb
 
 import (
+	"iter"
 	"sync"
 
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
@@ -41,6 +42,7 @@ type DB struct {
 	deviceClasses           map[string]models.DeviceClass
 	functions               map[string]models.Function
 	locations               map[string]models.Location
+	graphs                  map[string]models.Graph
 	permissions             []Resource
 	mux                     sync.Mutex
 }
@@ -67,6 +69,7 @@ func NewTestDB(config configuration.Config) database.Database {
 		deviceClasses:           make(map[string]models.DeviceClass),
 		functions:               make(map[string]models.Function),
 		locations:               make(map[string]models.Location),
+		graphs:                  make(map[string]models.Graph),
 	}
 }
 
@@ -113,4 +116,11 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func iterToSlice[T any](seq iter.Seq[T]) (result []T) {
+	for e := range seq {
+		result = append(result, e)
+	}
+	return
 }

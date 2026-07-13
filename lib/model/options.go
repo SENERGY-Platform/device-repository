@@ -20,7 +20,7 @@ import "github.com/SENERGY-Platform/models/go/models"
 
 type DeviceListOptions struct {
 	Ids                      []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
-	LocalIds                 []string                //filter; in combination with owner; fills ids filter; comma-seperated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
+	LocalIds                 []string                //filter; in combination with owner; fills ids filter; comma-separated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
 	Owner                    string                  //used in combination with local_ids to fill ids filter; defaults to requesting user
 	DeviceTypeIds            []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
 	ConnectionState          *models.ConnectionState //filter
@@ -87,7 +87,7 @@ type DeviceClassListOptions struct {
 
 type ExtendedDeviceListOptions struct {
 	Ids                      []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
-	LocalIds                 []string                //filter; in combination with owner; fills ids filter; comma-seperated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
+	LocalIds                 []string                //filter; in combination with owner; fills ids filter; comma-separated list; ignored if LocalIds == nil; LocalIds == []string{} will return an empty list;
 	Owner                    string                  //used in combination with local_ids to fill ids filter; defaults to requesting user
 	DeviceTypeIds            []string                //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
 	ConnectionState          *models.ConnectionState //filter
@@ -171,4 +171,15 @@ type DeviceTypeUpdateOptions struct {
 
 type HubUpdateOptions struct {
 	UpdateOnlySameOriginAttributes []string
+}
+
+type GraphListOptions struct {
+	Ids        []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	DeviceIds  []string //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
+	Search     string
+	Limit      int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset     int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy     string                //default name.asc
+	Permission models.PermissionFlag //defaults to read
+	Attributes []models.Attribute
 }

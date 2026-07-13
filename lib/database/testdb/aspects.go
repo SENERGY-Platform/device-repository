@@ -18,12 +18,13 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"golang.org/x/exp/maps"
+	"maps"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (db *DB) SetAspect(ctx context.Context, aspect models.Aspect, syncHandler func(models.Aspect) error) error {
@@ -57,7 +58,7 @@ func (db *DB) GetAspect(_ context.Context, id string) (result models.Aspect, exi
 	return get(id, db.aspects)
 }
 func (db *DB) ListAllAspects(_ context.Context) ([]models.Aspect, error) {
-	return maps.Values(db.aspects), nil
+	return iterToSlice(maps.Values(db.aspects)), nil
 }
 func (db *DB) ListAspectsWithMeasuringFunction(_ context.Context, ancestors bool, descendants bool) ([]models.Aspect, error) {
 	panic("not implemented")

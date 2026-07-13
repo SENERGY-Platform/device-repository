@@ -75,10 +75,10 @@ func (this *DeviceTypeEndpoints) Get(config configuration.Config, router *http.S
 // @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
-// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
-// @Param        protocol-ids query string false "filter; comma-seperated list; lists elements only if they use a protocol that is in the given list"
-// @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
-// @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
+// @Param        protocol-ids query string false "filter; comma-separated list; lists elements only if they use a protocol that is in the given list"
+// @Param        attr-keys query string false "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list"
 // @Param        include-modified query bool false "include id-modified device-types"
 // @Param        ignore-unmodified query bool false "no unmodified device-types"
 // @Param        criteria query string false "filter; json encoded []model.FilterCriteria"
@@ -215,7 +215,7 @@ func (this *DeviceTypeEndpoints) List(config configuration.Config, router *http.
 					?sort=name
 			- filter: json encoded []model.FilterCriteria; optional
 					all criteria must be satisfied
-			- interactions-filter: comma seperated list of interactions
+			- interactions-filter: comma separated list of interactions
 					deprecated: use interactions field in filter (model.FilterCriteria.Interaction)
 					if set: returns only device-types with at least one matching interaction on criteria matching services
 					ignored if empty

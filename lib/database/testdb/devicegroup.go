@@ -20,9 +20,10 @@ import (
 	"context"
 	"time"
 
+	"maps"
+
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"golang.org/x/exp/maps"
 )
 
 func (db *DB) SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup, syncHandler func(dg models.DeviceGroup, user string) error, user string) error {
@@ -48,7 +49,7 @@ func (db *DB) GetDeviceGroup(_ context.Context, id string) (deviceGroup models.D
 }
 
 func (db *DB) ListDeviceGroups(_ context.Context, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error) {
-	return maps.Values(db.deviceGroups), int64(len(db.deviceGroups)), nil
+	return iterToSlice(maps.Values(db.deviceGroups)), int64(len(db.deviceGroups)), nil
 }
 
 func (db *DB) DesyncUnknownDeviceGroups(ctx context.Context, knownDeviceGroups []string) (err error) {

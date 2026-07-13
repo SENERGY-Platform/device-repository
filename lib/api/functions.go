@@ -48,7 +48,7 @@ type FunctionsEndpoints struct{}
 // @Param        rdf_type query string false "filter; https://senergy.infai.org/ontology/ControllingFunction || https://senergy.infai.org/ontology/MeasuringFunction"
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
-// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
 // @Success      200 {array}  models.Function
 // @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
 // @Failure      400

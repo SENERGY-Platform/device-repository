@@ -17,10 +17,11 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"net/http"
 )
 
 func (c *Controller) GetPermissionsClient() client.Client {
@@ -28,16 +29,14 @@ func (c *Controller) GetPermissionsClient() client.Client {
 }
 
 func (this *Controller) EnsureInitialRights(topic string, resourceId string, owner string) error {
-	initialPermissions := this.getDefaultEntryPermissions(topic, owner)
-
-	resource, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, topic, resourceId)
-	if err != nil && code != http.StatusNotFound {
+	_, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, topic, resourceId)
+	if err == nil {
+		return nil
+	} else if code != http.StatusNotFound {
 		return err
 	}
-	if err == nil {
-		initialPermissions = model.ResourceRightsFromPermission(resource.ResourcePermissions)
-	}
 
+	initialPermissions := this.getDefaultEntryPermissions(topic, owner)
 	_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, topic, resourceId, initialPermissions.ToPermV2Permissions())
 	if err != nil {
 		return err

@@ -18,12 +18,13 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"golang.org/x/exp/maps"
+	"maps"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (db *DB) SetCharacteristic(ctx context.Context, characteristic models.Characteristic, syncHandler func(models.Characteristic) error) error {
@@ -57,7 +58,7 @@ func (db *DB) GetCharacteristic(_ context.Context, id string) (result models.Cha
 	return get(id, db.characteristics)
 }
 func (db *DB) ListAllCharacteristics(_ context.Context) ([]models.Characteristic, error) {
-	return maps.Values(db.characteristics), nil
+	return iterToSlice(maps.Values(db.characteristics)), nil
 }
 func (db *DB) CharacteristicIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	panic("implement me")

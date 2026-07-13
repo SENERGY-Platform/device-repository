@@ -1,6 +1,6 @@
 module asyncapi-gen
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/SENERGY-Platform/device-repository v0.0.0-00010101000000-000000000000
@@ -8,9 +8,9 @@ require (
 )
 
 require (
-	github.com/SENERGY-Platform/models/go v0.0.0-20260302084452-04ca9ee69c93 // indirect
+	github.com/SENERGY-Platform/models/go v0.0.0-20260708135554-23489b7c5691 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/pierrec/lz4/v4 v4.1.25 // indirect
 	github.com/segmentio/kafka-go v0.4.50 // indirect
 	github.com/swaggest/jsonschema-go v0.3.39 // indirect

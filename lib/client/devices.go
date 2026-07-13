@@ -19,12 +19,13 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 type DeviceUpdateOptions = model.DeviceUpdateOptions
@@ -147,7 +148,7 @@ func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (r
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+id+queryString, nil)
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+url.PathEscape(id)+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

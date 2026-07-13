@@ -18,13 +18,14 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -43,11 +44,11 @@ type DeviceGroupEndpoints struct{}
 // @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
-// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
-// @Param        device-ids query string false "filter; comma-seperated list"
+// @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
+// @Param        device-ids query string false "filter; comma-separated list"
 // @Param        ignore-generated query bool false "filter; remove generated groups from result"
-// @Param        attr-keys query string false "filter; comma-seperated list; lists elements only if they have an attribute key that is in the given list"
-// @Param        attr-values query string false "filter; comma-seperated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        attr-keys query string false "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list"
 // @Param        criteria query string false "filter; json encoded []model.FilterCriteria"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
 // @Param        filter_generic_duplicate_criteria query bool false "remove criteria that are more generalized variations of already listed criteria (ref SNRGY-3027)"

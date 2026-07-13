@@ -18,12 +18,14 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 	"strings"
 	"time"
+
+	"maps"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"golang.org/x/exp/slices"
 )
 
 var STRICT = true
@@ -46,7 +48,7 @@ func (db *DB) GetDeviceType(_ context.Context, id string) (deviceType models.Dev
 
 func (db *DB) ListDeviceTypes(ctx context.Context, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool) (result []models.DeviceType, err error) {
 	// sort can be id or name with .asc or .desc
-	deviceTypes := maps.Values(db.deviceTypes)
+	deviceTypes := iterToSlice(maps.Values(db.deviceTypes))
 	if offset >= int64(len(deviceTypes)) {
 		return []models.DeviceType{}, nil
 	}
@@ -81,7 +83,7 @@ func (db *DB) ListDeviceTypesV2(ctx context.Context, limit int64, offset int64, 
 	if STRICT && (filter != nil || includeModified) {
 		panic("implement me")
 	}
-	deviceTypes := maps.Values(db.deviceTypes)
+	deviceTypes := iterToSlice(maps.Values(db.deviceTypes))
 	if offset >= int64(len(deviceTypes)) {
 		return []models.DeviceType{}, nil
 	}
@@ -120,7 +122,7 @@ func (db *DB) ListDeviceTypesV3(ctx context.Context, listOptions model.DeviceTyp
 		listOptions.Search != "") {
 		panic("implement me")
 	}
-	deviceTypes := maps.Values(db.deviceTypes)
+	deviceTypes := iterToSlice(maps.Values(db.deviceTypes))
 	if listOptions.Offset >= int64(len(deviceTypes)) {
 		return []models.DeviceType{}, 0, nil
 	}

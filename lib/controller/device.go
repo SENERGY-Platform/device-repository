@@ -633,14 +633,29 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 		device.OwnerId = jwtToken.GetUserId()
 	}
 
-	if exists && original.OwnerId != device.OwnerId && original.OwnerId != "" && !jwtToken.IsAdmin() {
-		ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Administrate)
-		if err != nil {
+	if exists && original.OwnerId != device.OwnerId && original.OwnerId != "" {
+		if !jwtToken.IsAdmin() {
+			ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Administrate)
+			if err != nil {
+				return device, err, code
+			}
+			if !ok {
+				return device, fmt.Errorf("only admins may set new owner: %w", err), http.StatusBadRequest
+			}
+		}
+
+		rights, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.DeviceTopic, device.Id)
+		if err != nil && code != http.StatusNotFound {
+			this.config.GetLogger().Error("unable to get permission resource", "error", err)
+			debug.PrintStack()
 			return device, err, code
 		}
-		if !ok {
-			return device, fmt.Errorf("only admins may set new owner: %w", err), http.StatusBadRequest
+
+		//new device owner-id must be existing admin user (ignore for new devices or devices with unchanged owner)
+		if code != http.StatusNotFound && device.OwnerId != original.OwnerId && !rights.UserPermissions[device.OwnerId].Administrate {
+			return device, errors.New("new owner must have existing user admin rights"), http.StatusBadRequest
 		}
+
 	}
 
 	if !this.config.DisableStrictValidationForTesting {
@@ -649,18 +664,6 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 			this.logger.Warn("device validation failed with error: " + err.Error())
 			return device, err, code
 		}
-	}
-
-	rights, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.DeviceTopic, device.Id)
-	if err != nil && code != http.StatusNotFound {
-		this.config.GetLogger().Error("unable to get permission resource", "error", err)
-		debug.PrintStack()
-		return device, err, code
-	}
-
-	//new device owner-id must be existing admin user (ignore for new devices or devices with unchanged owner)
-	if code != http.StatusNotFound && device.OwnerId != original.OwnerId && !rights.UserPermissions[device.OwnerId].Administrate {
-		return device, errors.New("new owner must have existing user admin rights"), http.StatusBadRequest
 	}
 
 	device, err, code = this.setDevice(device)
@@ -763,6 +766,10 @@ func (this *Controller) DeleteDevice(token string, id string) (error, int) {
 }
 
 func (this *Controller) deleteDeviceSyncHandler(old model.DeviceWithConnectionState) (err error) {
+	err = this.removeDeviceFromGraphs(old.Id)
+	if err != nil {
+		return err
+	}
 	err = this.resetHubsForDeviceUpdate(old.Device)
 	if err != nil {
 		return err

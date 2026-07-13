@@ -85,7 +85,7 @@ func (this *ExtendedHubEndpoints) Get(config configuration.Config, router *http.
 // @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
-// @Param        ids query string false "filter; ignores limit/offset; comma-seperated list"
+// @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
 // @Param        connection-state query integer false "filter; valid values are 'online', 'offline' and an empty string for unknown states"
 // @Param        p query string false "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate"
 // @Success      200 {array}  models.ExtendedHub

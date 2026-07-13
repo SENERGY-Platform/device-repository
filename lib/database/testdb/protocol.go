@@ -18,9 +18,11 @@ package testdb
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/models/go/models"
-	"golang.org/x/exp/maps"
 	"time"
+
+	"maps"
+
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (db *DB) SetProtocol(ctx context.Context, protocol models.Protocol, syncHandler func(models.Protocol) error) error {
@@ -39,5 +41,5 @@ func (db *DB) GetProtocol(_ context.Context, id string) (result models.Protocol,
 	return get(id, db.protocols)
 }
 func (db *DB) ListProtocols(_ context.Context, limit int64, offset int64, sort string) ([]models.Protocol, error) {
-	return maps.Values(db.protocols), nil
+	return iterToSlice(maps.Values(db.protocols)), nil
 }

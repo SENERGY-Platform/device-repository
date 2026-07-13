@@ -69,6 +69,12 @@ func New(config configuration.Config, db database.Database, p Publisher, permCli
 		if err != nil {
 			return nil, err
 		}
+		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+			Id: config.GraphTopic,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	return
 }
