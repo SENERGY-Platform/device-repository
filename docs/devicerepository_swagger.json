@@ -7593,6 +7593,117 @@
                 ]
             }
         },
+        "/user-device-types": {
+            "get": {
+                "description": "list device-types used by the requesting user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "device-types"
+                ],
+                "summary": "list user device-types",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-separated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list; lists elements only if they use a protocol that is in the given list",
+                        "name": "protocol-ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list",
+                        "name": "attr-keys",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list",
+                        "name": "attr-values",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "include id-modified device-types",
+                        "name": "include-modified",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "no unmodified device-types",
+                        "name": "ignore-unmodified",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; json encoded []model.FilterCriteria",
+                        "name": "criteria",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DeviceType"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/users/{id}": {
             "delete": {
                 "description": "delete user; only admins may use this method",

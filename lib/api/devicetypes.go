@@ -201,6 +201,142 @@ func (this *DeviceTypeEndpoints) ListV3(config configuration.Config, router *htt
 	})
 }
 
+// ListDeviceTypesUsedByUser godoc
+// @Summary      list user device-types
+// @Description  list device-types used by the requesting user
+// @Tags         device-types
+// @Produce      json
+// @Security Bearer
+// @Param        limit query integer false "default 100, will be ignored if 'ids' is set"
+// @Param        offset query integer false "default 0, will be ignored if 'ids' is set"
+// @Param        search query string false "filter"
+// @Param        sort query string false "default name.asc"
+// @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
+// @Param        protocol-ids query string false "filter; comma-separated list; lists elements only if they use a protocol that is in the given list"
+// @Param        attr-keys query string false "filter; comma-separated list; lists elements only if they have an attribute key that is in the given list"
+// @Param        attr-values query string false "filter; comma-separated list; lists elements only if they have an attribute value that is in the given list"
+// @Param        include-modified query bool false "include id-modified device-types"
+// @Param        ignore-unmodified query bool false "no unmodified device-types"
+// @Param        criteria query string false "filter; json encoded []model.FilterCriteria"
+// @Header       200 {integer}  X-Total-Count  "count of all matching elements; does not count modified elements; used for pagination"
+// @Success      200 {array}  models.DeviceType
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /user-device-types [GET]
+func (this *DeviceTypeEndpoints) ListDeviceTypesUsedByUser(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /user-device-types", func(writer http.ResponseWriter, request *http.Request) {
+		options := model.DeviceTypeListOptions{
+			Limit:  100,
+			Offset: 0,
+		}
+		var err error
+		limitParam := request.URL.Query().Get("limit")
+		if limitParam != "" {
+			options.Limit, err = strconv.ParseInt(limitParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse limit:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		offsetParam := request.URL.Query().Get("offset")
+		if offsetParam != "" {
+			options.Offset, err = strconv.ParseInt(offsetParam, 10, 64)
+		}
+		if err != nil {
+			http.Error(writer, "unable to parse offset:"+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		idsParam := request.URL.Query().Get("ids")
+		if request.URL.Query().Has("ids") {
+			if idsParam != "" {
+				options.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
+			} else {
+				options.Ids = []string{}
+			}
+		}
+
+		attrKeysParam := request.URL.Query().Get("attr-keys")
+		if request.URL.Query().Has("attr-keys") {
+			if attrKeysParam != "" {
+				options.AttributeKeys = strings.Split(strings.TrimSpace(attrKeysParam), ",")
+			} else {
+				options.AttributeKeys = []string{}
+			}
+		}
+		attrValuesParam := request.URL.Query().Get("attr-values")
+		if request.URL.Query().Has("attr-values") {
+			if attrValuesParam != "" {
+				options.AttributeValues = strings.Split(strings.TrimSpace(attrValuesParam), ",")
+			} else {
+				options.AttributeValues = []string{}
+			}
+		}
+
+		protocolIdsParam := request.URL.Query().Get("protocol-ids")
+		if request.URL.Query().Has("protocol-ids") {
+			if protocolIdsParam != "" {
+				options.ProtocolIds = strings.Split(strings.TrimSpace(protocolIdsParam), ",")
+			} else {
+				options.ProtocolIds = []string{}
+			}
+		}
+
+		options.Search = request.URL.Query().Get("search")
+		options.SortBy = request.URL.Query().Get("sort")
+		if options.SortBy == "" {
+			options.SortBy = "name.asc"
+		}
+
+		includeModifiedStr := request.URL.Query().Get("include-modified")
+		if includeModifiedStr != "" {
+			options.IncludeModified, err = strconv.ParseBool(includeModifiedStr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		ignoreUnmodified := request.URL.Query().Get("ignore-unmodified")
+		if ignoreUnmodified != "" {
+			options.IgnoreUnmodified, err = strconv.ParseBool(ignoreUnmodified)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		criteria := request.URL.Query().Get("criteria")
+		if criteria != "" {
+			criteriaList := []model.FilterCriteria{}
+			err = json.Unmarshal([]byte(criteria), &criteriaList)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+			options.Criteria = criteriaList
+		}
+
+		result, total, err, code := control.ListDeviceTypesUsedByUser(util.GetAuthToken(request), options)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+
+		writer.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
+		}
+		return
+	})
+}
+
 // deprecated
 func (this *DeviceTypeEndpoints) List(config configuration.Config, router *http.ServeMux, control Controller) {
 	/*

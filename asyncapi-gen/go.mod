@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/SENERGY-Platform/models/go v0.0.0-20260708135554-23489b7c5691 // indirect
+	github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/pierrec/lz4/v4 v4.1.25 // indirect

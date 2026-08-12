@@ -31,6 +31,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
+	"github.com/SENERGY-Platform/service-commons/pkg/util"
 )
 
 func (this *Controller) ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int) {
@@ -77,6 +78,29 @@ func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int6
 
 func (this *Controller) ListDeviceTypesV3(token string, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
 	ctx, _ := getTimeoutContext()
+	temp, total, err := this.db.ListDeviceTypesV3(ctx, listOptions)
+	if err != nil {
+		return result, 0, err, http.StatusInternalServerError
+	}
+	result, err, errCode = this.modifyDeviceTypeList(temp, listOptions.SortBy, listOptions.IncludeModified, !listOptions.IgnoreUnmodified)
+	return result, total, err, errCode
+}
+
+func (this *Controller) ListDeviceTypesUsedByUser(token string, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
+	ctx, _ := getTimeoutContext()
+	dtIds := []string{}
+	for device, err := range util.IterBatch(200, func(limit int64, offset int64) ([]models.Device, error) {
+		devices, err, _ := this.ListDevices(token, model.DeviceListOptions{Limit: limit, Offset: offset, DeviceTypeIds: listOptions.Ids})
+		return devices, err
+	}) {
+		if err != nil {
+			return result, 0, err, http.StatusInternalServerError
+		}
+		if !slices.Contains(dtIds, device.DeviceTypeId) {
+			dtIds = append(dtIds, device.DeviceTypeId)
+		}
+	}
+	listOptions.Ids = dtIds
 	temp, total, err := this.db.ListDeviceTypesV3(ctx, listOptions)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError

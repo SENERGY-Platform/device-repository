@@ -19,12 +19,13 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 type DeviceTypeUpdateOptions = model.DeviceTypeUpdateOptions
@@ -163,6 +164,57 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 		queryString = "?" + query.Encode()
 	}
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v3/device-types"+queryString, nil)
+	if err != nil {
+		return result, 0, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doWithTotalInResult[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) ListDeviceTypesUsedByUser(token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
+	queryString := ""
+	query := url.Values{}
+	if options.Search != "" {
+		query.Set("search", options.Search)
+	}
+	if options.Ids != nil {
+		query.Set("ids", strings.Join(options.Ids, ","))
+	}
+	if options.SortBy != "" {
+		query.Set("sort", options.SortBy)
+	}
+	if options.Limit != 0 {
+		query.Set("limit", strconv.FormatInt(options.Limit, 10))
+	}
+	if options.Offset != 0 {
+		query.Set("offset", strconv.FormatInt(options.Offset, 10))
+	}
+	if options.ProtocolIds != nil {
+		query.Set("protocol-ids", strings.Join(options.ProtocolIds, ","))
+	}
+	if options.AttributeKeys != nil {
+		query.Set("attr-keys", strings.Join(options.AttributeKeys, ","))
+	}
+	if options.AttributeValues != nil {
+		query.Set("attr-values", strings.Join(options.AttributeValues, ","))
+	}
+	if options.IncludeModified {
+		query.Set("include-modified", strconv.FormatBool(options.IncludeModified))
+	}
+	if options.IgnoreUnmodified {
+		query.Set("ignore-unmodified", strconv.FormatBool(options.IgnoreUnmodified))
+	}
+	if len(options.Criteria) > 0 {
+		filterStr, err := json.Marshal(options.Criteria)
+		if err != nil {
+			return result, 0, err, http.StatusBadRequest
+		}
+		query.Add("criteria", string(filterStr))
+	}
+	if len(query) > 0 {
+		queryString = "?" + query.Encode()
+	}
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/user-device-types"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}

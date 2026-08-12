@@ -18,6 +18,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -64,14 +65,14 @@ func (this *Mongo) deviceTypeCollection() *mongo.Collection {
 func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error) {
 	result := this.deviceTypeCollection().FindOne(ctx, bson.M{DeviceTypeBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
 	err = result.Err()
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return deviceType, false, nil
 	}
 	if err != nil {
 		return
 	}
 	err = result.Decode(&deviceType)
-	if err == mongo.ErrNoDocuments {
+	if errors.Is(err, mongo.ErrNoDocuments) {
 		return deviceType, false, nil
 	}
 	return deviceType, true, err
