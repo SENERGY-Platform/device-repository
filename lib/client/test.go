@@ -41,6 +41,7 @@ func NewTestClient() (ctrl Interface, db database.Database, err error) {
 		FunctionTopic:                            "functions",
 		DeviceClassTopic:                         "device-classes",
 		LocationTopic:                            "locations",
+		GraphTopic:                               "graphs",
 		Debug:                                    true,
 		HttpClientTimeout:                        "30s",
 		DeviceServiceGroupSelectionAllowNotFound: true,
