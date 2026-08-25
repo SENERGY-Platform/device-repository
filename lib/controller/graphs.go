@@ -204,7 +204,7 @@ func (this *Controller) setGraphSyncHandler(graph models.Graph) (err error) {
 	if err != nil {
 		return fmt.Errorf("unable to ensure initial graph permissions: %w", err)
 	}
-	return nil
+	return this.publisher.PublishGraph(graph)
 }
 
 func (this *Controller) DeleteGraph(token string, id string) (error, int) {
@@ -235,7 +235,7 @@ func (this *Controller) deleteGraphSyncHandler(old models.Graph) (err error) {
 	if err != nil {
 		return err
 	}
-	return nil
+	return this.publisher.PublishGraphDelete(old.Id)
 }
 
 func (this *Controller) deleteGraph(id string) error {

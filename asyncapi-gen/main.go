@@ -145,6 +145,17 @@ func main() {
 	}))
 
 	mustNotFail(reflector.AddChannel(asyncapi.ChannelInfo{
+		Name: conf.GraphTopic,
+		Subscribe: &asyncapi.MessageSample{
+			MessageEntity: spec.MessageEntity{
+				Name:  "GraphCommand",
+				Title: "GraphCommand",
+			},
+			MessageSample: new(publisher.GraphCommand),
+		},
+	}))
+
+	mustNotFail(reflector.AddChannel(asyncapi.ChannelInfo{
 		Name: conf.DeviceTypeTopic,
 		Subscribe: &asyncapi.MessageSample{
 			MessageEntity: spec.MessageEntity{

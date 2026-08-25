@@ -108,6 +108,7 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configurati
 		"protocols",
 		"import-types",
 		"locations",
+		"graphs",
 		"smart_service_releases",
 		"gateway_log",
 		"device_log")
