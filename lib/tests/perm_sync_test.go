@@ -92,6 +92,13 @@ func TestPermSync(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	_, err, _ = permClient.SetTopic(client.InternalAdminToken, client.Topic{
+		Id: config.GraphTopic,
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	t.Run("init state", func(t *testing.T) {
 
@@ -271,6 +278,22 @@ func TestPermSync(t *testing.T) {
 				t.Error(err)
 				return
 			}
+
+			for _, id := range []string{"g1", "g2", "g3"} {
+				err = db.SetGraph(ctx, models.Graph{
+					Id:    id,
+					Owner: "u1",
+					Nodes: []models.Node{{Id: "1"}, {Id: "2"}},
+					Edges: []models.Edge{{Id: "1->2", FromNodeId: "1", ToNodeId: "2", Weight: 100}},
+				}, func(g models.Graph) error {
+					_, err, _ := permClient.SetPermission(client.InternalAdminToken, config.GraphTopic, g.Id, getPermission(g.Owner))
+					return err
+				})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
 		})
 
 		t.Run("remove some from perm", func(t *testing.T) {
@@ -294,6 +317,11 @@ func TestPermSync(t *testing.T) {
 				t.Error(err)
 				return
 			}
+			err, _ = permClient.RemoveResource(client.InternalAdminToken, config.GraphTopic, "g2")
+			if err != nil {
+				t.Error(err)
+				return
+			}
 		})
 
 		t.Run("remove some from db", func(t *testing.T) {
@@ -313,6 +341,11 @@ func TestPermSync(t *testing.T) {
 				return
 			}
 			err = db.RemoveLocation(ctx, "l3", func(state models.Location) error { return nil })
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			err = db.RemoveGraph(ctx, "g3", func(g models.Graph) error { return nil })
 			if err != nil {
 				t.Error(err)
 				return
@@ -425,6 +458,28 @@ func TestPermSync(t *testing.T) {
 			}
 		})
 
+		t.Run("graphs", func(t *testing.T) {
+			graphs, total, err := db.ListGraphs(ctx, model.GraphListOptions{SortBy: "id.asc"})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if total != 2 {
+				t.Error("unexpected total: ", total)
+				return
+			}
+			if len(graphs) != 2 {
+				t.Error("unexpected graphs: ", len(graphs))
+				return
+			}
+			if graphs[0].Id != "g1" {
+				t.Error("unexpected graph: ", graphs[0].Id)
+			}
+			if graphs[1].Id != "g2" {
+				t.Error("unexpected graph: ", graphs[1].Id)
+			}
+		})
+
 	})
 
 	t.Run("check perm", func(t *testing.T) {
@@ -492,6 +547,22 @@ func TestPermSync(t *testing.T) {
 			}
 			if !slices.Contains(ids, "l2") {
 				t.Error("id not found:", "l2")
+			}
+		})
+		t.Run("graphs", func(t *testing.T) {
+			ids, err, _ := permClient.AdminListResourceIds(client.InternalAdminToken, config.GraphTopic, client.ListOptions{})
+			if err != nil {
+				t.Error(err)
+			}
+			if len(ids) != 2 {
+				t.Error("unexpected ids: ", len(ids))
+				return
+			}
+			if !slices.Contains(ids, "g1") {
+				t.Error("id not found:", "g1")
+			}
+			if !slices.Contains(ids, "g2") {
+				t.Error("id not found:", "g2")
 			}
 		})
 	})

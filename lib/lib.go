@@ -225,5 +225,22 @@ func SyncPermResources(ctx context.Context, config configuration.Config, permCli
 	if err != nil {
 		return err
 	}
+
+	graphsKnownInPermissions := []string{}
+	err = deleteUnknownPermissions(ctx, config, permClient, config.GraphTopic, func(id string) (bool, error) {
+		_, exists, err := db.GetGraph(ctx, id)
+		if err != nil {
+			return false, err
+		}
+		graphsKnownInPermissions = append(graphsKnownInPermissions, id)
+		return exists, nil
+	})
+	if err != nil {
+		return err
+	}
+	err = db.DesyncUnknownGraphs(ctx, graphsKnownInPermissions)
+	if err != nil {
+		return err
+	}
 	return nil
 }
