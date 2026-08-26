@@ -75,6 +75,14 @@
                 }
             }
         },
+        "graphs": {
+            "address": "graphs",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherGraphCommand"
+                }
+            }
+        },
         "hubs": {
             "address": "hubs",
             "messages": {
@@ -186,6 +194,17 @@
             "messages": [
                 {
                     "$ref": "#/channels/functions/messages/subscribe.message"
+                }
+            ]
+        },
+        "graphs.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/graphs"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/graphs/messages/subscribe.message"
                 }
             ]
         },
@@ -569,6 +588,32 @@
                 },
                 "type": "object"
             },
+            "ModelsEdge": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "from_node_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "to_node_id": {
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
             "ModelsFunction": {
                 "properties": {
                     "concept_id": {
@@ -592,8 +637,55 @@
                 },
                 "type": "object"
             },
+            "ModelsGraph": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "edges": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsEdge"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "nodes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsNode"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "owner": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "ModelsHub": {
                 "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
                     "device_ids": {
                         "items": {
                             "type": "string"
@@ -660,6 +752,29 @@
                         "type": "string"
                     },
                     "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsNode": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "resource_id": {
+                        "type": "string"
+                    },
+                    "resource_type": {
                         "type": "string"
                     }
                 },
@@ -893,6 +1008,20 @@
                 },
                 "type": "object"
             },
+            "PublisherGraphCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "graph": {
+                        "$ref": "#/components/schemas/ModelsGraph"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "PublisherHubCommand": {
                 "properties": {
                     "command": {
@@ -992,6 +1121,13 @@
                 },
                 "name": "FunctionCommand",
                 "title": "FunctionCommand"
+            },
+            "PublisherGraphCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherGraphCommand"
+                },
+                "name": "GraphCommand",
+                "title": "GraphCommand"
             },
             "PublisherHubCommand": {
                 "payload": {

@@ -51,4 +51,7 @@ type Publisher interface {
 
 	PublishLocation(device models.Location) (err error)
 	PublishLocationDelete(id string) error
+
+	PublishGraph(graph models.Graph) (err error)
+	PublishGraphDelete(id string) error
 }

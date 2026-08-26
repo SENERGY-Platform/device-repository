@@ -112,6 +112,14 @@ func (v VoidProducerMock) PublishLocationDelete(id string) error {
 	return nil
 }
 
+func (v VoidProducerMock) PublishGraph(graph models.Graph) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishGraphDelete(id string) error {
+	return nil
+}
+
 func (v VoidProducerMock) PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error) {
 	panic("implement me")
 }

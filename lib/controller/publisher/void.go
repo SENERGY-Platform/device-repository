@@ -111,3 +111,11 @@ func (this Void) PublishLocation(device models.Location) (err error) {
 func (this Void) PublishLocationDelete(id string) error {
 	return VoidPublisherError
 }
+
+func (this Void) PublishGraph(graph models.Graph) (err error) {
+	return VoidPublisherError
+}
+
+func (this Void) PublishGraphDelete(id string) error {
+	return VoidPublisherError
+}

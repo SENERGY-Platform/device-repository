@@ -41,6 +41,7 @@ type Publisher struct {
 	functions       *kafka.Writer
 	deviceclasses   *kafka.Writer
 	locations       *kafka.Writer
+	graphs          *kafka.Writer
 }
 
 func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
@@ -58,12 +59,13 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 			conf.AspectTopic,
 			conf.FunctionTopic,
 			conf.DeviceClassTopic,
-			conf.LocationTopic)
+			conf.LocationTopic,
+			conf.GraphTopic)
 		if err != nil {
 			return nil, err
 		}
 	}
-	conf.GetLogger().Info(fmt.Sprintf("produce to: %#v", []string{conf.DeviceTypeTopic, conf.ProtocolTopic, conf.DeviceTopic, conf.HubTopic, conf.ConceptTopic, conf.CharacteristicTopic, conf.LocationTopic}))
+	conf.GetLogger().Info(fmt.Sprintf("produce to: %#v", []string{conf.DeviceTypeTopic, conf.ProtocolTopic, conf.DeviceTopic, conf.HubTopic, conf.ConceptTopic, conf.CharacteristicTopic, conf.LocationTopic, conf.GraphTopic}))
 	devicetypes := getProducer(ctx, conf.KafkaUrl, conf.DeviceTypeTopic, conf.GetLogger())
 	devicegroups := getProducer(ctx, conf.KafkaUrl, conf.DeviceGroupTopic, conf.GetLogger())
 	devices := getProducer(ctx, conf.KafkaUrl, conf.DeviceTopic, conf.GetLogger())
@@ -75,6 +77,7 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 	function := getProducer(ctx, conf.KafkaUrl, conf.FunctionTopic, conf.GetLogger())
 	deviceclass := getProducer(ctx, conf.KafkaUrl, conf.DeviceClassTopic, conf.GetLogger())
 	location := getProducer(ctx, conf.KafkaUrl, conf.LocationTopic, conf.GetLogger())
+	graph := getProducer(ctx, conf.KafkaUrl, conf.GraphTopic, conf.GetLogger())
 	return &Publisher{
 		config:          conf,
 		devicetypes:     devicetypes,
@@ -88,6 +91,7 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 		functions:       function,
 		deviceclasses:   deviceclass,
 		locations:       location,
+		graphs:          graph,
 	}, nil
 }
 
