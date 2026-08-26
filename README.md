@@ -40,3 +40,6 @@ instance:
   resources
 - [Rights and content commands share one kafka topic](docs/rights-and-content-share-one-kafka-topic.md) —
   two producers, one ordering guarantee, and two traps when adding a topic
+- [asyncapi.json is only half generated](docs/asyncapi-is-half-generated.md) —
+  the generator lives in its own module, emits an older spec version, and the
+  committed file is a hand-made conversion
