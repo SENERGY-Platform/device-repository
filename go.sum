@@ -12,8 +12,8 @@ github.com/SENERGY-Platform/api-docs-provider/lib/client v0.0.3 h1:KutSt9QOpNZGX
 github.com/SENERGY-Platform/api-docs-provider/lib/client v0.0.3/go.mod h1:SMw5L+EtnuzDkunSYmRbIjLdwB5tEv9/iZ7akt87gIQ=
 github.com/SENERGY-Platform/api-docs-provider/lib/models v0.0.3 h1:bQVD6bTN2EKupprDkWLz1IGuUHayzzlnFKsFgViSlAo=
 github.com/SENERGY-Platform/api-docs-provider/lib/models v0.0.3/go.mod h1:tTT3GhSD1Zue/L+HmHbr9YH+gPKLQVcYcnrbwrPcPFg=
-github.com/SENERGY-Platform/developer-notifications v0.0.5 h1:x66XZgLxiwzWTaUXE9xcWI2zlW9reS6Moizc93nuQSs=
-github.com/SENERGY-Platform/developer-notifications v0.0.5/go.mod h1:4zJM5bicd+k3cijxUz81U63dyRqtBWQpHAkcXb2KWSw=
+github.com/SENERGY-Platform/developer-notifications v0.0.6 h1:sUr3n5YTs3zTYKSEi4N3iXonWYiDP+Ll6yn6z1FxMRY=
+github.com/SENERGY-Platform/developer-notifications v0.0.6/go.mod h1:DwfWoj00UUN4v9fCi60frXbFycFUIIvXeKzmABcgHK8=
 github.com/SENERGY-Platform/gin-middleware v0.14.1 h1:o2le7do9++e377ixtnFXbobAJP5CSMQXW7d1dUSAwFU=
 github.com/SENERGY-Platform/gin-middleware v0.14.1/go.mod h1:+9dhC08w9tpnjnFC8gYO0+0Po5TKfeUGt+5a1jUVfqI=
 github.com/SENERGY-Platform/go-base-http-client v0.1.0 h1:PUiZVEj7/cMSZJ0g5G611tjY9bSh1Eby+tcktrgpiZ0=
@@ -24,8 +24,8 @@ github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4 h1:+0g0T8Z2n
 github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4/go.mod h1:UPtGbiAOtGd78qgM0HZrtiKxcn3HebSV5QAZvHme998=
 github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038 h1:7yEuyx32EiFBUXX7cwhAEWHGdN4VjAIZLtGyJAZwDsU=
 github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038/go.mod h1:5B2cSnYKuAmeco4mJPhY5eVO+oMqXLmnl9wxh1G7e9E=
-github.com/SENERGY-Platform/permissions-v2 v0.0.45 h1:o8w+6zA8lRH00fXYxrMs2EEX9vR5BSO7T+e3dJXbwhI=
-github.com/SENERGY-Platform/permissions-v2 v0.0.45/go.mod h1:TTM/9lOE9d+JHhnEQR7aFgWRGOtYBRZIyA9v12/ofjA=
+github.com/SENERGY-Platform/permissions-v2 v0.0.47 h1:TOaYhxAZmH006SYwF/dy2PkmRFn50moH/YnrWbF4pbI=
+github.com/SENERGY-Platform/permissions-v2 v0.0.47/go.mod h1:O0DTzApbQnXzDmyQ3KzievzjRF44xQ7n6qdbfQ36Qw8=
 github.com/SENERGY-Platform/service-commons v0.0.0-20260821114734-3e4578ac2358 h1:RGgwqd2PKoBCbW2aBdl43OO5O7JNC2LKE452Ihi4TdM=
 github.com/SENERGY-Platform/service-commons v0.0.0-20260821114734-3e4578ac2358/go.mod h1:k1Jia3JItpaM26/SY1ZGyoGhBE8EA5zQrkwSaiFZKGQ=
 github.com/bradfitz/gomemcache v0.0.0-20230905024940-24af94b03874 h1:N7oVaKyGp8bttX0bfZGmcGkjz7DLQXhAn3DNd3T0ous=
