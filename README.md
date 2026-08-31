@@ -46,3 +46,17 @@ instance:
 - [asyncapi.json is only half generated](docs/asyncapi-is-half-generated.md) —
   the generator lives in its own module, emits an older spec version, and the
   committed file is a hand-made conversion
+- [Not every device-type read passes the controller](docs/not-every-device-type-read-passes-the-controller.md) —
+  two paths read or write device-types straight from the database, and one of
+  them rewrites stored device-group criteria while doing so
+
+Working in this repository:
+
+- [Which tests break when a response gains a field](docs/tests-that-compare-whole-payloads.md) —
+  the five packages that compare whole payloads, and the three shapes their
+  expected values come in
+- [Regenerating the REST docs rewrites a file you did not change](docs/regenerating-the-rest-docs.md) —
+  `generated_permissions.go` comes back reordered and has to be reverted before
+  committing
+- [The test suite needs -p 1](docs/tests-collide-on-port-8080.md) — packages run
+  in parallel and collide on port 8080, which looks like a flaky failure
