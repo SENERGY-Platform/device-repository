@@ -55,6 +55,7 @@ func (this *Controller) readDeviceType(id string) (result models.DeviceType, err
 			return result, err, errCode
 		}
 	}
+	setContentVariableAspectIdOnRead(&deviceType)
 	return deviceType, nil, http.StatusOK
 }
 
@@ -119,6 +120,10 @@ func (this *Controller) ValidateDeviceType(dt models.DeviceType, options model.V
 	if len(dt.Services) == 0 {
 		return errors.New("expect at least one service"), http.StatusBadRequest
 	}
+	//validation only looks at ContentVariable.AspectIds; device-types that still use the
+	//deprecated ContentVariable.AspectId (dry-run requests, stored pre-migration data)
+	//would otherwise pass unchecked
+	SetContentVariableAspectIdsOnWrite(&dt)
 	protocolCache := &map[string]models.Protocol{}
 	for _, service := range dt.Services {
 		ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
@@ -586,17 +591,22 @@ func addDeviceTypeCriteriaToServiceRefs(list []model.ServiceReference, criteria 
 }
 
 func addDeviceTypeCriteriaToVariableRefs(list []model.VariableReference, criteria model.DeviceTypeCriteria) []model.VariableReference {
-	list = append(list, model.VariableReference{
+	ref := model.VariableReference{
 		Id:   criteria.ContentVariableId,
 		Path: criteria.ContentVariablePath,
-	})
-	return list
+	}
+	//a variable with multiple aspects produces one criteria per aspect but is still one variable
+	if slices.Contains(list, ref) {
+		return list
+	}
+	return append(list, ref)
 }
 
 func (this *Controller) SetDeviceType(token string, dt models.DeviceType, options model.DeviceTypeUpdateOptions) (models.DeviceType, error, int) {
 	if !this.config.DisableStrictValidationForTesting {
 		dt.GenerateId() //ensure ids
 	}
+	SetContentVariableAspectIdsOnWrite(&dt)
 
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {

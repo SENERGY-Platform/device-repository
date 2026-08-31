@@ -25,6 +25,7 @@ import (
 
 	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/database"
 	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -274,6 +275,9 @@ func Pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				config.GetLogger().Error("error while listing device-type for mgw mirror pull", "error", err)
 				break
 			}
+			//the source may still send only the deprecated ContentVariable.AspectId;
+			//the device-type criteria written by db.SetDeviceType() read AspectIds
+			controller.SetContentVariableAspectIdsOnWrite(&e)
 			err = db.SetDeviceType(context.Background(), e, func(models.DeviceType) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting device-type for mgw mirror pull", "error", err)

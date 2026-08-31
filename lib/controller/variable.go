@@ -92,16 +92,18 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	if variable.AspectId != "" && this != nil {
-		aspectNode, exists, err := this.db.GetAspectNode(ctx, variable.AspectId)
-		if err != nil {
-			return err, http.StatusInternalServerError
-		}
-		if !exists {
-			return errors.New("unknown aspect id:" + variable.AspectId), http.StatusBadRequest
-		}
-		if !options.CheckAllowNoneLeafAspectNodesInDeviceTypes(this.config) && len(aspectNode.DescendentIds) > 0 {
-			return errors.New("only leaf aspects are allowed in device-types " + variable.Name), http.StatusBadRequest
+	if this != nil {
+		for _, aspectId := range variable.AspectIds {
+			aspectNode, exists, err := this.db.GetAspectNode(ctx, aspectId)
+			if err != nil {
+				return err, http.StatusInternalServerError
+			}
+			if !exists {
+				return errors.New("unknown aspect id:" + aspectId), http.StatusBadRequest
+			}
+			if !options.CheckAllowNoneLeafAspectNodesInDeviceTypes(this.config) && len(aspectNode.DescendentIds) > 0 {
+				return errors.New("only leaf aspects are allowed in device-types " + variable.Name), http.StatusBadRequest
+			}
 		}
 	}
 

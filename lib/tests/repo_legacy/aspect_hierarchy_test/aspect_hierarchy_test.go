@@ -21,16 +21,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestSubAspectMoveSNRGY2202(t *testing.T) {
@@ -1048,18 +1049,46 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 			},
 		},
 	}
+
+	expected := models.DeviceType{
+		Id:            "dt",
+		Name:          "dt",
+		ServiceGroups: nil,
+		Services: []models.Service{
+			{
+				Id:          "sid",
+				LocalId:     "s",
+				Name:        "s",
+				Interaction: models.EVENT_AND_REQUEST,
+				ProtocolId:  "pid",
+				Outputs: []models.Content{
+					{
+						ContentVariable: models.ContentVariable{
+							Id:               "vid",
+							Name:             "v",
+							CharacteristicId: "cid",
+							FunctionId:       "fid",
+							AspectId:         "aid",
+							AspectIds:        []string{"aid"},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Run("matching", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{dt}))
-	t.Run("parent", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{dt}))
+	t.Run("matching", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{expected}))
+	t.Run("parent", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{expected}))
 	t.Run("child", testGetRequest(testenv.Userjwt, conf, "/device-types?filter="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"child"}]`), []models.DeviceType{}))
 
-	t.Run("v3 matching", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{dt}))
-	t.Run("v3 parent", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{dt}))
+	t.Run("v3 matching", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"aid"}]`), []models.DeviceType{expected}))
+	t.Run("v3 parent", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"parent"}]`), []models.DeviceType{expected}))
 	t.Run("v3 child", testGetRequest(testenv.Userjwt, conf, "/v3/device-types?criteria="+url.QueryEscape(`[{"function_id":"fid","aspect_id":"child"}]`), []models.DeviceType{}))
 
 }

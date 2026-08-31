@@ -74,6 +74,7 @@ func (this *Controller) modifyDeviceTypeList(list []models.DeviceType, sort stri
 	if includeModified {
 		result = sortDeviceTypes(result, sort)
 	}
+	setContentVariableAspectIdOnReadList(result)
 	return result, nil, http.StatusOK
 }
 

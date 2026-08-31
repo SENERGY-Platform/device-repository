@@ -171,7 +171,8 @@ func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId st
 	isInputControllingFunction := (variable.FunctionId != "" && (!strings.HasPrefix(variable.FunctionId, model.URN_PREFIX) || isCtrlFun == isInput))
 	isConfigurableCandidate := isLeaf && isInput
 	if isInputControllingFunction || isConfigurableCandidate {
-		result = append(result, model.DeviceTypeCriteria{
+		//a content variable may reference multiple aspects -> one criteria per aspect
+		criteria := model.DeviceTypeCriteria{
 			IsIdModified:          pureDeviceTypeId != deviceTypeId,
 			PureDeviceTypeId:      pureDeviceTypeId,
 			DeviceTypeId:          deviceTypeId,
@@ -182,14 +183,21 @@ func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId st
 			Interaction:           string(interaction),
 			IsControllingFunction: isCtrlFun,
 			DeviceClassId:         deviceClassId,
-			AspectId:              variable.AspectId,
 			CharacteristicId:      variable.CharacteristicId,
 			IsVoid:                variable.IsVoid,
 			Value:                 variable.Value,
 			Type:                  variable.Type,
 			IsLeaf:                isLeaf,
 			IsInput:               isInput,
-		})
+		}
+		if len(variable.AspectIds) == 0 {
+			result = append(result, criteria)
+		}
+		for _, aspectId := range variable.AspectIds {
+			withAspect := criteria
+			withAspect.AspectId = aspectId
+			result = append(result, withAspect)
+		}
 	}
 	for _, sub := range variable.SubContentVariables {
 		result = append(result, createCriteriaFromContentVariables(pureDeviceTypeId, deviceTypeId, deviceClassId, serviceId, interaction, sub, isInput, currentPath)...)

@@ -142,6 +142,9 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
+	//read straight from the database: device-types written before the migration carry only
+	//the deprecated ContentVariable.AspectId, and the criteria below evaluate AspectIds
+	SetContentVariableAspectIdsOnWrite(&deviceType)
 	resultSet := map[string]models.DeviceGroupFilterCriteria{}
 	for _, service := range deviceType.Services {
 		interactions := []models.Interaction{service.Interaction}
@@ -160,14 +163,21 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 			if current.FunctionId != "" {
 				for _, interaction := range interactions {
 					if isMeasuringFunctionId(current.FunctionId) {
-						criteria := models.DeviceGroupFilterCriteria{
-							FunctionId:  current.FunctionId,
-							AspectId:    current.AspectId,
-							Interaction: interaction,
+						if len(current.AspectIds) == 0 {
+							criteria := models.DeviceGroupFilterCriteria{
+								FunctionId:  current.FunctionId,
+								Interaction: interaction,
+							}
+							resultSet[criteriaHash(criteria)] = criteria
 						}
-						resultSet[criteriaHash(criteria)] = criteria
-						if current.AspectId != "" {
-							aspectNode, _, err := this.db.GetAspectNode(ctx, current.AspectId)
+						for _, aspectId := range current.AspectIds {
+							criteria := models.DeviceGroupFilterCriteria{
+								FunctionId:  current.FunctionId,
+								AspectId:    aspectId,
+								Interaction: interaction,
+							}
+							resultSet[criteriaHash(criteria)] = criteria
+							aspectNode, _, err := this.db.GetAspectNode(ctx, aspectId)
 							if err != nil {
 								return result, err, http.StatusInternalServerError
 							}

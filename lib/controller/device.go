@@ -354,6 +354,7 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 				}
 			}
 			if fullDt {
+				setContentVariableAspectIdOnRead(&selectedDt)
 				dtp = &selectedDt
 			}
 			deviceTypeName = selectedDt.Name

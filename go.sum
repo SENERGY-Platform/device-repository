@@ -24,6 +24,8 @@ github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4 h1:+0g0T8Z2n
 github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4/go.mod h1:UPtGbiAOtGd78qgM0HZrtiKxcn3HebSV5QAZvHme998=
 github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038 h1:7yEuyx32EiFBUXX7cwhAEWHGdN4VjAIZLtGyJAZwDsU=
 github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038/go.mod h1:5B2cSnYKuAmeco4mJPhY5eVO+oMqXLmnl9wxh1G7e9E=
+github.com/SENERGY-Platform/models/go v0.0.0-20260831062709-5cba4c797da4 h1:H8kz4rsauQpdIy8+WNg3VY56xIhTwU11lRKy3ZjwJdA=
+github.com/SENERGY-Platform/models/go v0.0.0-20260831062709-5cba4c797da4/go.mod h1:5B2cSnYKuAmeco4mJPhY5eVO+oMqXLmnl9wxh1G7e9E=
 github.com/SENERGY-Platform/permissions-v2 v0.0.47 h1:TOaYhxAZmH006SYwF/dy2PkmRFn50moH/YnrWbF4pbI=
 github.com/SENERGY-Platform/permissions-v2 v0.0.47/go.mod h1:O0DTzApbQnXzDmyQ3KzievzjRF44xQ7n6qdbfQ36Qw8=
 github.com/SENERGY-Platform/service-commons v0.0.0-20260821114734-3e4578ac2358 h1:RGgwqd2PKoBCbW2aBdl43OO5O7JNC2LKE452Ihi4TdM=

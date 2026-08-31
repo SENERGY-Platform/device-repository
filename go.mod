@@ -11,7 +11,7 @@ require (
 	github.com/SENERGY-Platform/api-docs-provider/lib/client v0.0.3
 	github.com/SENERGY-Platform/go-service-base/struct-logger v0.8.0
 	github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4
-	github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038
+	github.com/SENERGY-Platform/models/go v0.0.0-20260831062709-5cba4c797da4
 	github.com/SENERGY-Platform/permissions-v2 v0.0.47
 	github.com/SENERGY-Platform/service-commons v0.0.0-20260821114734-3e4578ac2358
 	github.com/golang-jwt/jwt v3.2.2+incompatible

@@ -20,12 +20,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"net/url"
@@ -33,6 +27,13 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/lib/client"
+	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/google/uuid"
 )
 
 var devicetype1id = "urn:infai:ses:device-type:2cc43032-207e-494e-8de4-94784cd4961d"
@@ -387,6 +388,45 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		},
 	}}
 
+	expected := models.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
+		{
+			Key:         "test",
+			Name:        "test group",
+			Description: "foo",
+		},
+	}, Services: []models.Service{
+		{
+			Id:              "s1",
+			LocalId:         "s1",
+			Name:            "n1",
+			Interaction:     models.REQUEST,
+			ProtocolId:      "p1",
+			ServiceGroupKey: "test",
+			Outputs: []models.Content{{
+				ContentVariable: models.ContentVariable{
+					FunctionId: "f1",
+					AspectId:   "a1",
+					AspectIds:  []string{"a1"},
+				},
+			}},
+		},
+		{
+			Id:              "s2",
+			LocalId:         "s2",
+			Name:            "n2",
+			Interaction:     models.REQUEST,
+			ProtocolId:      "p1",
+			ServiceGroupKey: "",
+			Outputs: []models.Content{{
+				ContentVariable: models.ContentVariable{
+					FunctionId: "f1",
+					AspectId:   "a1",
+					AspectIds:  []string{"a1"},
+				},
+			}},
+		},
+	}}
+
 	t.Run("validation of service-groups", func(t *testing.T) {
 		err = controller.ValidateServiceGroups(dt.ServiceGroups, dt.Services)
 		if err != nil {
@@ -401,7 +441,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		return
 	}
 
-	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, dt))
+	t.Run("testDeviceTypeRead", testDeviceTypeReadV2(conf, expected))
 
 }
 
@@ -461,6 +501,7 @@ func TestServiceWithAttribute(t *testing.T) {
 				ContentVariable: models.ContentVariable{
 					FunctionId: "fid1",
 					AspectId:   "aid1",
+					AspectIds:  []string{"aid1"},
 				},
 			}},
 		},

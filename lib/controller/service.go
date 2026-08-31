@@ -134,6 +134,7 @@ func (this *Controller) GetService(id string) (result models.Service, err error,
 	for _, dt := range dts {
 		for _, service := range dt.Services {
 			if service.Id == id {
+				setContentVariableAspectIdOnReadService(&service)
 				return service, nil, 200
 			}
 		}

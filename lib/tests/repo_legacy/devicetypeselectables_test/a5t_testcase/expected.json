@@ -25,7 +25,7 @@
                             "value":null,
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -68,7 +68,7 @@
                             "value":null,
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -111,7 +111,7 @@
                             "value":null,
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -151,7 +151,7 @@
                             "value":"OFF",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -199,7 +199,7 @@
                             "value":"OFF",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -256,7 +256,7 @@
                                     "value":null,
                                     "serialization_options":null,
                                     "function_id":"urn:infai:ses:measuring-function:3b4e0766-0d67-4658-b249-295902cd3290",
-                                    "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"
+                                    "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","aspect_ids":["urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"]
                                 },
                                 {
                                     "id":"urn:infai:ses:content-variable:53de3959-4d4c-45ec-bcf1-0cc2e25e0c67",
@@ -285,7 +285,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
-                                            "aspect_id":"urn:infai:ses:aspect:fdc999eb-d366-44e8-9d24-bfd48d5fece1"
+                                            "aspect_id":"urn:infai:ses:aspect:fdc999eb-d366-44e8-9d24-bfd48d5fece1","aspect_ids":["urn:infai:ses:aspect:fdc999eb-d366-44e8-9d24-bfd48d5fece1"]
                                         },
                                         {
                                             "id":"urn:infai:ses:content-variable:c49cb457-65e7-4b37-a486-02cd4643f7f5",
@@ -328,7 +328,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:57dfd369-92db-462c-aca4-a767b52c972e",
-                                            "aspect_id":"urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba"
+                                            "aspect_id":"urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba","aspect_ids":["urn:infai:ses:aspect:82b9e844-1fa6-4fb5-8213-ec7333a9a8ba"]
                                         },
                                         {
                                             "id":"urn:infai:ses:content-variable:60addac6-d8ce-4c0f-8faa-3064c4a207ac",
@@ -350,7 +350,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:1c7c90fb-73b6-4690-aac2-72e9735e68d0",
-                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"
+                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","aspect_ids":["urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"]
                                         },
                                         {
                                             "id":"urn:infai:ses:content-variable:c75bd39f-f1ae-4b64-a446-a20f0a1dddc6",
@@ -362,7 +362,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:2324f86d-1fb3-42f3-a5a9-46ba48107d8f",
-                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"
+                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","aspect_ids":["urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"]
                                         },
                                         {
                                             "id":"urn:infai:ses:content-variable:38734490-4b91-4c52-b792-97b39377f81a",
@@ -374,7 +374,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:44f66511-8604-401b-b20c-b2f8fb3a763e",
-                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"
+                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","aspect_ids":["urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"]
                                         },
                                         {
                                             "id":"urn:infai:ses:content-variable:26211a2b-5c71-4dda-bb3f-922c9f6d93e8",
@@ -386,7 +386,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:4f3cbfb4-ccb0-4233-a7c3-61760a069c02",
-                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"
+                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","aspect_ids":["urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"]
                                         },
                                         {
                                             "id":"urn:infai:ses:content-variable:f74dc585-cf5f-41f7-a615-f802250ea809",
@@ -398,7 +398,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:65c32809-d693-4ac5-bb4e-3875ca25f709",
-                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"
+                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","aspect_ids":["urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"]
                                         },
                                         {
                                             "id":"urn:infai:ses:content-variable:81c35fcb-973d-4b74-996e-28861f3de555",
@@ -410,7 +410,7 @@
                                             "value":null,
                                             "serialization_options":null,
                                             "function_id":"urn:infai:ses:measuring-function:28326e5a-69fa-439b-baa9-0e63c453186f",
-                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"
+                                            "aspect_id":"urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf","aspect_ids":["urn:infai:ses:aspect:74a7b913-73ac-42b7-9b35-573f2c1e97cf"]
                                         }
                                     ],
                                     "characteristic_id":"",
@@ -463,7 +463,7 @@
                             "value":null,
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:measuring-function:20d3c1d3-77d7-4181-a9f3-b487add58cd0",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -503,7 +503,7 @@
                             "value":"OFF",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -551,7 +551,7 @@
                             "value":"ON",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -599,7 +599,7 @@
                             "value":"ON",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -647,7 +647,7 @@
                             "value":"OFF",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:2f35150b-9df7-4cad-95bc-165fa00219fd",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -695,7 +695,7 @@
                             "value":"ON",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -743,7 +743,7 @@
                             "value":"ON",
                             "serialization_options":null,
                             "function_id":"urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id":"urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32","aspect_ids":["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization":"plain-text",
                         "protocol_segment_id":"urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"

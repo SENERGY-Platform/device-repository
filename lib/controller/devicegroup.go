@@ -348,11 +348,20 @@ func (this *Controller) selectionMatchesCriteria(
 	return nil, http.StatusOK
 }
 
+func variableAspectsContainCriteria(variable models.ContentVariable, criteria models.DeviceGroupFilterCriteria, aspectNode models.AspectNode) bool {
+	if criteria.AspectId == "" {
+		return true
+	}
+	for _, aspectId := range variable.AspectIds {
+		if aspectId == criteria.AspectId || listContains(aspectNode.DescendentIds, aspectId) {
+			return true
+		}
+	}
+	return false
+}
+
 func contentVariableContainsCriteria(variable models.ContentVariable, criteria models.DeviceGroupFilterCriteria, aspectNode models.AspectNode) bool {
-	if variable.FunctionId == criteria.FunctionId &&
-		(criteria.AspectId == "" ||
-			variable.AspectId == criteria.AspectId ||
-			listContains(aspectNode.DescendentIds, variable.AspectId)) {
+	if variable.FunctionId == criteria.FunctionId && variableAspectsContainCriteria(variable, criteria, aspectNode) {
 		return true
 	}
 	for _, sub := range variable.SubContentVariables {

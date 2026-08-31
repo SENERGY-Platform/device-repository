@@ -185,6 +185,7 @@ func (this *Controller) ExportDeviceTypes(options model.ImportExportOptions) (re
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
+	setContentVariableAspectIdOnReadList(result)
 	return result, err, http.StatusOK
 }
 
@@ -356,6 +357,7 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-types") {
 		for _, dt := range importModel.DeviceTypes {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, dt.Id) {
+				SetContentVariableAspectIdsOnWrite(&dt)
 				err, code = this.ValidateDeviceType(dt, model.ValidationOptions{})
 				if err != nil {
 					return err, code

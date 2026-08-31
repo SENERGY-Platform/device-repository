@@ -22,7 +22,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -68,7 +69,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -114,7 +116,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -160,7 +163,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -381,7 +385,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -476,7 +481,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -571,7 +577,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
@@ -666,7 +673,8 @@
                             "value": "ON",
                             "serialization_options": null,
                             "function_id": "urn:infai:ses:controlling-function:79e7914b-f303-4a7d-90af-dee70db05fd9",
-                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"
+                            "aspect_id": "urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32",
+                            "aspect_ids": ["urn:infai:ses:aspect:861227f6-1523-46a7-b8ab-a4e76f0bdd32"]
                         },
                         "serialization": "plain-text",
                         "protocol_segment_id": "urn:infai:ses:protocol-segment:0d211842-cef8-41ec-ab6b-9dbc31bc3a65"
