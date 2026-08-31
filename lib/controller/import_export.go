@@ -50,6 +50,11 @@ func (this *Controller) Export(token string, options model.ImportExportOptions) 
 		return result, err, code
 	}
 
+	result.AspectClasses, err, code = this.ExportAspectClasses(options)
+	if err != nil {
+		return result, err, code
+	}
+
 	result.Concepts, err, code = this.ExportConcepts(options)
 	if err != nil {
 		return result, err, code
@@ -124,6 +129,16 @@ func (this *Controller) ExportProtocols(options model.ImportExportOptions) (resu
 			}
 		}
 		result = temp
+	}
+	return result, err, http.StatusOK
+}
+
+func (this *Controller) ExportAspectClasses(options model.ImportExportOptions) (result []models.AspectClass, err error, code int) {
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "aspect-classes") {
+		result, _, err = this.db.ListAspectClasses(context.Background(), model.AspectClassListOptions{Ids: options.FilterIds})
+	}
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
 	}
 	return result, err, http.StatusOK
 }
@@ -332,6 +347,21 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 					return err, code
 				}
 				err = this.setAspect(a)
+				if err != nil {
+					return err, http.StatusInternalServerError
+				}
+			}
+		}
+	}
+
+	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "aspect-classes") {
+		for _, ac := range importModel.AspectClasses {
+			if options.FilterIds == nil || slices.Contains(options.FilterIds, ac.Id) {
+				err, code = this.ValidateAspectClass(ac)
+				if err != nil {
+					return err, code
+				}
+				err = this.setAspectClass(ac)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}

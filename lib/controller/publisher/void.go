@@ -88,6 +88,14 @@ func (this Void) PublishAspectDelete(id string) error {
 	return VoidPublisherError
 }
 
+func (this Void) PublishAspectClass(aspectClass models.AspectClass) (err error) {
+	return VoidPublisherError
+}
+
+func (this Void) PublishAspectClassDelete(id string) error {
+	return VoidPublisherError
+}
+
 func (this Void) PublishFunction(device models.Function) (err error) {
 	return VoidPublisherError
 }

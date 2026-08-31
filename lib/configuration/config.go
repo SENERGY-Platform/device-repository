@@ -47,6 +47,7 @@ type Config struct {
 	ConceptTopic                           string `json:"concept_topic"`
 	CharacteristicTopic                    string `json:"characteristic_topic"`
 	AspectTopic                            string `json:"aspect_topic"`
+	AspectClassTopic                       string `json:"aspect_class_topic"`
 	FunctionTopic                          string `json:"function_topic"`
 	DeviceClassTopic                       string `json:"device_class_topic"`
 	LocationTopic                          string `json:"location_topic"`
@@ -61,6 +62,7 @@ type Config struct {
 	MongoProtocolCollection                string `json:"mongo_protocol_collection"`
 	MongoHubCollection                     string `json:"mongo_hub_collection"`
 	MongoAspectCollection                  string `json:"mongo_aspect_collection"`
+	MongoAspectClassCollection             string `json:"mongo_aspect_class_collection"`
 	MongoCharacteristicCollection          string `json:"mongo_characteristic_collection"`
 	MongoConceptCollection                 string `json:"mongo_concept_collection"`
 	MongoDeviceClassCollection             string `json:"mongo_device_class_collection"`

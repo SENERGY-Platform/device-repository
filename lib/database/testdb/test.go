@@ -36,6 +36,7 @@ type DB struct {
 	deviceGroups            map[string]models.DeviceGroup
 	protocols               map[string]models.Protocol
 	aspects                 map[string]models.Aspect
+	aspectClasses           map[string]models.AspectClass
 	aspectNodes             map[string]models.AspectNode
 	characteristics         map[string]models.Characteristic
 	concepts                map[string]models.Concept
@@ -63,6 +64,7 @@ func NewTestDB(config configuration.Config) database.Database {
 		deviceGroups:            make(map[string]models.DeviceGroup),
 		protocols:               make(map[string]models.Protocol),
 		aspects:                 make(map[string]models.Aspect),
+		aspectClasses:           make(map[string]models.AspectClass),
 		aspectNodes:             make(map[string]models.AspectNode),
 		characteristics:         make(map[string]models.Characteristic),
 		concepts:                make(map[string]models.Concept),

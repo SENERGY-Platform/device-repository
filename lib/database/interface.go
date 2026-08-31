@@ -117,6 +117,13 @@ type Database interface {
 	RemoveConcept(ctx context.Context, id string, syncDeleteHandler func(models.Concept) error) error
 	RetryConceptSync(lockduration time.Duration, syncDeleteHandler func(models.Concept) error, syncHandler func(models.Concept) error) error
 
+	ListAspectClasses(ctx context.Context, options model.AspectClassListOptions) ([]models.AspectClass, int64, error)
+	GetAspectClass(ctx context.Context, id string) (result models.AspectClass, exists bool, err error)
+
+	SetAspectClass(ctx context.Context, aspectClass models.AspectClass, syncHandler func(models.AspectClass) error) error
+	RemoveAspectClass(ctx context.Context, id string, syncDeleteHandler func(models.AspectClass) error) error
+	RetryAspectClassSync(lockduration time.Duration, syncDeleteHandler func(models.AspectClass) error, syncHandler func(models.AspectClass) error) error
+
 	ListDeviceClasses(ctx context.Context, options model.DeviceClassListOptions) ([]models.DeviceClass, int64, error)
 	ListAllDeviceClasses(ctx context.Context) ([]models.DeviceClass, error)
 	ListAllDeviceClassesUsedWithControllingFunctions(ctx context.Context) ([]models.DeviceClass, error) //returns all device-classes used in combination with controlling functions

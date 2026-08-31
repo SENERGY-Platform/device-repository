@@ -42,6 +42,8 @@ type Publisher interface {
 
 	PublishAspect(device models.Aspect) (err error)
 	PublishAspectDelete(id string) error
+	PublishAspectClass(aspectClass models.AspectClass) (err error)
+	PublishAspectClassDelete(id string) error
 
 	PublishFunction(device models.Function) (err error)
 	PublishFunctionDelete(id string) error

@@ -145,6 +145,26 @@ func Pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		}
 	}
 
+	if checkLastUpdateF(config.MongoAspectClassCollection) {
+		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.AspectClass, err error) {
+			list, _, err, _ = c.ListAspectClasses(client.AspectClassListOptions{
+				Limit:  limit,
+				Offset: offset,
+			})
+			return
+		}) {
+			if err != nil {
+				config.GetLogger().Error("error while listing aspect-classes for mgw mirror pull", "error", err)
+				break
+			}
+			err = db.SetAspectClass(context.Background(), e, func(models.AspectClass) error { return nil })
+			if err != nil {
+				config.GetLogger().Error("error while setting aspect-classes for mgw mirror pull", "error", err)
+				break
+			}
+		}
+	}
+
 	if checkLastUpdateF(config.MongoAspectCollection) {
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Aspect, err error) {
 			list, _, err, _ = c.ListAspects(client.AspectListOptions{

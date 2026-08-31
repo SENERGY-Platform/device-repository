@@ -60,6 +60,14 @@ type AspectListOptions struct {
 	SortBy string //default name.asc
 }
 
+type AspectClassListOptions struct {
+	Ids    []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	Search string
+	Limit  int64  //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset int64  //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy string //default name.asc
+}
+
 type CharacteristicListOptions struct {
 	Ids    []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
 	Search string

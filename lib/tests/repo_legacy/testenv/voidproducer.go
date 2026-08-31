@@ -88,6 +88,14 @@ func (v VoidProducerMock) PublishAspectDelete(id string) error {
 	return nil
 }
 
+func (v VoidProducerMock) PublishAspectClass(aspectClass models.AspectClass) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishAspectClassDelete(id string) error {
+	return nil
+}
+
 func (v VoidProducerMock) PublishFunction(device models.Function) (err error) {
 	return nil
 }

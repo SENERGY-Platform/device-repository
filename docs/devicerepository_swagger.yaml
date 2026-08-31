@@ -37,6 +37,10 @@ definitions:
     type: object
   github_com_SENERGY-Platform_device-repository_lib_model.ImportExport:
     properties:
+      aspect_classes:
+        items:
+          $ref: '#/definitions/models.AspectClass'
+        type: array
       aspects:
         items:
           $ref: '#/definitions/models.Aspect'
@@ -328,6 +332,8 @@ definitions:
     type: object
   models.Aspect:
     properties:
+      aspect_class_id:
+        type: string
       id:
         type: string
       name:
@@ -337,12 +343,21 @@ definitions:
           $ref: '#/definitions/models.Aspect'
         type: array
     type: object
+  models.AspectClass:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   models.AspectNode:
     properties:
       ancestor_ids:
         items:
           type: string
         type: array
+      aspect_class_id:
+        type: string
       child_ids:
         items:
           type: string
@@ -887,6 +902,211 @@ info:
   title: Device-Repository API
   version: "0.1"
 paths:
+  /aspect-classes:
+    get:
+      description: list aspect-classes
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter
+        in: query
+        name: search
+        type: string
+      - description: default name.asc
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-separated list
+        in: query
+        name: ids
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.AspectClass'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list aspect-classes
+      tags:
+      - aspect-classes
+    post:
+      description: create aspect-class; may only be called by admins
+      parameters:
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.AspectClass'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AspectClass'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create aspect-class
+      tags:
+      - aspect-classes
+    put:
+      consumes:
+      - application/json
+      description: validate aspect-class
+      parameters:
+      - description: must be true; reminder, that this is not an update but a validation
+        in: query
+        name: dry-run
+        required: true
+        type: boolean
+      - description: Aspect-Class to be validated
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.AspectClass'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: validate aspect-class
+      tags:
+      - aspect-classes
+  /aspect-classes/{id}:
+    delete:
+      description: delete aspect-class; may only be called by admins; can also be
+        used to only validate deletes
+      parameters:
+      - description: only validate deletion
+        in: query
+        name: dry-run
+        type: boolean
+      - description: Aspect Class Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete aspect-class
+      tags:
+      - aspect-classes
+    get:
+      description: get aspect-class
+      parameters:
+      - description: Aspect Class Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AspectClass'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get aspect-class
+      tags:
+      - aspect-classes
+    put:
+      description: set aspect-class; may only be called by admins
+      parameters:
+      - description: Aspect Class Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.AspectClass'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AspectClass'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set aspect-class
+      tags:
+      - aspect-classes
   /aspect-nodes:
     get:
       deprecated: true

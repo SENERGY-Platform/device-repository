@@ -55,6 +55,10 @@ func (db *DB) GetLastUpdateTimestampsForUser(ctx context.Context, userId string)
 			UnixTimestamp: ts,
 		},
 		{
+			Collection:    db.config.MongoAspectClassCollection,
+			UnixTimestamp: ts,
+		},
+		{
 			Collection:    db.config.MongoDeviceClassCollection,
 			UnixTimestamp: ts,
 		},

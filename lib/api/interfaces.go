@@ -104,6 +104,13 @@ type Controller interface {
 	SetConcept(token string, concept models.Concept) (result models.Concept, err error, errCode int)
 	DeleteConcept(token string, id string) (err error, code int)
 
+	ListAspectClasses(listOptions model.AspectClassListOptions) (result []models.AspectClass, total int64, err error, errCode int)
+	GetAspectClass(id string) (result models.AspectClass, err error, errCode int)
+	ValidateAspectClass(aspectClass models.AspectClass) (err error, code int)
+	ValidateAspectClassDelete(id string) (err error, code int)
+	SetAspectClass(token string, aspectClass models.AspectClass) (result models.AspectClass, err error, errCode int)
+	DeleteAspectClass(token string, id string) (err error, code int)
+
 	ListDeviceClasses(listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int)
 	GetDeviceClasses() ([]models.DeviceClass, error, int)
 	GetDeviceClassesWithControllingFunctions() ([]models.DeviceClass, error, int)                      //returns all device-classes used in combination with controlling functions

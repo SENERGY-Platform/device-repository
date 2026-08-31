@@ -38,6 +38,7 @@ type Publisher struct {
 	concepts        *kafka.Writer
 	characteristics *kafka.Writer
 	aspects         *kafka.Writer
+	aspectclasses   *kafka.Writer
 	functions       *kafka.Writer
 	deviceclasses   *kafka.Writer
 	locations       *kafka.Writer
@@ -57,6 +58,7 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 			conf.ConceptTopic,
 			conf.CharacteristicTopic,
 			conf.AspectTopic,
+			conf.AspectClassTopic,
 			conf.FunctionTopic,
 			conf.DeviceClassTopic,
 			conf.LocationTopic,
@@ -74,6 +76,7 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 	concepts := getProducer(ctx, conf.KafkaUrl, conf.ConceptTopic, conf.GetLogger())
 	characteristics := getProducer(ctx, conf.KafkaUrl, conf.CharacteristicTopic, conf.GetLogger())
 	aspect := getProducer(ctx, conf.KafkaUrl, conf.AspectTopic, conf.GetLogger())
+	aspectclass := getProducer(ctx, conf.KafkaUrl, conf.AspectClassTopic, conf.GetLogger())
 	function := getProducer(ctx, conf.KafkaUrl, conf.FunctionTopic, conf.GetLogger())
 	deviceclass := getProducer(ctx, conf.KafkaUrl, conf.DeviceClassTopic, conf.GetLogger())
 	location := getProducer(ctx, conf.KafkaUrl, conf.LocationTopic, conf.GetLogger())
@@ -88,6 +91,7 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 		concepts:        concepts,
 		characteristics: characteristics,
 		aspects:         aspect,
+		aspectclasses:   aspectclass,
 		functions:       function,
 		deviceclasses:   deviceclass,
 		locations:       location,

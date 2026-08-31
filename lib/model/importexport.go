@@ -27,6 +27,7 @@ type ImportExport struct {
 	Protocols       []models.Protocol       `json:"protocols,omitempty"`
 	Functions       []models.Function       `json:"functions,omitempty"`
 	Aspects         []models.Aspect         `json:"aspects,omitempty"`
+	AspectClasses   []models.AspectClass    `json:"aspect_classes,omitempty"`
 	Concepts        []models.Concept        `json:"concepts,omitempty"`
 	Characteristics []models.Characteristic `json:"characteristics,omitempty"`
 	DeviceClasses   []models.DeviceClass    `json:"device_classes,omitempty"`
@@ -61,6 +62,9 @@ func (this *ImportExport) Sort() {
 		return strings.Compare(a.Id, b.Id)
 	})
 	slices.SortFunc(this.Aspects, func(a, b models.Aspect) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+	slices.SortFunc(this.AspectClasses, func(a, b models.AspectClass) int {
 		return strings.Compare(a.Id, b.Id)
 	})
 	slices.SortFunc(this.Concepts, func(a, b models.Concept) int {

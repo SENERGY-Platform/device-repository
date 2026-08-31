@@ -167,6 +167,10 @@ func (c *Client) validate(path string, e interface{}) (err error, code int) {
 }
 
 func (c *Client) validateWithOptions(path string, e interface{}, options url.Values) (err error, code int) {
+	if options == nil {
+		//validate() passes nil; Set() on a nil url.Values panics
+		options = url.Values{}
+	}
 	if c.optionalAuthTokenForApiGatewayRequest != nil {
 		token, err := c.optionalAuthTokenForApiGatewayRequest()
 		if err != nil {

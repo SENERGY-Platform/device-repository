@@ -19,6 +19,326 @@ const docTemplatedevicerepository = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/aspect-classes": {
+            "get": {
+                "description": "list aspect-classes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aspect-classes"
+                ],
+                "summary": "list aspect-classes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default name.asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-separated list",
+                        "name": "ids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AspectClass"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "description": "validate aspect-class",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aspect-classes"
+                ],
+                "summary": "validate aspect-class",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "must be true; reminder, that this is not an update but a validation",
+                        "name": "dry-run",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Aspect-Class to be validated",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AspectClass"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "create aspect-class; may only be called by admins",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aspect-classes"
+                ],
+                "summary": "create aspect-class",
+                "parameters": [
+                    {
+                        "description": "element",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AspectClass"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AspectClass"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/aspect-classes/{id}": {
+            "get": {
+                "description": "get aspect-class",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aspect-classes"
+                ],
+                "summary": "get aspect-class",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect Class Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AspectClass"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "description": "set aspect-class; may only be called by admins",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aspect-classes"
+                ],
+                "summary": "set aspect-class",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect Class Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "element",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AspectClass"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AspectClass"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "delete aspect-class; may only be called by admins; can also be used to only validate deletes",
+                "tags": [
+                    "aspect-classes"
+                ],
+                "summary": "delete aspect-class",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "only validate deletion",
+                        "name": "dry-run",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Aspect Class Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/aspect-nodes": {
             "get": {
                 "description": "deprecated list aspect-nodes; use GET /v2/aspect-nodes",
@@ -8486,6 +8806,12 @@ const docTemplatedevicerepository = `{
         "github_com_SENERGY-Platform_device-repository_lib_model.ImportExport": {
             "type": "object",
             "properties": {
+                "aspect_classes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AspectClass"
+                    }
+                },
                 "aspects": {
                     "type": "array",
                     "items": {
@@ -8915,6 +9241,9 @@ const docTemplatedevicerepository = `{
         "models.Aspect": {
             "type": "object",
             "properties": {
+                "aspect_class_id": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -8929,6 +9258,17 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
+        "models.AspectClass": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AspectNode": {
             "type": "object",
             "properties": {
@@ -8937,6 +9277,9 @@ const docTemplatedevicerepository = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "aspect_class_id": {
+                    "type": "string"
                 },
                 "child_ids": {
                     "type": "array",

@@ -53,6 +53,7 @@ func (this *Controller) Sync(lockduration time.Duration) (err error) {
 	err = errors.Join(err, this.db.RetryAspectSync(lockduration, this.deleteAspectSyncHandler, this.setAspectSyncHandler))
 	err = errors.Join(err, this.db.RetryCharacteristicSync(lockduration, this.deleteCharacteristicSyncHandler, this.setCharacteristicSyncHandler))
 	err = errors.Join(err, this.db.RetryConceptSync(lockduration, this.deleteConceptSyncHandler, this.setConceptSyncHandler))
+	err = errors.Join(err, this.db.RetryAspectClassSync(lockduration, this.deleteAspectClassSyncHandler, this.setAspectClassSyncHandler))
 	err = errors.Join(err, this.db.RetryDeviceClassSync(lockduration, this.deleteDeviceClassSyncHandler, this.setDeviceClassSyncHandler))
 	err = errors.Join(err, this.db.RetryDeviceGroupSync(lockduration, this.deleteDeviceGroupSyncHandler, this.setDeviceGroupSyncHandler))
 	err = errors.Join(err, this.db.RetryDeviceTypeSync(lockduration, this.deleteDeviceTypeSyncHandler, this.setDeviceTypeSyncHandler))
