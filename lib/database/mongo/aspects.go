@@ -41,6 +41,10 @@ func init() {
 		if err != nil {
 			return err
 		}
+		err = db.ensureIndex(collection, "aspectAspectClassIdIndex", AspectBson.AspectClassId, true, false)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 }
@@ -73,6 +77,9 @@ func (this *Mongo) ListAspects(ctx context.Context, listOptions model.AspectList
 	filter := bson.M{NotDeletedFilterKey: NotDeletedFilterValue}
 	if listOptions.Ids != nil {
 		filter[AspectBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	if listOptions.AspectClassIds != nil {
+		filter[AspectBson.AspectClassId] = bson.M{"$in": listOptions.AspectClassIds}
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {

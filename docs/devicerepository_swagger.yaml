@@ -6169,6 +6169,10 @@ paths:
         in: query
         name: ids
         type: string
+      - description: filter; comma-separated list of aspect-class ids
+        in: query
+        name: aspect_class_ids
+        type: string
       produces:
       - application/json
       responses:
@@ -6220,6 +6224,10 @@ paths:
       - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
+        type: string
+      - description: filter; comma-separated list of aspect-class ids
+        in: query
+        name: aspect_class_ids
         type: string
       produces:
       - application/json

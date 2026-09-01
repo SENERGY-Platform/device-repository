@@ -29,7 +29,8 @@ import (
 func (db *DB) ListAspectNodes(ctx context.Context, options model.AspectListOptions) (result []models.AspectNode, total int64, err error) {
 	for _, aspectNode := range db.aspectNodes {
 		if (options.Search == "" || strings.Contains(strings.ToLower(aspectNode.Name), strings.ToLower(options.Search))) &&
-			(options.Ids == nil || slices.Contains(options.Ids, aspectNode.Id)) {
+			(options.Ids == nil || slices.Contains(options.Ids, aspectNode.Id)) &&
+			(options.AspectClassIds == nil || slices.Contains(options.AspectClassIds, aspectNode.AspectClassId)) {
 			result = append(result, aspectNode)
 		}
 	}

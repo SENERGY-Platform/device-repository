@@ -93,6 +93,8 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	if this != nil {
+		//a content variable carries at most one aspect per aspect-class
+		aspectIdByAspectClassId := map[string]string{}
 		for _, aspectId := range variable.AspectIds {
 			aspectNode, exists, err := this.db.GetAspectNode(ctx, aspectId)
 			if err != nil {
@@ -103,6 +105,17 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 			}
 			if !options.CheckAllowNoneLeafAspectNodesInDeviceTypes(this.config) && len(aspectNode.DescendentIds) > 0 {
 				return errors.New("only leaf aspects are allowed in device-types " + variable.Name), http.StatusBadRequest
+			}
+			if aspectNode.AspectClassId != "" {
+				if other, ok := aspectIdByAspectClassId[aspectNode.AspectClassId]; ok {
+					if other == aspectId {
+						return errors.New("aspect " + aspectId + " is listed twice on " + variable.Name), http.StatusBadRequest
+					}
+					return errors.New("aspects " + other + " and " + aspectId + " of " + variable.Name +
+						" share the aspect class " + aspectNode.AspectClassId +
+						" — a content variable carries at most one aspect per aspect class"), http.StatusBadRequest
+				}
+				aspectIdByAspectClassId[aspectNode.AspectClassId] = aspectId
 			}
 		}
 	}

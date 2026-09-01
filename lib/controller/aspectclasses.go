@@ -19,6 +19,7 @@ package controller
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/SENERGY-Platform/device-repository/lib/model"
@@ -117,9 +118,68 @@ func (this *Controller) ValidateAspectClass(aspectClass models.AspectClass) (err
 	return nil, http.StatusOK
 }
 
-// ValidateAspectClassDelete has nothing to check yet: aspects reference an aspect-class
-// through Aspect.AspectClassId, but that field is not evaluated by this service so far.
-// The usage check belongs here once it is.
+// aspectClassUsageErrorLimit caps how many aspects the delete error names. The count
+// itself comes from the listing's total, so it stays exact.
+const aspectClassUsageErrorLimit = 20
+
 func (this *Controller) ValidateAspectClassDelete(id string) (err error, code int) {
+	ctx, _ := getTimeoutContext()
+	//the aspect nodes are the flat index: an aspect tree is one nested document, while
+	//every aspect of it has exactly one node carrying the class
+	nodes, total, err := this.db.ListAspectNodes(ctx, model.AspectListOptions{
+		AspectClassIds: []string{id},
+		Limit:          aspectClassUsageErrorLimit,
+	})
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if total == 0 {
+		return nil, http.StatusOK
+	}
+	where := []string{}
+	for _, node := range nodes {
+		where = append(where, node.Name+" ("+node.Id+")")
+	}
+	if total > int64(len(nodes)) {
+		where = append(where, "and "+strconv.FormatInt(total-int64(len(nodes)), 10)+" more")
+	}
+	return errors.New("still in use by " + strconv.FormatInt(total, 10) + " aspect(s): " + strings.Join(where, ", ")), http.StatusBadRequest
+}
+
+// ResolveAspectClassIds gives every aspect of the hierarchy the aspect-class of its
+// root. A sub-aspect may repeat that value but may not carry a different one — an
+// aspect hierarchy has at most one aspect-class. Exported because the mgw mirror
+// writes aspects to the database without passing a controller write.
+func ResolveAspectClassIds(aspect *models.Aspect) (err error, code int) {
+	for i := range aspect.SubAspects {
+		err, code = inheritAspectClassId(&aspect.SubAspects[i], aspect.AspectClassId, aspect.Id)
+		if err != nil {
+			return err, code
+		}
+	}
 	return nil, http.StatusOK
+}
+
+func inheritAspectClassId(aspect *models.Aspect, rootClassId string, rootId string) (err error, code int) {
+	if aspect.AspectClassId == "" {
+		aspect.AspectClassId = rootClassId
+	} else if aspect.AspectClassId != rootClassId {
+		return errors.New("sub aspect " + aspect.Id + " sets aspect class " + aspect.AspectClassId +
+			", but its hierarchy is " + describeAspectClassOfRoot(rootClassId, rootId) +
+			" — an aspect hierarchy has at most one aspect class, and only its root assigns it"), http.StatusBadRequest
+	}
+	for i := range aspect.SubAspects {
+		err, code = inheritAspectClassId(&aspect.SubAspects[i], rootClassId, rootId)
+		if err != nil {
+			return err, code
+		}
+	}
+	return nil, http.StatusOK
+}
+
+func describeAspectClassOfRoot(rootClassId string, rootId string) string {
+	if rootClassId == "" {
+		return "rooted in " + rootId + ", which has none"
+	}
+	return "rooted in " + rootId + ", which assigns " + rootClassId
 }

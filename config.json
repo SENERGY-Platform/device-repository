@@ -39,6 +39,7 @@
     "http_client_timeout": "30s",
     "device_service_group_selection_allow_not_found": true,
     "allow_none_leaf_aspect_nodes_in_device_types_default": true,
+    "aspect_class_id_required": false,
     "skip_device_group_generation_from_device": false,
 
     "api_docs_provider_base_url": "",

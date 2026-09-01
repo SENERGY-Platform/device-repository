@@ -177,6 +177,12 @@ func Pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				config.GetLogger().Error("error while listing aspects for mgw mirror pull", "error", err)
 				break
 			}
+			//an older source may not resolve the aspect-class down the hierarchy yet
+			resolveErr, _ := controller.ResolveAspectClassIds(&e)
+			if resolveErr != nil {
+				config.GetLogger().Error("error while resolving aspect classes for mgw mirror pull", "error", resolveErr)
+				break
+			}
 			err = db.SetAspect(context.Background(), e, func(models.Aspect) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting aspects for mgw mirror pull", "error", err)

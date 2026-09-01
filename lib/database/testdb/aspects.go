@@ -42,7 +42,8 @@ func (db *DB) RetryAspectSync(lockduration time.Duration, syncDeleteHandler func
 func (db *DB) ListAspects(ctx context.Context, options model.AspectListOptions) (result []models.Aspect, total int64, err error) {
 	for _, aspect := range db.aspects {
 		if (options.Search == "" || strings.Contains(strings.ToLower(aspect.Name), strings.ToLower(options.Search))) &&
-			(options.Ids == nil || slices.Contains(options.Ids, aspect.Id)) {
+			(options.Ids == nil || slices.Contains(options.Ids, aspect.Id)) &&
+			(options.AspectClassIds == nil || slices.Contains(options.AspectClassIds, aspect.AspectClassId)) {
 			result = append(result, aspect)
 		}
 	}

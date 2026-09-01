@@ -125,6 +125,11 @@ func (this *Controller) SetAspect(token string, aspect models.Aspect) (result mo
 
 	//ensure ids
 	aspect.GenerateId()
+	//resolve before validating, so that validation and storage see the same tree
+	err, code = ResolveAspectClassIds(&aspect)
+	if err != nil {
+		return aspect, err, code
+	}
 	if !this.config.DisableStrictValidationForTesting {
 		err, code = this.ValidateAspect(aspect)
 		if err != nil {
@@ -222,7 +227,37 @@ func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descenda
 }
 
 func (this *Controller) ValidateAspect(aspect models.Aspect) (err error, code int) {
+	//the hierarchy's aspect-class has to be resolved before it can be checked; dry-run
+	//requests and imports reach this without passing SetAspect
+	err, code = ResolveAspectClassIds(&aspect)
+	if err != nil {
+		return err, code
+	}
+	err, code = this.validateAspectClassOfHierarchy(aspect)
+	if err != nil {
+		return err, code
+	}
 	return this.validateAspect(aspect, true)
+}
+
+// validateAspectClassOfHierarchy checks the root's aspect-class, which after
+// ResolveAspectClassIds is the aspect-class of every aspect in the hierarchy.
+func (this *Controller) validateAspectClassOfHierarchy(aspect models.Aspect) (err error, code int) {
+	if aspect.AspectClassId == "" {
+		if this.config.AspectClassIdRequired {
+			return errors.New("missing aspect class id in " + aspect.Id), http.StatusBadRequest
+		}
+		return nil, http.StatusOK
+	}
+	ctx, _ := getTimeoutContext()
+	_, exists, err := this.db.GetAspectClass(ctx, aspect.AspectClassId)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if !exists {
+		return errors.New("unknown aspect class id: " + aspect.AspectClassId), http.StatusBadRequest
+	}
+	return nil, http.StatusOK
 }
 
 func (this *Controller) validateAspect(aspect models.Aspect, checkDelete bool) (err error, code int) {

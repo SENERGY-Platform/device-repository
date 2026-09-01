@@ -76,6 +76,7 @@ type Config struct {
 
 	DeviceServiceGroupSelectionAllowNotFound     bool `json:"device_service_group_selection_allow_not_found"`
 	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
+	AspectClassIdRequired                        bool `json:"aspect_class_id_required"`
 
 	InitialGroupRights    map[string]map[string]string `json:"initial_group_rights"`
 	RunStartupMigrations  bool                         `json:"run_startup_migrations"`

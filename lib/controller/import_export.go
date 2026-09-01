@@ -342,6 +342,10 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "aspects") {
 		for _, a := range importModel.Aspects {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, a.Id) {
+				err, code = ResolveAspectClassIds(&a)
+				if err != nil {
+					return err, code
+				}
 				err, code = this.ValidateAspect(a)
 				if err != nil {
 					return err, code

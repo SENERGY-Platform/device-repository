@@ -49,9 +49,9 @@ instance:
 - [Not every device-type read passes the controller](docs/not-every-device-type-read-passes-the-controller.md) —
   two paths read or write device-types straight from the database, and one of
   them rewrites stored device-group criteria while doing so
-- [aspect-classes exist; aspect_class_id does not work yet](docs/aspect-classes-and-the-unused-aspect-class-id.md) —
-  the resource and its endpoints, and why the field is always empty on an
-  aspect-node however the aspect is classified
+- [An aspect hierarchy has one aspect-class, assigned by its root](docs/one-aspect-class-per-hierarchy.md) —
+  who may assign it, what inherits it, why the aspect-nodes are the queryable
+  index, and the one rule that is not rechecked afterwards
 
 Working in this repository:
 

@@ -36,6 +36,9 @@ func (c *Client) ListAspectNodes(options model.AspectListOptions) (result []mode
 	if options.Ids != nil {
 		query.Set("ids", strings.Join(options.Ids, ","))
 	}
+	if options.AspectClassIds != nil {
+		query.Set("aspect_class_ids", strings.Join(options.AspectClassIds, ","))
+	}
 	if options.SortBy != "" {
 		query.Set("sort", options.SortBy)
 	}

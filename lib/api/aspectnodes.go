@@ -92,6 +92,7 @@ func (this *AspectNodeEndpoints) Query(config configuration.Config, router *http
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
 // @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
+// @Param        aspect_class_ids query string false "filter; comma-separated list of aspect-class ids"
 // @Success      200 {array}  models.AspectNode
 // @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
 // @Failure      400
@@ -131,6 +132,15 @@ func (this *AspectEndpoints) ListAspectNodes(config configuration.Config, router
 				listoptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
 			} else {
 				listoptions.Ids = []string{}
+			}
+		}
+
+		aspectClassIdsParam := request.URL.Query().Get("aspect_class_ids")
+		if request.URL.Query().Has("aspect_class_ids") {
+			if aspectClassIdsParam != "" {
+				listoptions.AspectClassIds = strings.Split(strings.TrimSpace(aspectClassIdsParam), ",")
+			} else {
+				listoptions.AspectClassIds = []string{}
 			}
 		}
 

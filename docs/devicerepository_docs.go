@@ -8106,6 +8106,12 @@ const docTemplatedevicerepository = `{
                         "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list of aspect-class ids",
+                        "name": "aspect_class_ids",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -8186,6 +8192,12 @@ const docTemplatedevicerepository = `{
                         "type": "string",
                         "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list of aspect-class ids",
+                        "name": "aspect_class_ids",
                         "in": "query"
                     }
                 ],

@@ -64,6 +64,10 @@ func init() {
 		if err != nil {
 			return err
 		}
+		err = db.ensureIndex(collection, "aspectNodeAspectClassIdIndex", AspectNodeBson.AspectClassId, true, false)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 }
@@ -100,6 +104,9 @@ func (this *Mongo) ListAspectNodes(ctx context.Context, listOptions model.Aspect
 	filter := bson.M{}
 	if listOptions.Ids != nil {
 		filter[AspectNodeBson.Id] = bson.M{"$in": listOptions.Ids}
+	}
+	if listOptions.AspectClassIds != nil {
+		filter[AspectNodeBson.AspectClassId] = bson.M{"$in": listOptions.AspectClassIds}
 	}
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {

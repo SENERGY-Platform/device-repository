@@ -49,6 +49,7 @@ func CreateAspectNodes(db database.Database, aspect models.Aspect, rootId string
 	err = db.SetAspectNode(ctx, models.AspectNode{
 		Id:            aspect.Id,
 		Name:          aspect.Name,
+		AspectClassId: aspect.AspectClassId,
 		RootId:        rootId,
 		ParentId:      parentId,
 		ChildIds:      children,
