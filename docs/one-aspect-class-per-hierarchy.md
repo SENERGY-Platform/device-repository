@@ -31,6 +31,26 @@ The resolution also runs in `ValidateAspect`, because the `?dry-run=true`
 endpoint and the import path never pass `SetAspect`, and in the mgw mirror, which
 writes aspects straight to the database.
 
+## Why only the root assigns it
+
+Two other readings of "a hierarchy has one class" were on the table and rejected:
+
+- **Allow a partially classified tree.** Literal inheritance leaves the root
+  empty when nothing is assigned there, so a sub-aspect could classify its own
+  subtree and the tree would still hold only one distinct class. Rejected because
+  a tree whose upper levels are unclassified makes "the class of this aspect"
+  depend on where you enter the tree, and the delete check would then have to
+  distinguish carried from inherited.
+- **Let the class propagate upward.** Whatever single class appears anywhere gets
+  applied to the whole tree, root included. Rejected because assignment would
+  then have no single owner: two people classifying two different subtrees would
+  each believe they set the hierarchy's class, and the second write would win
+  silently.
+
+What is left is the strictest of the three and the only one that has an owner:
+the root. The cost is that a subtree cannot be classified on its own — moving it
+out into a hierarchy of its own is the way to give it a different class.
+
 ## Assignment is optional by default
 
 `aspect_class_id_required` in the config, default `false`, decides whether an
@@ -74,10 +94,18 @@ and says "and N more" beyond that. Deleting the aspects releases the class.
 
 `ValidateVariable` resolves every entry of `ContentVariable.AspectIds` to its
 node and refuses a device-type whose variable holds two aspects of the same
-non-empty class — `inside_air` and `outside_air` together, say, when both are in
-the `environment` class. Two **unclassified** aspects do not collide, because
-there is no class to collide on. The same aspect listed twice is refused with a
-message of its own rather than being reported as two aspects.
+non-empty class. Two **unclassified** aspects do not collide, because there is no
+class to collide on. The same aspect listed twice is refused with a message of
+its own rather than being reported as two aspects.
+
+For a client the useful phrasing is not about classes at all. Since a hierarchy
+carries exactly one class, the rule means: **at most one aspect out of any
+classified hierarchy may sit on a content variable.** `inside_air` and
+`outside_air` together were valid until the hierarchy above them got a class;
+afterwards they are a 400. Aspects from *different* hierarchies remain fine, and
+so do two aspects of one hierarchy as long as that hierarchy has no class — which
+is the boundary worth knowing, because it means classifying an existing hierarchy
+can invalidate device-types that were valid before.
 
 **This is only checked when the device-type is written.** Changing an aspect's
 class later can leave an already stored content variable in violation, and

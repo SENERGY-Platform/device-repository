@@ -34,6 +34,18 @@ your change is not a verification.
 The full suite takes roughly seventeen minutes that way — worth starting in the
 background rather than waiting on it.
 
+## `-p 1` only covers one invocation
+
+It serialises the packages *within* a run. Two `go test` processes started
+independently still overlap, and then both fail the same way — which is easy to
+walk into precisely because the run is long enough to forget it is still going.
+Both results are worthless in that case, not just one: each run's containers take
+ports the other wanted, so a green package means nothing either. Kill both and
+start one, rather than trying to read the two logs.
+
+Testcontainers' ryuk reaper cleans up the containers of a killed run on its own,
+so there is nothing to tidy by hand.
+
 ## The real fix, not done
 
 Each test env should take a free port instead of the one from `config.json`. Until
