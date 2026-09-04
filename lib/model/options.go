@@ -44,12 +44,13 @@ type LocationListOptions struct {
 }
 
 type FunctionListOptions struct {
-	Ids     []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
-	RdfType string   // model.SES_ONTOLOGY_CONTROLLING_FUNCTION || model.SES_ONTOLOGY_MEASURING_FUNCTION
-	Search  string
-	Limit   int64  //default 100, will be ignored if 'ids' is set (Ids != nil)
-	Offset  int64  //default 0, will be ignored if 'ids' is set (Ids != nil)
-	SortBy  string //default name.asc
+	Ids        []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	ConceptIds []string //filter; ignored if ConceptIds == nil; ConceptIds == []string{} will return an empty list;
+	RdfType    string   // model.SES_ONTOLOGY_CONTROLLING_FUNCTION || model.SES_ONTOLOGY_MEASURING_FUNCTION
+	Search     string
+	Limit      int64  //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset     int64  //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy     string //default name.asc
 }
 
 type AspectListOptions struct {

@@ -3721,6 +3721,12 @@ const docTemplatedevicerepository = `{
                         "description": "filter; ignores limit/offset; comma-separated list",
                         "name": "ids",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list",
+                        "name": "concept_ids",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -9018,6 +9024,13 @@ const docTemplatedevicerepository = `{
         "model.FunctionListOptions": {
             "type": "object",
             "properties": {
+                "conceptIds": {
+                    "description": "filter; ignored if ConceptIds == nil; ConceptIds == []string{} will return an empty list;",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "ids": {
                     "description": "filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;",
                     "type": "array",

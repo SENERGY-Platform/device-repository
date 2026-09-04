@@ -32,6 +32,7 @@
     "mongo_location_collection": "locations",
     "mongo_default_device_attributes_collection": "default_device_attributes",
     "mongo_last_update_timestamps_collection": "last_update_timestamps",
+    "mongo_migration_state_collection": "migration_state",
     "mongo_graph_collection": "graphs",
     "kafka_url": "kafka.kafka:9092",
     "debug": false,

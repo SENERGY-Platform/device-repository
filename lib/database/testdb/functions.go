@@ -45,7 +45,8 @@ func (db *DB) ListFunctions(ctx context.Context, options model.FunctionListOptio
 	for _, f := range db.functions {
 		if (options.RdfType == "" || f.RdfType == options.RdfType) &&
 			(options.Search == "" || strings.Contains(strings.ToLower(f.Name), strings.ToLower(options.Search))) &&
-			(options.Ids == nil || slices.Contains(options.Ids, f.Id)) {
+			(options.Ids == nil || slices.Contains(options.Ids, f.Id)) &&
+			(options.ConceptIds == nil || slices.Contains(options.ConceptIds, f.ConceptId)) {
 			result = append(result, f)
 		}
 	}

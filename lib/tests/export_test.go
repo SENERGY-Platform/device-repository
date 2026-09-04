@@ -152,6 +152,22 @@ func TestExport(t *testing.T) {
 				return
 			}
 			concepts = append(concepts, temp)
+
+			//a concept owns a Get and a Set function, so each one adds two to the export
+			for _, concept := range concepts {
+				for _, rdfType := range model.ConceptFunctionRdfTypes {
+					list, _, err, _ := c.ListFunctions(client.FunctionListOptions{RdfType: rdfType, Limit: 1000})
+					if err != nil {
+						t.Error(err)
+						return
+					}
+					for _, function := range list {
+						if function.ConceptId == concept.Id {
+							functions = append(functions, function)
+						}
+					}
+				}
+			}
 		})
 
 		t.Run("functions", func(t *testing.T) {

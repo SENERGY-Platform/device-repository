@@ -23,6 +23,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/SENERGY-Platform/device-repository/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -50,6 +51,10 @@ func (this *Mongo) RunStartupMigrations(helper MigrationMethods) error {
 	if err != nil {
 		return err
 	}
+	err = this.runConceptFunctionsMigration(helper)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -61,6 +66,9 @@ type MigrationMethods interface {
 	//not import, so it is handed in.
 	SetContentVariableAspectIdsOnWrite(deviceType *models.DeviceType)
 	GetDeviceGroupCriteria(deviceIds []string) (result []models.DeviceGroupFilterCriteria, err error, code int)
+	//PublishFunction is the sync handler of a function write. The concept-function
+	//migration creates functions no consumer has seen, so it has to publish them.
+	PublishFunction(function models.Function) error
 }
 
 func (this *Mongo) runDeviceGroupMigration(helper MigrationMethods) error {
@@ -293,4 +301,127 @@ func criteriaShorts(criteria []models.DeviceGroupFilterCriteria) []string {
 	}
 	slices.Sort(result)
 	return result
+}
+
+const conceptFunctionsMigrationName = "concept-functions"
+
+// conceptFunctionsMigrationLimit bounds the functions the migration looks at per concept and
+// type. Any real concept has one; the deprecation branch exists for the handful that grew a
+// second, not for an unbounded list.
+const conceptFunctionsMigrationLimit = 1000
+
+// deprecatedFunctionNameSuffix marks the functions a concept had before the migration gave
+// it exactly one per type. They keep their id, so no device-type loses its reference.
+const deprecatedFunctionNameSuffix = "-deprecated"
+
+// runConceptFunctionsMigration gives every existing concept the measuring and controlling
+// function the convention asks for. Unlike the other migrations it creates resources, so it
+// cannot recognise its own result in the data — a second run would produce a second pair.
+// It is therefore guarded by a record in the migration-state collection.
+//
+// What it does per concept and function type follows what is already there:
+//
+//   - none: create the function.
+//   - exactly one: rename it if its name is not the one the convention gives. A name a user
+//     chose is overwritten here, once, because a concept can only have one obvious function
+//     per type and this is the run that establishes which.
+//   - more than one: create the function, and suffix every existing one with "-deprecated".
+//     Picking one of several would be a guess, and deleting them would break the device-types
+//     that use them.
+func (this *Mongo) runConceptFunctionsMigration(helper MigrationMethods) error {
+	ctx := context.Background()
+	done, err := this.migrationHasRun(ctx, conceptFunctionsMigrationName)
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	if done {
+		return nil
+	}
+	this.config.GetLogger().Info("start runConceptFunctionsMigration()")
+	cursor, err := this.conceptCollection().Find(ctx, bson.M{})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		if cursor.Err() != nil {
+			debug.PrintStack()
+			return cursor.Err()
+		}
+		concept := models.Concept{}
+		err = cursor.Decode(&concept)
+		if err != nil {
+			debug.PrintStack()
+			return err
+		}
+		err = this.migrateConceptFunctions(ctx, helper, concept)
+		if err != nil {
+			debug.PrintStack()
+			return err
+		}
+	}
+	err = cursor.Err()
+	if err != nil {
+		debug.PrintStack()
+		return err
+	}
+	return this.setMigrationHasRun(ctx, conceptFunctionsMigrationName)
+}
+
+func (this *Mongo) migrateConceptFunctions(ctx context.Context, helper MigrationMethods, concept models.Concept) error {
+	for _, rdfType := range model.ConceptFunctionRdfTypes {
+		name := model.ConceptFunctionName(rdfType, concept.Name)
+		//sorted by id, so that a concept with several of them is treated the same way on
+		//every run of the migration
+		existing, _, err := this.ListFunctions(ctx, model.FunctionListOptions{
+			ConceptIds: []string{concept.Id},
+			RdfType:    rdfType,
+			Limit:      conceptFunctionsMigrationLimit,
+			SortBy:     "id.asc",
+		})
+		if err != nil {
+			return err
+		}
+		if len(existing) == 1 {
+			function := existing[0]
+			if function.Name == name {
+				continue
+			}
+			if function.DisplayName == "" || function.DisplayName == function.Name {
+				function.DisplayName = name
+			}
+			function.Name = name
+			this.config.GetLogger().Debug("rename concept function", "conceptId", concept.Id, "functionId", function.Id, "name", name)
+			err = this.SetFunction(ctx, function, helper.PublishFunction)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+		for _, function := range existing {
+			function.Name = function.Name + deprecatedFunctionNameSuffix
+			if function.DisplayName != "" {
+				function.DisplayName = function.DisplayName + deprecatedFunctionNameSuffix
+			}
+			this.config.GetLogger().Debug("deprecate concept function", "conceptId", concept.Id, "functionId", function.Id)
+			err = this.SetFunction(ctx, function, helper.PublishFunction)
+			if err != nil {
+				return err
+			}
+		}
+		function := models.Function{
+			Name:        name,
+			DisplayName: name,
+			ConceptId:   concept.Id,
+			RdfType:     rdfType,
+		}
+		function.GenerateId()
+		this.config.GetLogger().Debug("create concept function", "conceptId", concept.Id, "functionId", function.Id, "name", name)
+		err = this.SetFunction(ctx, function, helper.PublishFunction)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

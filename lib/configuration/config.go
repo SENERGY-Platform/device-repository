@@ -70,6 +70,7 @@ type Config struct {
 	MongoLocationCollection                string `json:"mongo_location_collection"`
 	MongoDefaultDeviceAttributesCollection string `json:"mongo_default_device_attributes_collection"`
 	MongoLastUpdateTimestampsCollection    string `json:"mongo_last_update_timestamps_collection"`
+	MongoMigrationStateCollection          string `json:"mongo_migration_state_collection"`
 	MongoGraphCollection                   string `json:"mongo_graph_collection"`
 	Debug                                  bool   `json:"debug"`
 	HttpClientTimeout                      string `json:"http_client_timeout"`

@@ -18,6 +18,7 @@ package tests
 
 import (
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/lib/client"
 	"github.com/SENERGY-Platform/device-repository/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -134,15 +135,53 @@ func testConcepts(t *testing.T, conf configuration.Config) {
 		checkConcept(t, conf, concept2.Id, updateConcept)
 	})
 
+	//a concept owns a Get and a Set function, and the delete refuses while any function
+	//references it, so its own pair has to go first
+	t.Run("delete: refused while the generated functions exist", func(t *testing.T) {
+		resp, err := helper.Jwtdelete(adminjwt, "http://localhost:"+conf.ServerPort+"/concepts/"+url.PathEscape(concept.Id)+"?wait=true")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusBadRequest {
+			b, _ := io.ReadAll(resp.Body)
+			t.Fatal(resp.Status, resp.StatusCode, string(b))
+		}
+	})
+
+	deleteConceptFunctions(t, conf, concept.Id)
+
 	resp, err = helper.Jwtdelete(adminjwt, "http://localhost:"+conf.ServerPort+"/concepts/"+url.PathEscape(concept.Id)+"?wait=true")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		t.Fatal(resp.Status, resp.StatusCode, string(b))
+	}
 
 	t.Run("delete: concept removed at semantic repo", func(t *testing.T) {
 		checkConceptDelete(t, conf, concept2.Id)
 	})
+}
+
+func deleteConceptFunctions(t *testing.T, conf configuration.Config, conceptId string) {
+	t.Helper()
+	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	functions, _, err, _ := c.ListFunctions(client.FunctionListOptions{Limit: 1000})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, function := range functions {
+		if function.ConceptId != conceptId {
+			continue
+		}
+		err, _ = c.DeleteFunction(client.InternalAdminToken, function.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 func checkConceptDelete(t *testing.T, conf configuration.Config, id string) {

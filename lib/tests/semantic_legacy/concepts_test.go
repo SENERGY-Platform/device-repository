@@ -23,6 +23,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
+	"net/http"
 	"sync"
 	"testing"
 )
@@ -168,10 +169,36 @@ func testReadConcept1WithSubClass(con *controller.Controller) func(t *testing.T)
 	}
 }
 
+// testDeleteConcept1 walks the whole delete, which a concept no longer passes on its own:
+// it owns a Get and a Set function, and the delete refuses while any function references it.
 func testDeleteConcept1(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
+		const conceptId = "urn:ses:infai:concept:1a1a1a"
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		err, _ := c.DeleteConcept(testenv.AdminToken, "urn:ses:infai:concept:1a1a1a")
+
+		err, code := c.DeleteConcept(testenv.AdminToken, conceptId)
+		if err == nil {
+			t.Fatal("expected the delete to refuse while the generated functions exist")
+		}
+		if code != http.StatusBadRequest {
+			t.Fatal("unexpected code", code, err)
+		}
+
+		functions, _, err, _ := c.ListFunctions(client.FunctionListOptions{Limit: 1000})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, function := range functions {
+			if function.ConceptId != conceptId {
+				continue
+			}
+			err, _ = c.DeleteFunction(testenv.AdminToken, function.Id)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		err, _ = c.DeleteConcept(testenv.AdminToken, conceptId)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -47,7 +47,18 @@ func (this *Controller) SetConcept(token string, concept models.Concept) (result
 			return result, err, code
 		}
 	}
+	//read before the write, because whether the concept is new and what it was called
+	//decides whether its functions are created or renamed
+	ctx, _ := getTimeoutContext()
+	old, existed, err := this.db.GetConceptWithoutCharacteristics(ctx, concept.Id)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
 	err = this.setConcept(concept)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	err = this.ensureConceptFunctions(old, existed, concept)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

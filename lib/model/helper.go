@@ -29,3 +29,20 @@ func SetFunctionRdfType(function *models.Function) {
 		function.RdfType = SES_ONTOLOGY_MEASURING_FUNCTION
 	}
 }
+
+// ConceptFunctionRdfTypes are the function types a concept generates one function for.
+var ConceptFunctionRdfTypes = []string{SES_ONTOLOGY_MEASURING_FUNCTION, SES_ONTOLOGY_CONTROLLING_FUNCTION}
+
+// ConceptFunctionName renders the name of the function a concept generates for a function
+// type. A concept creates both when it is created and renames them when it is renamed, so
+// that every concept carries one obvious pair. Returns "" for anything that is not one of
+// the two function types.
+func ConceptFunctionName(rdfType string, conceptName string) string {
+	switch rdfType {
+	case SES_ONTOLOGY_MEASURING_FUNCTION:
+		return "Get-" + conceptName
+	case SES_ONTOLOGY_CONTROLLING_FUNCTION:
+		return "Set-" + conceptName
+	}
+	return ""
+}

@@ -392,11 +392,12 @@ func TestMirror(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if len(result) != 1 {
+			//the explicit one, plus the Get and Set of the one concept the source has
+			if len(result) != 3 {
 				t.Error("unexpected result: ", len(result))
 				return
 			}
-			if total != 1 {
+			if total != 3 {
 				t.Error("unexpected total: ", total)
 				return
 			}
@@ -672,11 +673,12 @@ func TestMirror(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if len(result) != 2 {
+			//the two explicit ones, plus the Get and Set of the two concepts
+			if len(result) != 6 {
 				t.Error("unexpected result: ", len(result))
 				return
 			}
-			if total != 2 {
+			if total != 6 {
 				t.Error("unexpected total: ", total)
 				return
 			}

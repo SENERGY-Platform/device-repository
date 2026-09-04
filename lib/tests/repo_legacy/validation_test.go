@@ -540,13 +540,15 @@ func TestDeleteValidations(t *testing.T) {
 		}
 	})
 
-	t.Run("unused_concept", func(t *testing.T) {
+	//a concept owns a Get and a Set function, so nothing references it only in the sense
+	//that no device-type does — its own functions do, and the delete refuses on those
+	t.Run("concept_used_by_its_own_functions", func(t *testing.T) {
 		err = testDeleteValidation(
 			t,
 			conf,
 			"concepts",
 			"unused_concept",
-			http.StatusOK)
+			http.StatusBadRequest)
 		if err != nil {
 			t.Error(err)
 			return

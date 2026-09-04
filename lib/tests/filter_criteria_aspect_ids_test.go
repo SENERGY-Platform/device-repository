@@ -513,6 +513,15 @@ func testStartupMigration(t *testing.T, config configuration.Config, measuringFu
 		t.Error(err)
 		return
 	}
+	//and the index that went with that shape, which only an older version created
+	_, err = criteriaCollection.Indexes().CreateOne(ctx, mongodriver.IndexModel{
+		Keys:    bson.D{{Key: "aspectid", Value: int32(1)}},
+		Options: mongooptions.Index().SetName("deviceTypeCriteriaAspectIdIndex"),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	//the generator used to write one criteria per aspect and none over the whole list, so
 	//drop the criteria that name several aspects
@@ -559,6 +568,32 @@ func testStartupMigration(t *testing.T, config configuration.Config, measuringFu
 		}
 		if count != 0 {
 			t.Error("expected every criteria row to be rebuilt", count)
+		}
+	})
+
+	t.Run("the index of the deprecated aspect field is dropped", func(t *testing.T) {
+		cursor, err := criteriaCollection.Indexes().List(ctx)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		indexes := []bson.M{}
+		err = cursor.All(ctx, &indexes)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		names := []string{}
+		for _, index := range indexes {
+			name, _ := index["name"].(string)
+			names = append(names, name)
+		}
+		if slices.Contains(names, "deviceTypeCriteriaAspectIdIndex") {
+			t.Error("the index still indexes a field no document has any more", names)
+		}
+		//the one that replaced it has to be there, or nothing was created either
+		if !slices.Contains(names, "deviceTypeCriteriaAspectIdsIndex") {
+			t.Error("expected the index on the aspect list", names)
 		}
 	})
 

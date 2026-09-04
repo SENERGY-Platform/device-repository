@@ -170,6 +170,12 @@ definitions:
     type: object
   model.FunctionListOptions:
     properties:
+      conceptIds:
+        description: filter; ignored if ConceptIds == nil; ConceptIds == []string{}
+          will return an empty list;
+        items:
+          type: string
+        type: array
       ids:
         description: filter; ignores limit/offset if Ids != nil; ignored if Ids ==
           nil; Ids == []string{} will return an empty list;
@@ -3343,6 +3349,10 @@ paths:
       - description: filter; ignores limit/offset; comma-separated list
         in: query
         name: ids
+        type: string
+      - description: filter; comma-separated list
+        in: query
+        name: concept_ids
         type: string
       produces:
       - application/json

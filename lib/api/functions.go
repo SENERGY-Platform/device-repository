@@ -49,6 +49,7 @@ type FunctionsEndpoints struct{}
 // @Param        search query string false "filter"
 // @Param        sort query string false "default name.asc"
 // @Param        ids query string false "filter; ignores limit/offset; comma-separated list"
+// @Param        concept_ids query string false "filter; comma-separated list"
 // @Success      200 {array}  models.Function
 // @Header       200 {integer}  X-Total-Count  "count of all matching elements; used for pagination"
 // @Failure      400
@@ -88,6 +89,15 @@ func (this *FunctionsEndpoints) ListFunctions(config configuration.Config, route
 				listoptions.Ids = strings.Split(strings.TrimSpace(idsParam), ",")
 			} else {
 				listoptions.Ids = []string{}
+			}
+		}
+
+		conceptIdsParam := request.URL.Query().Get("concept_ids")
+		if request.URL.Query().Has("concept_ids") {
+			if conceptIdsParam != "" {
+				listoptions.ConceptIds = strings.Split(strings.TrimSpace(conceptIdsParam), ",")
+			} else {
+				listoptions.ConceptIds = []string{}
 			}
 		}
 

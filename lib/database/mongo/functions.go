@@ -81,6 +81,9 @@ func (this *Mongo) ListFunctions(ctx context.Context, listOptions model.Function
 	if listOptions.Ids != nil {
 		filter[FunctionBson.Id] = bson.M{"$in": listOptions.Ids}
 	}
+	if listOptions.ConceptIds != nil {
+		filter[FunctionBson.ConceptId] = bson.M{"$in": listOptions.ConceptIds}
+	}
 	if listOptions.RdfType != "" {
 		filter[FunctionBson.RdfType] = listOptions.RdfType
 	}
