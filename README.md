@@ -49,6 +49,13 @@ instance:
 - [Not every device-type read passes the controller](docs/not-every-device-type-read-passes-the-controller.md) —
   two paths read or write device-types straight from the database, and one of
   them rewrites stored device-group criteria while doing so
+- [A selectables criteria list is ANDed, and an empty one matches everything](docs/selectables-criteria-are-anded.md) —
+  how a criteria list, several aspects inside one criterion and an unset field
+  each narrow the answer, and the four ways that produces an empty result with
+  no error
+- [The aspect filters need the startup migrations](docs/the-aspect-filters-need-the-startup-migrations.md) —
+  two of the three convert a stored shape the code now depends on; an unmigrated
+  database answers empty rather than failing
 - [An aspect hierarchy has one aspect-class, assigned by its root](docs/one-aspect-class-per-hierarchy.md) —
   who may assign it, what inherits it, why the aspect-nodes are the queryable
   index, and the one rule that is not rechecked afterwards
