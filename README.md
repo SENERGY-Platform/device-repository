@@ -53,6 +53,10 @@ instance:
   how a criteria list, several aspects inside one criterion and an unset field
   each narrow the answer, and the four ways that produces an empty result with
   no error
+- [A concept owns a Get and a Set function](docs/a-concept-owns-a-function-pair.md) —
+  created with the concept and renamed with it while the name is still the one
+  the convention gave, why deleting a concept stopped working, and what the
+  one-shot migration does with the functions it finds
 - [The aspect filters need the startup migrations](docs/the-aspect-filters-need-the-startup-migrations.md) —
   two of the three convert a stored shape the code now depends on; an unmigrated
   database answers empty rather than failing
@@ -61,6 +65,14 @@ instance:
   index, and the one rule that is not rechecked afterwards
 
 Working in this repository:
+
+- [Writing a startup migration](docs/writing-a-startup-migration.md) — whether it
+  converts or creates decides the marker, the publishing and the startup cost,
+  and why a mirror runs none of them
+- [The test double and mongo disagree on `Limit: 0`](docs/testdb-and-mongo-disagree-on-limit-zero.md) —
+  unbounded in one, the empty list in the other, so an internal caller that
+  leaves it unset works against the database and silently does nothing in the
+  mocked tests
 
 - [Which tests break when a response gains a field](docs/tests-that-compare-whole-payloads.md) —
   the five packages that compare whole payloads, and the three shapes their
