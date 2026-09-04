@@ -77,7 +77,7 @@ func NewTestDB(config configuration.Config) database.Database {
 
 func (db *DB) Disconnect() {}
 
-func (db *DB) RunStartupMigrations(methods mongo.GeneratedDeviceGroupMigrationMethods) error {
+func (db *DB) RunStartupMigrations(methods mongo.MigrationMethods) error {
 	return nil
 }
 

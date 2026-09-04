@@ -65,7 +65,7 @@ func TestListDeviceGroups(t *testing.T) {
 		}
 	}
 
-	all := resources.DeviceGroupExamples
+	all := deviceGroupsWithAspectIds(resources.DeviceGroupExamples)
 	slices.SortFunc(all, func(a, b models.DeviceGroup) int {
 		return strings.Compare(a.Name, b.Name)
 	})
@@ -204,6 +204,24 @@ func TestListDeviceGroups(t *testing.T) {
 	}, 14, rollo))
 }
 
+// deviceGroupsWithAspectIds mirrors what a read does to a stored device-group: the
+// deprecated AspectId of a criteria is folded into AspectIds. The examples are shared with
+// the other tests of this package, so the normalization runs on a copy.
+func deviceGroupsWithAspectIds(groups []models.DeviceGroup) []models.DeviceGroup {
+	result := make([]models.DeviceGroup, len(groups))
+	for i, group := range groups {
+		result[i] = group
+		result[i].Criteria = make([]models.DeviceGroupFilterCriteria, len(group.Criteria))
+		for j, criteria := range group.Criteria {
+			result[i].Criteria[j] = criteria
+			if criteria.AspectId != "" {
+				result[i].Criteria[j].AspectIds = []string{criteria.AspectId}
+			}
+		}
+	}
+	return result
+}
+
 type aspectNodeProviderMock struct {
 	result []models.AspectNode
 }
@@ -298,6 +316,7 @@ func TestFilterGenericDuplicateCriteria(t *testing.T) {
 				Interaction:   "keep",
 				FunctionId:    "keep",
 				AspectId:      "keep",
+				AspectIds:     []string{"keep"},
 				DeviceClassId: "keep",
 			},
 			{
@@ -309,6 +328,7 @@ func TestFilterGenericDuplicateCriteria(t *testing.T) {
 				Interaction: "i1",
 				FunctionId:  "f1",
 				AspectId:    "a1",
+				AspectIds:   []string{"a1"},
 			},
 			{
 				Interaction: "i2",
@@ -324,6 +344,7 @@ func TestFilterGenericDuplicateCriteria(t *testing.T) {
 				Interaction: "i3",
 				FunctionId:  "f3",
 				AspectId:    "a3",
+				AspectIds:   []string{"a3"},
 			},
 		},
 		CriteriaShort: []string{"keep_keep_keep_keep", "keep2__keep2_keep2", "f1_a1__i1", "f2___i2", "f3__dc3_i3", "f3_a3__i3"},
@@ -445,12 +466,14 @@ func TestFilterGenericDuplicateCriteria(t *testing.T) {
 				Interaction:   "i1",
 				FunctionId:    "f1",
 				AspectId:      "a1",
+				AspectIds:     []string{"a1"},
 				DeviceClassId: "dc1",
 			},
 			{ //keep
 				Interaction: "i2",
 				FunctionId:  "f2",
 				AspectId:    "a2",
+				AspectIds:   []string{"a2"},
 			},
 			{ //keep
 				Interaction: "i3",
@@ -460,26 +483,31 @@ func TestFilterGenericDuplicateCriteria(t *testing.T) {
 				Interaction: "i4",
 				FunctionId:  "f4",
 				AspectId:    "child1",
+				AspectIds:   []string{"child1"},
 			},
 			{ //keep
 				Interaction: "i4",
 				FunctionId:  "f4",
 				AspectId:    "child2",
+				AspectIds:   []string{"child2"},
 			},
 			{ //keep
 				Interaction: "i5",
 				FunctionId:  "f5",
 				AspectId:    "child1",
+				AspectIds:   []string{"child1"},
 			},
 			{ //keep
 				Interaction: "i5",
 				FunctionId:  "f5",
 				AspectId:    "child2",
+				AspectIds:   []string{"child2"},
 			},
 			{ //keep
 				Interaction: "i6",
 				FunctionId:  "f6",
 				AspectId:    "base",
+				AspectIds:   []string{"base"},
 			},
 		},
 		CriteriaShort: []string{"f1_a1_dc1_i1", "f2_a2__i2", "f3___i3", "f4_child1__i4", "f4_child2__i4", "f5_child1__i5", "f5_child2__i5", "f6_base__i6"},

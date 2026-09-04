@@ -667,6 +667,28 @@ func TestConfigurables(t *testing.T) {
 	}))
 }
 
+// expectAspectNodes fills the AspectNodes of the expected path options and configurables
+// from the deprecated AspectNode, which the test data names alone. Both are filled by the read path, and a path
+// option over several aspects is covered by TestFilterCriteriaAspectIds.
+func expectAspectNodes(list []model.DeviceTypeSelectable) []model.DeviceTypeSelectable {
+	for _, selectable := range list {
+		for _, options := range selectable.ServicePathOptions {
+			for i, option := range options {
+				if option.AspectNode.Id != "" {
+					options[i].AspectNodes = []models.AspectNode{option.AspectNode}
+				}
+				for j, configurable := range option.Configurables {
+					if configurable.AspectNode.Id == "" {
+						continue
+					}
+					option.Configurables[j].AspectNodes = []models.AspectNode{configurable.AspectNode}
+				}
+			}
+		}
+	}
+	return list
+}
+
 func testDeviceTypeSelectables(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, interactionsFilter []models.Interaction, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
 		result, err := GetDeviceTypeSelectables(config, userjwt, pathPrefix, interactionsFilter, criteria)
@@ -675,6 +697,7 @@ func testDeviceTypeSelectables(config configuration.Config, criteria []model.Fil
 			return
 		}
 		expectedResult = sortServices(expectedResult)
+		expectedResult = expectAspectNodes(expectedResult)
 		result = sortServices(result)
 		if !reflect.DeepEqual(normalize(result), normalize(expectedResult)) {
 			resultJson, _ := json.Marshal(result)

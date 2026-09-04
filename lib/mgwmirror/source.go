@@ -344,6 +344,9 @@ func Pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				config.GetLogger().Error("error while listing device-groups for mgw mirror pull", "error", err)
 				break
 			}
+			//the source may still send only the deprecated DeviceGroupFilterCriteria.AspectId;
+			//everything reading a stored device-group evaluates AspectIds
+			controller.SetDeviceGroupCriteriaAspectIdsOnWrite(&e)
 			err = db.SetDeviceGroup(context.Background(), e, func(models.DeviceGroup, string) error { return nil }, userId)
 			if err != nil {
 				config.GetLogger().Error("error while setting device-groups for mgw mirror pull", "error", err)

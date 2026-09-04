@@ -444,6 +444,7 @@ func TestDeviceGroupCriteriaUpdateOnDeviceTypeUpdate(t *testing.T) {
 		if !reflect.DeepEqual(lightGroup.Criteria, []models.DeviceGroupFilterCriteria{{
 			FunctionId:    "urn:test:function:set-brightness",
 			AspectId:      "urn:test:aspect:lighting",
+			AspectIds:     []string{"urn:test:aspect:lighting"},
 			Interaction:   models.REQUEST,
 			DeviceClassId: "urn:test:device-class:light",
 		}}) {

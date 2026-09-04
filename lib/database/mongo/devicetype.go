@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"runtime/debug"
 	"slices"
@@ -522,18 +521,9 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteria(ctx context.Context, devi
 	if criteria.FunctionId != "" {
 		filter[DeviceTypeCriteriaBson.FunctionId] = criteria.FunctionId
 	}
-	if criteria.AspectId != "" {
-		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
-		if err != nil {
-			return result, err
-		}
-		if exists {
-			filter[DeviceTypeCriteriaBson.AspectId] = bson.M{"$in": append(node.DescendentIds, node.Id)}
-		} else {
-			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
-			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
-			filter[DeviceTypeCriteriaBson.AspectId] = criteria.AspectId
-		}
+	err = this.addAspectIdsToDeviceTypeCriteriaFilter(ctx, filter, criteria.AspectIds)
+	if err != nil {
+		return result, err
 	}
 
 	temp, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.DeviceTypeId, filter)
@@ -576,18 +566,9 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, de
 			filter[DeviceTypeCriteriaBson.Interaction] = string(criteria.Interaction)
 		}
 	}
-	if criteria.AspectId != "" {
-		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
-		if err != nil {
-			return result, err
-		}
-		if exists {
-			filter[DeviceTypeCriteriaBson.AspectId] = bson.M{"$in": append(node.DescendentIds, node.Id)}
-		} else {
-			//return result, errors.New("unknown AspectId: "+criteria.AspectId)
-			log.Println("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", criteria.AspectId)
-			filter[DeviceTypeCriteriaBson.AspectId] = criteria.AspectId
-		}
+	err = this.addAspectIdsToDeviceTypeCriteriaFilter(ctx, filter, criteria.AspectIds)
+	if err != nil {
+		return result, err
 	}
 
 	temp, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.DeviceTypeId, filter)

@@ -36,7 +36,7 @@ type DeviceTypeCriteria struct {
 	Interaction           string      `json:"interaction"`
 	IsControllingFunction bool        `json:"controlling_function"`
 	DeviceClassId         string      `json:"device_class_id"`
-	AspectId              string      `json:"aspect_id"`
+	AspectIds             []string    `json:"aspect_ids"`
 	CharacteristicId      string      `json:"characteristic_id"`
 	IsVoid                bool        `json:"is_void"`
 	Value                 interface{} `json:"value"`
@@ -52,26 +52,28 @@ type DeviceTypeSelectable struct {
 }
 
 type ServicePathOption struct {
-	ServiceId             string             `json:"service_id"`
-	Path                  string             `json:"path"`
-	CharacteristicId      string             `json:"characteristic_id"`
-	AspectNode            models.AspectNode  `json:"aspect_node"`
-	FunctionId            string             `json:"function_id"`
-	IsVoid                bool               `json:"is_void"`
-	Value                 interface{}        `json:"value,omitempty"`
-	IsControllingFunction bool               `json:"is_controlling_function"`
-	Configurables         []Configurable     `json:"configurables,omitempty"`
-	Type                  models.Type        `json:"type,omitempty"`
-	Interaction           models.Interaction `json:"interaction"`
+	ServiceId             string              `json:"service_id"`
+	Path                  string              `json:"path"`
+	CharacteristicId      string              `json:"characteristic_id"`
+	AspectNode            models.AspectNode   `json:"aspect_node"` //deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id
+	AspectNodes           []models.AspectNode `json:"aspect_nodes,omitempty"`
+	FunctionId            string              `json:"function_id"`
+	IsVoid                bool                `json:"is_void"`
+	Value                 interface{}         `json:"value,omitempty"`
+	IsControllingFunction bool                `json:"is_controlling_function"`
+	Configurables         []Configurable      `json:"configurables,omitempty"`
+	Type                  models.Type         `json:"type,omitempty"`
+	Interaction           models.Interaction  `json:"interaction"`
 }
 
 type Configurable struct {
-	Path             string            `json:"path"`
-	CharacteristicId string            `json:"characteristic_id"`
-	AspectNode       models.AspectNode `json:"aspect_node"`
-	FunctionId       string            `json:"function_id"`
-	Value            interface{}       `json:"value,omitempty"`
-	Type             models.Type       `json:"type,omitempty"`
+	Path             string              `json:"path"`
+	CharacteristicId string              `json:"characteristic_id"`
+	AspectNode       models.AspectNode   `json:"aspect_node"` //deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id
+	AspectNodes      []models.AspectNode `json:"aspect_nodes,omitempty"`
+	FunctionId       string              `json:"function_id"`
+	Value            interface{}         `json:"value,omitempty"`
+	Type             models.Type         `json:"type,omitempty"`
 }
 
 type FunctionList struct {
@@ -87,7 +89,8 @@ type FilterCriteria struct {
 	Interaction   models.Interaction `json:"interaction"`
 	FunctionId    string             `json:"function_id"`
 	DeviceClassId string             `json:"device_class_id"`
-	AspectId      string             `json:"aspect_id"`
+	AspectId      string             `json:"aspect_id"` //deprecated: alias for a single element AspectIds; normalized into AspectIds at the controller boundary
+	AspectIds     []string           `json:"aspect_ids,omitempty"`
 }
 
 type UsedInDeviceTypeQuery struct {

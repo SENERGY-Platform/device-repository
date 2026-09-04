@@ -193,9 +193,9 @@ func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []models.Aspe
 
 // returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.AspectNode, err error) {
-	aspectNodeIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.AspectId, bson.M{
+	aspectNodeIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.AspectIds[0], bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
-		DeviceTypeCriteriaBson.AspectId:            bson.M{"$exists": true, "$ne": ""},
+		DeviceTypeCriteriaBson.AspectIds[0]:        bson.M{"$exists": true, "$ne": bson.A{}},
 	})
 	if err != nil {
 		return nil, err

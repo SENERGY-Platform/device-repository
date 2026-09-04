@@ -8923,7 +8923,18 @@ const docTemplatedevicerepository = `{
             "type": "object",
             "properties": {
                 "aspect_node": {
-                    "$ref": "#/definitions/models.AspectNode"
+                    "description": "deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.AspectNode"
+                        }
+                    ]
+                },
+                "aspect_nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AspectNode"
+                    }
                 },
                 "characteristic_id": {
                     "type": "string"
@@ -8984,7 +8995,14 @@ const docTemplatedevicerepository = `{
             "type": "object",
             "properties": {
                 "aspect_id": {
+                    "description": "deprecated: alias for a single element AspectIds; normalized into AspectIds at the controller boundary",
                     "type": "string"
+                },
+                "aspect_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "device_class_id": {
                     "type": "string"
@@ -9158,7 +9176,18 @@ const docTemplatedevicerepository = `{
             "type": "object",
             "properties": {
                 "aspect_node": {
-                    "$ref": "#/definitions/models.AspectNode"
+                    "description": "deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.AspectNode"
+                        }
+                    ]
+                },
+                "aspect_nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AspectNode"
+                    }
                 },
                 "characteristic_id": {
                     "type": "string"
@@ -9589,7 +9618,14 @@ const docTemplatedevicerepository = `{
             "type": "object",
             "properties": {
                 "aspect_id": {
+                    "description": "deprecated: please use AspectIds",
                     "type": "string"
+                },
+                "aspect_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "device_class_id": {
                     "type": "string"

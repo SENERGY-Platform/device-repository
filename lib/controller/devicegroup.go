@@ -34,6 +34,7 @@ import (
 const FilterDevicesOfGroupByAccess = true
 
 func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
+	setFilterCriteriaAspectIds(options.Criteria)
 	ids := []string{}
 	permissionFlag := options.Permission
 	if permissionFlag == models.UnsetPermissionFlag {
@@ -77,6 +78,7 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
+	setDeviceGroupCriteriaAspectIdsOnReadList(result)
 
 	if options.FilterGenericDuplicateCriteria {
 		for i, group := range result {
@@ -100,6 +102,7 @@ func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDu
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
+	setDeviceGroupCriteriaAspectIdsOnRead(&result)
 	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceGroupTopic, id, client.Read)
 	if err != nil {
 		result = models.DeviceGroup{}
@@ -190,6 +193,7 @@ func (this *Controller) ValidateDeviceGroup(token string, group models.DeviceGro
 }
 
 func (this *Controller) ValidateDeviceGroupSelection(criteria []models.DeviceGroupFilterCriteria, devices []string) (error, int) {
+	setDeviceGroupFilterCriteriaAspectIds(criteria)
 	deviceCache := map[string]models.Device{}
 	deviceTypeCache := map[string]models.DeviceType{}
 	deviceUsageCount := map[string]int{}
@@ -218,12 +222,18 @@ type AspectNodeProvider interface {
 // ref: https://bitnify.atlassian.net/browse/SNRGY-3027
 func DeviceGroupFilterGenericDuplicateCriteria(dg models.DeviceGroup, aspectNodeProvider AspectNodeProvider) (result models.DeviceGroup, err error) {
 	result = dg
+	//exported and callable with a device-group that never passed a controller read, so the
+	//aspects are folded here as well; on a copy, to leave the argument untouched
+	result.Criteria = slices.Clone(dg.Criteria)
+	setDeviceGroupFilterCriteriaAspectIds(result.Criteria)
 
 	//get used aspect ids
 	aspectIds := []string{}
 	for _, criteria := range result.Criteria {
-		if criteria.AspectId != "" && !slices.Contains(aspectIds, criteria.AspectId) {
-			aspectIds = append(aspectIds, criteria.AspectId)
+		for _, aspectId := range criteria.AspectIds {
+			if !slices.Contains(aspectIds, aspectId) {
+				aspectIds = append(aspectIds, aspectId)
+			}
 		}
 	}
 
@@ -239,15 +249,26 @@ func DeviceGroupFilterGenericDuplicateCriteria(dg models.DeviceGroup, aspectNode
 		descendents[aspect.Id] = append(descendents[aspect.Id], aspect.DescendentIds...)
 	}
 
-	//function to check if candidate aspect is descendent of criteria aspect
+	//function to check if every candidate aspect is descendent of a criteria aspect
 	candidateUsesDescendentAspect := func(criteria models.DeviceGroupFilterCriteria, candidate models.DeviceGroupFilterCriteria) bool {
-		if criteria.AspectId == "" && candidate.AspectId != "" {
-			return true
+		if len(criteria.AspectIds) == 0 {
+			return len(candidate.AspectIds) > 0
 		}
-		if criteria.AspectId == candidate.AspectId {
+		if len(candidate.AspectIds) == 0 {
 			return false
 		}
-		return slices.Contains(descendents[criteria.AspectId], candidate.AspectId)
+		if models.AspectIdsShort("", criteria.AspectIds) == models.AspectIdsShort("", candidate.AspectIds) {
+			return false
+		}
+		for _, candidateAspect := range candidate.AspectIds {
+			isDescendent := slices.ContainsFunc(criteria.AspectIds, func(criteriaAspect string) bool {
+				return slices.Contains(descendents[criteriaAspect], candidateAspect)
+			})
+			if !isDescendent {
+				return false
+			}
+		}
+		return true
 	}
 
 	//function to check if the candidate is a more specialized variant of criteria
@@ -281,17 +302,17 @@ func (this *Controller) selectionMatchesCriteria(
 	deviceId string) (err error, code int) {
 
 	ctx, _ := getTimeoutContext()
-	var exists bool
 
-	var aspectNode models.AspectNode
-	if criteria.AspectId != "" {
-		aspectNode, exists, err = this.db.GetAspectNode(ctx, criteria.AspectId)
+	aspectNodes := []models.AspectNode{}
+	for _, aspectId := range criteria.AspectIds {
+		aspectNode, exists, err := this.db.GetAspectNode(ctx, aspectId)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 		if !exists {
-			return errors.New("unknown aspect-node-id: " + criteria.AspectId), http.StatusBadRequest
+			return errors.New("unknown aspect-node-id: " + aspectId), http.StatusBadRequest
 		}
+		aspectNodes = append(aspectNodes, aspectNode)
 	}
 
 	device, ok := (*dcache)[deviceId]
@@ -326,13 +347,13 @@ func (this *Controller) selectionMatchesCriteria(
 		}
 		contentMatches := false
 		for _, content := range service.Inputs {
-			if contentVariableContainsCriteria(content.ContentVariable, criteria, aspectNode) {
+			if contentVariableContainsCriteria(content.ContentVariable, criteria, aspectNodes) {
 				contentMatches = true
 				break
 			}
 		}
 		for _, content := range service.Outputs {
-			if contentVariableContainsCriteria(content.ContentVariable, criteria, aspectNode) {
+			if contentVariableContainsCriteria(content.ContentVariable, criteria, aspectNodes) {
 				contentMatches = true
 				break
 			}
@@ -348,24 +369,31 @@ func (this *Controller) selectionMatchesCriteria(
 	return nil, http.StatusOK
 }
 
-func variableAspectsContainCriteria(variable models.ContentVariable, criteria models.DeviceGroupFilterCriteria, aspectNode models.AspectNode) bool {
-	if criteria.AspectId == "" {
-		return true
-	}
-	for _, aspectId := range variable.AspectIds {
-		if aspectId == criteria.AspectId || listContains(aspectNode.DescendentIds, aspectId) {
-			return true
+// variableAspectsContainCriteria checks the aspects of a criteria against one content
+// variable. Every aspect of the criteria has to be matched by the variable, either exactly
+// or by a descendant of it.
+func variableAspectsContainCriteria(variable models.ContentVariable, aspectNodes []models.AspectNode) bool {
+	for _, aspectNode := range aspectNodes {
+		matched := false
+		for _, aspectId := range variable.AspectIds {
+			if aspectId == aspectNode.Id || listContains(aspectNode.DescendentIds, aspectId) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
-func contentVariableContainsCriteria(variable models.ContentVariable, criteria models.DeviceGroupFilterCriteria, aspectNode models.AspectNode) bool {
-	if variable.FunctionId == criteria.FunctionId && variableAspectsContainCriteria(variable, criteria, aspectNode) {
+func contentVariableContainsCriteria(variable models.ContentVariable, criteria models.DeviceGroupFilterCriteria, aspectNodes []models.AspectNode) bool {
+	if variable.FunctionId == criteria.FunctionId && variableAspectsContainCriteria(variable, aspectNodes) {
 		return true
 	}
 	for _, sub := range variable.SubContentVariables {
-		if contentVariableContainsCriteria(sub, criteria, aspectNode) {
+		if contentVariableContainsCriteria(sub, criteria, aspectNodes) {
 			return true
 		}
 	}
@@ -409,6 +437,7 @@ func (this *Controller) SetDeviceGroup(token string, dg models.DeviceGroup) (res
 	}
 
 	dg.GenerateId()
+	SetDeviceGroupCriteriaAspectIdsOnWrite(&dg)
 	dg.SetShortCriteria()
 	if !this.config.DisableStrictValidationForTesting {
 		dg.DeviceIds, err = this.filterInvalidDeviceIds(token, dg.DeviceIds, "r")

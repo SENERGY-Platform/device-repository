@@ -2076,6 +2076,28 @@ func TestDeviceTypeSelectables2(t *testing.T) {
 
 }
 
+// expectAspectNodes fills the AspectNodes of the expected path options and configurables
+// from the deprecated AspectNode, which the test data names alone. Both are filled by the read path, and a path
+// option over several aspects is covered by TestFilterCriteriaAspectIds.
+func expectAspectNodes(list []model.DeviceTypeSelectable) []model.DeviceTypeSelectable {
+	for _, selectable := range list {
+		for _, options := range selectable.ServicePathOptions {
+			for i, option := range options {
+				if option.AspectNode.Id != "" {
+					options[i].AspectNodes = []models.AspectNode{option.AspectNode}
+				}
+				for j, configurable := range option.Configurables {
+					if configurable.AspectNode.Id == "" {
+						continue
+					}
+					option.Configurables[j].AspectNodes = []models.AspectNode{configurable.AspectNode}
+				}
+			}
+		}
+	}
+	return list
+}
+
 func testAddInteractionToCriterias(criteria []model.FilterCriteria, interactions []models.Interaction) (result []model.FilterCriteria) {
 	for _, interaction := range interactions {
 		for _, c := range criteria {
@@ -2095,6 +2117,7 @@ func testDeviceTypeSelectablesWithoutConfigurables(config configuration.Config, 
 		}
 		expectedResult = removeConfigurables(expectedResult)
 		expectedResult = sortServices(expectedResult)
+		expectedResult = expectAspectNodes(expectedResult)
 		result = removeConfigurables(result)
 		result = sortServices(result)
 		if !reflect.DeepEqual(result, expectedResult) {
@@ -2114,6 +2137,7 @@ func testDeviceTypeSelectablesWithoutConfigurablesV2(config configuration.Config
 		}
 		expectedResult = removeConfigurables(expectedResult)
 		expectedResult = sortServices(expectedResult)
+		expectedResult = expectAspectNodes(expectedResult)
 		result = removeConfigurables(result)
 		result = sortServices(result)
 		if !reflect.DeepEqual(result, expectedResult) {

@@ -60,6 +60,7 @@ func (this *Controller) readDeviceType(id string) (result models.DeviceType, err
 }
 
 func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
+	setFilterCriteriaAspectIds(filter)
 	ctx, _ := getTimeoutContext()
 	temp, err := this.db.ListDeviceTypes(ctx, limit, offset, sort, filter, interactionsFilter, includeModified)
 	if err != nil {
@@ -69,6 +70,7 @@ func (this *Controller) ListDeviceTypes(token string, limit int64, offset int64,
 }
 
 func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
+	setFilterCriteriaAspectIds(filter)
 	ctx, _ := getTimeoutContext()
 	temp, err := this.db.ListDeviceTypesV2(ctx, limit, offset, sort, filter, includeModified)
 	if err != nil {
@@ -78,6 +80,7 @@ func (this *Controller) ListDeviceTypesV2(token string, limit int64, offset int6
 }
 
 func (this *Controller) ListDeviceTypesV3(token string, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
+	setFilterCriteriaAspectIds(listOptions.Criteria)
 	ctx, _ := getTimeoutContext()
 	temp, total, err := this.db.ListDeviceTypesV3(ctx, listOptions)
 	if err != nil {
@@ -88,6 +91,7 @@ func (this *Controller) ListDeviceTypesV3(token string, listOptions model.Device
 }
 
 func (this *Controller) ListDeviceTypesUsedByUser(token string, listOptions model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
+	setFilterCriteriaAspectIds(listOptions.Criteria)
 	ctx, _ := getTimeoutContext()
 	dtIds := []string{}
 	for device, err := range util.IterBatch(200, func(limit int64, offset int64) ([]models.Device, error) {
@@ -189,6 +193,7 @@ func (this *Controller) GetDeviceTypeSelectablesV2(query []model.FilterCriteria,
 }
 
 func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error) {
+	setFilterCriteriaAspectIds(query)
 	if len(query) == 0 {
 		query = append(query, model.FilterCriteria{})
 	}
@@ -204,17 +209,21 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 	if err != nil {
 		return result, err
 	}
-	groupByDeviceType := map[string][]model.DeviceTypeCriteria{}
+	aspectCache := &map[string]models.AspectNode{}
+	groupByDeviceType := map[string][]deviceTypeCriteriaMatch{}
 	for _, criteria := range query {
 		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria, includeModified)
 		if err != nil {
 			return result, err
 		}
 		for _, element := range dtCriteria {
-			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], element)
+			match, err := this.newDeviceTypeCriteriaMatch(aspectCache, element, criteria)
+			if err != nil {
+				return result, err
+			}
+			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], match)
 		}
 	}
-	aspectCache := &map[string]models.AspectNode{}
 	for dtId, dtCriteria := range groupByDeviceType {
 		dt, err, _ := this.readDeviceType(dtId)
 		if err != nil {
@@ -225,8 +234,9 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 			Services:           []models.Service{},
 			ServicePathOptions: map[string][]model.ServicePathOption{},
 		}
-		for _, criteria := range dtCriteria {
-			aspectNode, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, criteria.AspectId)
+		for _, match := range dtCriteria {
+			criteria := match.criteria
+			aspectNodes, deprecatedAspectNode, err := this.pathOptionAspectNodes(aspectCache, match.matchedAspectIds)
 			if err != nil {
 				return result, err
 			}
@@ -234,7 +244,8 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 				ServiceId:             criteria.ServiceId,
 				Path:                  pathPrefix + criteria.ContentVariablePath,
 				CharacteristicId:      criteria.CharacteristicId,
-				AspectNode:            aspectNode,
+				AspectNode:            deprecatedAspectNode,
+				AspectNodes:           aspectNodes,
 				FunctionId:            criteria.FunctionId,
 				IsVoid:                criteria.IsVoid,
 				Value:                 criteria.Value,
@@ -272,6 +283,7 @@ func (this *Controller) getDeviceTypeSelectables(ctx context.Context, query []mo
 }
 
 func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error) {
+	setFilterCriteriaAspectIds(query)
 	if len(query) == 0 {
 		query = append(query, model.FilterCriteria{})
 	}
@@ -282,7 +294,8 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 	if err != nil {
 		return result, err
 	}
-	groupByDeviceType := map[string][]model.DeviceTypeCriteria{}
+	aspectCache := &map[string]models.AspectNode{}
+	groupByDeviceType := map[string][]deviceTypeCriteriaMatch{}
 	serviceCriteriaCount := map[string]int{}
 	for _, criteria := range query {
 		dtCriteria, err := this.db.GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx, deviceTypes, criteria, includeModified)
@@ -291,7 +304,11 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 		}
 		serviceIndex := map[string]bool{}
 		for _, element := range dtCriteria {
-			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], element)
+			match, err := this.newDeviceTypeCriteriaMatch(aspectCache, element, criteria)
+			if err != nil {
+				return result, err
+			}
+			groupByDeviceType[element.DeviceTypeId] = append(groupByDeviceType[element.DeviceTypeId], match)
 			serviceIndex[element.ServiceId] = true
 		}
 		for sid, _ := range serviceIndex {
@@ -305,7 +322,6 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 		}
 	}
 
-	aspectCache := &map[string]models.AspectNode{}
 	for dtId, dtCriteria := range groupByDeviceType {
 		dt, err, _ := this.readDeviceType(dtId)
 		if err != nil {
@@ -317,22 +333,24 @@ func (this *Controller) getDeviceTypeSelectablesV2(ctx context.Context, query []
 			ServicePathOptions: map[string][]model.ServicePathOption{},
 		}
 		usedPaths := map[string]map[string]bool{}
-		for _, criteria := range dtCriteria {
+		for _, match := range dtCriteria {
+			criteria := match.criteria
 			if !servicesMustMatchAllCriteria || validService[criteria.ServiceId] {
-				aspectNode, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, criteria.AspectId)
-				if err != nil {
-					return result, err
-				}
 				if _, ok := usedPaths[criteria.ServiceId]; !ok {
 					usedPaths[criteria.ServiceId] = map[string]bool{}
 				}
 				if !usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] {
 					usedPaths[criteria.ServiceId][pathPrefix+criteria.ContentVariablePath] = true
+					aspectNodes, deprecatedAspectNode, err := this.pathOptionAspectNodes(aspectCache, match.matchedAspectIds)
+					if err != nil {
+						return result, err
+					}
 					element.ServicePathOptions[criteria.ServiceId] = append(element.ServicePathOptions[criteria.ServiceId], model.ServicePathOption{
 						ServiceId:             criteria.ServiceId,
 						Path:                  pathPrefix + criteria.ContentVariablePath,
 						CharacteristicId:      criteria.CharacteristicId,
-						AspectNode:            aspectNode,
+						AspectNode:            deprecatedAspectNode,
+						AspectNodes:           aspectNodes,
 						FunctionId:            criteria.FunctionId,
 						IsVoid:                criteria.IsVoid,
 						Value:                 criteria.Value,
@@ -400,23 +418,22 @@ func (this *Controller) getAspectNodeForDeviceTypeSelectables(aspectCache *map[s
 
 func (this *Controller) getConfigurables(candidates []model.DeviceTypeCriteria, pathOption model.ServicePathOption) (result []model.Configurable, err error) {
 	for _, candidate := range candidates {
-		aspectNode := models.AspectNode{}
-		if candidate.AspectId != "" {
-			aspectNode, err, _ = this.GetAspectNode(candidate.AspectId)
-			if err != nil {
-				return result, err
-			}
+		if pathOption.IsControllingFunction && pathOptionIsAncestorOfConfigurableCandidate(pathOption, candidate) {
+			continue
 		}
-		if !pathOption.IsControllingFunction || !pathOptionIsAncestorOfConfigurableCandidate(pathOption, candidate) {
-			result = append(result, model.Configurable{
-				Path:             candidate.ContentVariablePath,
-				CharacteristicId: candidate.CharacteristicId,
-				AspectNode:       aspectNode,
-				FunctionId:       candidate.FunctionId,
-				Type:             candidate.Type,
-				Value:            candidate.Value,
-			})
+		aspectNodes, deprecatedAspectNode, err := this.configurableAspectNodes(candidate.AspectIds)
+		if err != nil {
+			return result, err
 		}
+		result = append(result, model.Configurable{
+			Path:             candidate.ContentVariablePath,
+			CharacteristicId: candidate.CharacteristicId,
+			AspectNode:       deprecatedAspectNode,
+			AspectNodes:      aspectNodes,
+			FunctionId:       candidate.FunctionId,
+			Type:             candidate.Type,
+			Value:            candidate.Value,
+		})
 	}
 	return result, nil
 }
@@ -466,10 +483,20 @@ func (this *Controller) GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (
 
 	//collect ids
 	for _, c := range criteria {
+		if query.Resource == "aspects" {
+			//a criteria carries every aspect of its content variable, only the asked for count
+			for _, aspectId := range c.AspectIds {
+				if !slices.Contains(query.Ids, aspectId) {
+					continue
+				}
+				temp := result[aspectId]
+				temp.UsedIn = addDeviceTypeCriteriaToDeviceTypeRefs(temp.UsedIn, c)
+				result[aspectId] = temp
+			}
+			continue
+		}
 		id := ""
 		switch query.Resource {
-		case "aspects":
-			id = c.AspectId
 		case "device-classes":
 			id = c.DeviceClassId
 		case "functions":

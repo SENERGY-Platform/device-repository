@@ -26,7 +26,7 @@ import (
 )
 
 type Database interface {
-	RunStartupMigrations(methods mongo.GeneratedDeviceGroupMigrationMethods) error
+	RunStartupMigrations(methods mongo.MigrationMethods) error
 	Disconnect()
 
 	GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error)

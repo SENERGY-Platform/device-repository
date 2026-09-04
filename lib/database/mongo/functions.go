@@ -269,7 +269,7 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 	}
 	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.FunctionId, bson.M{
 		deviceTypeCriteriaIsControllingFunctionKey: false,
-		DeviceTypeCriteriaBson.AspectId:            aspectFilter,
+		DeviceTypeCriteriaBson.AspectIds[0]:        aspectFilter,
 		DeviceTypeCriteriaBson.FunctionId:          bson.M{"$exists": true, "$ne": ""},
 	})
 	if err != nil {

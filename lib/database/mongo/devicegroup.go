@@ -33,14 +33,32 @@ import (
 
 var DeviceGroupBson = getBsonFieldObject[models.DeviceGroup]()
 
-var deviceGroupCriteriaShortKey string
+var deviceGroupCriteriaKey string
+var deviceGroupCriteriaFunctionIdKey string
+var deviceGroupCriteriaDeviceClassIdKey string
+var deviceGroupCriteriaInteractionKey string
+var deviceGroupCriteriaAspectIdsKey string
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		deviceGroupCriteriaShortKey, err = getBsonFieldName(models.DeviceGroup{}, "CriteriaShort")
+		deviceGroupCriteriaKey, err = getBsonFieldName(models.DeviceGroup{}, "Criteria")
 		if err != nil {
 			return err
+		}
+		for _, field := range []struct {
+			name string
+			key  *string
+		}{
+			{"FunctionId", &deviceGroupCriteriaFunctionIdKey},
+			{"DeviceClassId", &deviceGroupCriteriaDeviceClassIdKey},
+			{"Interaction", &deviceGroupCriteriaInteractionKey},
+			{"AspectIds", &deviceGroupCriteriaAspectIdsKey},
+		} {
+			*field.key, err = getBsonFieldName(models.DeviceGroupFilterCriteria{}, field.name)
+			if err != nil {
+				return err
+			}
 		}
 		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceGroupCollection)
 		err = db.ensureIndex(collection, "deviceGroupidindex", DeviceGroupBson.Id, true, true)
@@ -125,52 +143,12 @@ func (this *Mongo) ListDeviceGroups(ctx context.Context, listOptions model.Devic
 		if len(listOptions.Criteria) == 0 && this.config.PreventEmptyCriteriaListsAllBehavior {
 			return []models.DeviceGroup{}, 0, nil
 		}
-		criteriaFilter := []interface{}{}
 		for _, c := range listOptions.Criteria {
-			if c.Interaction == "" {
-				criteriaFilter = append(criteriaFilter, bson.M{"$or": []bson.M{
-					{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
-						Interaction:   models.REQUEST,
-						FunctionId:    c.FunctionId,
-						AspectId:      c.AspectId,
-						DeviceClassId: c.DeviceClassId,
-					}.Short()},
-					{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
-						Interaction:   models.EVENT,
-						FunctionId:    c.FunctionId,
-						AspectId:      c.AspectId,
-						DeviceClassId: c.DeviceClassId,
-					}.Short()},
-					{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
-						FunctionId:    c.FunctionId,
-						AspectId:      c.AspectId,
-						DeviceClassId: c.DeviceClassId,
-					}.Short()},
-				}})
-			} else if c.Interaction == models.EVENT_AND_REQUEST {
-				criteriaFilter = append(criteriaFilter, bson.M{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
-					Interaction:   models.REQUEST,
-					FunctionId:    c.FunctionId,
-					AspectId:      c.AspectId,
-					DeviceClassId: c.DeviceClassId,
-				}.Short()})
-				criteriaFilter = append(criteriaFilter, bson.M{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
-					Interaction:   models.EVENT,
-					FunctionId:    c.FunctionId,
-					AspectId:      c.AspectId,
-					DeviceClassId: c.DeviceClassId,
-				}.Short()})
-			} else {
-				criteriaFilter = append(criteriaFilter, bson.M{deviceGroupCriteriaShortKey: models.DeviceGroupFilterCriteria{
-					Interaction:   c.Interaction,
-					FunctionId:    c.FunctionId,
-					AspectId:      c.AspectId,
-					DeviceClassId: c.DeviceClassId,
-				}.Short()})
+			conditions, err := this.deviceGroupCriteriaConditions(ctx, c)
+			if err != nil {
+				return nil, 0, err
 			}
-		}
-		if len(criteriaFilter) > 0 {
-			filterAnd = append(filterAnd, criteriaFilter...)
+			filterAnd = append(filterAnd, conditions...)
 		}
 	}
 	filter["$and"] = filterAnd
@@ -310,4 +288,71 @@ func (this *Mongo) RetryDeviceGroupSync(lockduration time.Duration, syncDeleteHa
 
 func (this *Mongo) DesyncUnknownDeviceGroups(ctx context.Context, knownDeviceGroups []string) (err error) {
 	return this.desyncUnknown(ctx, this.deviceGroupCollection(), DeviceGroupBson.Id, knownDeviceGroups)
+}
+
+// deviceGroupCriteriaConditions renders one query criteria into conditions on the stored
+// criteria of a device-group. Each condition has to be met by a single stored criteria, so a
+// query naming several aspects asks for one content variable that carries all of them, the
+// same reading the device-type criteria use.
+func (this *Mongo) deviceGroupCriteriaConditions(ctx context.Context, criteria model.FilterCriteria) (result []interface{}, err error) {
+	match, err := this.deviceGroupCriteriaMatch(ctx, criteria)
+	if err != nil {
+		return nil, err
+	}
+	withInteraction := func(interaction models.Interaction) bson.M {
+		elementMatch := bson.M{deviceGroupCriteriaInteractionKey: string(interaction)}
+		for key, value := range match {
+			elementMatch[key] = value
+		}
+		return bson.M{deviceGroupCriteriaKey: bson.M{"$elemMatch": elementMatch}}
+	}
+	switch criteria.Interaction {
+	case "":
+		return []interface{}{bson.M{"$or": []bson.M{
+			withInteraction(models.REQUEST),
+			withInteraction(models.EVENT),
+			withInteraction(""),
+		}}}, nil
+	case models.EVENT_AND_REQUEST:
+		return []interface{}{withInteraction(models.REQUEST), withInteraction(models.EVENT)}, nil
+	default:
+		return []interface{}{withInteraction(criteria.Interaction)}, nil
+	}
+}
+
+// deviceGroupCriteriaMatch renders everything but the interaction of a query criteria. An
+// unset field is not a filter, the reading model.FilterCriteria has everywhere else. Each
+// aspect covers its own subtree, so a query for a parent aspect finds a criteria that names
+// one of its children, and several aspects are ANDed on the same stored criteria.
+func (this *Mongo) deviceGroupCriteriaMatch(ctx context.Context, criteria model.FilterCriteria) (result bson.M, err error) {
+	result = bson.M{}
+	if criteria.FunctionId != "" {
+		result[deviceGroupCriteriaFunctionIdKey] = criteria.FunctionId
+	}
+	if criteria.DeviceClassId != "" {
+		result[deviceGroupCriteriaDeviceClassIdKey] = criteria.DeviceClassId
+	}
+	conditions := []bson.M{}
+	for _, aspectId := range criteria.AspectIds {
+		if aspectId == "" {
+			continue
+		}
+		node, exists, err := this.GetAspectNode(ctx, aspectId)
+		if err != nil {
+			return nil, err
+		}
+		ids := []string{aspectId}
+		if exists {
+			ids = append(node.DescendentIds, node.Id)
+		}
+		conditions = append(conditions, bson.M{deviceGroupCriteriaAspectIdsKey: bson.M{"$in": ids}})
+	}
+	switch len(conditions) {
+	case 0:
+	case 1:
+		result[deviceGroupCriteriaAspectIdsKey] = conditions[0][deviceGroupCriteriaAspectIdsKey]
+	default:
+		result["$and"] = conditions
+	}
+	return result, nil
 }

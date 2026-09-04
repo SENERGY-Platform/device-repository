@@ -121,10 +121,10 @@ func (this *Controller) GetDeviceGroupCriteria(deviceIds []string) (result []mod
 		}
 		nextSet := map[string]models.DeviceGroupFilterCriteria{}
 		for _, criteria := range deviceCriterias {
-			criteriaHash := criteriaHash(criteria)
-			_, usedInCurrent := currentSet[criteriaHash]
+			criteriaShort := criteria.Short()
+			_, usedInCurrent := currentSet[criteriaShort]
 			if i == 0 || usedInCurrent {
-				nextSet[criteriaHash] = criteria
+				nextSet[criteriaShort] = criteria
 			}
 		}
 		currentSet = nextSet
@@ -163,31 +163,24 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 			if current.FunctionId != "" {
 				for _, interaction := range interactions {
 					if isMeasuringFunctionId(current.FunctionId) {
-						if len(current.AspectIds) == 0 {
-							criteria := models.DeviceGroupFilterCriteria{
-								FunctionId:  current.FunctionId,
-								Interaction: interaction,
-							}
-							resultSet[criteriaHash(criteria)] = criteria
-						}
+						//the whole aspect list of the content variable, which is the only
+						//criteria that records that one variable carries all of them
+						criteria := measuringDeviceGroupCriteria(current.FunctionId, current.AspectIds, interaction)
+						resultSet[criteria.Short()] = criteria
+
+						//and one criteria per aspect next to it. GetDeviceGroupCriteria
+						//intersects the criteria of the devices by Short(), so a group of a
+						//device with [a b] and one with [a] keeps a only if a stands alone.
 						for _, aspectId := range current.AspectIds {
-							criteria := models.DeviceGroupFilterCriteria{
-								FunctionId:  current.FunctionId,
-								AspectId:    aspectId,
-								Interaction: interaction,
-							}
-							resultSet[criteriaHash(criteria)] = criteria
+							criteria := measuringDeviceGroupCriteria(current.FunctionId, []string{aspectId}, interaction)
+							resultSet[criteria.Short()] = criteria
 							aspectNode, _, err := this.db.GetAspectNode(ctx, aspectId)
 							if err != nil {
 								return result, err, http.StatusInternalServerError
 							}
 							for _, aspect := range aspectNode.AncestorIds {
-								criteria := models.DeviceGroupFilterCriteria{
-									FunctionId:  current.FunctionId,
-									AspectId:    aspect,
-									Interaction: interaction,
-								}
-								resultSet[criteriaHash(criteria)] = criteria
+								criteria := measuringDeviceGroupCriteria(current.FunctionId, []string{aspect}, interaction)
+								resultSet[criteria.Short()] = criteria
 							}
 						}
 					} else {
@@ -196,7 +189,7 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 							DeviceClassId: deviceType.DeviceClassId,
 							Interaction:   interaction,
 						}
-						resultSet[criteriaHash(criteria)] = criteria
+						resultSet[criteria.Short()] = criteria
 					}
 				}
 			}
@@ -211,8 +204,19 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 	return result, nil, http.StatusOK
 }
 
-func criteriaHash(criteria models.DeviceGroupFilterCriteria) string {
-	return criteria.FunctionId + "_" + criteria.AspectId + "_" + criteria.DeviceClassId + "_" + string(criteria.Interaction)
+// measuringDeviceGroupCriteria builds a criteria over an aspect list. The list is sorted, so
+// that the same set of aspects always renders the same Short(). The deprecated AspectId can
+// only carry one aspect and gets the alphabetically first, like everywhere else.
+func measuringDeviceGroupCriteria(functionId string, aspectIds []string, interaction models.Interaction) models.DeviceGroupFilterCriteria {
+	criteria := models.DeviceGroupFilterCriteria{
+		FunctionId:  functionId,
+		Interaction: interaction,
+	}
+	if len(aspectIds) > 0 {
+		criteria.AspectIds = slices.Compact(slices.Sorted(slices.Values(aspectIds)))
+		criteria.AspectId = criteria.AspectIds[0]
+	}
+	return criteria
 }
 
 func isMeasuringFunctionId(id string) bool {

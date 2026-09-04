@@ -87,7 +87,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		err = db.ensureIndex(collection, "deviceTypeCriteriaAspectIdIndex", DeviceTypeCriteriaBson.AspectId, true, false)
+		err = db.ensureIndex(collection, "deviceTypeCriteriaAspectIdsIndex", DeviceTypeCriteriaBson.AspectIds[0], true, false)
 		if err != nil {
 			return err
 		}
@@ -171,7 +171,6 @@ func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId st
 	isInputControllingFunction := (variable.FunctionId != "" && (!strings.HasPrefix(variable.FunctionId, model.URN_PREFIX) || isCtrlFun == isInput))
 	isConfigurableCandidate := isLeaf && isInput
 	if isInputControllingFunction || isConfigurableCandidate {
-		//a content variable may reference multiple aspects -> one criteria per aspect
 		criteria := model.DeviceTypeCriteria{
 			IsIdModified:          pureDeviceTypeId != deviceTypeId,
 			PureDeviceTypeId:      pureDeviceTypeId,
@@ -183,6 +182,7 @@ func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId st
 			Interaction:           string(interaction),
 			IsControllingFunction: isCtrlFun,
 			DeviceClassId:         deviceClassId,
+			AspectIds:             variable.AspectIds,
 			CharacteristicId:      variable.CharacteristicId,
 			IsVoid:                variable.IsVoid,
 			Value:                 variable.Value,
@@ -190,14 +190,7 @@ func createCriteriaFromContentVariables(pureDeviceTypeId string, deviceTypeId st
 			IsLeaf:                isLeaf,
 			IsInput:               isInput,
 		}
-		if len(variable.AspectIds) == 0 {
-			result = append(result, criteria)
-		}
-		for _, aspectId := range variable.AspectIds {
-			withAspect := criteria
-			withAspect.AspectId = aspectId
-			result = append(result, withAspect)
-		}
+		result = append(result, criteria)
 	}
 	for _, sub := range variable.SubContentVariables {
 		result = append(result, createCriteriaFromContentVariables(pureDeviceTypeId, deviceTypeId, deviceClassId, serviceId, interaction, sub, isInput, currentPath)...)
@@ -212,9 +205,41 @@ func isControllingFunction(functionId string) bool {
 	return false
 }
 
+// addAspectIdsToDeviceTypeCriteriaFilter adds the aspect part of a filter-criteria to a
+// deviceTypeCriteria filter. A criteria may name more than one aspect; all of them have to
+// be carried by the same content variable, so the conditions are ANDed. Each condition
+// covers the aspect node and its descendants, which is why a criteria that names a parent
+// and one of its children matches nothing.
+func (this *Mongo) addAspectIdsToDeviceTypeCriteriaFilter(ctx context.Context, filter bson.M, aspectIds []string) error {
+	conditions := []bson.M{}
+	for _, aspectId := range aspectIds {
+		if aspectId == "" {
+			continue
+		}
+		node, exists, err := this.GetAspectNode(ctx, aspectId)
+		if err != nil {
+			return err
+		}
+		if exists {
+			conditions = append(conditions, bson.M{DeviceTypeCriteriaBson.AspectIds[0]: bson.M{"$in": append(node.DescendentIds, node.Id)}})
+		} else {
+			this.config.GetLogger().Warn("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", "aspectId", aspectId)
+			conditions = append(conditions, bson.M{DeviceTypeCriteriaBson.AspectIds[0]: aspectId})
+		}
+	}
+	switch len(conditions) {
+	case 0:
+	case 1:
+		filter[DeviceTypeCriteriaBson.AspectIds[0]] = conditions[0][DeviceTypeCriteriaBson.AspectIds[0]]
+	default:
+		filter["$and"] = conditions
+	}
+	return nil
+}
+
 func (this *Mongo) GetDeviceTypeCriteriaByAspectIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error) {
 	filter := bson.M{
-		DeviceTypeCriteriaBson.AspectId: bson.M{"$in": ids},
+		DeviceTypeCriteriaBson.AspectIds[0]: bson.M{"$in": ids},
 	}
 	if !includeModified {
 		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
@@ -331,17 +356,9 @@ func (this *Mongo) GetDeviceTypeCriteriaForDeviceTypeIdsAndFilterCriteria(ctx co
 	if !includeModified {
 		filter[deviceTypeCriteriaIsIdModifiedKey] = bson.M{"$ne": true}
 	}
-	if criteria.AspectId != "" {
-		node, exists, err := this.GetAspectNode(ctx, criteria.AspectId)
-		if err != nil {
-			return result, err
-		}
-		if exists {
-			filter[DeviceTypeCriteriaBson.AspectId] = bson.M{"$in": append(node.DescendentIds, node.Id)}
-		} else {
-			this.config.GetLogger().Warn("WARNING: filterDeviceTypeIdsByFilterCriteria() aspect id not found as aspect-node", "aspectId", criteria.AspectId)
-			filter[DeviceTypeCriteriaBson.AspectId] = criteria.AspectId
-		}
+	err = this.addAspectIdsToDeviceTypeCriteriaFilter(ctx, filter, criteria.AspectIds)
+	if err != nil {
+		return result, err
 	}
 
 	cursor, err := this.deviceTypeCriteriaCollection().Find(ctx, filter)
@@ -388,7 +405,7 @@ func (this *Mongo) GetConfigurableCandidates(ctx context.Context, serviceId stri
 
 func (this *Mongo) AspectIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	filter := bson.M{
-		DeviceTypeCriteriaBson.AspectId: id,
+		DeviceTypeCriteriaBson.AspectIds[0]: id,
 	}
 	temp := this.deviceTypeCriteriaCollection().FindOne(ctx, filter)
 	err = temp.Err()

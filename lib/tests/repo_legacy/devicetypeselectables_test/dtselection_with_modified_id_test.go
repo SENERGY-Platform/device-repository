@@ -799,6 +799,7 @@ func testDeviceTypeSelectablesWithoutConfigurablesIncludeModified(config configu
 		}
 		expectedResult = removeConfigurables(expectedResult)
 		expectedResult = sortServices(expectedResult)
+		expectedResult = expectAspectNodes(expectedResult)
 		result = removeConfigurables(result)
 		result = sortServices(result)
 		sort.Slice(result, func(i, j int) bool {
@@ -824,6 +825,7 @@ func testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(config confi
 		}
 		expectedResult = removeConfigurables(expectedResult)
 		expectedResult = sortServices(expectedResult)
+		expectedResult = expectAspectNodes(expectedResult)
 		result = removeConfigurables(result)
 		result = sortServices(result)
 		if !reflect.DeepEqual(result, expectedResult) {
@@ -843,6 +845,7 @@ func clientTestDeviceTypeSelectables(config configuration.Config, criteria []mod
 		}
 		expectedResult = removeConfigurables(expectedResult)
 		expectedResult = sortServices(expectedResult)
+		expectedResult = expectAspectNodes(expectedResult)
 		result = removeConfigurables(result)
 		result = sortServices(result)
 		if !reflect.DeepEqual(result, expectedResult) {

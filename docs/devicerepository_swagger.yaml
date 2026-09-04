@@ -107,7 +107,14 @@ definitions:
   model.Configurable:
     properties:
       aspect_node:
-        $ref: '#/definitions/models.AspectNode'
+        allOf:
+        - $ref: '#/definitions/models.AspectNode'
+        description: 'deprecated: alias for a single element AspectNodes; holds the
+          node with the alphabetically first id'
+      aspect_nodes:
+        items:
+          $ref: '#/definitions/models.AspectNode'
+        type: array
       characteristic_id:
         type: string
       function_id:
@@ -147,7 +154,13 @@ definitions:
   model.FilterCriteria:
     properties:
       aspect_id:
+        description: 'deprecated: alias for a single element AspectIds; normalized
+          into AspectIds at the controller boundary'
         type: string
+      aspect_ids:
+        items:
+          type: string
+        type: array
       device_class_id:
         type: string
       function_id:
@@ -267,7 +280,14 @@ definitions:
   model.ServicePathOption:
     properties:
       aspect_node:
-        $ref: '#/definitions/models.AspectNode'
+        allOf:
+        - $ref: '#/definitions/models.AspectNode'
+        description: 'deprecated: alias for a single element AspectNodes; holds the
+          node with the alphabetically first id'
+      aspect_nodes:
+        items:
+          $ref: '#/definitions/models.AspectNode'
+        type: array
       characteristic_id:
         type: string
       configurables:
@@ -554,7 +574,12 @@ definitions:
   models.DeviceGroupFilterCriteria:
     properties:
       aspect_id:
+        description: 'deprecated: please use AspectIds'
         type: string
+      aspect_ids:
+        items:
+          type: string
+        type: array
       device_class_id:
         type: string
       function_id:

@@ -230,6 +230,9 @@ func (this *Controller) ExportDeviceGroups(token string, options model.ImportExp
 	if err != nil {
 		return result, perm, err, http.StatusInternalServerError
 	}
+	//read straight from the database: device-groups written before the migration carry only
+	//the deprecated DeviceGroupFilterCriteria.AspectId
+	setDeviceGroupCriteriaAspectIdsOnReadList(result)
 	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermission(token, this.config.DeviceGroupTopic, client.ListOptions{Ids: options.FilterIds})
 	if err != nil {
 		return result, perm, err, code
@@ -452,6 +455,9 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-groups") {
 			for _, dg := range importModel.DeviceGroups {
 				if options.FilterIds == nil || slices.Contains(options.FilterIds, dg.Id) {
+					//written with db.setDeviceGroup below, so the write normalization of
+					//Controller.SetDeviceGroup never runs on an imported group
+					SetDeviceGroupCriteriaAspectIdsOnWrite(&dg)
 					err, code = this.ValidateDeviceGroup(token, dg)
 					if err != nil {
 						return err, code
