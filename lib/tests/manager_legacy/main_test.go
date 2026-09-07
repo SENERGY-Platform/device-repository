@@ -18,10 +18,10 @@ package tests
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
+	"github.com/SENERGY-Platform/device-repository/v2/lib"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
 	"strconv"
 	"sync"

@@ -19,11 +19,11 @@ package client
 import (
 	"context"
 
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
-	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/database/testdb"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/controller/publisher"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/database"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/database/testdb"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 

@@ -18,8 +18,8 @@ package tests
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/manager_legacy/helper"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/manager_legacy/helper"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"io"

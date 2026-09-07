@@ -18,9 +18,9 @@ package repo_legacy
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/idmodifier"
 	"github.com/SENERGY-Platform/models/go/models"
 	"sync"
 	"testing"

@@ -22,8 +22,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/database"
 	struct_logger "github.com/SENERGY-Platform/go-service-base/struct-logger"
 	"github.com/SENERGY-Platform/go-service-base/struct-logger/attributes"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"

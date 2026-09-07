@@ -26,8 +26,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

@@ -19,9 +19,9 @@ package mongo
 import (
 	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sync"

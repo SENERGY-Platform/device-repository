@@ -20,7 +20,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
 )
 
 func (db *DB) GetLastUpdateTimestampsForUser(ctx context.Context, userId string) (result []model.LastUpdateTimestamp, err error) {

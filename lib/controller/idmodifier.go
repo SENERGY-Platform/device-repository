@@ -18,7 +18,7 @@ package controller
 
 import (
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/idmodifier"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"slices"

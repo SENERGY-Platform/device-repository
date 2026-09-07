@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
 )
 
 func (c *Client) GetLastUpdateTimestamps(token string, userId string) (result []model.LastUpdateTimestamp, err error, code int) {

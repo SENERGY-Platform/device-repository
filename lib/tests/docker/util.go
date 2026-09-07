@@ -26,8 +26,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller/publisher"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/controller/publisher"
 	"github.com/testcontainers/testcontainers-go"
 )
 

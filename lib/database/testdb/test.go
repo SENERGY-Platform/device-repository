@@ -20,10 +20,10 @@ import (
 	"iter"
 	"sync"
 
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/database/mongo"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/database"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/database/mongo"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 )
 

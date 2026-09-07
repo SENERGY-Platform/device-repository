@@ -19,8 +19,8 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
 	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"net/http"
 	"net/url"

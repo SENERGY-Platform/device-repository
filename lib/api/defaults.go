@@ -18,8 +18,8 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/api/util"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/api/util"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )

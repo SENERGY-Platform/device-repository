@@ -19,8 +19,8 @@ package controller
 import (
 	"fmt"
 
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/database"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/database"
 )
 
 func (this *Controller) MirrorUpdate() error {

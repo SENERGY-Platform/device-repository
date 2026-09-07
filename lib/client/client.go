@@ -25,7 +25,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/SENERGY-Platform/device-repository/lib/api"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/api"
 	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
 

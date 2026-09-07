@@ -3,9 +3,9 @@ package semantic_legacy
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sort"

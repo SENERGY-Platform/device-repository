@@ -17,8 +17,8 @@
 package api
 
 import (
-	_ "github.com/SENERGY-Platform/device-repository/docs"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	_ "github.com/SENERGY-Platform/device-repository/v2/docs"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/swaggo/swag"
 	"net/http"

@@ -1,4 +1,4 @@
-module github.com/SENERGY-Platform/device-repository
+module github.com/SENERGY-Platform/device-repository/v2
 
 go 1.26
 

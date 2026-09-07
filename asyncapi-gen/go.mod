@@ -3,7 +3,7 @@ module asyncapi-gen
 go 1.26
 
 require (
-	github.com/SENERGY-Platform/device-repository v0.0.0-00010101000000-000000000000
+	github.com/SENERGY-Platform/device-repository/v2 v2.0.0-00010101000000-000000000000
 	github.com/swaggest/go-asyncapi v0.8.0
 )
 
@@ -53,4 +53,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/SENERGY-Platform/device-repository => ../
+replace github.com/SENERGY-Platform/device-repository/v2 => ../

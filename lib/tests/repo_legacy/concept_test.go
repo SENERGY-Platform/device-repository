@@ -18,12 +18,12 @@ package repo_legacy
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/lib/database"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/docker"
-	"github.com/SENERGY-Platform/device-repository/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/database"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"log"

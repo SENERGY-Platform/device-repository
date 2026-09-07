@@ -21,7 +21,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
 )
 
 func (this *Controller) StartSyncLoop(ctx context.Context, interval time.Duration, lockduration time.Duration) {

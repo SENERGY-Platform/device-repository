@@ -18,7 +18,7 @@ package controller
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"slices"

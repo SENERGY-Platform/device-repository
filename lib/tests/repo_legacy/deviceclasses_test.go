@@ -17,8 +17,8 @@
 package repo_legacy
 
 import (
-	"github.com/SENERGY-Platform/device-repository/lib/client"
-	"github.com/SENERGY-Platform/device-repository/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"testing"
