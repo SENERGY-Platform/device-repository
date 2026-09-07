@@ -4,6 +4,7 @@ github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4 h1:+0g0T8Z2n
 github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4/go.mod h1:UPtGbiAOtGd78qgM0HZrtiKxcn3HebSV5QAZvHme998=
 github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038 h1:7yEuyx32EiFBUXX7cwhAEWHGdN4VjAIZLtGyJAZwDsU=
 github.com/SENERGY-Platform/models/go v0.0.0-20260710115411-5b8e00d6e038/go.mod h1:5B2cSnYKuAmeco4mJPhY5eVO+oMqXLmnl9wxh1G7e9E=
+github.com/SENERGY-Platform/models/go v0.0.0-20260902082034-9c8c8bd56d88/go.mod h1:5B2cSnYKuAmeco4mJPhY5eVO+oMqXLmnl9wxh1G7e9E=
 github.com/bool64/dev v0.2.20 h1:9eIRGdcg2kQW2NGza++QbOKidNNaK+KfWuUXcZFDejE=
 github.com/bool64/dev v0.2.20/go.mod h1:iJbh1y/HkunEPhgebWRNcs8wfGq7sjvJ6W5iabL8ACg=
 github.com/bool64/shared v0.1.5 h1:fp3eUhBsrSjNCQPcSdQqZxxh9bBwrYiZ+zOKFkM0/2E=
