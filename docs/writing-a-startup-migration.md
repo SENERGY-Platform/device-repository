@@ -44,6 +44,41 @@ per migration name in the collection named by
 A converting migration does not get a marker. Its detection query is the marker,
 and it stays correct if someone restores an old backup.
 
+## One instance migrates, the others wait
+
+Kubernetes starts several replicas at once, and none of these migrations
+tolerates a copy of itself beside it: the creating one records itself only after
+it succeeded, so two instances that pass its check together create two function
+pairs per concept, and the converting ones replace whole documents, which drops
+what the other one wrote in between.
+
+`RunStartupMigrations` therefore takes a lock before the first migration and
+releases it after the last. It is one document in the collection named by
+`mongo_migration_lock_collection`, with a unique index on its id, and
+`migrationlock.go` holds the whole mechanism:
+
+- **Acquiring is a single upsert** whose filter matches only a lock that has
+  expired. A held one matches nothing, so the upsert runs into the unique index,
+  and that duplicate key is the answer "held" rather than an error. One atomic
+  write, no transaction, which matters because the deployment runs mongodb
+  without a replset.
+- **The holder heartbeats** every 10 seconds while it migrates, and a lock
+  survives a minute unrefreshed. So a long migration keeps its lock, and an
+  instance that is OOM-killed mid migration frees it after a minute instead of
+  blocking every other replica until someone deletes the document.
+- **An instance that does not get the lock waits** and then runs the migrations
+  itself. That keeps every replica starting against migrated data, and it is
+  cheap: after the holder is done, this is the same pass any restart pays. It is
+  also what retries a holder that died halfway.
+- **The wait is bounded** by `migration_lock_timeout` (default one hour), and
+  exceeding it fails the start rather than serving unmigrated data — kubernetes
+  restarts the pod and it tries again. The bound only ever applies to a holder
+  that is demonstrably alive, because a dead one loses the lock after a minute.
+
+What this does **not** buy a new migration is permission to be non-idempotent.
+The lock serialises the normal case; a holder whose process is paused past the
+expiration still loses it to a waiter. The rules above stay as they are.
+
 ## Publish only what a consumer has never seen
 
 The default is **not** to publish. The converting migrations here replace whole
@@ -73,7 +108,8 @@ rather than the moment to add a fifth method.
 ## Startup cost is a real budget
 
 Every migration runs on every start of every replica, marked or not — at minimum
-its detection query. `runDeviceGroupMigration` scans all devices, and
+its detection query, and behind the lock above, so replicas pay it one after
+another rather than at once. `runDeviceGroupMigration` scans all devices, and
 `runGeneratedDeviceGroupCriteriaMigration` recomputes each generated group and
 compares, because it has no marker and no detectable old shape. That is a
 deliberate trade: exact idempotence without new infrastructure, paid for with one
