@@ -31,6 +31,21 @@ missing go.sum entry for module providing package github.com/segmentio/kafka-go
 and to need a `go mod tidy` first. That tidy pulls in the main module's
 transitive dependencies; it adds no new direct one.
 
+Its `go.mod` also tracks the main module's major version. Since the main module
+became `.../device-repository/v2`, the `require` and the `replace` here name that
+path — and so must the placeholder version, which is `v2.0.0-00010101000000-000000000000`
+rather than the conventional `v0.0.0-...`. Go validates the major before it
+applies the `replace`, so a mismatch fails at parse time and no `go` command in
+this directory works:
+
+```
+go: errors parsing go.mod:
+go.mod:6:2: require github.com/SENERGY-Platform/device-repository/v2: version
+"v0.0.0-00010101000000-000000000000" invalid: should be v2, not v0
+```
+
+The next major bump has to come here too.
+
 ## The generator emits 2.4.0, the committed file is 3.0.0
 
 The generator writes `asyncapi-gen/asyncapi.json` (gitignored) in AsyncAPI 2.4.0.
