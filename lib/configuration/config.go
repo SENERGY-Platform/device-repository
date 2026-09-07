@@ -79,9 +79,10 @@ type Config struct {
 	AllowNoneLeafAspectNodesInDeviceTypesDefault bool `json:"allow_none_leaf_aspect_nodes_in_device_types_default"`
 	AspectClassIdRequired                        bool `json:"aspect_class_id_required"`
 
-	InitialGroupRights    map[string]map[string]string `json:"initial_group_rights"`
-	RunStartupMigrations  bool                         `json:"run_startup_migrations"`
-	InitPermissionsTopics bool                         `json:"init_permissions_topics"`
+	InitialGroupRights       map[string]map[string]string `json:"initial_group_rights"`
+	RunStartupMigrations     bool                         `json:"run_startup_migrations"`
+	SkipDeviceGroupMigration bool                         `json:"skip_device_group_migration"`
+	InitPermissionsTopics    bool                         `json:"init_permissions_topics"`
 
 	LocalIdUniqueForOwner               bool `json:"local_id_unique_for_owner"`
 	SkipDeviceGroupGenerationFromDevice bool `json:"skip_device_group_generation_from_device"`

@@ -72,6 +72,10 @@ type MigrationMethods interface {
 }
 
 func (this *Mongo) runDeviceGroupMigration(helper MigrationMethods) error {
+	if this.config.SkipDeviceGroupMigration {
+		this.config.GetLogger().Info("skip device-group migration because SkipDeviceGroupMigration=true")
+		return nil
+	}
 	this.config.GetLogger().Info("start runDeviceGroupMigration()")
 	cursor, err := this.deviceCollection().Find(context.Background(), bson.M{})
 	if err != nil {

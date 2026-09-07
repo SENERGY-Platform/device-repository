@@ -46,6 +46,7 @@
     "api_docs_provider_base_url": "",
 
     "run_startup_migrations": true,
+    "skip_device_group_migration": true,
 
     "local_id_unique_for_owner": true,
 
