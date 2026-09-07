@@ -48,6 +48,7 @@ func TestPermSync(t *testing.T) {
 	config.SyncLockDuration = "1ms"
 	config.Debug = true
 	config.DisableStrictValidationForTesting = true
+	config.SkipDeviceGroupMigration = false
 	config.RestLogger()
 
 	config, err = docker.NewEnv(ctx, wg, config)

@@ -46,6 +46,7 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 		return
 	}
 	conf.Debug = true
+	conf.SkipDeviceGroupMigration = false
 
 	_, ip, err := docker2.MongoDB(ctx, wg)
 	if err != nil {
