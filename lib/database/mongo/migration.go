@@ -35,7 +35,14 @@ func (this *Mongo) RunStartupMigrations(helper MigrationMethods) error {
 		this.config.GetLogger().Info("skip startup migration because config.RunStartupMigrations=false")
 		return nil
 	}
-	err := this.runDeviceGroupMigration(helper)
+	//kubernetes starts several instances at once, and none of the migrations below is safe
+	//to run beside a copy of itself
+	release, err := this.lockMigrations(context.Background())
+	if err != nil {
+		return err
+	}
+	defer release()
+	err = this.runDeviceGroupMigration(helper)
 	if err != nil {
 		return err
 	}

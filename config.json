@@ -33,6 +33,7 @@
     "mongo_default_device_attributes_collection": "default_device_attributes",
     "mongo_last_update_timestamps_collection": "last_update_timestamps",
     "mongo_migration_state_collection": "migration_state",
+    "mongo_migration_lock_collection": "migration_lock",
     "mongo_graph_collection": "graphs",
     "kafka_url": "kafka.kafka:9092",
     "debug": false,
@@ -52,6 +53,7 @@
 
     "sync_interval": "10m",
     "sync_lock_duration": "1m",
+    "migration_lock_timeout": "10m",
 
     "init_topics": false,
     "init_permissions_topics": true,

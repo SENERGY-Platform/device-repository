@@ -71,6 +71,7 @@ type Config struct {
 	MongoDefaultDeviceAttributesCollection string `json:"mongo_default_device_attributes_collection"`
 	MongoLastUpdateTimestampsCollection    string `json:"mongo_last_update_timestamps_collection"`
 	MongoMigrationStateCollection          string `json:"mongo_migration_state_collection"`
+	MongoMigrationLockCollection           string `json:"mongo_migration_lock_collection"`
 	MongoGraphCollection                   string `json:"mongo_graph_collection"`
 	Debug                                  bool   `json:"debug"`
 	HttpClientTimeout                      string `json:"http_client_timeout"`
@@ -91,6 +92,10 @@ type Config struct {
 
 	SyncInterval     string `json:"sync_interval"`
 	SyncLockDuration string `json:"sync_lock_duration"`
+
+	//MigrationLockTimeout bounds how long an instance waits for the instance that currently
+	//runs the startup migrations. Exceeding it fails the start, so that kubernetes retries.
+	MigrationLockTimeout string `json:"migration_lock_timeout"`
 
 	DisableStrictValidationForTesting bool `json:"disable_strict_validation_for_testing"` //only for tests; disables validations and id generations
 
