@@ -92,6 +92,35 @@ to the whole semantic layer, so it publishes.
 
 Ask which one applies before copying either.
 
+## Stored data is not referentially intact
+
+A migration walks whatever is in the database, and the database has no foreign
+keys. A device whose device-type was deleted is a state the write path never
+produces and the stored data holds anyway — restored backups, a delete that raced
+a write, data written straight to mongo by the mgw mirror.
+
+So a helper a migration calls has to distinguish two failures:
+
+- **The data cannot be converted** — that is the migration's business and an error
+  is right. The start fails, nobody serves half-migrated data, kubernetes retries.
+- **A reference points at nothing** — that is one row, and returning an error for
+  it stops the whole startup for every replica over a single dangling id.
+
+`getDeviceGroupCriteriaOfDevice` is the second kind: a missing device-type gets a
+warning and an empty criteria list, not an error, because
+`runGeneratedDeviceGroupCriteriaMigration` calls it for every device of every
+generated group. Making it strict is what a change to it will be tempted to do —
+it looks like tightening — and it takes the service down on data that has been
+sitting there harmlessly.
+
+Warning, not error: an ERROR log pages someone, and a dangling reference is not
+worth waking anyone. It still has to be logged, because the alternative is a group
+that silently loses its criteria.
+
+`lib/tests/repo_legacy/migration_test.go` writes exactly this shape — devices
+referencing a device-type it never creates — so the case has a test, and it is the
+test that catches a helper turned strict.
+
 ## Reaching the controller
 
 `lib/database/mongo` may not import `lib/controller`, and migrations regularly

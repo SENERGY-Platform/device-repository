@@ -63,8 +63,15 @@ instance:
 - [An aspect hierarchy has one aspect-class, assigned by its root](docs/one-aspect-class-per-hierarchy.md) —
   who may assign it, what inherits it, why the aspect-nodes are the queryable
   index, and the one rule that is not rechecked afterwards
+- [A device-group may hold modified device ids](docs/a-device-group-holds-modified-device-ids.md) —
+  a group member may carry a `$service_group_selection` modifier, what that means
+  for every database lookup, and why permissions-v2 needs no help with it
 
 Working in this repository:
+
+- [Not every controller method checks permissions](docs/an-internal-controller-method-skips-permissions.md) —
+  a method without a token reads straight from the database, so exposing one
+  through an endpoint means adding the check
 
 - [Writing a startup migration](docs/writing-a-startup-migration.md) — whether it
   converts or creates decides the marker, the publishing and the startup cost,

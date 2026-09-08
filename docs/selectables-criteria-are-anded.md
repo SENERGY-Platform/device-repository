@@ -98,22 +98,41 @@ matched literally and found only stored criteria that were empty there too. A qu
 whose matching criterion carried **no** aspect, and one with an empty `function_id`
 returned nothing at all, because no stored criterion has one.
 
-## A generated device-group criterion is written twice over
+## A generated device-group criterion is written once per aspect combination
 
-`getDeviceGroupCriteriaOfDevice` emits, per content variable and interaction, both
-the whole aspect list of that variable **and** one criterion per single aspect,
-plus one per ancestor of those. The two say different things and both are load
-bearing:
+`getDeviceGroupCriteriaOfDevice` emits, per content variable and interaction, two
+kinds of criterion. Both are load bearing and they say different things:
 
-- the list records that **one** variable carries all of those aspects, which is
-  exactly what a query over several aspects asks for
-- the single ones carry the intersection. `GetDeviceGroupCriteria` intersects the
-  criteria of the devices of a group by `Short()`, so a group of a device with
-  `[a b]` and one with `[a]` keeps `a` only because `a` also stands alone. Drop the
-  single ones and such a group loses the aspect entirely.
+- **Every combination** of the variable's aspects, where each aspect is replaced by
+  itself or by one of its ancestors — the cartesian product built by
+  `addMeasuringDeviceGroupCriteria` and `aspectIdCombinations`. Each of these
+  records that **one** variable carries all the aspects of the combination, which
+  is exactly what a query over several aspects asks for. An aspect criterion covers
+  the subtree of its node, so a variable carrying `[q r]` is genuinely found by a
+  query over `[p r]` when `q` descends from `p`; the ancestor combinations are what
+  makes that answerable from the stored criteria.
+- **Each single aspect**, again with its ancestors. These carry the intersection.
+  `GetDeviceGroupCriteria` intersects the criteria of the devices of a group by
+  `Short()`, so a group of a device with `[a b]` and one with `[a]` keeps `a` only
+  because `a` also stands alone. Drop the single ones and such a group loses the
+  aspect entirely.
 
-For a content variable with one aspect the two collapse into the same criterion, so
-none of this is visible until a variable carries more than one.
+The combinations are the half that is easy to leave out, because nothing fails
+without them — the group simply comes back with fewer criteria than it should. The
+case that exposes it needs both a hierarchy and two aspects on one variable: a
+device carrying `[p r]` and one carrying `[q r]`, with `q` under `p`, keep `[p r]`.
+Emit only the variable's own list plus the singles, and the intersection finds no
+common pair, so the group falls back to `p` and `r` separately and no longer
+records that one variable answers both at once.
+
+For a content variable with one aspect the product collapses to that aspect and its
+ancestors, which is what a criterion over one aspect has always been. None of this
+is visible until a variable carries more than one.
+
+The product grows with the number of aspects on one variable to the power of their
+depth in the hierarchy. That is small for the one or two aspects a variable
+realistically carries, and it is the reason the aspects of a variable are not a
+place to be generous.
 
 Stored groups written before this carry only the single ones.
 `runGeneratedDeviceGroupCriteriaMigration` rebuilds the criteria of the **auto
