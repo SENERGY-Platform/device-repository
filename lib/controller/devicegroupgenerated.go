@@ -18,11 +18,13 @@ package controller
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"slices"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v2/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func (this *Controller) EnsureGeneratedDeviceGroup(oldDevice models.Device, device models.Device) (err error) {
@@ -111,25 +113,60 @@ func (this *Controller) DeviceIdToGeneratedDeviceGroupId(deviceId string) string
 	return model.DeviceIdToGeneratedDeviceGroupId(deviceId)
 }
 
+// GetDeviceGroupCriteria is the criteria list of a device-group holding the given devices: the
+// intersection of the criteria of its devices by Short(). A function reaches the group only if
+// every device answers it, and an aspect only if every device carries it or a descendant of it.
 func (this *Controller) GetDeviceGroupCriteria(deviceIds []string) (result []models.DeviceGroupFilterCriteria, err error, code int) {
-	devices, _, err := this.db.ListDevices(context.Background(), model.DeviceListOptions{Ids: deviceIds}, false)
-	currentSet := map[string]models.DeviceGroupFilterCriteria{}
-	for i, device := range devices {
-		deviceCriterias, err, code := this.getDeviceGroupCriteriaOfDevice(device.Device)
-		if err != nil {
-			return result, err, code
-		}
-		nextSet := map[string]models.DeviceGroupFilterCriteria{}
-		for _, criteria := range deviceCriterias {
-			criteriaShort := criteria.Short()
-			_, usedInCurrent := currentSet[criteriaShort]
-			if i == 0 || usedInCurrent {
-				nextSet[criteriaShort] = criteria
-			}
-		}
-		currentSet = nextSet
-	}
 	result = []models.DeviceGroupFilterCriteria{}
+	if len(deviceIds) == 0 {
+		return result, nil, http.StatusOK
+	}
+
+	//a device-group may hold modified device ids; the stored device sits under the pure id and
+	//the modifier decides which of its services the group member actually answers
+	pureIds := []string{}
+	pureIdToRawIds := map[string][]string{}
+	for _, id := range deviceIds {
+		pureId, _ := idmodifier.SplitModifier(id)
+		if !slices.Contains(pureIds, pureId) {
+			pureIds = append(pureIds, pureId)
+		}
+		pureIdToRawIds[pureId] = append(pureIdToRawIds[pureId], id)
+	}
+
+	devices, _, err := this.db.ListDevices(context.Background(), model.DeviceListOptions{Ids: pureIds}, false)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+
+	currentSet := map[string]models.DeviceGroupFilterCriteria{}
+	first := true
+	for _, device := range devices {
+		for _, rawId := range pureIdToRawIds[device.Id] {
+			member := device.Device
+			_, modifier := idmodifier.SplitModifier(rawId)
+			if len(modifier) > 0 {
+				member, err, code = this.modifyDevice(member, modifier)
+				if err != nil {
+					return result, err, code
+				}
+			}
+			deviceCriterias, err, code := this.getDeviceGroupCriteriaOfDevice(member)
+			if err != nil {
+				return result, err, code
+			}
+			nextSet := map[string]models.DeviceGroupFilterCriteria{}
+			for _, criteria := range deviceCriterias {
+				criteriaShort := criteria.Short()
+				_, usedInCurrent := currentSet[criteriaShort]
+				if first || usedInCurrent {
+					nextSet[criteriaShort] = criteria
+				}
+			}
+			currentSet = nextSet
+			first = false
+		}
+	}
 	for _, element := range currentSet {
 		result = append(result, element)
 	}
@@ -138,13 +175,29 @@ func (this *Controller) GetDeviceGroupCriteria(deviceIds []string) (result []mod
 
 func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (result []models.DeviceGroupFilterCriteria, err error, code int) {
 	ctx, _ := getTimeoutContext()
-	deviceType, _, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
+	pureDtId, modifier := idmodifier.SplitModifier(device.DeviceTypeId)
+	deviceType, exists, err := this.db.GetDeviceType(ctx, pureDtId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
+	}
+	if !exists {
+		//a device may outlive its device-type: the startup migration walks whatever is stored
+		//and must not abort over one dangling reference. Such a device answers nothing, which
+		//empties the criteria of every group holding it.
+		this.config.GetLogger().Warn("no criteria for device: device-type not found", "device-id", device.Id, "device-type-id", device.DeviceTypeId)
+		return result, nil, http.StatusOK
 	}
 	//read straight from the database: device-types written before the migration carry only
 	//the deprecated ContentVariable.AspectId, and the criteria below evaluate AspectIds
 	SetContentVariableAspectIdsOnWrite(&deviceType)
+	//a modified device answers only the services its modifier keeps, so its criteria are the
+	//criteria of the modified device-type, not of the stored one
+	if len(modifier) > 0 {
+		deviceType, err, code = this.modifyDeviceType(deviceType, modifier)
+		if err != nil {
+			return result, err, code
+		}
+	}
 	resultSet := map[string]models.DeviceGroupFilterCriteria{}
 	for _, service := range deviceType.Services {
 		interactions := []models.Interaction{service.Interaction}
@@ -163,25 +216,9 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 			if current.FunctionId != "" {
 				for _, interaction := range interactions {
 					if isMeasuringFunctionId(current.FunctionId) {
-						//the whole aspect list of the content variable, which is the only
-						//criteria that records that one variable carries all of them
-						criteria := measuringDeviceGroupCriteria(current.FunctionId, current.AspectIds, interaction)
-						resultSet[criteria.Short()] = criteria
-
-						//and one criteria per aspect next to it. GetDeviceGroupCriteria
-						//intersects the criteria of the devices by Short(), so a group of a
-						//device with [a b] and one with [a] keeps a only if a stands alone.
-						for _, aspectId := range current.AspectIds {
-							criteria := measuringDeviceGroupCriteria(current.FunctionId, []string{aspectId}, interaction)
-							resultSet[criteria.Short()] = criteria
-							aspectNode, _, err := this.db.GetAspectNode(ctx, aspectId)
-							if err != nil {
-								return result, err, http.StatusInternalServerError
-							}
-							for _, aspect := range aspectNode.AncestorIds {
-								criteria := measuringDeviceGroupCriteria(current.FunctionId, []string{aspect}, interaction)
-								resultSet[criteria.Short()] = criteria
-							}
+						err = this.addMeasuringDeviceGroupCriteria(ctx, current.FunctionId, current.AspectIds, interaction, resultSet)
+						if err != nil {
+							return result, err, http.StatusInternalServerError
 						}
 					} else {
 						criteria := models.DeviceGroupFilterCriteria{
@@ -202,6 +239,62 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 		result = append(result, element)
 	}
 	return result, nil, http.StatusOK
+}
+
+// addMeasuringDeviceGroupCriteria adds the criteria of one content variable of a measuring
+// function to the criteria set of a device.
+//
+// An aspect criteria covers the subtree of its node, so a variable is found by a query naming
+// an ancestor of one of its aspects: a variable carrying [q r] is found by a query over [p r]
+// when q descends from p. Every aspect of the list is therefore replaced by itself or by one
+// of its ancestors, and each of those combinations becomes a criteria - that is what records
+// that one variable carries all the aspects of the combination. For a single aspect the
+// product is the aspect and its ancestors, which is what a criteria over one aspect has
+// always been.
+//
+// The single aspects are added next to those combinations, because they carry the
+// intersection: GetDeviceGroupCriteria intersects the criteria of the devices by Short(), so
+// a group of a device with [a b] and one with [a] keeps a only if a stands alone.
+func (this *Controller) addMeasuringDeviceGroupCriteria(ctx context.Context, functionId string, aspectIds []string, interaction models.Interaction, resultSet map[string]models.DeviceGroupFilterCriteria) (err error) {
+	add := func(aspectIds []string) {
+		criteria := measuringDeviceGroupCriteria(functionId, aspectIds, interaction)
+		resultSet[criteria.Short()] = criteria
+	}
+	aspectOptions := make([][]string, 0, len(aspectIds))
+	for _, aspectId := range aspectIds {
+		aspectNode, _, err := this.db.GetAspectNode(ctx, aspectId)
+		if err != nil {
+			return err
+		}
+		options := append([]string{aspectId}, aspectNode.AncestorIds...)
+		aspectOptions = append(aspectOptions, options)
+		for _, option := range options {
+			add([]string{option})
+		}
+	}
+	for _, combination := range aspectIdCombinations(aspectOptions) {
+		add(combination)
+	}
+	return nil
+}
+
+// aspectIdCombinations builds the cartesian product of the aspect options of a content
+// variable, one option list per aspect of the variable. Without any aspect the product is the
+// single empty combination, which is the criteria of a measuring variable carrying no aspect.
+// The result grows with the number of aspects of one variable to the power of their depth in
+// the hierarchy, which is small for the one or two aspects a variable realistically carries.
+func aspectIdCombinations(aspectOptions [][]string) (result [][]string) {
+	result = [][]string{{}}
+	for _, options := range aspectOptions {
+		next := make([][]string, 0, len(result)*len(options))
+		for _, combination := range result {
+			for _, aspectId := range options {
+				next = append(next, append(slices.Clone(combination), aspectId))
+			}
+		}
+		result = next
+	}
+	return result
 }
 
 // measuringDeviceGroupCriteria builds a criteria over an aspect list. The list is sorted, so
