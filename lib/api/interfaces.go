@@ -62,6 +62,7 @@ type Controller interface {
 	ValidateDeviceGroupDelete(token string, id string) (err error, code int)
 	SetDeviceGroup(token string, dg models.DeviceGroup) (result models.DeviceGroup, err error, errCode int)
 	DeleteDeviceGroup(token string, id string) (err error, code int)
+	DeviceGroupHelper(token string, deviceIds []string, options model.DeviceGroupHelperOptions) (result model.DeviceGroupHelperResult, err error, code int)
 
 	ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int)
 	ListProtocols(token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int)

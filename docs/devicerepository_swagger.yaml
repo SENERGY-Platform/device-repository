@@ -35,7 +35,7 @@ definitions:
           $ref: '#/definitions/model.PermissionsMap'
         type: object
     type: object
-  github_com_SENERGY-Platform_device-repository_lib_model.ImportExport:
+  github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport:
     properties:
       aspect_classes:
         items:
@@ -124,6 +124,28 @@ definitions:
       type:
         $ref: '#/definitions/models.Type'
       value: {}
+    type: object
+  model.DeviceGroupHelperResult:
+    properties:
+      criteria:
+        items:
+          $ref: '#/definitions/models.DeviceGroupFilterCriteria'
+        type: array
+      options:
+        items:
+          $ref: '#/definitions/model.DeviceGroupOption'
+        type: array
+    type: object
+  model.DeviceGroupOption:
+    properties:
+      device:
+        $ref: '#/definitions/models.ExtendedDevice'
+      maintains_group_usability:
+        type: boolean
+      removes_criteria:
+        items:
+          $ref: '#/definitions/models.DeviceGroupFilterCriteria'
+        type: array
     type: object
   model.DeviceTypeReference:
     properties:
@@ -2176,6 +2198,66 @@ paths:
       summary: list device-class functions
       tags:
       - device-classes
+  /device-group-helper:
+    post:
+      consumes:
+      - application/json
+      description: 'helps to build a valid device-group: returns the criteria a device-group
+        of the given devices would have, and the devices that may be added to it'
+      parameters:
+      - description: default 100
+        in: query
+        name: limit
+        type: integer
+      - description: default 0
+        in: query
+        name: offset
+        type: integer
+      - description: filter on the listed options
+        in: query
+        name: search
+        type: string
+      - description: filter; list only options that leave the group with at least
+          one counting criteria
+        in: query
+        name: maintains_group_usability
+        type: boolean
+      - description: comma-separated list of function ids that do not count towards
+          keeping the group usable
+        in: query
+        name: function_block_list
+        type: string
+      - description: device id list
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DeviceGroupHelperResult'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: device-group helper
+      tags:
+      - device-groups
+      - helper
   /device-groups:
     get:
       description: list device-group
@@ -3006,7 +3088,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_lib_model.ImportExport'
+            $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport'
         "400":
           description: Bad Request
         "401":
@@ -4142,7 +4224,7 @@ paths:
         name: message
         required: true
         schema:
-          $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_lib_model.ImportExport'
+          $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport'
       responses:
         "400":
           description: Bad Request

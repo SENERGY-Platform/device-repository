@@ -1943,6 +1943,94 @@ const docTemplatedevicerepository = `{
                 ]
             }
         },
+        "/device-group-helper": {
+            "post": {
+                "description": "helps to build a valid device-group: returns the criteria a device-group of the given devices would have, and the devices that may be added to it",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "device-groups",
+                    "helper"
+                ],
+                "summary": "device-group helper",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter on the listed options",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; list only options that leave the group with at least one counting criteria",
+                        "name": "maintains_group_usability",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "comma-separated list of function ids that do not count towards keeping the group usable",
+                        "name": "function_block_list",
+                        "in": "query"
+                    },
+                    {
+                        "description": "device id list",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.DeviceGroupHelperResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/device-groups": {
             "get": {
                 "description": "list device-group",
@@ -3206,7 +3294,7 @@ const docTemplatedevicerepository = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_lib_model.ImportExport"
+                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport"
                         }
                     },
                     "400": {
@@ -4932,7 +5020,7 @@ const docTemplatedevicerepository = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_lib_model.ImportExport"
+                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport"
                         }
                     }
                 ],
@@ -8821,7 +8909,7 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "github_com_SENERGY-Platform_device-repository_lib_model.ImportExport": {
+        "github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport": {
             "type": "object",
             "properties": {
                 "aspect_classes": {
@@ -8955,6 +9043,40 @@ const docTemplatedevicerepository = `{
                     "$ref": "#/definitions/models.Type"
                 },
                 "value": {}
+            }
+        },
+        "model.DeviceGroupHelperResult": {
+            "type": "object",
+            "properties": {
+                "criteria": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceGroupFilterCriteria"
+                    }
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DeviceGroupOption"
+                    }
+                }
+            }
+        },
+        "model.DeviceGroupOption": {
+            "type": "object",
+            "properties": {
+                "device": {
+                    "$ref": "#/definitions/models.ExtendedDevice"
+                },
+                "maintains_group_usability": {
+                    "type": "boolean"
+                },
+                "removes_criteria": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DeviceGroupFilterCriteria"
+                    }
+                }
             }
         },
         "model.DeviceTypeReference": {
