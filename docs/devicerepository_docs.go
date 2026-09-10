@@ -9013,38 +9013,6 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "model.Configurable": {
-            "type": "object",
-            "properties": {
-                "aspect_node": {
-                    "description": "deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.AspectNode"
-                        }
-                    ]
-                },
-                "aspect_nodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.AspectNode"
-                    }
-                },
-                "characteristic_id": {
-                    "type": "string"
-                },
-                "function_id": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/models.Type"
-                },
-                "value": {}
-            }
-        },
         "model.DeviceGroupHelperResult": {
             "type": "object",
             "properties": {
@@ -9107,7 +9075,7 @@ const docTemplatedevicerepository = `{
                     "additionalProperties": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/definitions/model.ServicePathOption"
+                            "$ref": "#/definitions/models.ServicePathOption"
                         }
                     }
                 },
@@ -9305,56 +9273,6 @@ const docTemplatedevicerepository = `{
                         "$ref": "#/definitions/model.PermissionsMap"
                     }
                 }
-            }
-        },
-        "model.ServicePathOption": {
-            "type": "object",
-            "properties": {
-                "aspect_node": {
-                    "description": "deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.AspectNode"
-                        }
-                    ]
-                },
-                "aspect_nodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.AspectNode"
-                    }
-                },
-                "characteristic_id": {
-                    "type": "string"
-                },
-                "configurables": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Configurable"
-                    }
-                },
-                "function_id": {
-                    "type": "string"
-                },
-                "interaction": {
-                    "$ref": "#/definitions/models.Interaction"
-                },
-                "is_controlling_function": {
-                    "type": "boolean"
-                },
-                "is_void": {
-                    "type": "boolean"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "service_id": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/models.Type"
-                },
-                "value": {}
             }
         },
         "model.ServiceReference": {
@@ -9577,6 +9495,38 @@ const docTemplatedevicerepository = `{
                 "name": {
                     "type": "string"
                 }
+            }
+        },
+        "models.Configurable": {
+            "type": "object",
+            "properties": {
+                "aspect_node": {
+                    "description": "deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.AspectNode"
+                        }
+                    ]
+                },
+                "aspect_nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AspectNode"
+                    }
+                },
+                "characteristic_id": {
+                    "type": "string"
+                },
+                "function_id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.Type"
+                },
+                "value": {}
             }
         },
         "models.Content": {
@@ -10255,6 +10205,56 @@ const docTemplatedevicerepository = `{
                 "name": {
                     "type": "string"
                 }
+            }
+        },
+        "models.ServicePathOption": {
+            "type": "object",
+            "properties": {
+                "aspect_node": {
+                    "description": "deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.AspectNode"
+                        }
+                    ]
+                },
+                "aspect_nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AspectNode"
+                    }
+                },
+                "characteristic_id": {
+                    "type": "string"
+                },
+                "configurables": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Configurable"
+                    }
+                },
+                "function_id": {
+                    "type": "string"
+                },
+                "interaction": {
+                    "$ref": "#/definitions/models.Interaction"
+                },
+                "is_controlling_function": {
+                    "type": "boolean"
+                },
+                "is_void": {
+                    "type": "boolean"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "service_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.Type"
+                },
+                "value": {}
             }
         },
         "models.Type": {

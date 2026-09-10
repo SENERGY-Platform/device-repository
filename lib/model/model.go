@@ -45,36 +45,15 @@ type DeviceTypeCriteria struct {
 	IsInput               bool        `json:"is_input"`
 }
 
-type DeviceTypeSelectable struct {
-	DeviceTypeId       string                         `json:"device_type_id,omitempty"`
-	Services           []models.Service               `json:"services,omitempty"`
-	ServicePathOptions map[string][]ServicePathOption `json:"service_path_options,omitempty"`
-}
+//the device-type-selectables answer is shaped in the shared model, so that a client does not
+//have to import this service to read it. The aspect fields of both shapes carry the list next
+//to the deprecated single value; the alias rule is described on the types themselves.
 
-type ServicePathOption struct {
-	ServiceId             string              `json:"service_id"`
-	Path                  string              `json:"path"`
-	CharacteristicId      string              `json:"characteristic_id"`
-	AspectNode            models.AspectNode   `json:"aspect_node"` //deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id
-	AspectNodes           []models.AspectNode `json:"aspect_nodes,omitempty"`
-	FunctionId            string              `json:"function_id"`
-	IsVoid                bool                `json:"is_void"`
-	Value                 interface{}         `json:"value,omitempty"`
-	IsControllingFunction bool                `json:"is_controlling_function"`
-	Configurables         []Configurable      `json:"configurables,omitempty"`
-	Type                  models.Type         `json:"type,omitempty"`
-	Interaction           models.Interaction  `json:"interaction"`
-}
+type DeviceTypeSelectable = models.DeviceTypeSelectable
 
-type Configurable struct {
-	Path             string              `json:"path"`
-	CharacteristicId string              `json:"characteristic_id"`
-	AspectNode       models.AspectNode   `json:"aspect_node"` //deprecated: alias for a single element AspectNodes; holds the node with the alphabetically first id
-	AspectNodes      []models.AspectNode `json:"aspect_nodes,omitempty"`
-	FunctionId       string              `json:"function_id"`
-	Value            interface{}         `json:"value,omitempty"`
-	Type             models.Type         `json:"type,omitempty"`
-}
+type ServicePathOption = models.ServicePathOption
+
+type Configurable = models.Configurable
 
 type FunctionList struct {
 	Functions  []models.Function `json:"functions"`

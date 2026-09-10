@@ -10,7 +10,7 @@ require (
 require (
 	github.com/SENERGY-Platform/go-service-base/struct-logger v0.8.0 // indirect
 	github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4 // indirect
-	github.com/SENERGY-Platform/models/go v0.0.0-20260902082034-9c8c8bd56d88 // indirect
+	github.com/SENERGY-Platform/models/go v0.0.0-20260910124809-95949e15e3d4 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.1 // indirect
 	github.com/bytedance/sonic/loader v0.5.1 // indirect

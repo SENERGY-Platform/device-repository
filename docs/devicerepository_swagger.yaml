@@ -104,27 +104,6 @@ definitions:
       write:
         type: boolean
     type: object
-  model.Configurable:
-    properties:
-      aspect_node:
-        allOf:
-        - $ref: '#/definitions/models.AspectNode'
-        description: 'deprecated: alias for a single element AspectNodes; holds the
-          node with the alphabetically first id'
-      aspect_nodes:
-        items:
-          $ref: '#/definitions/models.AspectNode'
-        type: array
-      characteristic_id:
-        type: string
-      function_id:
-        type: string
-      path:
-        type: string
-      type:
-        $ref: '#/definitions/models.Type'
-      value: {}
-    type: object
   model.DeviceGroupHelperResult:
     properties:
       criteria:
@@ -165,7 +144,7 @@ definitions:
       service_path_options:
         additionalProperties:
           items:
-            $ref: '#/definitions/model.ServicePathOption'
+            $ref: '#/definitions/models.ServicePathOption'
           type: array
         type: object
       services:
@@ -304,39 +283,6 @@ definitions:
         additionalProperties:
           $ref: '#/definitions/model.PermissionsMap'
         type: object
-    type: object
-  model.ServicePathOption:
-    properties:
-      aspect_node:
-        allOf:
-        - $ref: '#/definitions/models.AspectNode'
-        description: 'deprecated: alias for a single element AspectNodes; holds the
-          node with the alphabetically first id'
-      aspect_nodes:
-        items:
-          $ref: '#/definitions/models.AspectNode'
-        type: array
-      characteristic_id:
-        type: string
-      configurables:
-        items:
-          $ref: '#/definitions/model.Configurable'
-        type: array
-      function_id:
-        type: string
-      interaction:
-        $ref: '#/definitions/models.Interaction'
-      is_controlling_function:
-        type: boolean
-      is_void:
-        type: boolean
-      path:
-        type: string
-      service_id:
-        type: string
-      type:
-        $ref: '#/definitions/models.Type'
-      value: {}
     type: object
   model.ServiceReference:
     properties:
@@ -486,6 +432,27 @@ definitions:
         type: string
       name:
         type: string
+    type: object
+  models.Configurable:
+    properties:
+      aspect_node:
+        allOf:
+        - $ref: '#/definitions/models.AspectNode'
+        description: 'deprecated: alias for a single element AspectNodes; holds the
+          node with the alphabetically first id'
+      aspect_nodes:
+        items:
+          $ref: '#/definitions/models.AspectNode'
+        type: array
+      characteristic_id:
+        type: string
+      function_id:
+        type: string
+      path:
+        type: string
+      type:
+        $ref: '#/definitions/models.Type'
+      value: {}
     type: object
   models.Content:
     properties:
@@ -930,6 +897,39 @@ definitions:
         type: string
       name:
         type: string
+    type: object
+  models.ServicePathOption:
+    properties:
+      aspect_node:
+        allOf:
+        - $ref: '#/definitions/models.AspectNode'
+        description: 'deprecated: alias for a single element AspectNodes; holds the
+          node with the alphabetically first id'
+      aspect_nodes:
+        items:
+          $ref: '#/definitions/models.AspectNode'
+        type: array
+      characteristic_id:
+        type: string
+      configurables:
+        items:
+          $ref: '#/definitions/models.Configurable'
+        type: array
+      function_id:
+        type: string
+      interaction:
+        $ref: '#/definitions/models.Interaction'
+      is_controlling_function:
+        type: boolean
+      is_void:
+        type: boolean
+      path:
+        type: string
+      service_id:
+        type: string
+      type:
+        $ref: '#/definitions/models.Type'
+      value: {}
     type: object
   models.Type:
     enum:
