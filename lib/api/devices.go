@@ -619,3 +619,40 @@ func (this *DeviceEndpoints) SetConnectionState(config configuration.Config, rou
 		return
 	})
 }
+
+// SetConnectionStates godoc
+// @Summary      set device connection-states
+// @Description  set connection-state for multiple devices at once
+// @Tags         devices
+// @Security Bearer
+// @Param        message body map[string]bool true "device id to connected true/false"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /devices-batch/connection-state [PUT]
+func (this *DeviceEndpoints) SetConnectionStates(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /devices-batch/connection-state", func(writer http.ResponseWriter, request *http.Request) {
+		var states map[string]bool
+		err := json.NewDecoder(request.Body).Decode(&states)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		err, errCode := control.SetDeviceConnectionStates(token, states)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
+		}
+		return
+	})
+}
