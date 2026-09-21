@@ -19,6 +19,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 	"runtime/debug"
 	"slices"
@@ -581,6 +582,50 @@ func (this *Controller) SetHubConnectionState(token string, id string, connected
 	}
 	ctx, _ := getTimeoutContext()
 	err = this.db.SetHubConnectionState(ctx, id, state)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) SetHubConnectionStates(token string, states map[string]bool) (error, int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	if len(states) == 0 {
+		return nil, http.StatusOK
+	}
+	if !jwtToken.IsAdmin() {
+		res, err, _ := this.permissionsV2Client.CheckMultiplePermissions(
+			token,
+			this.config.DeviceTopic,
+			slices.Collect(maps.Keys(states)),
+			client.Write,
+		)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		var denied []string
+		for id, ok := range res {
+			if !ok {
+				denied = append(denied, id)
+			}
+		}
+		if len(denied) > 0 {
+			return errors.New(fmt.Sprintf("access denied: %v", denied)), http.StatusForbidden
+		}
+	}
+	convertedStates := make(map[string]string)
+	for id, boolSate := range states {
+		state := models.ConnectionStateOffline
+		if boolSate {
+			state = models.ConnectionStateOnline
+		}
+		convertedStates[id] = state
+	}
+	ctx, _ := getTimeoutContext()
+	err = this.db.SetHubConnectionStates(ctx, convertedStates)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
