@@ -392,6 +392,22 @@ func (this *Mongo) SetDeviceConnectionState(ctx context.Context, id string, stat
 	return err
 }
 
+func (this *Mongo) SetDeviceConnectionStates(ctx context.Context, states map[string]string) error {
+	if len(states) == 0 {
+		return nil
+	}
+	var writeModels []mongo.WriteModel
+	for id, state := range states {
+		writeModels = append(writeModels, mongo.NewUpdateOneModel().SetFilter(bson.M{
+			DeviceBson.Id: id,
+		}).SetUpdate(bson.M{
+			"$set": bson.M{DeviceBson.ConnectionState: state},
+		}))
+	}
+	_, err := this.deviceCollection().BulkWrite(ctx, writeModels)
+	return err
+}
+
 func (this *Mongo) DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error) {
 	return this.desyncUnknown(ctx, this.deviceCollection(), DeviceBson.Id, knownDevices)
 }

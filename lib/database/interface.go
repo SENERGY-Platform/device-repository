@@ -33,6 +33,7 @@ type Database interface {
 	ListDevices(ctx context.Context, options model.DeviceListOptions, withTotal bool) (devices []model.DeviceWithConnectionState, total int64, err error)
 	GetDeviceByLocalId(ctx context.Context, ownerId string, localId string) (device model.DeviceWithConnectionState, exists bool, err error)
 	SetDeviceConnectionState(ctx context.Context, id string, state models.ConnectionState) error
+	SetDeviceConnectionStates(ctx context.Context, states map[string]string) error
 	DeviceLocalIdsToIds(ctx context.Context, owner string, localIds []string) ([]string, error)
 
 	SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(old model.DeviceWithConnectionState, new model.DeviceWithConnectionState) error) error
