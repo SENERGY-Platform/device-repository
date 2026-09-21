@@ -527,3 +527,40 @@ func (this *HubEndpoints) SetConnectionState(config configuration.Config, router
 		return
 	})
 }
+
+// SetConnectionStates godoc
+// @Summary      set hub connection-states
+// @Description  set connection-state for multiple hubs at once
+// @Tags         hubs
+// @Security Bearer
+// @Param        message body map[string]bool true "hub id to connected true/false"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /hubs-batch/connection-state [PUT]
+func (this *HubEndpoints) SetConnectionStates(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("PUT /hubs-batch/connection-state", func(writer http.ResponseWriter, request *http.Request) {
+		var states map[string]bool
+		err := json.NewDecoder(request.Body).Decode(&states)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := util.GetAuthToken(request)
+
+		err, errCode := control.SetHubConnectionStates(token, states)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
+		}
+		return
+	})
+}
