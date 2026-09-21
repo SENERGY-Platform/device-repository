@@ -122,6 +122,10 @@ func (db *DB) SetHubConnectionState(ctx context.Context, id string, state models
 	return db.SetHub(ctx, hub, nil)
 }
 
+func (db *DB) SetHubConnectionStates(ctx context.Context, states map[string]string) error {
+	return nil
+}
+
 func (db *DB) DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error) {
 	return nil
 }

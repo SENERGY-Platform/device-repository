@@ -134,6 +134,10 @@ func (db *DB) SetDeviceConnectionState(ctx context.Context, id string, state mod
 	return db.SetDevice(ctx, device, nil)
 }
 
+func (db *DB) SetDeviceConnectionStates(ctx context.Context, states map[string]string) error {
+	return nil
+}
+
 func (db *DB) DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error) {
 	return nil
 }
