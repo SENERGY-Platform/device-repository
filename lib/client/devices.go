@@ -43,6 +43,19 @@ func (c *Client) SetDeviceConnectionState(token string, id string, connected boo
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
+func (c *Client) SetDeviceConnectionStates(token string, states map[string]bool) (error, int) {
+	b, err := json.Marshal(states)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/devices-batch/connection-state", bytes.NewBuffer(b))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
 func (c *Client) SetDevice(token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int) {
 	b, err := json.Marshal(device)
 	if err != nil {

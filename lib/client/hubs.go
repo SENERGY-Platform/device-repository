@@ -41,6 +41,19 @@ func (c *Client) SetHubConnectionState(token string, id string, connected bool) 
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
+func (c *Client) SetHubConnectionStates(token string, states map[string]bool) (error, int) {
+	b, err := json.Marshal(states)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/hubs-batch/connection-state", bytes.NewBuffer(b))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
 type HubUpdateOptions = model.HubUpdateOptions
 
 func (c *Client) SetHub(token string, hub models.Hub, options HubUpdateOptions) (result models.Hub, err error, code int) {
