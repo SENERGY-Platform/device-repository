@@ -4667,6 +4667,54 @@ const docTemplatedevicerepository = `{
                 ]
             }
         },
+        "/hubs-batch/connection-state": {
+            "put": {
+                "description": "set connection-state for multiple hubs at once",
+                "tags": [
+                    "hubs"
+                ],
+                "summary": "set hub connection-states",
+                "parameters": [
+                    {
+                        "description": "hub id to connected true/false",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/hubs/{id}": {
             "get": {
                 "description": "get hub",
