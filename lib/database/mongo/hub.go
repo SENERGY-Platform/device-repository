@@ -265,6 +265,22 @@ func (this *Mongo) SetHubConnectionState(ctx context.Context, id string, state m
 	return err
 }
 
+func (this *Mongo) SetHubConnectionStates(ctx context.Context, states map[string]string) error {
+	if len(states) == 0 {
+		return nil
+	}
+	var writeModels []mongo.WriteModel
+	for id, state := range states {
+		writeModels = append(writeModels, mongo.NewUpdateOneModel().SetFilter(bson.M{
+			HubBson.Id: id,
+		}).SetUpdate(bson.M{
+			"$set": bson.M{HubBson.ConnectionState: state},
+		}))
+	}
+	_, err := this.deviceCollection().BulkWrite(ctx, writeModels)
+	return err
+}
+
 func (this *Mongo) DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error) {
 	return this.desyncUnknown(ctx, this.hubCollection(), HubBson.Id, knownHubs)
 }

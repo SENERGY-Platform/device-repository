@@ -44,6 +44,7 @@ type Database interface {
 	ListHubs(ctx context.Context, options model.HubListOptions, withTotal bool) (hubs []model.HubWithConnectionState, total int64, err error)
 	GetHubsByDeviceId(ctx context.Context, deviceId string) (hubs []model.HubWithConnectionState, err error)
 	SetHubConnectionState(ctx context.Context, id string, state models.ConnectionState) error
+	SetHubConnectionStates(ctx context.Context, states map[string]string) error
 
 	SetHub(ctx context.Context, hub model.HubWithConnectionState, syncHandler func(model.HubWithConnectionState) error) error
 	RemoveHub(ctx context.Context, id string, syncDeleteHandler func(model.HubWithConnectionState) error) error
