@@ -47,7 +47,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		collection := db.client.Database(db.config.MongoTable).Collection(GetAspectNodeCollectionName(db.config))
+		collection := db.client.Database(db.config.MongoDatabase).Collection(GetAspectNodeCollectionName(db.config))
 		err = db.ensureIndex(collection, "aspectNodeidindex", AspectNodeBson.Id, true, true)
 		if err != nil {
 			return err
@@ -77,7 +77,7 @@ func GetAspectNodeCollectionName(config configuration.Config) string {
 }
 
 func (this *Mongo) aspectNodeCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(GetAspectNodeCollectionName(this.config))
+	return this.client.Database(this.config.MongoDatabase).Collection(GetAspectNodeCollectionName(this.config))
 }
 
 func (this *Mongo) ListAspectNodes(ctx context.Context, listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error) {

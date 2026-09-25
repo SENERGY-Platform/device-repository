@@ -60,7 +60,7 @@ func init() {
 				return err
 			}
 		}
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceGroupCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoDeviceGroupCollection)
 		err = db.ensureIndex(collection, "deviceGroupidindex", DeviceGroupBson.Id, true, true)
 		if err != nil {
 			return err
@@ -70,7 +70,7 @@ func init() {
 }
 
 func (this *Mongo) deviceGroupCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceGroupCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoDeviceGroupCollection)
 }
 
 func (this *Mongo) GetDeviceGroup(ctx context.Context, id string) (deviceGroup models.DeviceGroup, exists bool, err error) {

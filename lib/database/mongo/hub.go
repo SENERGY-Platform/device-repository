@@ -36,7 +36,7 @@ var HubBson = getBsonFieldObject[model.HubWithConnectionState]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoHubCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoHubCollection)
 		err = db.ensureIndex(collection, "hubidindex", HubBson.Id, true, true)
 		if err != nil {
 			return err
@@ -58,7 +58,7 @@ func init() {
 }
 
 func (this *Mongo) hubCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoHubCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoHubCollection)
 }
 
 func (this *Mongo) GetHub(ctx context.Context, id string) (hub model.HubWithConnectionState, exists bool, err error) {

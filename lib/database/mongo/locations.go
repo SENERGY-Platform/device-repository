@@ -36,7 +36,7 @@ var LocationBson = getBsonFieldObject[models.Location]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoLocationCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoLocationCollection)
 		err = db.ensureIndex(collection, "locationidindex", LocationBson.Id, true, true)
 		if err != nil {
 			return err
@@ -46,7 +46,7 @@ func init() {
 }
 
 func (this *Mongo) locationCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoLocationCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoLocationCollection)
 }
 
 func (this *Mongo) GetLocation(ctx context.Context, id string) (location models.Location, exists bool, err error) {

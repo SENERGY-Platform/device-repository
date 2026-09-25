@@ -40,7 +40,7 @@ func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
 
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceTypeCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoDeviceTypeCollection)
 		err = db.ensureIndex(collection, "devicetypeidindex", DeviceTypeBson.Id, true, true)
 		if err != nil {
 			return err
@@ -58,7 +58,7 @@ func init() {
 }
 
 func (this *Mongo) deviceTypeCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceTypeCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoDeviceTypeCollection)
 }
 
 func (this *Mongo) GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error) {

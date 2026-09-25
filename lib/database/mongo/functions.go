@@ -35,7 +35,7 @@ var FunctionBson = getBsonFieldObject[models.Function]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoFunctionCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoFunctionCollection)
 		err = db.ensureIndex(collection, "functionidindex", FunctionBson.Id, true, true)
 		if err != nil {
 			return err
@@ -53,7 +53,7 @@ func init() {
 }
 
 func (this *Mongo) functionCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoFunctionCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoFunctionCollection)
 }
 
 func (this *Mongo) ListFunctions(ctx context.Context, listOptions model.FunctionListOptions) (result []models.Function, total int64, err error) {

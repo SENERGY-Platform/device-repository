@@ -34,7 +34,7 @@ var ProtocolBson = getBsonFieldObject[models.Protocol]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoProtocolCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoProtocolCollection)
 		err = db.ensureIndex(collection, "protocolidindex", ProtocolBson.Id, true, true)
 		if err != nil {
 			return err
@@ -48,7 +48,7 @@ func init() {
 }
 
 func (this *Mongo) protocolCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoProtocolCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoProtocolCollection)
 }
 
 func (this *Mongo) GetProtocol(ctx context.Context, id string) (protocol models.Protocol, exists bool, err error) {

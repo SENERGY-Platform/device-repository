@@ -36,7 +36,7 @@ var CharacteristicBson = getBsonFieldObject[models.Characteristic]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoCharacteristicCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoCharacteristicCollection)
 		err = db.ensureIndex(collection, "characteristicidindex", CharacteristicBson.Id, true, true)
 		if err != nil {
 			return err
@@ -46,7 +46,7 @@ func init() {
 }
 
 func (this *Mongo) characteristicCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoCharacteristicCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoCharacteristicCollection)
 }
 
 func (this *Mongo) ListCharacteristics(ctx context.Context, listOptions model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error) {

@@ -37,7 +37,7 @@ var ConceptBson = getBsonFieldObject[models.Concept]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoConceptCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoConceptCollection)
 		err = db.ensureIndex(collection, "conceptidindex", ConceptBson.Id, true, true)
 		if err != nil {
 			return err
@@ -51,7 +51,7 @@ func init() {
 }
 
 func (this *Mongo) conceptCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoConceptCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoConceptCollection)
 }
 
 func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept, syncHandler func(models.Concept) error) error {

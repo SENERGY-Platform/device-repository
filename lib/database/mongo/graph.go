@@ -50,7 +50,7 @@ func init() {
 }
 
 func (this *Mongo) graphCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoGraphCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoGraphCollection)
 }
 
 func (this *Mongo) ListGraphs(ctx context.Context, listOptions model.GraphListOptions) (result []models.Graph, total int64, err error) {

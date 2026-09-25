@@ -36,7 +36,7 @@ var AspectBson = getBsonFieldObject[models.Aspect]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoAspectCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoAspectCollection)
 		err = db.ensureIndex(collection, "aspectidindex", AspectBson.Id, true, true)
 		if err != nil {
 			return err
@@ -50,7 +50,7 @@ func init() {
 }
 
 func (this *Mongo) aspectCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoAspectCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoAspectCollection)
 }
 
 func (this *Mongo) ListAspects(ctx context.Context, listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error) {

@@ -65,7 +65,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		collection := db.client.Database(db.config.MongoTable).Collection(getDeviceTypeCriteriaCollectionName(db.config))
+		collection := db.client.Database(db.config.MongoDatabase).Collection(getDeviceTypeCriteriaCollectionName(db.config))
 
 		err = db.ensureIndex(collection, "deviceTypeCriteriaDeviceTypeIdIndex", DeviceTypeCriteriaBson.DeviceTypeId, true, false)
 		if err != nil {
@@ -96,7 +96,7 @@ func init() {
 }
 
 func (this *Mongo) deviceTypeCriteriaCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(getDeviceTypeCriteriaCollectionName(this.config))
+	return this.client.Database(this.config.MongoDatabase).Collection(getDeviceTypeCriteriaCollectionName(this.config))
 }
 
 func (this *Mongo) addDeviceTypeCriteria(ctx context.Context, deviceTypeCriteria []model.DeviceTypeCriteria) error {

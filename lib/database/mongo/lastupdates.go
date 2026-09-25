@@ -31,7 +31,7 @@ var LastUpdateTimestampsBson = getBsonFieldObject[model.LastUpdateTimestamp]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoLastUpdateTimestampsCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoLastUpdateTimestampsCollection)
 		err = db.ensureIndex(collection, "lastupdate_collection_index", LastUpdateTimestampsBson.Collection, true, false)
 		if err != nil {
 			return err
@@ -45,7 +45,7 @@ func init() {
 }
 
 func (this *Mongo) lastUpdateTimestampsCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoLastUpdateTimestampsCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoLastUpdateTimestampsCollection)
 }
 
 func (this *Mongo) GetLastUpdateTimestampsForUser(ctx context.Context, userId string) (result []model.LastUpdateTimestamp, err error) {

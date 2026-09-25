@@ -424,8 +424,8 @@ func testStartupMigration(t *testing.T, config configuration.Config, measuringFu
 		return
 	}
 	defer raw.Disconnect(ctx)
-	criteriaCollection := raw.Database(config.MongoTable).Collection(config.MongoDeviceTypeCollection + "_criteria")
-	deviceGroupCollection := raw.Database(config.MongoTable).Collection(config.MongoDeviceGroupCollection)
+	criteriaCollection := raw.Database(config.MongoDatabase).Collection(config.MongoDeviceTypeCollection + "_criteria")
+	deviceGroupCollection := raw.Database(config.MongoDatabase).Collection(config.MongoDeviceGroupCollection)
 
 	//a device-type that predates models.ContentVariable.AspectIds: its stored content
 	//variable carries only the deprecated AspectId, so the migration can only rebuild its

@@ -38,7 +38,7 @@ var DeviceClassBson = getBsonFieldObject[models.DeviceClass]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceClassCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoDeviceClassCollection)
 		err = db.ensureIndex(collection, "deviceclassidindex", DeviceClassBson.Id, true, true)
 		if err != nil {
 			return err
@@ -48,7 +48,7 @@ func init() {
 }
 
 func (this *Mongo) deviceClassCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceClassCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoDeviceClassCollection)
 }
 
 func (this *Mongo) ListDeviceClasses(ctx context.Context, listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error) {

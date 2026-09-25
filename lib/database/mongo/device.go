@@ -36,7 +36,7 @@ var DeviceBson = getBsonFieldObject[model.DeviceWithConnectionState]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDeviceCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoDeviceCollection)
 		err = db.ensureIndex(collection, "deviceidindex", DeviceBson.Id, true, true)
 		if err != nil {
 			return err
@@ -96,7 +96,7 @@ func migrateDisplayName(db *Mongo, collection *mongo.Collection) error {
 }
 
 func (this *Mongo) deviceCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDeviceCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoDeviceCollection)
 }
 
 func (this *Mongo) GetDevice(ctx context.Context, id string) (device model.DeviceWithConnectionState, exists bool, err error) {

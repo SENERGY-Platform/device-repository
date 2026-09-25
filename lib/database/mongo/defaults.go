@@ -35,7 +35,7 @@ var DefaultDeviceAttributesBson = getBsonFieldObject[DefaultDeviceAttributes]()
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
 		var err error
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoDefaultDeviceAttributesCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoDefaultDeviceAttributesCollection)
 		err = db.ensureIndex(collection, "defaultdeviceattributesuseridindex", DefaultDeviceAttributesBson.UserId, true, true)
 		if err != nil {
 			return err
@@ -45,7 +45,7 @@ func init() {
 }
 
 func (this *Mongo) defaultDeviceAttributesCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoDefaultDeviceAttributesCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoDefaultDeviceAttributesCollection)
 }
 
 func (this *Mongo) GetDefaultDeviceAttributes(ctx context.Context, userId string) (attributes []models.Attribute, err error) {

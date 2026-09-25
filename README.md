@@ -16,6 +16,28 @@ Changes are published to kafka, so consumers can follow the registry without
 polling. Permissions live in permissions-v2, which publishes onto the same
 topics.
 
+## MongoDB configuration
+
+| Env var | Default | Notes |
+|---|---|---|
+| `MONGO_URL` | `mongodb://localhost:27017` | Full connection string including scheme, passed to the driver unchanged; must not contain credentials. |
+| `MONGO_USER` | empty | No authentication when empty. |
+| `MONGO_PASSWORD` | empty | Required when `MONGO_USER` is set; masked in the startup output and whenever the config is formatted or marshalled. |
+| `MONGO_AUTH_SOURCE` | `admin` | Database the user is defined in. |
+| `MONGO_DATABASE` | `device_repository` | Must not be empty. The collections keep their `MONGO_*_COLLECTION` settings. |
+
+In `config.json` these are `mongo_url`, `mongo_user`, `mongo_password`, `mongo_auth_source` and `mongo_database`.
+
+When `MONGO_USER` is set, the credentials are built from `MONGO_USER`, `MONGO_PASSWORD` and `MONGO_AUTH_SOURCE` alone and replace any user, password, `authSource` or `authMechanism` in `MONGO_URL`. Every other applied environment variable is printed at startup with its value, `MONGO_URL` included.
+
+Startup fails unless an authenticated `listCollections` on `MONGO_DATABASE` succeeds within 10 seconds; the index setup and the startup migrations run only after that. The service user needs `readWrite` on `MONGO_DATABASE`.
+
+`TestStartAuthenticates` in `lib/database/mongo` runs only without `-short` and when `MONGO_AUTH_TEST_URL`, `MONGO_AUTH_TEST_USER` and `MONGO_AUTH_TEST_PASSWORD` are set. User and password are root credentials of a throwaway server with access control; the test creates and removes its own users and databases:
+
+    docker run -d --rm --name device-repository-auth-test -p 127.0.0.1:27018:27017 -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=rootpw mongo:8.0
+    MONGO_AUTH_TEST_URL=mongodb://127.0.0.1:27018 MONGO_AUTH_TEST_USER=root MONGO_AUTH_TEST_PASSWORD=rootpw go test -run TestStartAuthenticates ./lib/database/mongo/
+    docker stop device-repository-auth-test
+
 ## OpenAPI
 uses https://github.com/swaggo/swag
 

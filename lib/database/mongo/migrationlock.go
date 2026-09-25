@@ -70,13 +70,13 @@ const (
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoMigrationLockCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoMigrationLockCollection)
 		return db.ensureIndex(collection, "migrationlockidindex", MigrationLockBson.Id, true, true)
 	})
 }
 
 func (this *Mongo) migrationLockCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoMigrationLockCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoMigrationLockCollection)
 }
 
 // lockMigrations blocks until this instance holds the migration lock and returns the release.

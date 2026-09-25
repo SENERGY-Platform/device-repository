@@ -39,13 +39,13 @@ var MigrationStateBson = getBsonFieldObject[MigrationState]()
 
 func init() {
 	CreateCollections = append(CreateCollections, func(db *Mongo) error {
-		collection := db.client.Database(db.config.MongoTable).Collection(db.config.MongoMigrationStateCollection)
+		collection := db.client.Database(db.config.MongoDatabase).Collection(db.config.MongoMigrationStateCollection)
 		return db.ensureIndex(collection, "migrationstatenameindex", MigrationStateBson.Name, true, true)
 	})
 }
 
 func (this *Mongo) migrationStateCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoTable).Collection(this.config.MongoMigrationStateCollection)
+	return this.client.Database(this.config.MongoDatabase).Collection(this.config.MongoMigrationStateCollection)
 }
 
 func (this *Mongo) migrationHasRun(ctx context.Context, name string) (bool, error) {

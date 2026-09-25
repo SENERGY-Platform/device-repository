@@ -115,8 +115,8 @@ func TestStartupMigrationLock(t *testing.T) {
 		return
 	}
 	defer raw.Disconnect(ctx)
-	lockCollection := raw.Database(config.MongoTable).Collection(config.MongoMigrationLockCollection)
-	migrationState := raw.Database(config.MongoTable).Collection(config.MongoMigrationStateCollection)
+	lockCollection := raw.Database(config.MongoDatabase).Collection(config.MongoMigrationLockCollection)
+	migrationState := raw.Database(config.MongoDatabase).Collection(config.MongoMigrationStateCollection)
 
 	//every instance starts its migrations at the same moment
 	start := make(chan struct{})

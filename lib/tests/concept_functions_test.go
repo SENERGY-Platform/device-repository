@@ -307,7 +307,7 @@ func testConceptFunctionsMigration(
 		return
 	}
 	defer raw.Disconnect(ctx)
-	migrationState := raw.Database(config.MongoTable).Collection(config.MongoMigrationStateCollection)
+	migrationState := raw.Database(config.MongoDatabase).Collection(config.MongoMigrationStateCollection)
 	_, err = migrationState.DeleteMany(ctx, bson.M{})
 	if err != nil {
 		t.Error(err)
