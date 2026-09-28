@@ -18,8 +18,8 @@ package controller
 
 import (
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/database"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/database"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 )

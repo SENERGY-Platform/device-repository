@@ -28,9 +28,9 @@ import (
 	"time"
 
 	"github.com/SENERGY-Platform/api-docs-provider/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v2/docs"
-	"github.com/SENERGY-Platform/device-repository/v2/lib"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/docs"
+	"github.com/SENERGY-Platform/device-repository/v3/lib"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 )
 
 func main() {

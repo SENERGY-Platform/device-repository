@@ -18,7 +18,7 @@ package tests
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/manager_legacy/helper"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/manager_legacy/helper"
 	"net/url"
 	"testing"
 )

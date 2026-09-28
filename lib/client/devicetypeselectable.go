@@ -19,7 +19,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"net/http"
 	"strconv"
 	"strings"

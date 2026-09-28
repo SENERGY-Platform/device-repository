@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/database"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/database"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	model2 "github.com/SENERGY-Platform/permissions-v2/pkg/model"
 )
 

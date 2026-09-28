@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 )
 
 func (c *Client) DeviceGroupHelper(token string, deviceIds []string, options model.DeviceGroupHelperOptions) (result model.DeviceGroupHelperResult, err error, code int) {

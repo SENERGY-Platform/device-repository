@@ -32,8 +32,8 @@ and to need a `go mod tidy` first. That tidy pulls in the main module's
 transitive dependencies; it adds no new direct one.
 
 Its `go.mod` also tracks the main module's major version. Since the main module
-became `.../device-repository/v2`, the `require` and the `replace` here name that
-path — and so must the placeholder version, which is `v2.0.0-00010101000000-000000000000`
+became `.../device-repository/v3`, the `require` and the `replace` here name that
+path — and so must the placeholder version, which is `v3.0.0-00010101000000-000000000000`
 rather than the conventional `v0.0.0-...`. Go validates the major before it
 applies the `replace`, so a mismatch fails at parse time and no `go` command in
 this directory works:

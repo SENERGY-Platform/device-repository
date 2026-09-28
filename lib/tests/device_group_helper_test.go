@@ -28,11 +28,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/v2/lib"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/v3/lib"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 )
 

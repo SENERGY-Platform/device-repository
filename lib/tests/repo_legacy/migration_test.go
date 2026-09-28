@@ -24,12 +24,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SENERGY-Platform/device-repository/v2/lib"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/controller/publisher"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/database/mongo"
-	"github.com/SENERGY-Platform/device-repository/v2/lib/model"
-	docker2 "github.com/SENERGY-Platform/device-repository/v2/lib/tests/docker"
+	"github.com/SENERGY-Platform/device-repository/v3/lib"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/controller/publisher"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/database/mongo"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	docker2 "github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
 )
