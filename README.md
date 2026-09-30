@@ -88,6 +88,9 @@ instance:
 - [A device-group may hold modified device ids](docs/a-device-group-holds-modified-device-ids.md) —
   a group member may carry a `$service_group_selection` modifier, what that means
   for every database lookup, and why permissions-v2 needs no help with it
+- [The mirror only sees what bumps a last-update timestamp](docs/the-mirror-only-sees-what-bumps-a-last-update-timestamp.md) —
+  which change starts a pull of a collection, which does not, and when a pull
+  removes an entry the source no longer lists
 
 Working in this repository:
 
