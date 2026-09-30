@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -947,4 +948,369 @@ func TestMirror(t *testing.T) {
 		})
 	})
 
+	permClient := client2.New(sourceConfig.PermissionsV2Url)
+	sharedDeviceId := ""
+
+	t.Run("share device with mirror user", func(t *testing.T) {
+		dts, _, err, _ := sourceClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if len(dts) == 0 {
+			t.Error("missing device types")
+			return
+		}
+		shared, err, _ := sourceClient.CreateDevice(testenv.TestToken, models.Device{
+			LocalId:      "shared",
+			Name:         "shared",
+			DeviceTypeId: dts[0].Id,
+			OwnerId:      testenv.TestTokenUser,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		sharedDeviceId = shared.Id
+		resource, err, _ := permClient.GetResource(client.InternalAdminToken, config.DeviceTopic, shared.Id)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		resource.UserPermissions[testenv.SecendOwnerTokenUser] = client2.PermissionsMap{Read: true}
+		_, err, _ = permClient.SetPermission(client.InternalAdminToken, config.DeviceTopic, shared.Id, resource.ResourcePermissions)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		//a share changes no last-update timestamp of the mirror user; a device of the mirror user triggers the pull
+		_, err, _ = sourceClient.CreateDevice(testenv.SecondOwnerToken, models.Device{
+			LocalId:      "d4",
+			Name:         "d4",
+			DeviceTypeId: dts[0].Id,
+			OwnerId:      testenv.SecendOwnerTokenUser,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		time.Sleep(15 * time.Second)
+		result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if names := deviceNames(result); !slices.Equal(names, []string{"d1", "d2", "d3", "d4", "shared"}) {
+			t.Error("unexpected result: ", names)
+		}
+	})
+
+	t.Run("remove in source", func(t *testing.T) {
+		resource, err, _ := permClient.GetResource(client.InternalAdminToken, config.DeviceTopic, sharedDeviceId)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		delete(resource.UserPermissions, testenv.SecendOwnerTokenUser)
+		_, err, _ = permClient.SetPermission(client.InternalAdminToken, config.DeviceTopic, sharedDeviceId, resource.ResourcePermissions)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		for _, token := range []string{testenv.SecondOwnerToken, testenv.TestToken} {
+			devices, err, _ := sourceClient.ListDevices(token, client.DeviceListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			for _, device := range devices {
+				if slices.Contains([]string{"d2", "d4", "shouldNotBeFound_2"}, device.Name) {
+					err, _ = sourceClient.DeleteDevice(token, device.Id)
+					if err != nil {
+						t.Error(err)
+						return
+					}
+				}
+			}
+		}
+
+		dts, _, err, _ := sourceClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for _, dt := range dts {
+			if dt.Name == "dt2" {
+				err, _ = sourceClient.DeleteDeviceType(client.InternalAdminToken, dt.Id)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		}
+
+		concepts, _, err, _ := sourceClient.ListConcepts(client.ConceptListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for _, co := range concepts {
+			if co.Name != "co2" {
+				continue
+			}
+			//f2 and the generated Get-co2 and Set-co2 reference the concept and block its removal
+			functions, _, err, _ := sourceClient.ListFunctions(client.FunctionListOptions{ConceptIds: []string{co.Id}})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			for _, f := range functions {
+				err, _ = sourceClient.DeleteFunction(client.InternalAdminToken, f.Id)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
+			err, _ = sourceClient.DeleteConcept(client.InternalAdminToken, co.Id)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+
+		characteristics, _, err, _ := sourceClient.ListCharacteristics(client.CharacteristicListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for _, c := range characteristics {
+			if c.Name == "c2" {
+				err, _ = sourceClient.DeleteCharacteristic(client.InternalAdminToken, c.Id)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		}
+
+		deviceClasses, _, err, _ := sourceClient.ListDeviceClasses(client.DeviceClassListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for _, dc := range deviceClasses {
+			if dc.Name == "dc2" {
+				err, _ = sourceClient.DeleteDeviceClass(client.InternalAdminToken, dc.Id)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		}
+
+		aspects, _, err, _ := sourceClient.ListAspects(client.AspectListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for _, a := range aspects {
+			switch a.Name {
+			case "a1":
+				//removing a sub-aspect leaves its aspect-node without a counterpart in the source
+				a.SubAspects = nil
+				_, err, _ = sourceClient.SetAspect(client.InternalAdminToken, a)
+			case "a2":
+				err, _ = sourceClient.DeleteAspect(client.InternalAdminToken, a.Id)
+			}
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+
+		err, _ = sourceClient.DeleteProtocol(client.InternalAdminToken, "p2")
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		err, _ = sourceClient.DeleteHub(testenv.SecondOwnerToken, "h2")
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		groups, _, err, _ := sourceClient.ListDeviceGroups(testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for _, dg := range groups {
+			if dg.Name == "dg2" {
+				err, _ = sourceClient.DeleteDeviceGroup(testenv.SecondOwnerToken, dg.Id)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}
+		}
+	})
+
+	t.Run("check mirror after removal", func(t *testing.T) {
+		time.Sleep(15 * time.Second)
+		t.Run("protocols", func(t *testing.T) {
+			result, err, _ := mirrorClient.ListProtocols("", 100, 0, "")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if len(result) != 1 || result[0].Id != "p1" {
+				t.Errorf("unexpected result: %#v", result)
+			}
+		})
+		t.Run("aspects", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListAspects(client.AspectListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if len(result) != 1 || result[0].Name != "a1" || len(result[0].SubAspects) != 0 {
+				t.Errorf("unexpected result: %#v", result)
+			}
+		})
+		t.Run("aspect-nodes", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListAspectNodes(client.AspectListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if len(result) != 1 || result[0].Name != "a1" || len(result[0].DescendentIds) != 0 {
+				t.Errorf("unexpected result: %#v", result)
+			}
+		})
+		t.Run("characteristics", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListCharacteristics(client.CharacteristicListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if len(result) != 1 || result[0].Name != "c1" {
+				t.Errorf("unexpected result: %#v", result)
+			}
+		})
+		t.Run("concepts", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListConcepts(client.ConceptListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if len(result) != 1 || result[0].Name != "co1" {
+				t.Errorf("unexpected result: %#v", result)
+			}
+		})
+		t.Run("functions", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListFunctions(client.FunctionListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			names := []string{}
+			for _, f := range result {
+				names = append(names, f.Name)
+			}
+			slices.Sort(names)
+			if !slices.Equal(names, []string{"Get-co1", "Set-co1", "f1"}) {
+				t.Error("unexpected result: ", names)
+			}
+		})
+		t.Run("device-classes", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListDeviceClasses(client.DeviceClassListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if len(result) != 1 || result[0].Name != "dc1" {
+				t.Errorf("unexpected result: %#v", result)
+			}
+		})
+		t.Run("device-types", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			names := []string{}
+			for _, dt := range result {
+				names = append(names, dt.Name)
+			}
+			slices.Sort(names)
+			if !slices.Equal(names, []string{"dt1", "dt3"}) {
+				t.Error("unexpected result: ", names)
+			}
+		})
+		t.Run("devices", func(t *testing.T) {
+			result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if names := deviceNames(result); !slices.Equal(names, []string{"d1", "d3"}) {
+				t.Error("unexpected result: ", names)
+			}
+		})
+		t.Run("hubs", func(t *testing.T) {
+			result, err, _ := mirrorClient.ListHubs("", client.HubListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			names := []string{}
+			for _, h := range result {
+				names = append(names, h.Name)
+			}
+			slices.Sort(names)
+			if !slices.Equal(names, []string{"h1", "h3"}) {
+				t.Error("unexpected result: ", names)
+			}
+		})
+		t.Run("device-groups", func(t *testing.T) {
+			result, _, err, _ := mirrorClient.ListDeviceGroups("", client.DeviceGroupListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			source, _, err, _ := sourceClient.ListDeviceGroups(testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			//the generated groups of the removed devices are removed by the source as well
+			names := []string{}
+			for _, dg := range result {
+				names = append(names, dg.Name)
+				if dg.Name == "dg2" {
+					t.Error("removed device-group still in mirror")
+				}
+			}
+			sourceNames := []string{}
+			for _, dg := range source {
+				sourceNames = append(sourceNames, dg.Name)
+			}
+			slices.Sort(names)
+			slices.Sort(sourceNames)
+			if !slices.Equal(names, sourceNames) {
+				t.Error("unexpected result: ", names, sourceNames)
+			}
+		})
+	})
+
+}
+
+func deviceNames(devices []models.Device) (names []string) {
+	for _, d := range devices {
+		names = append(names, d.Name)
+	}
+	slices.Sort(names)
+	return names
 }
