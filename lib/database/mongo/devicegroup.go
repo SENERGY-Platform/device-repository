@@ -232,10 +232,18 @@ func (this *Mongo) RemoveDeviceGroup(ctx context.Context, id string, syncDeleteH
 	if !exists {
 		return nil
 	}
+	user, _, err := this.GetDeviceGroupSyncUser(ctx, id)
+	if err != nil {
+		return err
+	}
 	collection := this.deviceGroupCollection()
 	err = this.setDeleted(ctx, collection, DeviceGroupBson.Id, id)
 	if err != nil {
 		return err
+	}
+	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceGroupCollection, user)
+	if err != nil {
+		err = nil
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
