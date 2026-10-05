@@ -17,6 +17,7 @@
 package util
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log/slog"
@@ -32,15 +33,26 @@ type MirrorPull interface {
 	MirrorUpdate() error
 }
 
+const defaultMissPullTimeout = 10 * time.Second
+
 func NewMirrorMiddleware(handler http.Handler, config configuration.Config, pull MirrorPull) *MirrorMiddleware {
-	return &MirrorMiddleware{handler: handler, config: config, pull: pull}
+	missPullTimeout := defaultMissPullTimeout
+	if config.MgwMirrorMissPullTimeout != "" {
+		//validated by mgwmirror.StartSourcePullWorker()
+		timeout, err := time.ParseDuration(config.MgwMirrorMissPullTimeout)
+		if err == nil {
+			missPullTimeout = timeout
+		}
+	}
+	return &MirrorMiddleware{handler: handler, config: config, pull: pull, missPullTimeout: missPullTimeout}
 }
 
 type MirrorMiddleware struct {
-	handler http.Handler
-	config  configuration.Config
-	token   string
-	pull    MirrorPull
+	handler         http.Handler
+	config          configuration.Config
+	token           string
+	pull            MirrorPull
+	missPullTimeout time.Duration
 }
 
 func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -95,8 +107,74 @@ func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		r.Header.Set("Authorization", token)
-		this.handler.ServeHTTP(w, r)
+		if r.Method == http.MethodGet {
+			this.serveGetWithMissPull(w, r)
+		} else {
+			this.handler.ServeHTTP(w, r)
+		}
 	}
+}
+
+// serveGetWithMissPull answers a 404 only after the mirror asked the source for changes.
+// The pull checks the last-update timestamps of the source, so a miss without changes in the source costs one request.
+// If the pull takes longer than missPullTimeout (e.g. because the source is unreachable), the first 404 is returned
+// and the pull continues in the background.
+func (this *MirrorMiddleware) serveGetWithMissPull(w http.ResponseWriter, r *http.Request) {
+	first := newBufferedResponse()
+	this.handler.ServeHTTP(first, r)
+	if first.status != http.StatusNotFound {
+		first.writeTo(w)
+		return
+	}
+	done := make(chan error, 1)
+	go func() {
+		done <- this.pull.MirrorUpdate()
+	}()
+	select {
+	case err := <-done:
+		if err != nil {
+			this.config.GetLogger().Warn("unable to update mirror after not found", "url", r.URL.String(), "error", err)
+			first.writeTo(w)
+			return
+		}
+	case <-time.After(this.missPullTimeout):
+		this.config.GetLogger().Warn("mirror update after not found exceeded timeout --> respond with not found", "url", r.URL.String(), "timeout", this.missPullTimeout.String())
+		first.writeTo(w)
+		return
+	}
+	this.handler.ServeHTTP(w, r)
+}
+
+type bufferedResponse struct {
+	header http.Header
+	status int
+	body   bytes.Buffer
+}
+
+func newBufferedResponse() *bufferedResponse {
+	return &bufferedResponse{header: http.Header{}, status: http.StatusOK}
+}
+
+func (this *bufferedResponse) Header() http.Header {
+	return this.header
+}
+
+func (this *bufferedResponse) WriteHeader(status int) {
+	this.status = status
+}
+
+func (this *bufferedResponse) Write(b []byte) (int, error) {
+	return this.body.Write(b)
+}
+
+func (this *bufferedResponse) writeTo(w http.ResponseWriter) {
+	for k, vv := range this.header {
+		for _, v := range vv {
+			w.Header().Add(k, v)
+		}
+	}
+	w.WriteHeader(this.status)
+	_, _ = w.Write(this.body.Bytes())
 }
 
 func (this *MirrorMiddleware) GetToken() (result string, err error) {

@@ -28,8 +28,22 @@ empty user. Devices and hubs write it for the **owner**, device-groups for the
 **sync user**. The source answers the mirror user's own timestamps together with
 the ownerless ones.
 
+Besides the interval, two things start such a timestamp-checked pull: a write
+the mirror forwards to the source, and a `GET` the mirror answers with 404. For
+the latter the middleware in `lib/api/util/mgwmirror.go` holds the 404 back,
+pulls, and answers the request again from the database, so an entry created in
+the source since the last pull is found on the first read. If the pull takes
+longer than `MGW_MIRROR_MISS_PULL_TIMEOUT` (default `10s`, for example because
+the source is unreachable), the 404 is returned and the pull finishes in the
+background. All pulls of a mirror run one after another through
+`mgwmirror.Puller`. A caller waits for a pull that starts after its call, since
+a running pull may have passed the collection already; all callers arriving
+during a running pull share the one following pull, so a hanging source does
+not queue up a pull per request. A found entry starts no pull, even if the source changed or removed it, and
+neither does an empty listing.
+
 It follows that a change the mirror should see has to move one of those
-timestamps. Two things do not:
+timestamps, also for a not found read. Two things do not:
 
 - **A method that forgets it.** `RemoveDeviceGroup` did not set a timestamp
   until the change that introduced this document. Against such a source, deleted

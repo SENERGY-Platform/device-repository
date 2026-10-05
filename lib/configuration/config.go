@@ -114,11 +114,12 @@ type Config struct {
 
 	EnablePermResourceSyncOnStartup bool `json:"enable_perm_resource_sync_on_startup"`
 
-	AsMgwMirror             bool   `json:"as_mgw_mirror"`
-	MgwMirrorUserId         string `json:"mgw_mirror_user_id"`   //may be set by using MgwMirrorUserId
-	MgwCertManagerUrl       string `json:"mgw_cert_manager_url"` //used to get MgwMirrorUserId if not set
-	MgwMirrorSourceUrl      string `json:"mgw_mirror_source_url"`
-	MgwMirrorUpdateInterval string `json:"mgw_mirror_update_interval"`
+	AsMgwMirror              bool   `json:"as_mgw_mirror"`
+	MgwMirrorUserId          string `json:"mgw_mirror_user_id"`   //may be set by using MgwMirrorUserId
+	MgwCertManagerUrl        string `json:"mgw_cert_manager_url"` //used to get MgwMirrorUserId if not set
+	MgwMirrorSourceUrl       string `json:"mgw_mirror_source_url"`
+	MgwMirrorUpdateInterval  string `json:"mgw_mirror_update_interval"`
+	MgwMirrorMissPullTimeout string `json:"mgw_mirror_miss_pull_timeout"` //max wait for the pull a 404 on a mirror GET triggers, defaults to 10s
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

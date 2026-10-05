@@ -34,7 +34,7 @@ import (
 )
 
 // StartSourcePullWorker starts the initial and the timed pulls.
-// Other pulls (after forwarded writes) have to use the returned Puller as well,
+// Other pulls (after forwarded writes and not found reads) have to use the returned Puller as well,
 // so that no two pulls of the mirror run at the same time.
 func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config configuration.Config, db database.Database) (*Puller, error) {
 	if config.MgwMirrorSourceUrl == "" {
@@ -43,6 +43,12 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 	interval, err := time.ParseDuration(config.MgwMirrorUpdateInterval)
 	if err != nil {
 		return nil, err
+	}
+	if config.MgwMirrorMissPullTimeout != "" {
+		_, err = time.ParseDuration(config.MgwMirrorMissPullTimeout)
+		if err != nil {
+			return nil, fmt.Errorf("invalid mgw_mirror_miss_pull_timeout: %w", err)
+		}
 	}
 	puller := NewPuller(config, db)
 	go puller.Pull(false)

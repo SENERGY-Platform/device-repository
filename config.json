@@ -73,5 +73,6 @@
     "mgw_mirror_user_id": "",
     "mgw_cert_manager_url": "",
     "mgw_mirror_source_url": "",
-    "mgw_mirror_update_interval": ""
+    "mgw_mirror_update_interval": "",
+    "mgw_mirror_miss_pull_timeout": "10s"
 }
