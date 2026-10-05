@@ -18,9 +18,6 @@ package controller
 
 import (
 	"fmt"
-
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/database"
 )
 
 func (this *Controller) MirrorUpdate() error {
@@ -30,10 +27,10 @@ func (this *Controller) MirrorUpdate() error {
 	if this.mirrorPullCallback == nil {
 		return fmt.Errorf("missing mirror pull callback")
 	}
-	this.mirrorPullCallback(this.config, this.db, true)
+	this.mirrorPullCallback(true)
 	return nil
 }
 
-func (this *Controller) SetMirrorPullCallback(pull func(config configuration.Config, db database.Database, checkLastUpdate bool)) {
+func (this *Controller) SetMirrorPullCallback(pull func(checkLastUpdate bool)) {
 	this.mirrorPullCallback = pull
 }

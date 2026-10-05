@@ -98,7 +98,7 @@ type Controller struct {
 	config              configuration.Config
 	permissionsV2Client client.Client
 	logger              *slog.Logger
-	mirrorPullCallback  func(config configuration.Config, db database.Database, checkLastUpdate bool)
+	mirrorPullCallback  func(checkLastUpdate bool)
 }
 
 func getTimeoutContext() (context.Context, context.CancelFunc) {

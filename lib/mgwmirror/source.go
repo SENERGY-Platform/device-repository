@@ -33,15 +33,19 @@ import (
 	"github.com/SENERGY-Platform/service-commons/pkg/util"
 )
 
-func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config configuration.Config, db database.Database) error {
+// StartSourcePullWorker starts the initial and the timed pulls.
+// Other pulls (after forwarded writes) have to use the returned Puller as well,
+// so that no two pulls of the mirror run at the same time.
+func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config configuration.Config, db database.Database) (*Puller, error) {
 	if config.MgwMirrorSourceUrl == "" {
-		return fmt.Errorf("mgwmirror source url not set")
+		return nil, fmt.Errorf("mgwmirror source url not set")
 	}
 	interval, err := time.ParseDuration(config.MgwMirrorUpdateInterval)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	go Pull(config, db, false)
+	puller := NewPuller(config, db)
+	go puller.Pull(false)
 	ticker := time.NewTicker(interval)
 	if wg != nil {
 		wg.Add(1)
@@ -56,14 +60,15 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				Pull(config, db, true)
+				puller.Pull(true)
 			}
 		}
 	}()
-	return nil
+	return puller, nil
 }
 
-func Pull(config configuration.Config, db database.Database, checkLastUpdate bool) {
+// pull may only run through Puller.Pull(): two pulls of the same mirror must not run at the same time
+func pull(config configuration.Config, db database.Database, checkLastUpdate bool) {
 	config.GetLogger().Info("start mgw mirror pull")
 	defer config.GetLogger().Info("finished mgw mirror pull")
 	c := client.NewClient(config.MgwMirrorSourceUrl, nil)

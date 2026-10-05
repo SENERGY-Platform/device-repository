@@ -111,12 +111,12 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 	ctrl.StartSyncLoop(ctx, syncInterval, syncLockDuration)
 
 	if conf.AsMgwMirror {
-		err = mgwmirror.StartSourcePullWorker(ctx, wg, conf, db)
+		puller, err := mgwmirror.StartSourcePullWorker(ctx, wg, conf, db)
 		if err != nil {
 			conf.GetLogger().Error("unable to start mgw mirror source pull worker", "error", err)
 			return err
 		}
-		ctrl.SetMirrorPullCallback(mgwmirror.Pull)
+		ctrl.SetMirrorPullCallback(puller.Pull)
 	}
 
 	err = api.Start(ctx, conf, ctrl)
