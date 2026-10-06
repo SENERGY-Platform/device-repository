@@ -39,6 +39,14 @@ func TestGeneratedDeviceGroups(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
+	//fid counts as a controlling function, which is combined with its aspect in the generated
+	//criteria, and validating those criteria needs the aspect to exist
+	_, err, _ = c.SetAspect(AdminToken, models.Aspect{Id: "aid", Name: "aid"})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
 		Id:   devicetype1id,
 		Name: devicetype1name,

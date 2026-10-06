@@ -394,6 +394,13 @@ func TestDeviceGroupCriteriaUpdateOnDeviceTypeUpdate(t *testing.T) {
 				AspectId:      "",
 				DeviceClassId: "urn:test:device-class:environmental-sensor",
 			}, {
+				//the functions of this test carry no measuring prefix and count as controlling, which
+				//are combined with their aspects next to their device-class
+				Interaction: models.REQUEST,
+				FunctionId:  "urn:test:function:get-humidity",
+				AspectId:    "urn:test:aspect:environmental",
+				AspectIds:   []string{"urn:test:aspect:environmental"},
+			}, {
 				Interaction:   models.REQUEST,
 				FunctionId:    "urn:test:function:get-temperature",
 				AspectId:      "",
@@ -421,6 +428,13 @@ func TestDeviceGroupCriteriaUpdateOnDeviceTypeUpdate(t *testing.T) {
 				FunctionId:    "urn:test:function:get-humidity",
 				AspectId:      "",
 				DeviceClassId: "urn:test:device-class:environmental-sensor",
+			}, {
+				//the functions of this test carry no measuring prefix and count as controlling, which
+				//are combined with their aspects next to their device-class
+				Interaction: models.REQUEST,
+				FunctionId:  "urn:test:function:get-humidity",
+				AspectId:    "urn:test:aspect:environmental",
+				AspectIds:   []string{"urn:test:aspect:environmental"},
 			}, {
 				Interaction:   models.REQUEST,
 				FunctionId:    "urn:test:function:get-temperature",

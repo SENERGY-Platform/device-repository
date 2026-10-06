@@ -216,7 +216,7 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 			if current.FunctionId != "" {
 				for _, interaction := range interactions {
 					if isMeasuringFunctionId(current.FunctionId) {
-						err = this.addMeasuringDeviceGroupCriteria(ctx, current.FunctionId, current.AspectIds, interaction, resultSet)
+						err = this.addAspectDeviceGroupCriteria(ctx, current.FunctionId, current.AspectIds, interaction, resultSet)
 						if err != nil {
 							return result, err, http.StatusInternalServerError
 						}
@@ -227,6 +227,16 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 							Interaction:   interaction,
 						}
 						resultSet[criteria.Short()] = criteria
+						//a controlling function is combined with its aspects as well, next to the
+						//device-class. Without an aspect the device-class criteria above is all there
+						//is: the aspect-less criteria a measuring variable gets would only add a
+						//function-only criteria nobody asked for to every existing group.
+						if len(current.AspectIds) > 0 {
+							err = this.addAspectDeviceGroupCriteria(ctx, current.FunctionId, current.AspectIds, interaction, resultSet)
+							if err != nil {
+								return result, err, http.StatusInternalServerError
+							}
+						}
 					}
 				}
 			}
@@ -241,8 +251,10 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 	return result, nil, http.StatusOK
 }
 
-// addMeasuringDeviceGroupCriteria adds the criteria of one content variable of a measuring
-// function to the criteria set of a device.
+// addAspectDeviceGroupCriteria adds the aspect criteria of one content variable to the
+// criteria set of a device. A measuring function gets only these; a controlling function gets
+// them next to its device-class criteria. Neither carries a device-class, so a query naming
+// function and aspect finds both kinds of function the same way.
 //
 // An aspect criteria covers the subtree of its node, so a variable is found by a query naming
 // an ancestor of one of its aspects: a variable carrying [q r] is found by a query over [p r]
@@ -255,9 +267,9 @@ func (this *Controller) getDeviceGroupCriteriaOfDevice(device models.Device) (re
 // The single aspects are added next to those combinations, because they carry the
 // intersection: GetDeviceGroupCriteria intersects the criteria of the devices by Short(), so
 // a group of a device with [a b] and one with [a] keeps a only if a stands alone.
-func (this *Controller) addMeasuringDeviceGroupCriteria(ctx context.Context, functionId string, aspectIds []string, interaction models.Interaction, resultSet map[string]models.DeviceGroupFilterCriteria) (err error) {
+func (this *Controller) addAspectDeviceGroupCriteria(ctx context.Context, functionId string, aspectIds []string, interaction models.Interaction, resultSet map[string]models.DeviceGroupFilterCriteria) (err error) {
 	add := func(aspectIds []string) {
-		criteria := measuringDeviceGroupCriteria(functionId, aspectIds, interaction)
+		criteria := aspectDeviceGroupCriteria(functionId, aspectIds, interaction)
 		resultSet[criteria.Short()] = criteria
 	}
 	aspectOptions := make([][]string, 0, len(aspectIds))
@@ -297,10 +309,10 @@ func aspectIdCombinations(aspectOptions [][]string) (result [][]string) {
 	return result
 }
 
-// measuringDeviceGroupCriteria builds a criteria over an aspect list. The list is sorted, so
+// aspectDeviceGroupCriteria builds a criteria over an aspect list. The list is sorted, so
 // that the same set of aspects always renders the same Short(). The deprecated AspectId can
 // only carry one aspect and gets the alphabetically first, like everywhere else.
-func measuringDeviceGroupCriteria(functionId string, aspectIds []string, interaction models.Interaction) models.DeviceGroupFilterCriteria {
+func aspectDeviceGroupCriteria(functionId string, aspectIds []string, interaction models.Interaction) models.DeviceGroupFilterCriteria {
 	criteria := models.DeviceGroupFilterCriteria{
 		FunctionId:  functionId,
 		Interaction: interaction,

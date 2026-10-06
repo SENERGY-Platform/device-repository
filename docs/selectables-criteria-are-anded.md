@@ -105,7 +105,7 @@ kinds of criterion. Both are load bearing and they say different things:
 
 - **Every combination** of the variable's aspects, where each aspect is replaced by
   itself or by one of its ancestors — the cartesian product built by
-  `addMeasuringDeviceGroupCriteria` and `aspectIdCombinations`. Each of these
+  `addAspectDeviceGroupCriteria` and `aspectIdCombinations`. Each of these
   records that **one** variable carries all the aspects of the combination, which
   is exactly what a query over several aspects asks for. An aspect criterion covers
   the subtree of its node, so a variable carrying `[q r]` is genuinely found by a
@@ -133,6 +133,17 @@ The product grows with the number of aspects on one variable to the power of the
 depth in the hierarchy. That is small for the one or two aspects a variable
 realistically carries, and it is the reason the aspects of a variable are not a
 place to be generous.
+
+A **controlling** function gets the same aspect criteria, without a device-class,
+and additionally keeps its `function_id` + `device_class_id` criterion. Both kinds
+stay because they answer different queries: a controlling function used to be
+asked for together with a device-class only, and functions got generic enough that
+it is now asked for together with aspects too. A controlling variable without any
+aspect gets only the device-class criterion, not the aspect-less one a measuring
+variable gets — that one would add a function-only criterion to every existing
+group that nobody asked for. Groups stored before this have no aspect criteria
+for their controlling functions; `POST /device-groups/criteria/recompute` rebuilds
+them.
 
 Stored groups written before this carry only the single ones.
 `runGeneratedDeviceGroupCriteriaMigration` rebuilds the criteria of the **auto
