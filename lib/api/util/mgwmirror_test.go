@@ -132,3 +132,102 @@ func TestMirrorMiddlewareNotFoundPull(t *testing.T) {
 		}
 	})
 }
+
+func TestMirrorMiddlewareNotFoundPullBackoff(t *testing.T) {
+	config := configuration.Config{MgwMirrorUserId: "user", MgwMirrorMissPullTimeout: "200ms", MgwMirrorMissPullBackoff: "1h"}
+	pulls := atomic.Int64{}
+	found := &atomic.Bool{}
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/devices/d1" && found.Load() {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	})
+	m := NewMirrorMiddleware(handler, config, pullFunc(func() error {
+		pulls.Add(1)
+		return nil
+	}))
+	get := func(path string) int {
+		resp := httptest.NewRecorder()
+		m.ServeHTTP(resp, httptest.NewRequest(http.MethodGet, path, nil))
+		return resp.Code
+	}
+
+	if code := get("/devices/d1"); code != http.StatusNotFound || pulls.Load() != 1 {
+		t.Fatal(code, pulls.Load())
+	}
+	if code := get("/devices/d1"); code != http.StatusNotFound || pulls.Load() != 1 {
+		t.Fatal("repeated miss must not pull during the backoff", code, pulls.Load())
+	}
+	if code := get("/devices/d1?foo=bar"); code != http.StatusNotFound || pulls.Load() != 2 {
+		t.Fatal("other request must pull", code, pulls.Load())
+	}
+	if code := get("/devices/d2"); code != http.StatusNotFound || pulls.Load() != 3 {
+		t.Fatal("other request must pull", code, pulls.Load())
+	}
+
+	//e.g. brought in by the timed pull
+	found.Store(true)
+	if code := get("/devices/d1"); code != http.StatusOK || pulls.Load() != 3 {
+		t.Fatal(code, pulls.Load())
+	}
+	found.Store(false)
+	if code := get("/devices/d1"); code != http.StatusNotFound || pulls.Load() != 4 {
+		t.Fatal("found response must reset the backoff", code, pulls.Load())
+	}
+}
+
+func TestMissBackoff(t *testing.T) {
+	now := time.Now()
+	b := newMissBackoff(10*time.Second, time.Minute)
+	b.now = func() time.Time { return now }
+	advance := func(d time.Duration) { now = now.Add(d) }
+
+	if !b.pullAllowed("a") {
+		t.Fatal("unknown key must be allowed")
+	}
+
+	//backoff doubles per miss: 10s, 20s, 40s, 60s (max), 60s
+	for _, expected := range []time.Duration{10 * time.Second, 20 * time.Second, 40 * time.Second, time.Minute, time.Minute} {
+		b.missed("a")
+		advance(expected - time.Millisecond)
+		if b.pullAllowed("a") {
+			t.Fatal("allowed before", expected)
+		}
+		advance(time.Millisecond)
+		if !b.pullAllowed("a") {
+			t.Fatal("not allowed after", expected)
+		}
+	}
+
+	t.Run("found resets", func(t *testing.T) {
+		b.missed("a")
+		b.found("a")
+		if !b.pullAllowed("a") {
+			t.Fatal("not allowed after found")
+		}
+		b.missed("a")
+		advance(10 * time.Second)
+		if !b.pullAllowed("a") {
+			t.Fatal("backoff not reset by found")
+		}
+	})
+
+	t.Run("long pause resets and gets swept", func(t *testing.T) {
+		b.missed("a") //20s
+		b.missed("b") //10s
+		advance(20*time.Second + time.Minute + time.Millisecond)
+		b.missed("c") //sweeps a and b
+		if _, ok := b.entries["a"]; ok {
+			t.Error("a not swept")
+		}
+		if _, ok := b.entries["b"]; ok {
+			t.Error("b not swept")
+		}
+		b.missed("a")
+		if b.entries["a"].backoff != 10*time.Second {
+			t.Error("backoff not reset after pause", b.entries["a"].backoff)
+		}
+	})
+}

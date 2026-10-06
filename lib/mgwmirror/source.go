@@ -44,10 +44,16 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 	if err != nil {
 		return nil, err
 	}
-	if config.MgwMirrorMissPullTimeout != "" {
-		_, err = time.ParseDuration(config.MgwMirrorMissPullTimeout)
-		if err != nil {
-			return nil, fmt.Errorf("invalid mgw_mirror_miss_pull_timeout: %w", err)
+	for name, value := range map[string]string{
+		"mgw_mirror_miss_pull_timeout":     config.MgwMirrorMissPullTimeout,
+		"mgw_mirror_miss_pull_backoff":     config.MgwMirrorMissPullBackoff,
+		"mgw_mirror_miss_pull_max_backoff": config.MgwMirrorMissPullMaxBackoff,
+	} {
+		if value != "" {
+			_, err = time.ParseDuration(value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid %v: %w", name, err)
+			}
 		}
 	}
 	puller := NewPuller(config, db)

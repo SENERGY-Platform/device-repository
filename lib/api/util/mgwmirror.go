@@ -23,6 +23,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
@@ -34,17 +35,32 @@ type MirrorPull interface {
 }
 
 const defaultMissPullTimeout = 10 * time.Second
+const defaultMissPullBackoff = 10 * time.Second
+const defaultMissPullMaxBackoff = 5 * time.Minute
 
 func NewMirrorMiddleware(handler http.Handler, config configuration.Config, pull MirrorPull) *MirrorMiddleware {
-	missPullTimeout := defaultMissPullTimeout
-	if config.MgwMirrorMissPullTimeout != "" {
-		//validated by mgwmirror.StartSourcePullWorker()
-		timeout, err := time.ParseDuration(config.MgwMirrorMissPullTimeout)
-		if err == nil {
-			missPullTimeout = timeout
-		}
+	//durations are validated by mgwmirror.StartSourcePullWorker()
+	return &MirrorMiddleware{
+		handler:         handler,
+		config:          config,
+		pull:            pull,
+		missPullTimeout: durationOrDefault(config.MgwMirrorMissPullTimeout, defaultMissPullTimeout),
+		missBackoff: newMissBackoff(
+			durationOrDefault(config.MgwMirrorMissPullBackoff, defaultMissPullBackoff),
+			durationOrDefault(config.MgwMirrorMissPullMaxBackoff, defaultMissPullMaxBackoff),
+		),
 	}
-	return &MirrorMiddleware{handler: handler, config: config, pull: pull, missPullTimeout: missPullTimeout}
+}
+
+func durationOrDefault(value string, def time.Duration) time.Duration {
+	if value == "" {
+		return def
+	}
+	result, err := time.ParseDuration(value)
+	if err != nil {
+		return def
+	}
+	return result
 }
 
 type MirrorMiddleware struct {
@@ -53,6 +69,7 @@ type MirrorMiddleware struct {
 	token           string
 	pull            MirrorPull
 	missPullTimeout time.Duration
+	missBackoff     *missBackoff
 }
 
 func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -119,10 +136,17 @@ func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 // The pull checks the last-update timestamps of the source, so a miss without changes in the source costs one request.
 // If the pull takes longer than missPullTimeout (e.g. because the source is unreachable), the first 404 is returned
 // and the pull continues in the background.
+// A request that stays not found after its pull may pull again only after a backoff, see missBackoff.
 func (this *MirrorMiddleware) serveGetWithMissPull(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.RequestURI()
 	first := newBufferedResponse()
 	this.handler.ServeHTTP(first, r)
 	if first.status != http.StatusNotFound {
+		this.missBackoff.found(key)
+		first.writeTo(w)
+		return
+	}
+	if !this.missBackoff.pullAllowed(key) {
 		first.writeTo(w)
 		return
 	}
@@ -134,15 +158,90 @@ func (this *MirrorMiddleware) serveGetWithMissPull(w http.ResponseWriter, r *htt
 	case err := <-done:
 		if err != nil {
 			this.config.GetLogger().Warn("unable to update mirror after not found", "url", r.URL.String(), "error", err)
+			this.missBackoff.missed(key)
 			first.writeTo(w)
 			return
 		}
 	case <-time.After(this.missPullTimeout):
 		this.config.GetLogger().Warn("mirror update after not found exceeded timeout --> respond with not found", "url", r.URL.String(), "timeout", this.missPullTimeout.String())
+		this.missBackoff.missed(key)
 		first.writeTo(w)
 		return
 	}
-	this.handler.ServeHTTP(w, r)
+	second := newBufferedResponse()
+	this.handler.ServeHTTP(second, r)
+	if second.status == http.StatusNotFound {
+		this.missBackoff.missed(key)
+	} else {
+		this.missBackoff.found(key)
+	}
+	second.writeTo(w)
+}
+
+// missBackoff limits the pulls of not found reads, so that a client repeating a read of a missing entry
+// does not send a request to the source each time.
+// After a pull that did not find the entry (or failed, or exceeded the timeout), the same request may pull again
+// only after a backoff, which doubles with every further miss up to max.
+// A found response resets the request. So does a pause of more than max after the backoff ended,
+// which also bounds the memory: such entries are swept.
+type missBackoff struct {
+	initial   time.Duration
+	max       time.Duration
+	now       func() time.Time
+	mux       sync.Mutex
+	entries   map[string]missBackoffEntry
+	lastSweep time.Time
+}
+
+type missBackoffEntry struct {
+	backoff time.Duration
+	until   time.Time //no pull before this time
+}
+
+func newMissBackoff(initial time.Duration, max time.Duration) *missBackoff {
+	return &missBackoff{initial: initial, max: max, now: time.Now, entries: map[string]missBackoffEntry{}}
+}
+
+func (this *missBackoff) pullAllowed(key string) bool {
+	this.mux.Lock()
+	defer this.mux.Unlock()
+	entry, ok := this.entries[key]
+	return !ok || !this.now().Before(entry.until)
+}
+
+func (this *missBackoff) missed(key string) {
+	this.mux.Lock()
+	defer this.mux.Unlock()
+	now := this.now()
+	this.sweep(now)
+	backoff := this.initial
+	if entry, ok := this.entries[key]; ok && !this.expired(entry, now) {
+		backoff = min(entry.backoff*2, this.max)
+	}
+	this.entries[key] = missBackoffEntry{backoff: backoff, until: now.Add(backoff)}
+}
+
+func (this *missBackoff) found(key string) {
+	this.mux.Lock()
+	defer this.mux.Unlock()
+	delete(this.entries, key)
+}
+
+func (this *missBackoff) expired(entry missBackoffEntry, now time.Time) bool {
+	return now.After(entry.until.Add(this.max))
+}
+
+// sweep removes expired entries, at most once per max
+func (this *missBackoff) sweep(now time.Time) {
+	if now.Sub(this.lastSweep) < this.max {
+		return
+	}
+	this.lastSweep = now
+	for key, entry := range this.entries {
+		if this.expired(entry, now) {
+			delete(this.entries, key)
+		}
+	}
 }
 
 type bufferedResponse struct {

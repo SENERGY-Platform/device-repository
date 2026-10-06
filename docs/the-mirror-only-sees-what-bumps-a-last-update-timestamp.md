@@ -42,6 +42,17 @@ during a running pull share the one following pull, so a hanging source does
 not queue up a pull per request. A found entry starts no pull, even if the source changed or removed it, and
 neither does an empty listing.
 
+A read that is still not found after its pull (or whose pull failed or timed
+out) may pull again only after a backoff, so a client polling a missing entry
+does not send a request to the source each time. The backoff is kept per
+request URI including the query, starts at `MGW_MIRROR_MISS_PULL_BACKOFF`
+(default `10s`) and doubles with every further miss up to
+`MGW_MIRROR_MISS_PULL_MAX_BACKOFF` (default `5m`). During the backoff the 404 is
+answered from the database alone. An entry created in the source in that time
+becomes visible with the next pull of any kind: the interval, a forwarded write,
+or the not found read of another request. A found response resets the backoff
+of its request, as does a pause longer than the maximum after the backoff ended.
+
 It follows that a change the mirror should see has to move one of those
 timestamps, also for a not found read. Two things do not:
 

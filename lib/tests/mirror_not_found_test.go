@@ -121,6 +121,7 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 	config.MgwCertManagerUrl = certManagerMockServer.URL
 	config.AsMgwMirror = true
 	config.MgwMirrorUpdateInterval = "1h"
+	config.MgwMirrorMissPullBackoff = "5s"
 
 	sourceClient := client.NewClient("http://"+repoIp+":8080", nil)
 	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, nil)
@@ -160,6 +161,38 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			return
 		}
 		if result.Name != "p1" {
+			t.Errorf("unexpected result: %#v", result)
+		}
+	})
+
+	t.Run("repeated not found read waits for the backoff", func(t *testing.T) {
+		_, err, code := mirrorClient.ReadProtocol("p2", "")
+		if err == nil || code != http.StatusNotFound {
+			t.Error("expected 404, got", code, err)
+			return
+		}
+		_, err, _ = sourceClient.SetProtocol(client.InternalAdminToken, models.Protocol{
+			Id:               "p2",
+			Name:             "p2",
+			Handler:          "p2",
+			ProtocolSegments: []models.ProtocolSegment{{Name: "ps2"}},
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		_, err, code = mirrorClient.ReadProtocol("p2", "")
+		if err == nil || code != http.StatusNotFound {
+			t.Error("expected 404 during the backoff, got", code, err)
+			return
+		}
+		time.Sleep(5 * time.Second)
+		result, err, code := mirrorClient.ReadProtocol("p2", "")
+		if err != nil {
+			t.Error(code, err)
+			return
+		}
+		if result.Name != "p2" {
 			t.Errorf("unexpected result: %#v", result)
 		}
 	})

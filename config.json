@@ -74,5 +74,7 @@
     "mgw_cert_manager_url": "",
     "mgw_mirror_source_url": "",
     "mgw_mirror_update_interval": "",
-    "mgw_mirror_miss_pull_timeout": "10s"
+    "mgw_mirror_miss_pull_timeout": "10s",
+    "mgw_mirror_miss_pull_backoff": "10s",
+    "mgw_mirror_miss_pull_max_backoff": "5m"
 }
