@@ -29,6 +29,7 @@ import (
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
+	"github.com/SENERGY-Platform/service-commons/pkg/util"
 )
 
 const FilterDevicesOfGroupByAccess = true
@@ -596,13 +597,113 @@ func (this *Controller) UpdateDeviceGroupCriteria(dg models.DeviceGroup) (err er
 		this.config.GetLogger().Warn("tried to update unknown device-group criteria")
 		return nil
 	}
-	dg.Criteria, err, _ = this.GetDeviceGroupCriteria(dg.DeviceIds)
+	dg, err = this.withCurrentDeviceGroupCriteria(dg)
 	if err != nil {
 		return err
+	}
+	return this.setDeviceGroup(dg, user)
+}
+
+func (this *Controller) withCurrentDeviceGroupCriteria(dg models.DeviceGroup) (result models.DeviceGroup, err error) {
+	dg.Criteria, err, _ = this.GetDeviceGroupCriteria(dg.DeviceIds)
+	if err != nil {
+		return dg, err
 	}
 	slices.SortFunc(dg.Criteria, func(a, b models.DeviceGroupFilterCriteria) int {
 		return strings.Compare(a.Short(), b.Short())
 	})
 	dg.SetShortCriteria()
-	return this.setDeviceGroup(dg, user)
+	return dg, nil
+}
+
+// RecomputeDeviceGroupCriteria rebuilds the criteria of the device-groups with the given ids,
+// or of every device-group if ids is nil, from the current device-types of their devices.
+// A device-type write already does this for the groups that contain one of its devices; this
+// is the manual trigger for criteria that went stale without such a write (ref SNRGY-4861).
+// It runs in the background because the generated groups alone are one per device, and
+// answers with 202 once started. Progress and result are only logged.
+func (this *Controller) RecomputeDeviceGroupCriteria(token string, ids []string) (err error, code int) {
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("only admins may recompute device-group criteria"), http.StatusForbidden
+	}
+	//guards this instance only; a second instance would do the same writes once more, which
+	//is harmless because a run writes nothing that is already current
+	if !this.deviceGroupCriteriaRecomputeRunning.CompareAndSwap(false, true) {
+		return errors.New("a recompute of device-group criteria is already running"), http.StatusConflict
+	}
+	go func() {
+		defer this.deviceGroupCriteriaRecomputeRunning.Store(false)
+		this.recomputeDeviceGroupCriteria(ids)
+	}()
+	return nil, http.StatusAccepted
+}
+
+func (this *Controller) recomputeDeviceGroupCriteria(ids []string) {
+	logger := this.config.GetLogger()
+	logger.Info("start device-group criteria recompute", "ids", ids)
+	checked, updated, failed := 0, 0, 0
+	for dg, err := range util.IterBatch(500, func(limit int64, offset int64) ([]models.DeviceGroup, error) {
+		ctx, cancel := getTimeoutContext()
+		defer cancel()
+		list, _, err := this.db.ListDeviceGroups(ctx, model.DeviceGroupListOptions{
+			Ids:    ids,
+			Limit:  limit,
+			Offset: offset,
+			SortBy: "id.asc",
+		})
+		return list, err
+	}) {
+		if err != nil {
+			logger.Error("unable to list device-groups for criteria recompute", "error", err, "checked", checked, "updated", updated, "failed", failed)
+			return
+		}
+		checked++
+		changed, err := this.recomputeCriteriaOfDeviceGroup(dg)
+		if err != nil {
+			failed++
+			logger.Warn("unable to recompute device-group criteria", "error", err, "deviceGroupId", dg.Id)
+			continue
+		}
+		if changed {
+			updated++
+		}
+	}
+	if failed > 0 {
+		logger.Error("device-group criteria recompute finished with failures", "checked", checked, "updated", updated, "failed", failed)
+		return
+	}
+	logger.Info("device-group criteria recompute finished", "checked", checked, "updated", updated)
+}
+
+// recomputeCriteriaOfDeviceGroup writes the group only if its criteria changed, so a repeated
+// run publishes nothing for the groups an earlier one already brought up to date.
+func (this *Controller) recomputeCriteriaOfDeviceGroup(dg models.DeviceGroup) (changed bool, err error) {
+	user, exists, err := this.db.GetDeviceGroupSyncUser(context.Background(), dg.Id)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		return false, nil
+	}
+	current, err := this.withCurrentDeviceGroupCriteria(dg)
+	if err != nil {
+		return false, err
+	}
+	if slices.Equal(sortedCriteriaShorts(dg.Criteria), current.CriteriaShort) && slices.Equal(slices.Sorted(slices.Values(dg.CriteriaShort)), current.CriteriaShort) {
+		return false, nil
+	}
+	return true, this.setDeviceGroup(current, user)
+}
+
+func sortedCriteriaShorts(criteria []models.DeviceGroupFilterCriteria) []string {
+	result := make([]string, len(criteria))
+	for i, c := range criteria {
+		result[i] = c.Short()
+	}
+	slices.Sort(result)
+	return result
 }

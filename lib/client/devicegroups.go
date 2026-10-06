@@ -125,6 +125,19 @@ func (c *Client) ValidateDeviceGroup(token string, deviceGroup models.DeviceGrou
 	return c.validateWithToken(token, "/device-groups", deviceGroup)
 }
 
+func (c *Client) RecomputeDeviceGroupCriteria(token string, ids []string) (err error, code int) {
+	endpoint := c.baseUrl + "/device-groups/criteria/recompute"
+	if ids != nil {
+		endpoint += "?" + url.Values{"ids": {strings.Join(ids, ",")}}.Encode()
+	}
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
 func (c *Client) ValidateDeviceGroupDelete(token string, id string) (err error, code int) {
 	return c.validateDeleteWithToken(token, "/device-groups/"+id)
 }

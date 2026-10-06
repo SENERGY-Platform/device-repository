@@ -35,7 +35,7 @@ definitions:
           $ref: '#/definitions/model.PermissionsMap'
         type: object
     type: object
-  github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport:
+  github_com_SENERGY-Platform_device-repository_v3_lib_model.ImportExport:
     properties:
       aspect_classes:
         items:
@@ -2498,6 +2498,35 @@ paths:
       summary: set device-group
       tags:
       - device-groups
+  /device-groups/criteria/recompute:
+    post:
+      description: rebuilds the criteria of the device-groups from the current device-types
+        of their devices; only for admins; runs in the background and answers once
+        started, progress and result are logged; a group whose criteria are already
+        current is not written
+      parameters:
+      - description: 'comma-separated list of device-group ids; default: all device-groups'
+        in: query
+        name: ids
+        type: string
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "409":
+          description: a recompute is already running on this instance
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: recompute device-group criteria
+      tags:
+      - device-groups
   /device-types:
     post:
       description: create device-type
@@ -3118,7 +3147,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport'
+            $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_v3_lib_model.ImportExport'
         "400":
           description: Bad Request
         "401":
@@ -4284,7 +4313,7 @@ paths:
         name: message
         required: true
         schema:
-          $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport'
+          $ref: '#/definitions/github_com_SENERGY-Platform_device-repository_v3_lib_model.ImportExport'
       responses:
         "400":
           description: Bad Request

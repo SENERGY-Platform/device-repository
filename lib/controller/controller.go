@@ -20,6 +20,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
@@ -99,6 +100,8 @@ type Controller struct {
 	permissionsV2Client client.Client
 	logger              *slog.Logger
 	mirrorPullCallback  func(checkLastUpdate bool)
+
+	deviceGroupCriteriaRecomputeRunning atomic.Bool
 }
 
 func getTimeoutContext() (context.Context, context.CancelFunc) {

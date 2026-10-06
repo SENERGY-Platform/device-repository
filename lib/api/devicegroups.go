@@ -372,3 +372,35 @@ func (this *DeviceGroupEndpoints) Set(config configuration.Config, router *http.
 		return
 	})
 }
+
+// RecomputeCriteria godoc
+// @Summary      recompute device-group criteria
+// @Description  rebuilds the criteria of the device-groups from the current device-types of their devices; only for admins; runs in the background and answers once started, progress and result are logged; a group whose criteria are already current is not written
+// @Tags         device-groups
+// @Security Bearer
+// @Param        ids query string false "comma-separated list of device-group ids; default: all device-groups"
+// @Success      202
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      409 "a recompute is already running on this instance"
+// @Failure      500
+// @Router       /device-groups/criteria/recompute [POST]
+func (this *DeviceGroupEndpoints) RecomputeCriteria(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /device-groups/criteria/recompute", func(writer http.ResponseWriter, request *http.Request) {
+		var ids []string
+		if request.URL.Query().Has("ids") {
+			ids = []string{}
+			idsParam := strings.TrimSpace(request.URL.Query().Get("ids"))
+			if idsParam != "" {
+				ids = strings.Split(idsParam, ",")
+			}
+		}
+		err, code := control.RecomputeDeviceGroupCriteria(util.GetAuthToken(request), ids)
+		if err != nil {
+			http.Error(writer, err.Error(), code)
+			return
+		}
+		writer.WriteHeader(code)
+	})
+}

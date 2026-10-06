@@ -2247,6 +2247,48 @@ const docTemplatedevicerepository = `{
                 ]
             }
         },
+        "/device-groups/criteria/recompute": {
+            "post": {
+                "description": "rebuilds the criteria of the device-groups from the current device-types of their devices; only for admins; runs in the background and answers once started, progress and result are logged; a group whose criteria are already current is not written",
+                "tags": [
+                    "device-groups"
+                ],
+                "summary": "recompute device-group criteria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "comma-separated list of device-group ids; default: all device-groups",
+                        "name": "ids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "409": {
+                        "description": "a recompute is already running on this instance"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/device-groups/{id}": {
             "get": {
                 "description": "get device-group",
@@ -3342,7 +3384,7 @@ const docTemplatedevicerepository = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport"
+                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_v3_lib_model.ImportExport"
                         }
                     },
                     "400": {
@@ -5116,7 +5158,7 @@ const docTemplatedevicerepository = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport"
+                            "$ref": "#/definitions/github_com_SENERGY-Platform_device-repository_v3_lib_model.ImportExport"
                         }
                     }
                 ],
@@ -9005,7 +9047,7 @@ const docTemplatedevicerepository = `{
                 }
             }
         },
-        "github_com_SENERGY-Platform_device-repository_v2_lib_model.ImportExport": {
+        "github_com_SENERGY-Platform_device-repository_v3_lib_model.ImportExport": {
             "type": "object",
             "properties": {
                 "aspect_classes": {
