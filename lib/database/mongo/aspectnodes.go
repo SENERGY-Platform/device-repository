@@ -193,8 +193,17 @@ func (this *Mongo) ListAllAspectNodes(ctx context.Context) (result []models.Aspe
 
 // returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
 func (this *Mongo) ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.AspectNode, err error) {
+	return this.listAspectNodesWithFunctionType(ctx, false, ancestors, descendants)
+}
+
+// returns all aspects used in combination with controlling functions (usage may optionally be by its descendants or ancestors)
+func (this *Mongo) ListAspectNodesWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.AspectNode, err error) {
+	return this.listAspectNodesWithFunctionType(ctx, true, ancestors, descendants)
+}
+
+func (this *Mongo) listAspectNodesWithFunctionType(ctx context.Context, controlling bool, ancestors bool, descendants bool) (result []models.AspectNode, err error) {
 	aspectNodeIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.AspectIds[0], bson.M{
-		deviceTypeCriteriaIsControllingFunctionKey: false,
+		deviceTypeCriteriaIsControllingFunctionKey: controlling,
 		DeviceTypeCriteriaBson.AspectIds[0]:        bson.M{"$exists": true, "$ne": bson.A{}},
 	})
 	if err != nil {

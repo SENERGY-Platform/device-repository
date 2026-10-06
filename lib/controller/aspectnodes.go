@@ -100,6 +100,16 @@ func (this *Controller) GetAspectNodesWithMeasuringFunction(ancestors bool, desc
 	return
 }
 
+func (this *Controller) GetAspectNodesWithControllingFunction(ancestors bool, descendants bool) (result []models.AspectNode, err error, code int) {
+	code = http.StatusOK
+	ctx, _ := getTimeoutContext()
+	result, err = this.db.ListAspectNodesWithControllingFunction(ctx, ancestors, descendants)
+	if err != nil {
+		code = http.StatusInternalServerError
+	}
+	return
+}
+
 func (this *Controller) GetAspectNodesByIdList(ids []string) (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
 	ctx, _ := getTimeoutContext()

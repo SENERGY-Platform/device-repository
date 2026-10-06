@@ -128,7 +128,7 @@ func (this *AspectEndpoints) ListAspects(config configuration.Config, router *ht
 // @Tags         aspects
 // @Produce      json
 // @Security Bearer
-// @Param        function query string false "filter; only 'measuring-function' is a valid value; if set, returns aspects used in combination with measuring-functions"
+// @Param        function query string false "filter; 'measuring-function' or 'controlling-function'; if set, returns aspects used in combination with functions of this type"
 // @Param        ancestors query bool false "filter; in combination with 'function'; if true, returns also ancestor nodes of matching aspects"
 // @Param        descendants query bool false "filter; in combination with 'function'; if true, returns also descendant nodes of matching aspects"
 // @Success      200 {array}  models.Aspect
@@ -171,12 +171,15 @@ func (this *AspectEndpoints) List(config configuration.Config, router *http.Serv
 					return
 				}
 			}
-			if function == "measuring-function" {
+			switch function {
+			case "measuring-function":
 				result, err, errCode = control.GetAspectsWithMeasuringFunction(ancestors, descendants)
-				if err != nil {
-					http.Error(writer, err.Error(), errCode)
-					return
-				}
+			case "controlling-function":
+				result, err, errCode = control.GetAspectsWithControllingFunction(ancestors, descendants)
+			}
+			if err != nil {
+				http.Error(writer, err.Error(), errCode)
+				return
 			}
 		}
 
@@ -430,6 +433,58 @@ func (this *AspectEndpoints) GetMeasuringFunctions(config configuration.Config, 
 			}
 		}
 		result, err, errCode := control.GetAspectNodesMeasuringFunctions(id, ancestors, descendants)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(result)
+		if err != nil {
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
+		}
+		return
+	})
+}
+
+// GetControllingFunctions godoc
+// @Summary      list aspect controlling-functions
+// @Description  list controlling-functions used in combination with this aspect
+// @Tags         aspects
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Aspect Id"
+// @Success      200 {array}  models.Function
+// @Param        ancestors query bool false "filter; if true, returns also functions used in combination with ancestors of the input aspect"
+// @Param        descendants query bool false "filter; if true, returns also functions used in combination with descendants of the input aspect"
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /aspects/{id}/controlling-functions [GET]
+func (this *AspectEndpoints) GetControllingFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("GET /aspects/{id}/controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		ancestors := false
+		descendants := true
+		var err error
+		ancestorsQuery := request.URL.Query().Get("ancestors")
+		if ancestorsQuery != "" {
+			ancestors, err = strconv.ParseBool(ancestorsQuery)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		descendantsQuery := request.URL.Query().Get("descendants")
+		if descendantsQuery != "" {
+			descendants, err = strconv.ParseBool(descendantsQuery)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		result, err, errCode := control.GetAspectNodesControllingFunctions(id, ancestors, descendants)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

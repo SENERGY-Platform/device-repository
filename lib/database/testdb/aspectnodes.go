@@ -58,6 +58,9 @@ func (db *DB) ListAllAspectNodes(_ context.Context) ([]models.AspectNode, error)
 func (db *DB) ListAspectNodesWithMeasuringFunction(_ context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error) {
 	panic("not implemented")
 }
+func (db *DB) ListAspectNodesWithControllingFunction(_ context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error) {
+	panic("not implemented")
+}
 func (db *DB) ListAspectNodesByIdList(_ context.Context, ids []string) (result []models.AspectNode, err error) {
 	for _, node := range db.aspectNodes {
 		for _, id := range ids {

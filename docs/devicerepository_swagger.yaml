@@ -1165,8 +1165,8 @@ paths:
       deprecated: true
       description: deprecated list aspect-nodes; use GET /v2/aspect-nodes
       parameters:
-      - description: filter; only 'measuring-function' is a valid value; if set, returns
-          aspect-nodes used in combination with measuring-functions
+      - description: filter; 'measuring-function' or 'controlling-function'; if set,
+          returns aspect-nodes used in combination with functions of this type
         in: query
         name: function
         type: string
@@ -1235,6 +1235,49 @@ paths:
       summary: get aspect-node
       tags:
       - aspect-nodes
+  /aspect-nodes/{id}/controlling-functions:
+    get:
+      description: list controlling-functions used in combination with this aspect-node
+      parameters:
+      - description: Aspect-Node Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: filter; if true, returns also functions used in combination with
+          ancestors of the input aspect-node
+        in: query
+        name: ancestors
+        type: boolean
+      - description: filter; if true, returns also functions used in combination with
+          descendants of the input aspect-node
+        in: query
+        name: descendants
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list aspect-node controlling-functions
+      tags:
+      - aspect-nodes
   /aspect-nodes/{id}/measuring-functions:
     get:
       description: list measuring-functions used in combination with this aspect-node
@@ -1283,8 +1326,8 @@ paths:
       deprecated: true
       description: deprecated list aspects; use GET /v2/aspects
       parameters:
-      - description: filter; only 'measuring-function' is a valid value; if set, returns
-          aspects used in combination with measuring-functions
+      - description: filter; 'measuring-function' or 'controlling-function'; if set,
+          returns aspects used in combination with functions of this type
         in: query
         name: function
         type: string
@@ -1475,6 +1518,49 @@ paths:
       security:
       - Bearer: []
       summary: set aspect
+      tags:
+      - aspects
+  /aspects/{id}/controlling-functions:
+    get:
+      description: list controlling-functions used in combination with this aspect
+      parameters:
+      - description: Aspect Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: filter; if true, returns also functions used in combination with
+          ancestors of the input aspect
+        in: query
+        name: ancestors
+        type: boolean
+      - description: filter; if true, returns also functions used in combination with
+          descendants of the input aspect
+        in: query
+        name: descendants
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Function'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list aspect controlling-functions
       tags:
       - aspects
   /aspects/{id}/measuring-functions:

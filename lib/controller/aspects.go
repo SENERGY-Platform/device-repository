@@ -226,6 +226,16 @@ func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descenda
 	return
 }
 
+func (this *Controller) GetAspectsWithControllingFunction(ancestors bool, descendants bool) (result []models.Aspect, err error, code int) {
+	code = http.StatusOK
+	ctx, _ := getTimeoutContext()
+	result, err = this.db.ListAspectsWithControllingFunction(ctx, ancestors, descendants)
+	if err != nil {
+		code = http.StatusInternalServerError
+	}
+	return
+}
+
 func (this *Controller) ValidateAspect(aspect models.Aspect) (err error, code int) {
 	//the hierarchy's aspect-class has to be resolved before it can be checked; dry-run
 	//requests and imports reach this without passing SetAspect

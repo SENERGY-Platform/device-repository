@@ -64,6 +64,9 @@ func (db *DB) ListAllAspects(_ context.Context) ([]models.Aspect, error) {
 func (db *DB) ListAspectsWithMeasuringFunction(_ context.Context, ancestors bool, descendants bool) ([]models.Aspect, error) {
 	panic("not implemented")
 }
+func (db *DB) ListAspectsWithControllingFunction(_ context.Context, ancestors bool, descendants bool) ([]models.Aspect, error) {
+	panic("not implemented")
+}
 
 func (db *DB) AspectIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 

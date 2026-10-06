@@ -88,7 +88,8 @@ type Database interface {
 	ListAspects(ctx context.Context, listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error)
 	GetAspect(ctx context.Context, id string) (result models.Aspect, exists bool, err error)
 	ListAllAspects(ctx context.Context) ([]models.Aspect, error)
-	ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error) //returns all aspects used in combination with measuring functions
+	ListAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error)   //returns all aspects used in combination with measuring functions
+	ListAspectsWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error) //returns all aspects used in combination with controlling functions
 
 	SetAspect(ctx context.Context, aspect models.Aspect, syncHandler func(models.Aspect) error) error
 	RemoveAspect(ctx context.Context, id string, syncDeleteHandler func(models.Aspect) error) error
@@ -99,7 +100,8 @@ type Database interface {
 	RemoveAspectNodesByRootId(ctx context.Context, id string) error
 	GetAspectNode(ctx context.Context, id string) (result models.AspectNode, exists bool, err error)
 	ListAllAspectNodes(ctx context.Context) ([]models.AspectNode, error)
-	ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	ListAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error)   //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	ListAspectNodesWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error) //returns all aspects used in combination with controlling functions (usage may optionally be by its descendants or ancestors)
 	ListAspectNodesByIdList(ctx context.Context, ids []string) ([]models.AspectNode, error)
 
 	ListCharacteristics(ctx context.Context, options model.CharacteristicListOptions) ([]models.Characteristic, int64, error)
@@ -138,9 +140,10 @@ type Database interface {
 	ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error)
 	GetFunction(ctx context.Context, id string) (result models.Function, exists bool, err error)
 	ListAllFunctionsByType(ctx context.Context, rdfType string) ([]models.Function, error)
-	ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) ([]models.Function, error) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
-	ListAllFunctionsByDeviceClass(ctx context.Context, class string) ([]models.Function, error)                                        //returns all functions used in combination with given device-class
-	ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) ([]models.Function, error)                             //returns all controlling functions used in combination with given device-class
+	ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) ([]models.Function, error)   //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+	ListAllControllingFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) ([]models.Function, error) //returns all controlling functions used in combination with given aspect (and optional its descendants and ancestors)
+	ListAllFunctionsByDeviceClass(ctx context.Context, class string) ([]models.Function, error)                                          //returns all functions used in combination with given device-class
+	ListAllControllingFunctionsByDeviceClass(ctx context.Context, class string) ([]models.Function, error)                               //returns all controlling functions used in combination with given device-class
 
 	SetFunction(ctx context.Context, function models.Function, syncHandler func(models.Function) error) error
 	RemoveFunction(ctx context.Context, id string, syncDeleteHandler func(models.Function) error) error

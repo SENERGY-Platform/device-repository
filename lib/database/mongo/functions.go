@@ -251,6 +251,15 @@ func (this *Mongo) ListAllFunctionsByType(ctx context.Context, rdfType string) (
 
 // returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
 func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []models.Function, err error) {
+	return this.listAllFunctionsByAspectAndFunctionType(ctx, false, aspect, ancestors, descendants)
+}
+
+// returns all controlling functions used in combination with given aspect (and optional its descendants and ancestors)
+func (this *Mongo) ListAllControllingFunctionsByAspect(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []models.Function, err error) {
+	return this.listAllFunctionsByAspectAndFunctionType(ctx, true, aspect, ancestors, descendants)
+}
+
+func (this *Mongo) listAllFunctionsByAspectAndFunctionType(ctx context.Context, controlling bool, aspect string, ancestors bool, descendants bool) (result []models.Function, err error) {
 	var aspectFilter interface{}
 	if ancestors || descendants {
 		relatedIds := []string{aspect}
@@ -271,7 +280,7 @@ func (this *Mongo) ListAllMeasuringFunctionsByAspect(ctx context.Context, aspect
 		aspectFilter = aspect
 	}
 	functionIds, err := this.deviceTypeCriteriaCollection().Distinct(ctx, DeviceTypeCriteriaBson.FunctionId, bson.M{
-		deviceTypeCriteriaIsControllingFunctionKey: false,
+		deviceTypeCriteriaIsControllingFunctionKey: controlling,
 		DeviceTypeCriteriaBson.AspectIds[0]:        aspectFilter,
 		DeviceTypeCriteriaBson.FunctionId:          bson.M{"$exists": true, "$ne": ""},
 	})

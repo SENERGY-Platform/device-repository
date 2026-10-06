@@ -69,6 +69,9 @@ func (db *DB) ListAllFunctionsByType(_ context.Context, rdfType string) (result 
 func (db *DB) ListAllMeasuringFunctionsByAspect(_ context.Context, aspect string, ancestors bool, descendants bool) ([]models.Function, error) {
 	panic("not implemented")
 }
+func (db *DB) ListAllControllingFunctionsByAspect(_ context.Context, aspect string, ancestors bool, descendants bool) ([]models.Function, error) {
+	panic("not implemented")
+}
 
 func (db *DB) ListAllFunctionsByDeviceClass(_ context.Context, class string) ([]models.Function, error) {
 	panic("not implemented")

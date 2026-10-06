@@ -353,7 +353,7 @@ const docTemplatedevicerepository = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "filter; only 'measuring-function' is a valid value; if set, returns aspect-nodes used in combination with measuring-functions",
+                        "description": "filter; 'measuring-function' or 'controlling-function'; if set, returns aspect-nodes used in combination with functions of this type",
                         "name": "function",
                         "in": "query"
                     },
@@ -427,6 +427,70 @@ const docTemplatedevicerepository = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.AspectNode"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/aspect-nodes/{id}/controlling-functions": {
+            "get": {
+                "description": "list controlling-functions used in combination with this aspect-node",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aspect-nodes"
+                ],
+                "summary": "list aspect-node controlling-functions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect-Node Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with ancestors of the input aspect-node",
+                        "name": "ancestors",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with descendants of the input aspect-node",
+                        "name": "descendants",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
                         }
                     },
                     "400": {
@@ -530,7 +594,7 @@ const docTemplatedevicerepository = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "filter; only 'measuring-function' is a valid value; if set, returns aspects used in combination with measuring-functions",
+                        "description": "filter; 'measuring-function' or 'controlling-function'; if set, returns aspects used in combination with functions of this type",
                         "name": "function",
                         "in": "query"
                     },
@@ -810,6 +874,70 @@ const docTemplatedevicerepository = `{
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/aspects/{id}/controlling-functions": {
+            "get": {
+                "description": "list controlling-functions used in combination with this aspect",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aspects"
+                ],
+                "summary": "list aspect controlling-functions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aspect Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with ancestors of the input aspect",
+                        "name": "ancestors",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "filter; if true, returns also functions used in combination with descendants of the input aspect",
+                        "name": "descendants",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Function"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error"

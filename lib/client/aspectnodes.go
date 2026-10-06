@@ -91,6 +91,23 @@ func (c *Client) GetAspectNodesMeasuringFunctions(id string, ancestors bool, des
 	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
+func (c *Client) GetAspectNodesWithControllingFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes?function=controlling-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
+	}
+	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) GetAspectNodesControllingFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes/"+id+"/controlling-functions?ancestors="+
+		strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
+	}
+	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
 func (c *Client) GetAspectNodesWithFunction(function string, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes?function="+function+"&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {

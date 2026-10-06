@@ -75,7 +75,8 @@ type Controller interface {
 
 	ListAspects(listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int)
 	GetAspects() ([]models.Aspect, error, int)
-	GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int) //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int)   //returns all aspects used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	GetAspectsWithControllingFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int) //returns all aspects used in combination with controlling functions (usage may optionally be by its descendants or ancestors)
 	GetAspect(id string) (models.Aspect, error, int)
 	ValidateAspect(aspect models.Aspect) (err error, code int)
 	ValidateAspectDelete(id string) (err error, code int)
@@ -85,8 +86,10 @@ type Controller interface {
 	ListAspectNodes(listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int)
 	GetAspectNode(id string) (models.AspectNode, error, int)
 	GetAspectNodes() ([]models.AspectNode, error, int)
-	GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
-	GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int)                          //returns all aspect-nodes used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int)   //returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
+	GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int)                            //returns all aspect-nodes used in combination with measuring functions (usage may optionally be by its descendants or ancestors)
+	GetAspectNodesControllingFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) //returns all controlling functions used in combination with given aspect (and optional its descendants and ancestors)
+	GetAspectNodesWithControllingFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int)                          //returns all aspect-nodes used in combination with controlling functions (usage may optionally be by its descendants or ancestors)
 	GetAspectNodesByIdList(strings []string) ([]models.AspectNode, error, int)
 
 	ListCharacteristics(listOptions model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int)

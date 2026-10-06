@@ -100,6 +100,14 @@ func (c *Client) GetAspectsWithMeasuringFunction(ancestors bool, descendants boo
 	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
+func (c *Client) GetAspectsWithControllingFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int) {
+	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspects?function=controlling-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
+	}
+	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
 func (c *Client) GetAspect(id string) (models.Aspect, error, int) {
 	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspects/"+id, nil)
 	if err != nil {
