@@ -82,3 +82,64 @@ func TestMongo_GetHubsByDeviceId(t *testing.T) {
 		t.Fatal(hubs)
 	}
 }
+
+func TestMongo_SetHubConnectionStates_UpdatesStoredHubs(t *testing.T) {
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	conf, err := configuration.Load("../../../config.json")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	port, _, err := docker.MongoDB(ctx, wg)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	conf.MongoUrl = "mongodb://localhost:" + port
+	m, err := New(conf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	timeout, timeoutCancel := context.WithTimeout(ctx, 30*time.Second)
+	defer timeoutCancel()
+
+	for _, id := range []string{"hid1", "hid2"} {
+		err = m.SetHub(timeout, model.HubWithConnectionState{Hub: models.Hub{Id: id, Name: id}}, func(_ model.HubWithConnectionState) error { return nil })
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err = m.SetHubConnectionStates(timeout, map[string]string{
+		"hid1": models.ConnectionStateOnline,
+		"hid2": models.ConnectionStateOffline,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := map[string]models.ConnectionState{
+		"hid1": models.ConnectionStateOnline,
+		"hid2": models.ConnectionStateOffline,
+	}
+	for id, state := range expected {
+		hub, exists, err := m.GetHub(timeout, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !exists {
+			t.Fatalf("hub %v not found", id)
+		}
+		if hub.ConnectionState != state {
+			t.Errorf("hub %v: expected connection state %#v, got %#v", id, state, hub.ConnectionState)
+		}
+	}
+}
