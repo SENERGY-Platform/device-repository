@@ -277,7 +277,7 @@ func (this *Mongo) SetHubConnectionStates(ctx context.Context, states map[string
 			"$set": bson.M{HubBson.ConnectionState: state},
 		}))
 	}
-	_, err := this.deviceCollection().BulkWrite(ctx, writeModels)
+	_, err := this.hubCollection().BulkWrite(ctx, writeModels)
 	return err
 }
 
