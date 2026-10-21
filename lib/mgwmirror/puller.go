@@ -33,7 +33,7 @@ import (
 type Puller struct {
 	config configuration.Config
 	db     database.Database
-	pull   func(checkLastUpdate bool)
+	pull   func(checkLastUpdate bool, uncheckedCollections map[string]bool)
 
 	runMux sync.Mutex //held while a pull runs
 
@@ -42,30 +42,41 @@ type Puller struct {
 }
 
 type pendingPull struct {
-	checkLastUpdate bool
-	done            chan struct{}
+	checkLastUpdate      bool
+	uncheckedCollections map[string]bool
+	done                 chan struct{}
+}
+
+// add merges the request of a caller into the pull
+func (this *pendingPull) add(checkLastUpdate bool, uncheckedCollections []string) {
+	//a pull without timestamp check covers one with
+	this.checkLastUpdate = this.checkLastUpdate && checkLastUpdate
+	for _, collection := range uncheckedCollections {
+		this.uncheckedCollections[collection] = true
+	}
 }
 
 func NewPuller(config configuration.Config, db database.Database) *Puller {
 	result := &Puller{config: config, db: db}
-	result.pull = func(checkLastUpdate bool) {
-		pull(result.config, result.db, checkLastUpdate)
+	result.pull = func(checkLastUpdate bool, uncheckedCollections map[string]bool) {
+		pull(result.config, result.db, checkLastUpdate, uncheckedCollections)
 	}
 	return result
 }
 
 // Pull returns after a pull that started after the call has finished.
-func (this *Puller) Pull(checkLastUpdate bool) {
+// uncheckedCollections are pulled without timestamp check, even if checkLastUpdate is set.
+func (this *Puller) Pull(checkLastUpdate bool, uncheckedCollections ...string) {
 	this.pendingMux.Lock()
 	p := this.pending
 	if p != nil {
-		//a pull without timestamp check covers one with
-		p.checkLastUpdate = p.checkLastUpdate && checkLastUpdate
+		p.add(checkLastUpdate, uncheckedCollections)
 		this.pendingMux.Unlock()
 		<-p.done
 		return
 	}
-	p = &pendingPull{checkLastUpdate: checkLastUpdate, done: make(chan struct{})}
+	p = &pendingPull{checkLastUpdate: true, uncheckedCollections: map[string]bool{}, done: make(chan struct{})}
+	p.add(checkLastUpdate, uncheckedCollections)
 	this.pending = p
 	this.pendingMux.Unlock()
 
@@ -77,7 +88,8 @@ func (this *Puller) Pull(checkLastUpdate bool) {
 	//from here on, the pull counts as started: new callers wait for the following one
 	this.pending = nil
 	checkLastUpdate = p.checkLastUpdate
+	unchecked := p.uncheckedCollections
 	this.pendingMux.Unlock()
 
-	this.pull(checkLastUpdate)
+	this.pull(checkLastUpdate, unchecked)
 }

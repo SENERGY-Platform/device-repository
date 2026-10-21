@@ -20,6 +20,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -29,8 +30,124 @@ import (
 
 type pullFunc func() error
 
-func (f pullFunc) MirrorUpdate() error {
+func (f pullFunc) MirrorUpdate(uncheckedCollections ...string) error {
 	return f()
+}
+
+type recordingPull struct {
+	calls [][]string
+}
+
+func (this *recordingPull) MirrorUpdate(uncheckedCollections ...string) error {
+	this.calls = append(this.calls, uncheckedCollections)
+	return nil
+}
+
+func TestMirrorMiddlewareMissPullsCollectionWithoutTimestampCheck(t *testing.T) {
+	config := configuration.Config{
+		MgwMirrorUserId:            "user",
+		MgwMirrorMissPullTimeout:   "200ms",
+		MongoDeviceGroupCollection: "devicegroup",
+		MongoDeviceCollection:      "device",
+	}
+	notFound := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "not found", http.StatusNotFound)
+	})
+	pull := &recordingPull{}
+	m := NewMirrorMiddleware(notFound, config, pull)
+	for _, path := range []string{"/device-groups/g1", "/local-devices/l1", "/unknown/x"} {
+		m.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, path, nil))
+	}
+	expected := [][]string{{"devicegroup"}, {"device"}, {}}
+	if !reflect.DeepEqual(pull.calls, expected) {
+		t.Errorf("%#v", pull.calls)
+	}
+}
+
+func TestMirrorMiddlewareCollectionBackoff(t *testing.T) {
+	config := configuration.Config{
+		MgwMirrorUserId:          "user",
+		MgwMirrorMissPullTimeout: "200ms",
+		MgwMirrorMissPullBackoff: "1h",
+		MongoDeviceCollection:    "device",
+	}
+	pull := &recordingPull{}
+	//only d1 is found, after any pull
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/devices/d1" && len(pull.calls) > 0 {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	})
+	m := NewMirrorMiddleware(handler, config, pull)
+	get := func(path string) int {
+		resp := httptest.NewRecorder()
+		m.ServeHTTP(resp, httptest.NewRequest(http.MethodGet, path, nil))
+		return resp.Code
+	}
+	if code := get("/devices/d1"); code != http.StatusOK {
+		t.Fatal(code)
+	}
+	if code := get("/devices/d2"); code != http.StatusNotFound {
+		t.Fatal(code)
+	}
+	if code := get("/devices/d3"); code != http.StatusNotFound {
+		t.Fatal(code)
+	}
+	//d1 found its entry and leaves the collection without backoff; d2 did not, so d3 pulls with timestamp check
+	expected := [][]string{{"device"}, {"device"}, {}}
+	if !reflect.DeepEqual(pull.calls, expected) {
+		t.Errorf("%#v", pull.calls)
+	}
+}
+
+func TestMissedCollection(t *testing.T) {
+	config := configuration.Config{
+		MongoProtocolCollection:       "protocol",
+		MongoAspectClassCollection:    "aspect_class",
+		MongoAspectCollection:         "aspect",
+		MongoCharacteristicCollection: "characteristic",
+		MongoConceptCollection:        "concept",
+		MongoDeviceClassCollection:    "deviceclass",
+		MongoFunctionCollection:       "function",
+		MongoDeviceTypeCollection:     "devicetype",
+		MongoDeviceCollection:         "device",
+		MongoDeviceGroupCollection:    "devicegroup",
+		MongoHubCollection:            "hub",
+		MongoLocationCollection:       "location",
+	}
+	for path, expected := range map[string]string{
+		"/protocols/p1":                     "protocol",
+		"/aspect-classes/a1":                "aspect_class",
+		"/aspects/a1/measuring-functions":   "aspect",
+		"/aspect-nodes/a1":                  "aspect",
+		"/v2/aspect-nodes":                  "aspect",
+		"/characteristics/c1":               "characteristic",
+		"/concepts/c1":                      "concept",
+		"/v2/concepts-with-characteristics": "concept",
+		"/device-classes/dc1/functions":     "deviceclass",
+		"/functions/f1":                     "function",
+		"/device-types/dt1":                 "devicetype",
+		"/v3/device-types":                  "devicetype",
+		"/services/s1":                      "devicetype",
+		"/devices/d1":                       "device",
+		"/local-devices/l1":                 "device",
+		"/extended-devices/d1":              "device",
+		"/device-groups/urn:infai:ses:dg:1": "devicegroup",
+		"/hubs/h1/devices":                  "hub",
+		"/extended-hubs/h1":                 "hub",
+		"/locations/l1":                     "location",
+		"/extended-locations":               "location",
+		"/graphs/g1":                        "",
+		"/last-update-timestamps":           "",
+		"/v2":                               "",
+		"/":                                 "",
+	} {
+		if actual := missedCollection(config, path); actual != expected {
+			t.Errorf("%v: expected %q, got %q", path, expected, actual)
+		}
+	}
 }
 
 func TestMirrorMiddlewareNotFoundPull(t *testing.T) {

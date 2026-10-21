@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"slices"
 	"sync"
 	"time"
 
@@ -79,8 +78,9 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 	return puller, nil
 }
 
-// pull may only run through Puller.Pull(): two pulls of the same mirror must not run at the same time
-func pull(config configuration.Config, db database.Database, checkLastUpdate bool) {
+// pull may only run through Puller.Pull(): two pulls of the same mirror must not run at the same time.
+// uncheckedCollections are pulled without timestamp check, even if checkLastUpdate is set.
+func pull(config configuration.Config, db database.Database, checkLastUpdate bool, uncheckedCollections map[string]bool) {
 	config.GetLogger().Info("start mgw mirror pull")
 	defer config.GetLogger().Info("finished mgw mirror pull")
 	c := client.NewClient(config.MgwMirrorSourceUrl, nil)
@@ -124,25 +124,11 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 					doUpdate = true
 				}
 			}()
-			localIndex := slices.IndexFunc(localLastUpdateTimestamps, func(timestamp model.LastUpdateTimestamp) bool {
-				return timestamp.Collection == collection
-			})
-			sourceIndex := slices.IndexFunc(sourceLastUpdateTimestamps, func(timestamp model.LastUpdateTimestamp) bool {
-				return timestamp.Collection == collection
-			})
-			if sourceIndex == -1 {
-				config.GetLogger().Debug("no source last update timestamps for collection --> skip update", "collection", collection)
-				return false
-			}
-			if localIndex == -1 {
-				config.GetLogger().Debug("no local last update timestamps for collection --> update", "collection", collection)
+			if uncheckedCollections[collection] {
+				config.GetLogger().Debug("collection requested without timestamp check --> update", "collection", collection)
 				return true
 			}
-			if localLastUpdateTimestamps[localIndex].UnixTimestamp < sourceLastUpdateTimestamps[sourceIndex].UnixTimestamp {
-				config.GetLogger().Debug("local last update timestamp is older than source last update timestamp --> update", "collection", collection, "local_timestamp", localLastUpdateTimestamps[localIndex], "source_timestamp", sourceLastUpdateTimestamps[sourceIndex])
-				return true
-			}
-			return false
+			return sourceIsNewer(config, localLastUpdateTimestamps, sourceLastUpdateTimestamps, collection)
 		}
 	}
 
@@ -696,6 +682,37 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		}
 	}
 
+}
+
+// sourceIsNewer compares the newest last-update timestamps of a collection on both sides.
+// GetLastUpdateTimestampsForUser lists up to two entries per collection, one without user and one of the user,
+// in no defined order; either of them may be the newer one.
+func sourceIsNewer(config configuration.Config, local []model.LastUpdateTimestamp, source []model.LastUpdateTimestamp, collection string) bool {
+	sourceTimestamp, ok := newestLastUpdate(source, collection)
+	if !ok {
+		config.GetLogger().Debug("no source last update timestamps for collection --> skip update", "collection", collection)
+		return false
+	}
+	localTimestamp, ok := newestLastUpdate(local, collection)
+	if !ok {
+		config.GetLogger().Debug("no local last update timestamps for collection --> update", "collection", collection)
+		return true
+	}
+	if localTimestamp < sourceTimestamp {
+		config.GetLogger().Debug("local last update timestamp is older than source last update timestamp --> update", "collection", collection, "local_timestamp", localTimestamp, "source_timestamp", sourceTimestamp)
+		return true
+	}
+	return false
+}
+
+func newestLastUpdate(timestamps []model.LastUpdateTimestamp, collection string) (result int64, found bool) {
+	for _, timestamp := range timestamps {
+		if timestamp.Collection == collection && (!found || timestamp.UnixTimestamp > result) {
+			result = timestamp.UnixTimestamp
+			found = true
+		}
+	}
+	return result, found
 }
 
 // removeMissing removes local entries of a collection that the source listing did not contain.

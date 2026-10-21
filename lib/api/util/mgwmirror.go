@@ -31,7 +31,7 @@ import (
 )
 
 type MirrorPull interface {
-	MirrorUpdate() error
+	MirrorUpdate(uncheckedCollections ...string) error
 }
 
 const defaultMissPullTimeout = 10 * time.Second
@@ -46,6 +46,10 @@ func NewMirrorMiddleware(handler http.Handler, config configuration.Config, pull
 		pull:            pull,
 		missPullTimeout: durationOrDefault(config.MgwMirrorMissPullTimeout, defaultMissPullTimeout),
 		missBackoff: newMissBackoff(
+			durationOrDefault(config.MgwMirrorMissPullBackoff, defaultMissPullBackoff),
+			durationOrDefault(config.MgwMirrorMissPullMaxBackoff, defaultMissPullMaxBackoff),
+		),
+		collectionBackoff: newMissBackoff(
 			durationOrDefault(config.MgwMirrorMissPullBackoff, defaultMissPullBackoff),
 			durationOrDefault(config.MgwMirrorMissPullMaxBackoff, defaultMissPullMaxBackoff),
 		),
@@ -64,12 +68,13 @@ func durationOrDefault(value string, def time.Duration) time.Duration {
 }
 
 type MirrorMiddleware struct {
-	handler         http.Handler
-	config          configuration.Config
-	token           string
-	pull            MirrorPull
-	missPullTimeout time.Duration
-	missBackoff     *missBackoff
+	handler           http.Handler
+	config            configuration.Config
+	token             string
+	pull              MirrorPull
+	missPullTimeout   time.Duration
+	missBackoff       *missBackoff //per request URI
+	collectionBackoff *missBackoff //per collection, for pulls without timestamp check
 }
 
 func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +138,10 @@ func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 
 // serveGetWithMissPull answers a 404 only after the mirror asked the source for changes.
-// The pull checks the last-update timestamps of the source, so a miss without changes in the source costs one request.
+// A miss shows that the mirror is outdated even if the last-update timestamps do not, so the collection of the
+// request (see missedCollection) is pulled without timestamp check. The other collections check the timestamps.
+// The backoff of a request does not cover other ids of the same collection, so an unchecked pull that does not find
+// the entry also puts its collection into a backoff; until that ends, misses of the collection pull with timestamp check.
 // If the pull takes longer than missPullTimeout (e.g. because the source is unreachable), the first 404 is returned
 // and the pull continues in the background.
 // A request that stays not found after its pull may pull again only after a backoff, see missBackoff.
@@ -150,32 +158,84 @@ func (this *MirrorMiddleware) serveGetWithMissPull(w http.ResponseWriter, r *htt
 		first.writeTo(w)
 		return
 	}
+	collection := missedCollection(this.config, r.URL.Path)
+	unchecked := collection != "" && this.collectionBackoff.pullAllowed(collection)
+	uncheckedCollections := []string{}
+	if unchecked {
+		uncheckedCollections = append(uncheckedCollections, collection)
+	}
+	missed := func() {
+		this.missBackoff.missed(key)
+		if unchecked {
+			this.collectionBackoff.missed(collection)
+		}
+	}
 	done := make(chan error, 1)
 	go func() {
-		done <- this.pull.MirrorUpdate()
+		done <- this.pull.MirrorUpdate(uncheckedCollections...)
 	}()
 	select {
 	case err := <-done:
 		if err != nil {
 			this.config.GetLogger().Warn("unable to update mirror after not found", "url", r.URL.String(), "error", err)
-			this.missBackoff.missed(key)
+			missed()
 			first.writeTo(w)
 			return
 		}
 	case <-time.After(this.missPullTimeout):
 		this.config.GetLogger().Warn("mirror update after not found exceeded timeout --> respond with not found", "url", r.URL.String(), "timeout", this.missPullTimeout.String())
-		this.missBackoff.missed(key)
+		missed()
 		first.writeTo(w)
 		return
 	}
 	second := newBufferedResponse()
 	this.handler.ServeHTTP(second, r)
 	if second.status == http.StatusNotFound {
-		this.missBackoff.missed(key)
+		missed()
 	} else {
 		this.missBackoff.found(key)
+		if unchecked {
+			this.collectionBackoff.found(collection)
+		}
 	}
 	second.writeTo(w)
+}
+
+// missedCollection returns the mirrored collection a GET path reads from, or "" if the path reads none.
+func missedCollection(config configuration.Config, path string) string {
+	segments := strings.Split(strings.TrimPrefix(path, "/"), "/")
+	resource := segments[0]
+	if (resource == "v2" || resource == "v3") && len(segments) > 1 {
+		resource = segments[1]
+	}
+	switch resource {
+	case "protocols":
+		return config.MongoProtocolCollection
+	case "aspect-classes":
+		return config.MongoAspectClassCollection
+	case "aspects", "aspect-nodes": //the pull of the aspects includes their nodes
+		return config.MongoAspectCollection
+	case "characteristics":
+		return config.MongoCharacteristicCollection
+	case "concepts", "concepts-with-characteristics":
+		return config.MongoConceptCollection
+	case "device-classes":
+		return config.MongoDeviceClassCollection
+	case "functions":
+		return config.MongoFunctionCollection
+	case "device-types", "user-device-types", "services": //services are stored in their device-type
+		return config.MongoDeviceTypeCollection
+	case "devices", "local-devices", "extended-devices":
+		return config.MongoDeviceCollection
+	case "device-groups":
+		return config.MongoDeviceGroupCollection
+	case "hubs", "extended-hubs":
+		return config.MongoHubCollection
+	case "locations", "extended-locations":
+		return config.MongoLocationCollection
+	default:
+		return ""
+	}
 }
 
 // missBackoff limits the pulls of not found reads, so that a client repeating a read of a missing entry

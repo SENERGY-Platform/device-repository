@@ -30,7 +30,7 @@ func blockingPuller(t *testing.T) (puller *Puller, started chan bool, release ch
 	release = make(chan struct{})
 	running = &atomic.Int64{}
 	puller = &Puller{}
-	puller.pull = func(checkLastUpdate bool) {
+	puller.pull = func(checkLastUpdate bool, uncheckedCollections map[string]bool) {
 		if running.Add(1) > 1 {
 			t.Error("pulls overlap")
 		}
@@ -136,6 +136,60 @@ func TestPullerWithoutTimestampCheckWins(t *testing.T) {
 	waitOrFail(t, &done)
 }
 
+func TestPullerSharedPullCombinesUncheckedCollections(t *testing.T) {
+	unchecked := make(chan map[string]bool, 10)
+	release := make(chan struct{})
+	puller := &Puller{}
+	puller.pull = func(checkLastUpdate bool, uncheckedCollections map[string]bool) {
+		unchecked <- uncheckedCollections
+		<-release
+	}
+	expectUnchecked := func(expected ...string) {
+		t.Helper()
+		select {
+		case actual := <-unchecked:
+			if len(actual) != len(expected) {
+				t.Fatal("expected", expected, "got", actual)
+			}
+			for _, collection := range expected {
+				if !actual[collection] {
+					t.Fatal("expected", expected, "got", actual)
+				}
+			}
+		case <-time.After(time.Second):
+			t.Fatal("expected a pull to start")
+		}
+	}
+
+	go puller.Pull(true, "device")
+	expectUnchecked("device")
+
+	done := sync.WaitGroup{}
+	for _, collection := range []string{"devicegroup", "hub", "devicegroup"} {
+		done.Add(1)
+		go func() {
+			defer done.Done()
+			puller.Pull(true, collection)
+		}()
+	}
+	done.Add(1)
+	go func() {
+		defer done.Done()
+		puller.Pull(true)
+	}()
+	time.Sleep(100 * time.Millisecond)
+	release <- struct{}{}
+
+	expectUnchecked("devicegroup", "hub")
+	release <- struct{}{}
+	waitOrFail(t, &done)
+
+	//the next pull does not inherit the collections of the previous one
+	go puller.Pull(true)
+	expectUnchecked()
+	release <- struct{}{}
+}
+
 func TestPullerCallersAfterAFinishedPullGetANewOne(t *testing.T) {
 	puller, started, release, _ := blockingPuller(t)
 	for range 3 {
@@ -149,7 +203,7 @@ func TestPullerConcurrentCallersNeverOverlap(t *testing.T) {
 	running := atomic.Int64{}
 	pulls := atomic.Int64{}
 	puller := &Puller{}
-	puller.pull = func(checkLastUpdate bool) {
+	puller.pull = func(checkLastUpdate bool, uncheckedCollections map[string]bool) {
 		if running.Add(1) > 1 {
 			t.Error("pulls overlap")
 		}

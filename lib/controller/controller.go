@@ -99,7 +99,7 @@ type Controller struct {
 	config              configuration.Config
 	permissionsV2Client client.Client
 	logger              *slog.Logger
-	mirrorPullCallback  func(checkLastUpdate bool)
+	mirrorPullCallback  func(checkLastUpdate bool, uncheckedCollections ...string)
 
 	deviceGroupCriteriaRecomputeRunning atomic.Bool
 }

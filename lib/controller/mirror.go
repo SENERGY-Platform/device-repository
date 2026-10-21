@@ -20,17 +20,19 @@ import (
 	"fmt"
 )
 
-func (this *Controller) MirrorUpdate() error {
+// MirrorUpdate pulls the collections with a newer last-update timestamp in the source.
+// uncheckedCollections are pulled without timestamp check.
+func (this *Controller) MirrorUpdate(uncheckedCollections ...string) error {
 	if !this.config.AsMgwMirror {
 		return fmt.Errorf("not a mirror")
 	}
 	if this.mirrorPullCallback == nil {
 		return fmt.Errorf("missing mirror pull callback")
 	}
-	this.mirrorPullCallback(true)
+	this.mirrorPullCallback(true, uncheckedCollections...)
 	return nil
 }
 
-func (this *Controller) SetMirrorPullCallback(pull func(checkLastUpdate bool)) {
+func (this *Controller) SetMirrorPullCallback(pull func(checkLastUpdate bool, uncheckedCollections ...string)) {
 	this.mirrorPullCallback = pull
 }

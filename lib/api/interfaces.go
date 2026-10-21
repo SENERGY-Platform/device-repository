@@ -165,5 +165,5 @@ type Controller interface {
 
 	GetLastUpdateTimestamps(token string, userId string) (result []model.LastUpdateTimestamp, err error, code int)
 
-	MirrorUpdate() error
+	MirrorUpdate(uncheckedCollections ...string) error
 }

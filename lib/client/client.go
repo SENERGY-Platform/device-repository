@@ -51,7 +51,7 @@ func NewClient(baseUrl string, optionalAuthTokenForApiGatewayRequest func() (tok
 	return &Client{baseUrl: baseUrl, optionalAuthTokenForApiGatewayRequest: optionalAuthTokenForApiGatewayRequest}
 }
 
-func (c *Client) MirrorUpdate() error {
+func (c *Client) MirrorUpdate(uncheckedCollections ...string) error {
 	return nil
 }
 

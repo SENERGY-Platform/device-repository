@@ -18,8 +18,11 @@ confirmation read that answered neither 404 nor 403 logs
 ## How the mirror decides to pull a collection
 
 The mirror asks the source for its last-update timestamps (`GetLastUpdateTimestamps`)
-and pulls a collection only if the source's timestamp is newer than its own. The
-first pull after start skips this check and pulls everything.
+and pulls a collection only if the source's newest timestamp of it is newer than
+its own newest. Both sides list up to two entries per collection, one for the
+empty user and one for the mirror user, in no defined order, so the first entry
+of a collection is not enough. The first pull after start skips this check and
+pulls everything.
 
 The source writes the timestamp in the database layer, inside every `Set*` and
 `Remove*`. Resource types without owners (protocols, aspects, characteristics,
@@ -28,11 +31,13 @@ empty user. Devices and hubs write it for the **owner**, device-groups for the
 **sync user**. The source answers the mirror user's own timestamps together with
 the ownerless ones.
 
-Besides the interval, two things start such a timestamp-checked pull: a write
-the mirror forwards to the source, and a `GET` the mirror answers with 404. For
-the latter the middleware in `lib/api/util/mgwmirror.go` holds the 404 back,
+Besides the interval, two things start a pull: a write the mirror forwards to
+the source, which checks the timestamps, and a `GET` the mirror answers with 404.
+For the latter the middleware in `lib/api/util/mgwmirror.go` holds the 404 back,
 pulls, and answers the request again from the database, so an entry created in
-the source since the last pull is found on the first read. If the pull takes
+the source since the last pull is found on the first read. The miss itself shows
+that the mirror is outdated, so the collection the path reads (`missedCollection`)
+is pulled without timestamp check; the other collections check theirs. If the pull takes
 longer than `MGW_MIRROR_MISS_PULL_TIMEOUT` (default `10s`, for example because
 the source is unreachable), the 404 is returned and the pull finishes in the
 background. All pulls of a mirror run one after another through
@@ -48,13 +53,17 @@ does not send a request to the source each time. The backoff is kept per
 request URI including the query, starts at `MGW_MIRROR_MISS_PULL_BACKOFF`
 (default `10s`) and doubles with every further miss up to
 `MGW_MIRROR_MISS_PULL_MAX_BACKOFF` (default `5m`). During the backoff the 404 is
-answered from the database alone. An entry created in the source in that time
+answered from the database alone. The per-request backoff does not cover other
+ids of the same collection, so an unchecked pull that does not find its entry
+also puts the collection into a backoff of the same length; until that ends,
+misses of the collection pull with timestamp check, and an unchecked pull that
+finds its entry ends it. An entry created in the source in that time
 becomes visible with the next pull of any kind: the interval, a forwarded write,
 or the not found read of another request. A found response resets the backoff
 of its request, as does a pause longer than the maximum after the backoff ended.
 
-It follows that a change the mirror should see has to move one of those
-timestamps, also for a not found read. Two things do not:
+It follows that a change the mirror should see in a listing, or in a read of an
+entry it already holds, has to move one of those timestamps. Two things do not:
 
 - **A method that forgets it.** `RemoveDeviceGroup` did not set a timestamp
   until the change that introduced this document. Against such a source, deleted
@@ -63,9 +72,10 @@ timestamps, also for a not found read. Two things do not:
   catches up, since the first pull checks nothing. A new `Remove*` or `Set*`
   needs the timestamp as well, or the mirror misses it the same way.
 - **A permission change.** Sharing or unsharing a resource in permissions-v2
-  touches no timestamp here. The mirror handles an unshare correctly once the
-  collection is pulled (see below), but the unshare alone does not start that
-  pull.
+  touches no timestamp here. A newly shared entry still arrives with the first
+  read of it, which is not found and pulls its collection. The mirror handles an
+  unshare correctly once the collection is pulled (see below), but the unshare
+  alone does not start that pull.
 
 ## How the mirror removes entries
 
@@ -93,3 +103,9 @@ Entries deleted in the source stayed in the mirror and were served to every
 consumer on the gateway. Adding the removal showed the second cause: without the
 timestamp in `RemoveDeviceGroup`, the new phase of `TestMirror` still found the
 deleted device-groups in the mirror.
+
+SNRGY-4995: a mirror on a gateway answered 404 for a device-group created in the
+cloud, for hours and through every not found read. The source listed the older
+ownerless `devicegroup` timestamp first and the newer one of the user second; the
+comparison took only the first, which was older than the mirror's own, and the
+not found read ran the same check.
