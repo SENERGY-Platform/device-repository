@@ -17,14 +17,16 @@
 package controller
 
 import (
+	"context"
 	"errors"
+	"net/http"
+
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
 )
 
-func (this *Controller) ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ReadProtocol(ctx context.Context, id string, token string) (result models.Protocol, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	protocol, exists, err := this.db.GetProtocol(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -35,13 +37,13 @@ func (this *Controller) ReadProtocol(id string, token string) (result models.Pro
 	return protocol, nil, http.StatusOK
 }
 
-func (this *Controller) ListProtocols(token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListProtocols(ctx context.Context, token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListProtocols(ctx, limit, offset, sort)
 	return
 }
 
-func (this *Controller) ValidateProtocol(protocol models.Protocol) (err error, code int) {
+func (this *Controller) ValidateProtocol(ctx context.Context, protocol models.Protocol) (err error, code int) {
 	if protocol.Id == "" {
 		return errors.New("missing protocol id"), http.StatusBadRequest
 	}
@@ -70,7 +72,7 @@ func (this *Controller) ValidateProtocol(protocol models.Protocol) (err error, c
 	return nil, http.StatusOK
 }
 
-func (this *Controller) SetProtocol(token string, p models.Protocol) (result models.Protocol, err error, errCode int) {
+func (this *Controller) SetProtocol(ctx context.Context, token string, p models.Protocol) (result models.Protocol, err error, errCode int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -82,19 +84,19 @@ func (this *Controller) SetProtocol(token string, p models.Protocol) (result mod
 	//ensure ids
 	p.GenerateId()
 	if !this.config.DisableStrictValidationForTesting {
-		err, code := this.ValidateProtocol(p)
+		err, code := this.ValidateProtocol(ctx, p)
 		if err != nil {
 			return result, err, code
 		}
 	}
-	err = this.setProtocol(p)
+	err = this.setProtocol(ctx, p)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return p, nil, http.StatusOK
 }
 
-func (this *Controller) DeleteProtocol(token string, id string) (err error, code int) {
+func (this *Controller) DeleteProtocol(ctx context.Context, token string, id string) (err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -102,27 +104,27 @@ func (this *Controller) DeleteProtocol(token string, id string) (err error, code
 	if !jwtToken.IsAdmin() {
 		return errors.New("token is not an admin"), http.StatusUnauthorized
 	}
-	err = this.deleteProtocol(id)
+	err = this.deleteProtocol(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) setProtocolSyncHandler(protocol models.Protocol) (err error) {
+func (this *Controller) setProtocolSyncHandler(ctx context.Context, protocol models.Protocol) (err error) {
 	return this.publisher.PublishProtocol(protocol)
 }
 
-func (this *Controller) setProtocol(protocol models.Protocol) (err error) {
-	ctx, _ := getTimeoutContext()
-	return this.db.SetProtocol(ctx, protocol, this.setProtocolSyncHandler)
+func (this *Controller) setProtocol(ctx context.Context, protocol models.Protocol) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
+	return this.db.SetProtocol(ctx, protocol, withContext(ctx, this.setProtocolSyncHandler))
 }
 
-func (this *Controller) deleteProtocolSyncHandler(protocol models.Protocol) (err error) {
+func (this *Controller) deleteProtocolSyncHandler(ctx context.Context, protocol models.Protocol) (err error) {
 	return this.publisher.PublishProtocolDelete(protocol.Id)
 }
 
-func (this *Controller) deleteProtocol(id string) error {
-	ctx, _ := getTimeoutContext()
-	return this.db.RemoveProtocol(ctx, id, this.deleteProtocolSyncHandler)
+func (this *Controller) deleteProtocol(ctx context.Context, id string) error {
+	ctx, _ = getTimeoutContext(ctx)
+	return this.db.RemoveProtocol(ctx, id, withContext(ctx, this.deleteProtocolSyncHandler))
 }

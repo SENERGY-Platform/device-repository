@@ -18,14 +18,15 @@ package semantic_legacy
 
 import (
 	"context"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
-	"sync"
-	"testing"
 )
 
 func TestAspects(t *testing.T) {
@@ -74,7 +75,7 @@ func testProduceAspect(conf configuration.Config) func(t *testing.T) {
 		aspect := models.Aspect{}
 		aspect.Id = "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf"
 		aspect.Name = "Air"
-		_, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).SetAspect(testenv.AdminToken, aspect)
+		_, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).SetAspect(context.Background(), testenv.AdminToken, aspect)
 		if err != nil {
 			t.Error(err)
 			return
@@ -84,7 +85,7 @@ func testProduceAspect(conf configuration.Config) func(t *testing.T) {
 
 func testAspectRead(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetAspects()
+		res, err, code := con.GetAspects(context.Background())
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {
@@ -101,7 +102,7 @@ func testAspectRead(con *controller.Controller) func(t *testing.T) {
 
 func testAspectDelete(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).DeleteAspect(testenv.AdminToken, "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf")
+		err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).DeleteAspect(context.Background(), testenv.AdminToken, "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -167,27 +168,27 @@ func testProduceDeviceTypeForAspectTest(conf configuration.Config) func(t *testi
 
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-		_, err, _ := c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
+		_, err, _ := c.SetDeviceType(context.Background(), testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:4e4e-AspectTest", Name: "Lighting"})
+		_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:4e4e-AspectTest", Name: "Lighting"})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:5e5e1-AspectTest", Name: "brightnessAdjustment1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:5e5e1-AspectTest", Name: "brightnessAdjustment1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:5e5e2-AspectTest", Name: "brightnessAdjustment2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:5e5e2-AspectTest", Name: "brightnessAdjustment2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:5e5e3-AspectTest", Name: "brightnessFunction4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:5e5e3-AspectTest", Name: "brightnessFunction4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:5e5e4-AspectTest", Name: "brightnessFunction2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:5e5e4-AspectTest", Name: "brightnessFunction2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -196,7 +197,7 @@ func testProduceDeviceTypeForAspectTest(conf configuration.Config) func(t *testi
 
 func testReadAspectMeasuringFunctions(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetAspectNodesMeasuringFunctions("urn:infai:ses:aspect:4e4e-AspectTest", false, false)
+		res, err, code := con.GetAspectNodesMeasuringFunctions(context.Background(), "urn:infai:ses:aspect:4e4e-AspectTest", false, false)
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {
@@ -292,31 +293,31 @@ func test_2_ProduceDeviceTypeforAspectTest(conf configuration.Config) func(t *te
 
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-		_, err, _ := c.SetDeviceType(testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
+		_, err, _ := c.SetDeviceType(context.Background(), testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_1", Name: "aspect1"})
+		_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_1", Name: "aspect1"})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_2", Name: "aspect2"})
+		_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{Id: "urn:infai:ses:aspect:08-01-20_2", Name: "aspect2"})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_1", Name: "func1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_1", Name: "func1", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_2", Name: "func2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:controlling-function:08-01-20_2", Name: "func2", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_3", Name: "func3", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_3", Name: "func3", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
-		_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_4", Name: "func4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{Id: "urn:infai:ses:measuring-function:08-01-20_4", Name: "func4", ConceptId: "urn:infai:ses:concept:1a1a1a", RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -325,7 +326,7 @@ func test_2_ProduceDeviceTypeforAspectTest(conf configuration.Config) func(t *te
 
 func test_2_ReadAspectsWithMeasuringFunctions(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetAspectsWithMeasuringFunction(false, false)
+		res, err, code := con.GetAspectsWithMeasuringFunction(context.Background(), false, false)
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {

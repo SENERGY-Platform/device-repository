@@ -54,7 +54,7 @@ type LocationEndpoints struct{}
 func (this *LocationEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /locations/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetLocation(id, util.GetAuthToken(request))
+		result, err, errCode := control.GetLocation(request.Context(), id, util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -97,7 +97,7 @@ func (this *LocationEndpoints) Validate(config configuration.Config, router *htt
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateLocation(location)
+		err, code := control.ValidateLocation(request.Context(), location)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -175,7 +175,7 @@ func (this *LocationEndpoints) List(config configuration.Config, router *http.Se
 			locationListOptions.Permission = model.READ
 		}
 
-		result, total, err, errCode := control.ListLocations(util.GetAuthToken(request), locationListOptions)
+		result, total, err, errCode := control.ListLocations(request.Context(), util.GetAuthToken(request), locationListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -218,7 +218,7 @@ func (this *LocationEndpoints) Create(config configuration.Config, router *http.
 			return
 		}
 
-		result, err, errCode := control.SetLocation(token, location)
+		result, err, errCode := control.SetLocation(request.Context(), token, location)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -264,7 +264,7 @@ func (this *LocationEndpoints) Set(config configuration.Config, router *http.Ser
 
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetLocation(token, location)
+		result, err, errCode := control.SetLocation(request.Context(), token, location)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -297,7 +297,7 @@ func (this *LocationEndpoints) Delete(config configuration.Config, router *http.
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.DeleteLocation(token, id)
+		err, errCode := control.DeleteLocation(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

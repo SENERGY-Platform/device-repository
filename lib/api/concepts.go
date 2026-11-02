@@ -92,7 +92,7 @@ func (this *ConceptEndpoints) ListConcepts(config configuration.Config, router *
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListConcepts(listoptions)
+		result, total, err, errCode := control.ListConcepts(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -166,7 +166,7 @@ func (this *ConceptEndpoints) ListConceptsWithCharacteristics(config configurati
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListConceptsWithCharacteristics(listoptions)
+		result, total, err, errCode := control.ListConceptsWithCharacteristics(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -215,9 +215,9 @@ func (this *ConceptEndpoints) Get(config configuration.Config, router *http.Serv
 		resultConcept := models.Concept{}
 		errCode := 0
 		if subClass {
-			resultConceptWithCharacteristics, err, errCode = control.GetConceptWithCharacteristics(id)
+			resultConceptWithCharacteristics, err, errCode = control.GetConceptWithCharacteristics(request.Context(), id)
 		} else {
-			resultConcept, err, errCode = control.GetConceptWithoutCharacteristics(id)
+			resultConcept, err, errCode = control.GetConceptWithoutCharacteristics(request.Context(), id)
 		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -265,7 +265,7 @@ func (this *ConceptEndpoints) Validate(config configuration.Config, router *http
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateConcept(concept)
+		err, code := control.ValidateConcept(request.Context(), concept)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -298,7 +298,7 @@ func (this *ConceptEndpoints) Delete(config configuration.Config, router *http.S
 			}
 		}
 		if dryRun {
-			err, code := control.ValidateConceptDelete(id)
+			err, code := control.ValidateConceptDelete(request.Context(), id)
 			if err != nil {
 				http.Error(writer, err.Error(), code)
 				return
@@ -307,7 +307,7 @@ func (this *ConceptEndpoints) Delete(config configuration.Config, router *http.S
 			return
 		}
 		token := util.GetAuthToken(request)
-		err, code := control.DeleteConcept(token, id)
+		err, code := control.DeleteConcept(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -340,7 +340,7 @@ func (this *ConceptEndpoints) Create(config configuration.Config, router *http.S
 		}
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetConcept(token, concept)
+		result, err, errCode := control.SetConcept(request.Context(), token, concept)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -386,7 +386,7 @@ func (this *ConceptEndpoints) Set(config configuration.Config, router *http.Serv
 			return
 		}
 
-		result, err, errCode := control.SetConcept(token, concept)
+		result, err, errCode := control.SetConcept(request.Context(), token, concept)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

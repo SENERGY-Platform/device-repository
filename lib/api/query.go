@@ -18,9 +18,10 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"net/http"
 )
 
 func init() {
@@ -50,7 +51,7 @@ func (this *QueryEndpoint) Query(config configuration.Config, router *http.Serve
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		result, err, errCode := control.GetUsedInDeviceType(query)
+		result, err, errCode := control.GetUsedInDeviceType(request.Context(), query)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

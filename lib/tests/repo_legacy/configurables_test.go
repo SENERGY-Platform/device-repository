@@ -19,13 +19,14 @@ package repo_legacy
 import (
 	"context"
 	"encoding/json"
+	"reflect"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"reflect"
-	"sync"
-	"testing"
 )
 
 func TestConfigurables(t *testing.T) {
@@ -996,7 +997,7 @@ func createTestConfigurableMetadataBase(config configuration.Config, aspects []m
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 		for _, aspect := range aspects {
-			_, err, _ := c.SetAspect(AdminToken, aspect)
+			_, err, _ := c.SetAspect(context.Background(), AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1004,7 +1005,7 @@ func createTestConfigurableMetadataBase(config configuration.Config, aspects []m
 		}
 
 		for _, function := range functions {
-			_, err, _ := c.SetFunction(AdminToken, function)
+			_, err, _ := c.SetFunction(context.Background(), AdminToken, function)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1012,7 +1013,7 @@ func createTestConfigurableMetadataBase(config configuration.Config, aspects []m
 		}
 
 		for _, dt := range devicetypes {
-			_, err, _ := c.SetDeviceType(AdminToken, dt, client.DeviceTypeUpdateOptions{})
+			_, err, _ := c.SetDeviceType(context.Background(), AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return

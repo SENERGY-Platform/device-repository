@@ -22,12 +22,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/idmodifier"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"log"
 	"net/http"
@@ -39,6 +33,13 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/idmodifier"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestDeviceTypeSelectablesWithModifiedId(t *testing.T) {
@@ -838,7 +839,7 @@ func testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(config confi
 
 func clientTestDeviceTypeSelectables(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err, _ := client.NewClient("http://localhost:"+config.ServerPort, nil).GetDeviceTypeSelectablesV2(criteria, pathPrefix, includeModified, servicesMustMatchAllCriteria)
+		result, err, _ := client.NewClient("http://localhost:"+config.ServerPort, nil).GetDeviceTypeSelectablesV2(context.Background(), criteria, pathPrefix, includeModified, servicesMustMatchAllCriteria)
 		if err != nil {
 			t.Error(err)
 			return

@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"slices"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
@@ -83,17 +84,17 @@ func addAspectIdToAspectIds(aspectId string, aspectIds []string) []string {
 
 // pathOptionAspectNodes loads the aspect nodes a path option offers. An unknown aspect is
 // tolerated here, the way the aspect-node of a path option always was.
-func (this *Controller) pathOptionAspectNodes(aspectCache *map[string]models.AspectNode, aspectIds []string) (nodes []models.AspectNode, deprecated models.AspectNode, err error) {
+func (this *Controller) pathOptionAspectNodes(ctx context.Context, aspectCache *map[string]models.AspectNode, aspectIds []string) (nodes []models.AspectNode, deprecated models.AspectNode, err error) {
 	return aspectNodesWithDeprecated(aspectIds, func(aspectId string) (models.AspectNode, error) {
-		return this.getAspectNodeForDeviceTypeSelectables(aspectCache, aspectId)
+		return this.getAspectNodeForDeviceTypeSelectables(ctx, aspectCache, aspectId)
 	})
 }
 
 // configurableAspectNodes loads the aspect nodes a configurable offers. An unknown aspect
 // fails the request here, the way it always did for a configurable.
-func (this *Controller) configurableAspectNodes(aspectIds []string) (nodes []models.AspectNode, deprecated models.AspectNode, err error) {
+func (this *Controller) configurableAspectNodes(ctx context.Context, aspectIds []string) (nodes []models.AspectNode, deprecated models.AspectNode, err error) {
 	return aspectNodesWithDeprecated(aspectIds, func(aspectId string) (models.AspectNode, error) {
-		node, err, _ := this.GetAspectNode(aspectId)
+		node, err, _ := this.GetAspectNode(ctx, aspectId)
 		return node, err
 	})
 }
@@ -127,8 +128,8 @@ type deviceTypeCriteriaMatch struct {
 	matchedAspectIds []string
 }
 
-func (this *Controller) newDeviceTypeCriteriaMatch(aspectCache *map[string]models.AspectNode, row model.DeviceTypeCriteria, query model.FilterCriteria) (result deviceTypeCriteriaMatch, err error) {
-	matched, err := this.matchedAspectIds(aspectCache, row.AspectIds, query.AspectIds)
+func (this *Controller) newDeviceTypeCriteriaMatch(ctx context.Context, aspectCache *map[string]models.AspectNode, row model.DeviceTypeCriteria, query model.FilterCriteria) (result deviceTypeCriteriaMatch, err error) {
+	matched, err := this.matchedAspectIds(ctx, aspectCache, row.AspectIds, query.AspectIds)
 	if err != nil {
 		return result, err
 	}
@@ -139,12 +140,12 @@ func (this *Controller) newDeviceTypeCriteriaMatch(aspectCache *map[string]model
 // for. A row carries every aspect of its content variable, while a path option is offered
 // per matched aspect, so the aspects the query did not name are dropped here. A queried
 // aspect covers its descendants, like the database filter that selected the row.
-func (this *Controller) matchedAspectIds(aspectCache *map[string]models.AspectNode, rowAspectIds []string, queryAspectIds []string) (result []string, err error) {
+func (this *Controller) matchedAspectIds(ctx context.Context, aspectCache *map[string]models.AspectNode, rowAspectIds []string, queryAspectIds []string) (result []string, err error) {
 	if len(queryAspectIds) == 0 {
 		return rowAspectIds, nil
 	}
 	for _, queried := range queryAspectIds {
-		node, err := this.getAspectNodeForDeviceTypeSelectables(aspectCache, queried)
+		node, err := this.getAspectNodeForDeviceTypeSelectables(ctx, aspectCache, queried)
 		if err != nil {
 			return nil, err
 		}

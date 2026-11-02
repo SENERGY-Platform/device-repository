@@ -17,12 +17,13 @@
 package client
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 )
 
-func (c *Client) DeleteUser(adminToken string, userId string) (err error, errCode int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/users/"+url.PathEscape(userId), nil)
+func (c *Client) DeleteUser(ctx context.Context, adminToken string, userId string) (err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/users/"+url.PathEscape(userId), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

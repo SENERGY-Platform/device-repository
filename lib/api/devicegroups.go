@@ -151,7 +151,7 @@ func (this *DeviceGroupEndpoints) List(config configuration.Config, router *http
 			deviceGroupListOptions.Permission = model.READ
 		}
 
-		result, total, err, errCode := control.ListDeviceGroups(util.GetAuthToken(request), deviceGroupListOptions)
+		result, total, err, errCode := control.ListDeviceGroups(request.Context(), util.GetAuthToken(request), deviceGroupListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -189,7 +189,7 @@ func (this *DeviceGroupEndpoints) Get(config configuration.Config, router *http.
 		//ref https://bitnify.atlassian.net/browse/SNRGY-3027
 		filterGenericDuplicateCriteria := request.URL.Query().Get("filter_generic_duplicate_criteria") == "true"
 
-		result, err, errCode := control.ReadDeviceGroup(id, util.GetAuthToken(request), filterGenericDuplicateCriteria)
+		result, err, errCode := control.ReadDeviceGroup(request.Context(), id, util.GetAuthToken(request), filterGenericDuplicateCriteria)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -233,7 +233,7 @@ func (this *DeviceGroupEndpoints) Validate(config configuration.Config, router *
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDeviceGroup(util.GetAuthToken(request), group)
+		err, code := control.ValidateDeviceGroup(request.Context(), util.GetAuthToken(request), group)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -267,7 +267,7 @@ func (this *DeviceGroupEndpoints) Delete(config configuration.Config, router *ht
 		}
 		token := util.GetAuthToken(request)
 		if dryRun {
-			err, code := control.ValidateDeviceGroupDelete(token, id)
+			err, code := control.ValidateDeviceGroupDelete(request.Context(), token, id)
 			if err != nil {
 				http.Error(writer, err.Error(), code)
 				return
@@ -275,7 +275,7 @@ func (this *DeviceGroupEndpoints) Delete(config configuration.Config, router *ht
 			writer.WriteHeader(http.StatusOK)
 			return
 		}
-		err, code := control.DeleteDeviceGroup(token, id)
+		err, code := control.DeleteDeviceGroup(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -313,7 +313,7 @@ func (this *DeviceGroupEndpoints) Create(config configuration.Config, router *ht
 			return
 		}
 
-		result, err, errCode := control.SetDeviceGroup(token, deviceGroup)
+		result, err, errCode := control.SetDeviceGroup(request.Context(), token, deviceGroup)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -359,7 +359,7 @@ func (this *DeviceGroupEndpoints) Set(config configuration.Config, router *http.
 			return
 		}
 
-		result, err, errCode := control.SetDeviceGroup(token, deviceGroup)
+		result, err, errCode := control.SetDeviceGroup(request.Context(), token, deviceGroup)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -396,7 +396,7 @@ func (this *DeviceGroupEndpoints) RecomputeCriteria(config configuration.Config,
 				ids = strings.Split(idsParam, ",")
 			}
 		}
-		err, code := control.RecomputeDeviceGroupCriteria(util.GetAuthToken(request), ids)
+		err, code := control.RecomputeDeviceGroupCriteria(request.Context(), util.GetAuthToken(request), ids)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

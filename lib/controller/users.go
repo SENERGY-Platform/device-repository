@@ -17,17 +17,19 @@
 package controller
 
 import (
+	"context"
 	"errors"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	gojwt "github.com/golang-jwt/jwt"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
+	gojwt "github.com/golang-jwt/jwt"
 )
 
-func (this *Controller) DeleteUser(adminToken string, userId string) (err error, errCode int) {
+func (this *Controller) DeleteUser(ctx context.Context, adminToken string, userId string) (err error, errCode int) {
 	jwtToken, err := jwt.Parse(adminToken)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -42,73 +44,73 @@ func (this *Controller) DeleteUser(adminToken string, userId string) (err error,
 	}
 
 	//devices
-	devicesToDelete, userToDeleteFromDevices, err := this.resourcesEffectedByUserDelete(token, this.config.DeviceTopic)
+	devicesToDelete, userToDeleteFromDevices, err := this.resourcesEffectedByUserDelete(ctx, token, this.config.DeviceTopic)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	for _, id := range devicesToDelete {
-		err = this.deleteDevice(id)
+		err = this.deleteDevice(ctx, id)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 	}
 	for _, r := range userToDeleteFromDevices {
 		delete(r.UserPermissions, userId)
-		_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, this.config.DeviceTopic, r.Id, r.ResourcePermissions)
+		_, err, _ = this.permissionsV2Client.SetPermissionContext(ctx, client.InternalAdminToken, this.config.DeviceTopic, r.Id, r.ResourcePermissions)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 	}
 	//device-groups
-	deviceGroupToDelete, userToDeleteFromDeviceGroups, err := this.resourcesEffectedByUserDelete(token, this.config.DeviceGroupTopic)
+	deviceGroupToDelete, userToDeleteFromDeviceGroups, err := this.resourcesEffectedByUserDelete(ctx, token, this.config.DeviceGroupTopic)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	for _, id := range deviceGroupToDelete {
-		err = this.deleteDeviceGroup(id)
+		err = this.deleteDeviceGroup(ctx, id)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 	}
 	for _, r := range userToDeleteFromDeviceGroups {
 		delete(r.UserPermissions, userId)
-		_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, this.config.DeviceGroupTopic, r.Id, r.ResourcePermissions)
+		_, err, _ = this.permissionsV2Client.SetPermissionContext(ctx, client.InternalAdminToken, this.config.DeviceGroupTopic, r.Id, r.ResourcePermissions)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 	}
 	//hubs
-	hubToDelete, userToDeleteFromHubs, err := this.resourcesEffectedByUserDelete(token, this.config.HubTopic)
+	hubToDelete, userToDeleteFromHubs, err := this.resourcesEffectedByUserDelete(ctx, token, this.config.HubTopic)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	for _, id := range hubToDelete {
-		err = this.deleteHub(id)
+		err = this.deleteHub(ctx, id)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 	}
 	for _, r := range userToDeleteFromHubs {
 		delete(r.UserPermissions, userId)
-		_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, this.config.HubTopic, r.Id, r.ResourcePermissions)
+		_, err, _ = this.permissionsV2Client.SetPermissionContext(ctx, client.InternalAdminToken, this.config.HubTopic, r.Id, r.ResourcePermissions)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 	}
 	//locations
-	locationToDelete, userToDeleteFromLocations, err := this.resourcesEffectedByUserDelete(token, this.config.LocationTopic)
+	locationToDelete, userToDeleteFromLocations, err := this.resourcesEffectedByUserDelete(ctx, token, this.config.LocationTopic)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	for _, id := range locationToDelete {
-		err = this.deleteLocation(id)
+		err = this.deleteLocation(ctx, id)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 	}
 	for _, r := range userToDeleteFromLocations {
 		delete(r.UserPermissions, userId)
-		_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, this.config.LocationTopic, r.Id, r.ResourcePermissions)
+		_, err, _ = this.permissionsV2Client.SetPermissionContext(ctx, client.InternalAdminToken, this.config.LocationTopic, r.Id, r.ResourcePermissions)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
@@ -118,9 +120,9 @@ func (this *Controller) DeleteUser(adminToken string, userId string) (err error,
 
 var ResourcesEffectedByUserDelete_BATCH_SIZE int64 = 1000
 
-func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource string) (deleteResourceIds []string, deleteUserFromResource []client.Resource, err error) {
+func (this *Controller) resourcesEffectedByUserDelete(ctx context.Context, token jwt.Token, resource string) (deleteResourceIds []string, deleteUserFromResource []client.Resource, err error) {
 	userid := token.GetUserId()
-	err = this.iterateResource(token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Administrate, func(element client.Resource) {
+	err = this.iterateResource(ctx, token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Administrate, func(element client.Resource) {
 		if containsOtherAdmin(element.UserPermissions, userid) {
 			deleteUserFromResource = append(deleteUserFromResource, element)
 		} else {
@@ -131,7 +133,7 @@ func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource 
 		return
 	}
 
-	err = this.iterateResource(token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Read, func(element client.Resource) {
+	err = this.iterateResource(ctx, token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Read, func(element client.Resource) {
 		if !slices.ContainsFunc(deleteUserFromResource, func(resource client.Resource) bool {
 			return resource.Id == element.Id
 		}) {
@@ -145,7 +147,7 @@ func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource 
 	if err != nil {
 		return
 	}
-	err = this.iterateResource(token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Write, func(element client.Resource) {
+	err = this.iterateResource(ctx, token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Write, func(element client.Resource) {
 		if !slices.ContainsFunc(deleteUserFromResource, func(resource client.Resource) bool {
 			return resource.Id == element.Id
 		}) {
@@ -159,7 +161,7 @@ func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource 
 	if err != nil {
 		return
 	}
-	err = this.iterateResource(token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Execute, func(element client.Resource) {
+	err = this.iterateResource(ctx, token, resource, ResourcesEffectedByUserDelete_BATCH_SIZE, client.Execute, func(element client.Resource) {
 		if !slices.ContainsFunc(deleteUserFromResource, func(resource client.Resource) bool {
 			return resource.Id == element.Id
 		}) {
@@ -176,7 +178,7 @@ func (this *Controller) resourcesEffectedByUserDelete(token jwt.Token, resource 
 	return deleteResourceIds, deleteUserFromResource, err
 }
 
-func (this *Controller) iterateResource(token jwt.Token, resource string, batchsize int64, rights client.Permission, handler func(element client.Resource)) (err error) {
+func (this *Controller) iterateResource(ctx context.Context, token jwt.Token, resource string, batchsize int64, rights client.Permission, handler func(element client.Resource)) (err error) {
 	lastCount := batchsize
 	var offset int64 = 0
 	for lastCount == batchsize {
@@ -185,13 +187,13 @@ func (this *Controller) iterateResource(token jwt.Token, resource string, batchs
 			Offset: offset,
 		}
 		offset += batchsize
-		ids, err, _ := this.permissionsV2Client.ListAccessibleResourceIds(token.Jwt(), resource, options, rights)
+		ids, err, _ := this.permissionsV2Client.ListAccessibleResourceIdsContext(ctx, token.Jwt(), resource, options, rights)
 		if err != nil {
 			return err
 		}
 		lastCount = int64(len(ids))
 		for _, id := range ids {
-			element, err, _ := this.permissionsV2Client.GetResource(client.InternalAdminToken, resource, id)
+			element, err, _ := this.permissionsV2Client.GetResourceContext(ctx, client.InternalAdminToken, resource, id)
 			if err != nil {
 				return err
 			}

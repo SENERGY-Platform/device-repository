@@ -74,7 +74,7 @@ func TestAspectClasses(t *testing.T) {
 	)
 
 	t.Run("create with given id", func(t *testing.T) {
-		result, err, _ := c.SetAspectClass(client.InternalAdminToken, models.AspectClass{Id: airClass, Name: "air"})
+		result, err, _ := c.SetAspectClass(context.Background(), client.InternalAdminToken, models.AspectClass{Id: airClass, Name: "air"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -85,7 +85,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("create without id generates one", func(t *testing.T) {
-		result, err, _ := c.SetAspectClass(client.InternalAdminToken, models.AspectClass{Name: "generated"})
+		result, err, _ := c.SetAspectClass(context.Background(), client.InternalAdminToken, models.AspectClass{Name: "generated"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -94,7 +94,7 @@ func TestAspectClasses(t *testing.T) {
 			t.Error("unexpected generated id", result.Id)
 			return
 		}
-		read, err, _ := c.GetAspectClass(result.Id)
+		read, err, _ := c.GetAspectClass(context.Background(), result.Id)
 		if err != nil {
 			t.Error(err)
 			return
@@ -102,7 +102,7 @@ func TestAspectClasses(t *testing.T) {
 		if !reflect.DeepEqual(read, result) {
 			t.Error("unexpected result", read, result)
 		}
-		err, _ = c.DeleteAspectClass(client.InternalAdminToken, result.Id)
+		err, _ = c.DeleteAspectClass(context.Background(), client.InternalAdminToken, result.Id)
 		if err != nil {
 			t.Error(err)
 		}
@@ -110,7 +110,7 @@ func TestAspectClasses(t *testing.T) {
 
 	t.Run("create remaining", func(t *testing.T) {
 		for id, name := range map[string]string{waterClass: "water", fanClass: "fan"} {
-			_, err, _ := c.SetAspectClass(client.InternalAdminToken, models.AspectClass{Id: id, Name: name})
+			_, err, _ := c.SetAspectClass(context.Background(), client.InternalAdminToken, models.AspectClass{Id: id, Name: name})
 			if err != nil {
 				t.Error(err)
 				return
@@ -119,7 +119,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("read", func(t *testing.T) {
-		result, err, _ := c.GetAspectClass(airClass)
+		result, err, _ := c.GetAspectClass(context.Background(), airClass)
 		if err != nil {
 			t.Error(err)
 			return
@@ -130,7 +130,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("read unknown", func(t *testing.T) {
-		_, err, code := c.GetAspectClass(models.URN_PREFIX + "aspect-class:unknown")
+		_, err, code := c.GetAspectClass(context.Background(), models.URN_PREFIX+"aspect-class:unknown")
 		if err == nil {
 			t.Error("expected error for unknown aspect-class")
 			return
@@ -141,12 +141,12 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("update", func(t *testing.T) {
-		_, err, _ := c.SetAspectClass(client.InternalAdminToken, models.AspectClass{Id: airClass, Name: "air updated"})
+		_, err, _ := c.SetAspectClass(context.Background(), client.InternalAdminToken, models.AspectClass{Id: airClass, Name: "air updated"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		result, err, _ := c.GetAspectClass(airClass)
+		result, err, _ := c.GetAspectClass(context.Background(), airClass)
 		if err != nil {
 			t.Error(err)
 			return
@@ -157,7 +157,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("list sorted by name", func(t *testing.T) {
-		result, total, err, _ := c.ListAspectClasses(model.AspectClassListOptions{SortBy: "name.asc"})
+		result, total, err, _ := c.ListAspectClasses(context.Background(), model.AspectClassListOptions{SortBy: "name.asc"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -171,7 +171,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("list sorted by name desc", func(t *testing.T) {
-		result, _, err, _ := c.ListAspectClasses(model.AspectClassListOptions{SortBy: "name.desc"})
+		result, _, err, _ := c.ListAspectClasses(context.Background(), model.AspectClassListOptions{SortBy: "name.desc"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -182,7 +182,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("list with search", func(t *testing.T) {
-		result, total, err, _ := c.ListAspectClasses(model.AspectClassListOptions{Search: "wat", SortBy: "name.asc"})
+		result, total, err, _ := c.ListAspectClasses(context.Background(), model.AspectClassListOptions{Search: "wat", SortBy: "name.asc"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -196,7 +196,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("list with ids", func(t *testing.T) {
-		result, total, err, _ := c.ListAspectClasses(model.AspectClassListOptions{Ids: []string{fanClass, waterClass}, SortBy: "name.asc"})
+		result, total, err, _ := c.ListAspectClasses(context.Background(), model.AspectClassListOptions{Ids: []string{fanClass, waterClass}, SortBy: "name.asc"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -210,7 +210,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("list with paging", func(t *testing.T) {
-		result, total, err, _ := c.ListAspectClasses(model.AspectClassListOptions{Limit: 1, Offset: 1, SortBy: "name.asc"})
+		result, total, err, _ := c.ListAspectClasses(context.Background(), model.AspectClassListOptions{Limit: 1, Offset: 1, SortBy: "name.asc"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -225,14 +225,14 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("validate", func(t *testing.T) {
-		err, _ := c.ValidateAspectClass(models.AspectClass{Id: airClass, Name: "air"})
+		err, _ := c.ValidateAspectClass(context.Background(), models.AspectClass{Id: airClass, Name: "air"})
 		if err != nil {
 			t.Error(err)
 		}
 	})
 
 	t.Run("validate missing id", func(t *testing.T) {
-		err, code := c.ValidateAspectClass(models.AspectClass{Name: "air"})
+		err, code := c.ValidateAspectClass(context.Background(), models.AspectClass{Name: "air"})
 		if err == nil {
 			t.Error("expected error for missing id")
 			return
@@ -243,7 +243,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("validate invalid id", func(t *testing.T) {
-		err, code := c.ValidateAspectClass(models.AspectClass{Id: "air", Name: "air"})
+		err, code := c.ValidateAspectClass(context.Background(), models.AspectClass{Id: "air", Name: "air"})
 		if err == nil {
 			t.Error("expected error for id without urn prefix")
 			return
@@ -254,7 +254,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("validate missing name", func(t *testing.T) {
-		err, code := c.ValidateAspectClass(models.AspectClass{Id: airClass})
+		err, code := c.ValidateAspectClass(context.Background(), models.AspectClass{Id: airClass})
 		if err == nil {
 			t.Error("expected error for missing name")
 			return
@@ -265,7 +265,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("write without admin rights", func(t *testing.T) {
-		_, err, code := c.SetAspectClass(userToken, models.AspectClass{Id: models.URN_PREFIX + "aspect-class:forbidden", Name: "forbidden"})
+		_, err, code := c.SetAspectClass(context.Background(), userToken, models.AspectClass{Id: models.URN_PREFIX + "aspect-class:forbidden", Name: "forbidden"})
 		if err == nil {
 			t.Error("expected error for non-admin token")
 			return
@@ -276,7 +276,7 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("delete without admin rights", func(t *testing.T) {
-		err, code := c.DeleteAspectClass(userToken, fanClass)
+		err, code := c.DeleteAspectClass(context.Background(), userToken, fanClass)
 		if err == nil {
 			t.Error("expected error for non-admin token")
 			return
@@ -287,19 +287,19 @@ func TestAspectClasses(t *testing.T) {
 	})
 
 	t.Run("validate delete", func(t *testing.T) {
-		err, _ := c.ValidateAspectClassDelete(fanClass)
+		err, _ := c.ValidateAspectClassDelete(context.Background(), fanClass)
 		if err != nil {
 			t.Error(err)
 		}
 	})
 
 	t.Run("delete", func(t *testing.T) {
-		err, _ := c.DeleteAspectClass(client.InternalAdminToken, fanClass)
+		err, _ := c.DeleteAspectClass(context.Background(), client.InternalAdminToken, fanClass)
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, code := c.GetAspectClass(fanClass)
+		_, err, code := c.GetAspectClass(context.Background(), fanClass)
 		if err == nil {
 			t.Error("expected the aspect-class to be gone")
 			return
@@ -307,7 +307,7 @@ func TestAspectClasses(t *testing.T) {
 		if code != http.StatusNotFound {
 			t.Error("unexpected code", code)
 		}
-		_, total, err, _ := c.ListAspectClasses(model.AspectClassListOptions{})
+		_, total, err, _ := c.ListAspectClasses(context.Background(), model.AspectClassListOptions{})
 		if err != nil {
 			t.Error(err)
 			return

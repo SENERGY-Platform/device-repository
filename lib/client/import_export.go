@@ -18,12 +18,14 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"net/http"
+	"net/url"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"net/http"
-	"net/url"
 )
 
 type ImportExportOptions = model.ImportExportOptions
@@ -33,7 +35,7 @@ type ResourcePermissions = permissions.ResourcePermissions
 type PermissionsMap = permissions.PermissionsMap
 type ImportFromOptions = model.ImportFromOptions
 
-func (c *Client) Export(token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int) {
+func (c *Client) Export(ctx context.Context, token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int) {
 	req, err := controller.GetExportHttpRequest(c.baseUrl, token, options)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -42,7 +44,7 @@ func (c *Client) Export(token string, options model.ImportExportOptions) (result
 	return do[model.ImportExport](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) Import(token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int) {
+func (c *Client) Import(ctx context.Context, token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int) {
 	queryString := ""
 	query := url.Values{}
 	if options.IncludeOwnedInformation {
@@ -55,7 +57,7 @@ func (c *Client) Import(token string, importModel model.ImportExport, options mo
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/import"+queryString, bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/import"+queryString, bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -63,7 +65,7 @@ func (c *Client) Import(token string, importModel model.ImportExport, options mo
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ImportFrom(token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int) {
+func (c *Client) ImportFrom(ctx context.Context, token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int) {
 	b, err := json.Marshal(options)
 	if err != nil {
 		return err, http.StatusBadRequest
@@ -76,7 +78,7 @@ func (c *Client) ImportFrom(token string, includeOwnedInformation bool, options 
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/import-from"+queryString, bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/import-from"+queryString, bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

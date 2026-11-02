@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -28,7 +29,7 @@ import (
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
-func (this *Controller) ListGraphs(token string, options model.GraphListOptions) (result []models.Graph, total int64, err error, errCode int) {
+func (this *Controller) ListGraphs(ctx context.Context, token string, options model.GraphListOptions) (result []models.Graph, total int64, err error, errCode int) {
 	ids := []string{}
 	permissionFlag := options.Permission
 	if permissionFlag == models.UnsetPermissionFlag {
@@ -43,7 +44,7 @@ func (this *Controller) ListGraphs(token string, options model.GraphListOptions)
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIds(token, this.config.GraphTopic, client.ListOptions{}, client.Permission(permissionFlag))
+			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIdsContext(ctx, token, this.config.GraphTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -51,7 +52,7 @@ func (this *Controller) ListGraphs(token string, options model.GraphListOptions)
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.GraphTopic, options.Ids, client.Permission(permissionFlag))
+		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.GraphTopic, options.Ids, client.Permission(permissionFlag))
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}
@@ -64,7 +65,7 @@ func (this *Controller) ListGraphs(token string, options model.GraphListOptions)
 
 	options.Ids = ids
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListGraphs(ctx, options)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -72,15 +73,15 @@ func (this *Controller) ListGraphs(token string, options model.GraphListOptions)
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) ReadGraph(token string, id string) (result models.Graph, err error, errCode int) {
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.GraphTopic, id, client.Read)
+func (this *Controller) ReadGraph(ctx context.Context, token string, id string) (result models.Graph, err error, errCode int) {
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.GraphTopic, id, client.Read)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	if !ok {
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetGraph(ctx, id)
 	if err != nil {
 		return models.Graph{}, err, errCode
@@ -91,8 +92,8 @@ func (this *Controller) ReadGraph(token string, id string) (result models.Graph,
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) removeDeviceFromGraphs(deviceId string) error {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) removeDeviceFromGraphs(ctx context.Context, deviceId string) error {
+	ctx, _ = getTimeoutContext(ctx)
 	graphs, _, err := this.db.ListGraphs(ctx, model.GraphListOptions{DeviceIds: []string{deviceId}})
 	if err != nil {
 		return err
@@ -108,7 +109,7 @@ func (this *Controller) removeDeviceFromGraphs(deviceId string) error {
 			this.config.GetLogger().Error("graph.DeleteNode created invalid graph", "graphId", graph.Id, "deviceId", deviceId, "error", err)
 			return err
 		}
-		err = this.setGraph(graph)
+		err = this.setGraph(ctx, graph)
 		if err != nil {
 			this.config.GetLogger().Error("unable to update graph to remove device", "graphId", graph.Id, "deviceId", deviceId, "error", err)
 			return err
@@ -117,7 +118,7 @@ func (this *Controller) removeDeviceFromGraphs(deviceId string) error {
 	return nil
 }
 
-func (this *Controller) SetGraph(token string, graph models.Graph) (result models.Graph, err error, code int) {
+func (this *Controller) SetGraph(ctx context.Context, token string, graph models.Graph) (result models.Graph, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -126,7 +127,7 @@ func (this *Controller) SetGraph(token string, graph models.Graph) (result model
 		graph.GenerateId()
 	} else {
 		if !jwtToken.IsAdmin() {
-			ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.GraphTopic, graph.Id, client.Write)
+			ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.GraphTopic, graph.Id, client.Write)
 			if err != nil {
 				return graph, err, code
 			}
@@ -136,7 +137,7 @@ func (this *Controller) SetGraph(token string, graph models.Graph) (result model
 		}
 	}
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	original, exists, err := this.db.GetGraph(ctx, graph.Id)
 	if err != nil {
 		return graph, err, code
@@ -153,7 +154,7 @@ func (this *Controller) SetGraph(token string, graph models.Graph) (result model
 
 	if exists && original.Owner != graph.Owner && original.Owner != "" {
 		if !jwtToken.IsAdmin() {
-			ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.GraphTopic, graph.Id, client.Administrate)
+			ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.GraphTopic, graph.Id, client.Administrate)
 			if err != nil {
 				return graph, err, code
 			}
@@ -162,7 +163,7 @@ func (this *Controller) SetGraph(token string, graph models.Graph) (result model
 			}
 		}
 
-		rights, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.GraphTopic, graph.Id)
+		rights, err, code := this.permissionsV2Client.GetResourceContext(ctx, client.InternalAdminToken, this.config.GraphTopic, graph.Id)
 		if err != nil && code != http.StatusNotFound {
 			this.config.GetLogger().Error("unable to get permission resource", "error", err)
 			debug.PrintStack()
@@ -181,7 +182,7 @@ func (this *Controller) SetGraph(token string, graph models.Graph) (result model
 		return graph, fmt.Errorf("invalid graph: %w", err), http.StatusBadRequest
 	}
 
-	err = this.setGraph(graph)
+	err = this.setGraph(ctx, graph)
 	if err != nil {
 		return graph, err, http.StatusInternalServerError
 	}
@@ -189,26 +190,26 @@ func (this *Controller) SetGraph(token string, graph models.Graph) (result model
 	return graph, nil, http.StatusOK
 }
 
-func (this *Controller) setGraph(graph models.Graph) (err error) {
+func (this *Controller) setGraph(ctx context.Context, graph models.Graph) (err error) {
 	this.config.GetLogger().Debug("create/update graph", "id", graph.Id)
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetGraph(ctx, graph, this.setGraphSyncHandler)
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.SetGraph(ctx, graph, withContext(ctx, this.setGraphSyncHandler))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (this *Controller) setGraphSyncHandler(graph models.Graph) (err error) {
-	err = this.EnsureInitialRights(this.config.GraphTopic, graph.Id, graph.Owner)
+func (this *Controller) setGraphSyncHandler(ctx context.Context, graph models.Graph) (err error) {
+	err = this.EnsureInitialRights(ctx, this.config.GraphTopic, graph.Id, graph.Owner)
 	if err != nil {
 		return fmt.Errorf("unable to ensure initial graph permissions: %w", err)
 	}
 	return this.publisher.PublishGraph(graph)
 }
 
-func (this *Controller) DeleteGraph(token string, id string) (error, int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) DeleteGraph(ctx context.Context, token string, id string) (error, int) {
+	ctx, _ = getTimeoutContext(ctx)
 	_, exists, err := this.db.GetGraph(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -216,31 +217,31 @@ func (this *Controller) DeleteGraph(token string, id string) (error, int) {
 	if !exists {
 		return nil, http.StatusOK
 	}
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.GraphTopic, id, client.Administrate)
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.GraphTopic, id, client.Administrate)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if !ok {
 		return errors.New("access denied"), http.StatusForbidden
 	}
-	err = this.deleteGraph(id)
+	err = this.deleteGraph(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteGraphSyncHandler(old models.Graph) (err error) {
-	err = this.RemoveRights(this.config.GraphTopic, old.Id)
+func (this *Controller) deleteGraphSyncHandler(ctx context.Context, old models.Graph) (err error) {
+	err = this.RemoveRights(ctx, this.config.GraphTopic, old.Id)
 	if err != nil {
 		return err
 	}
 	return this.publisher.PublishGraphDelete(old.Id)
 }
 
-func (this *Controller) deleteGraph(id string) error {
-	ctx, _ := getTimeoutContext()
-	err := this.db.RemoveGraph(ctx, id, this.deleteGraphSyncHandler)
+func (this *Controller) deleteGraph(ctx context.Context, id string) error {
+	ctx, _ = getTimeoutContext(ctx)
+	err := this.db.RemoveGraph(ctx, id, withContext(ctx, this.deleteGraphSyncHandler))
 	if err != nil {
 		return err
 	}

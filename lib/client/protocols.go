@@ -18,23 +18,25 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetProtocol(token string, protocol models.Protocol) (result models.Protocol, err error, code int) {
+func (c *Client) SetProtocol(ctx context.Context, token string, protocol models.Protocol) (result models.Protocol, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(protocol)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if protocol.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/protocols", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/protocols", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/protocols/"+url.PathEscape(protocol.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/protocols/"+url.PathEscape(protocol.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -43,8 +45,8 @@ func (c *Client) SetProtocol(token string, protocol models.Protocol) (result mod
 	return do[models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteProtocol(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/protocols/"+url.PathEscape(id), nil)
+func (c *Client) DeleteProtocol(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/protocols/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -52,8 +54,8 @@ func (c *Client) DeleteProtocol(token string, id string) (err error, code int) {
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadProtocol(id string, token string) (result models.Protocol, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/protocols/"+id, nil)
+func (c *Client) ReadProtocol(ctx context.Context, id string, token string) (result models.Protocol, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/protocols/"+id, nil)
 	req.Header.Set("Authorization", token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -61,8 +63,8 @@ func (c *Client) ReadProtocol(id string, token string) (result models.Protocol, 
 	return do[models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListProtocols(token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/protocols?limit="+strconv.FormatInt(limit, 10)+
+func (c *Client) ListProtocols(ctx context.Context, token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/protocols?limit="+strconv.FormatInt(limit, 10)+
 		"&offset="+strconv.FormatInt(offset, 10)+"&sort="+sort, nil)
 	req.Header.Set("Authorization", token)
 	if err != nil {
@@ -71,6 +73,6 @@ func (c *Client) ListProtocols(token string, limit int64, offset int64, sort str
 	return do[[]models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateProtocol(protocol models.Protocol) (err error, code int) {
-	return c.validate("/protocols", protocol)
+func (c *Client) ValidateProtocol(ctx context.Context, protocol models.Protocol) (err error, code int) {
+	return c.validate(ctx, "/protocols", protocol)
 }

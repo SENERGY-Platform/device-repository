@@ -74,7 +74,7 @@ func TestAspectClassAssignment(t *testing.T) {
 
 	t.Run("create aspect-classes", func(t *testing.T) {
 		for _, id := range []string{envClass, deviceCls, unusedCls} {
-			_, err, _ := c.SetAspectClass(client.InternalAdminToken, models.AspectClass{Id: id, Name: id})
+			_, err, _ := c.SetAspectClass(context.Background(), client.InternalAdminToken, models.AspectClass{Id: id, Name: id})
 			if err != nil {
 				t.Error(err)
 				return
@@ -99,7 +99,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	}
 
 	t.Run("sub aspects inherit the root class", func(t *testing.T) {
-		result, err, _ := c.SetAspect(client.InternalAdminToken, airAspect)
+		result, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, airAspect)
 		if err != nil {
 			t.Error(err)
 			return
@@ -118,7 +118,7 @@ func TestAspectClassAssignment(t *testing.T) {
 			models.URN_PREFIX + "aspect:inside_air",
 			models.URN_PREFIX + "aspect:morning_air",
 		} {
-			node, err, _ := c.GetAspectNode(id)
+			node, err, _ := c.GetAspectNode(context.Background(), id)
 			if err != nil {
 				t.Error(err)
 				return
@@ -138,7 +138,7 @@ func TestAspectClassAssignment(t *testing.T) {
 				{Id: models.URN_PREFIX + "aspect:repeat_sub", Name: "repeat_sub", AspectClassId: deviceCls},
 			},
 		}
-		_, err, _ := c.SetAspect(client.InternalAdminToken, repeated)
+		_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, repeated)
 		if err != nil {
 			t.Error(err)
 		}
@@ -153,7 +153,7 @@ func TestAspectClassAssignment(t *testing.T) {
 				{Id: models.URN_PREFIX + "aspect:conflict_sub", Name: "conflict_sub", AspectClassId: deviceCls},
 			},
 		}
-		_, err, code := c.SetAspect(client.InternalAdminToken, conflicting)
+		_, err, code := c.SetAspect(context.Background(), client.InternalAdminToken, conflicting)
 		if err == nil {
 			t.Error("expected an error for two classes in one hierarchy")
 			return
@@ -171,7 +171,7 @@ func TestAspectClassAssignment(t *testing.T) {
 				{Id: models.URN_PREFIX + "aspect:classified_sub", Name: "classified_sub", AspectClassId: envClass},
 			},
 		}
-		_, err, code := c.SetAspect(client.InternalAdminToken, fromBelow)
+		_, err, code := c.SetAspect(context.Background(), client.InternalAdminToken, fromBelow)
 		if err == nil {
 			t.Error("expected an error: only the root assigns the class")
 			return
@@ -182,7 +182,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("unknown class is rejected", func(t *testing.T) {
-		_, err, code := c.SetAspect(client.InternalAdminToken, models.Aspect{
+		_, err, code := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id:            models.URN_PREFIX + "aspect:unknown_class",
 			Name:          "unknown_class",
 			AspectClassId: unknownCls,
@@ -197,7 +197,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("hierarchy without class stays allowed", func(t *testing.T) {
-		_, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{
+		_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id:   models.URN_PREFIX + "aspect:classless",
 			Name: "classless",
 			SubAspects: []models.Aspect{
@@ -210,7 +210,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("filter aspects by aspect-class", func(t *testing.T) {
-		result, total, err, _ := c.ListAspects(model.AspectListOptions{AspectClassIds: []string{envClass}})
+		result, total, err, _ := c.ListAspects(context.Background(), model.AspectListOptions{AspectClassIds: []string{envClass}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -222,7 +222,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("filter aspect-nodes by aspect-class", func(t *testing.T) {
-		result, total, err, _ := c.ListAspectNodes(model.AspectListOptions{AspectClassIds: []string{envClass}})
+		result, total, err, _ := c.ListAspectNodes(context.Background(), model.AspectListOptions{AspectClassIds: []string{envClass}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -247,7 +247,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("filter by two aspect-classes", func(t *testing.T) {
-		_, total, err, _ := c.ListAspectNodes(model.AspectListOptions{AspectClassIds: []string{envClass, deviceCls}})
+		_, total, err, _ := c.ListAspectNodes(context.Background(), model.AspectListOptions{AspectClassIds: []string{envClass, deviceCls}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -259,7 +259,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("filter by an empty aspect-class list", func(t *testing.T) {
-		_, total, err, _ := c.ListAspectNodes(model.AspectListOptions{AspectClassIds: []string{}})
+		_, total, err, _ := c.ListAspectNodes(context.Background(), model.AspectListOptions{AspectClassIds: []string{}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -270,7 +270,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("without the filter nothing is filtered", func(t *testing.T) {
-		_, total, err, _ := c.ListAspectNodes(model.AspectListOptions{})
+		_, total, err, _ := c.ListAspectNodes(context.Background(), model.AspectListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -281,7 +281,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("delete a class still in use", func(t *testing.T) {
-		err, code := c.DeleteAspectClass(client.InternalAdminToken, envClass)
+		err, code := c.DeleteAspectClass(context.Background(), client.InternalAdminToken, envClass)
 		if err == nil {
 			t.Error("expected an error for an aspect-class still in use")
 			return
@@ -303,7 +303,7 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("validate delete of a class still in use", func(t *testing.T) {
-		err, code := c.ValidateAspectClassDelete(envClass)
+		err, code := c.ValidateAspectClassDelete(context.Background(), envClass)
 		if err == nil {
 			t.Error("expected an error")
 			return
@@ -314,19 +314,19 @@ func TestAspectClassAssignment(t *testing.T) {
 	})
 
 	t.Run("delete an unused class", func(t *testing.T) {
-		err, _ := c.DeleteAspectClass(client.InternalAdminToken, unusedCls)
+		err, _ := c.DeleteAspectClass(context.Background(), client.InternalAdminToken, unusedCls)
 		if err != nil {
 			t.Error(err)
 		}
 	})
 
 	t.Run("delete becomes possible once the aspects are gone", func(t *testing.T) {
-		err, _ := c.DeleteAspect(client.InternalAdminToken, models.URN_PREFIX+"aspect:air")
+		err, _ := c.DeleteAspect(context.Background(), client.InternalAdminToken, models.URN_PREFIX+"aspect:air")
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		err, _ = c.DeleteAspectClass(client.InternalAdminToken, envClass)
+		err, _ = c.DeleteAspectClass(context.Background(), client.InternalAdminToken, envClass)
 		if err != nil {
 			t.Error(err)
 		}

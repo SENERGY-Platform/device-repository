@@ -17,12 +17,13 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 )
 
 // MirrorUpdate pulls the collections with a newer last-update timestamp in the source.
 // uncheckedCollections are pulled without timestamp check.
-func (this *Controller) MirrorUpdate(uncheckedCollections ...string) error {
+func (this *Controller) MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error {
 	if !this.config.AsMgwMirror {
 		return fmt.Errorf("not a mirror")
 	}

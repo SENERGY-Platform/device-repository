@@ -18,6 +18,7 @@ package util
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -28,10 +29,12 @@ import (
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/golang-jwt/jwt"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type MirrorPull interface {
-	MirrorUpdate(uncheckedCollections ...string) error
+	MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error
 }
 
 const defaultMissPullTimeout = 10 * time.Second
@@ -90,12 +93,13 @@ func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		req, err := http.NewRequest(r.Method, this.config.MgwMirrorSourceUrl+endpoint, strings.NewReader(string(body)))
+		req, err := http.NewRequestWithContext(r.Context(), r.Method, this.config.MgwMirrorSourceUrl+endpoint, strings.NewReader(string(body)))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		req.Header = r.Header
+		otel.GetTextMapPropagator().Inject(req.Context(), propagation.HeaderCarrier(req.Header))
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -103,7 +107,7 @@ func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 
 		if resp.StatusCode < 300 {
-			err = this.pull.MirrorUpdate()
+			err = this.pull.MirrorUpdate(r.Context())
 			if err != nil {
 				this.config.GetLogger().Error("unable to update mirror", "error", err)
 			}
@@ -172,7 +176,7 @@ func (this *MirrorMiddleware) serveGetWithMissPull(w http.ResponseWriter, r *htt
 	}
 	done := make(chan error, 1)
 	go func() {
-		done <- this.pull.MirrorUpdate(uncheckedCollections...)
+		done <- this.pull.MirrorUpdate(context.WithoutCancel(r.Context()), uncheckedCollections...)
 	}()
 	select {
 	case err := <-done:

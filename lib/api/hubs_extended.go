@@ -61,7 +61,7 @@ func (this *ExtendedHubEndpoints) Get(config configuration.Config, router *http.
 		if permission == models.UnsetPermissionFlag {
 			permission = model.READ
 		}
-		result, err, errCode := control.ReadExtendedHub(id, util.GetAuthToken(request), permission)
+		result, err, errCode := control.ReadExtendedHub(request.Context(), id, util.GetAuthToken(request), permission)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -157,7 +157,7 @@ func (this *ExtendedHubEndpoints) List(config configuration.Config, router *http
 			hubListOptions.Permission = model.READ
 		}
 
-		result, total, err, errCode := control.ListExtendedHubs(util.GetAuthToken(request), hubListOptions)
+		result, total, err, errCode := control.ListExtendedHubs(request.Context(), util.GetAuthToken(request), hubListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

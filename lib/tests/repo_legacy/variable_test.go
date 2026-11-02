@@ -18,6 +18,10 @@ package repo_legacy
 
 import (
 	"context"
+	"log"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/database"
@@ -26,9 +30,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"log"
-	"sync"
-	"testing"
 )
 
 func TestVariableValidation(t *testing.T) {
@@ -85,7 +86,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = ctrl.SetConcept(AdminToken, models.Concept{
+	_, err, _ = ctrl.SetConcept(context.Background(), AdminToken, models.Concept{
 		Id:                   "concept",
 		Name:                 "concept",
 		CharacteristicIds:    []string{"c1", "c2"},
@@ -96,7 +97,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = ctrl.SetFunction(AdminToken, models.Function{
+	_, err, _ = ctrl.SetFunction(context.Background(), AdminToken, models.Function{
 		Id:        "f1",
 		Name:      "f1",
 		ConceptId: "",
@@ -106,7 +107,7 @@ func TestVariableValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = ctrl.SetFunction(AdminToken, models.Function{
+	_, err, _ = ctrl.SetFunction(context.Background(), AdminToken, models.Function{
 		Id:        "f2",
 		Name:      "f2",
 		ConceptId: "concept",
@@ -575,7 +576,7 @@ func TestVariableValidation(t *testing.T) {
 
 func testValidateVariable(ctrl *controller.Controller, expectError bool, variable models.ContentVariable) func(t *testing.T) {
 	return func(t *testing.T) {
-		err, _ := ctrl.ValidateVariable(variable, "json", model.ValidationOptions{})
+		err, _ := ctrl.ValidateVariable(context.Background(), variable, "json", model.ValidationOptions{})
 		if (err != nil) != expectError {
 			t.Error(expectError, err)
 		}

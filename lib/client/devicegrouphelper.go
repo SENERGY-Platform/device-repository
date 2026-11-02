@@ -18,6 +18,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -27,7 +28,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 )
 
-func (c *Client) DeviceGroupHelper(token string, deviceIds []string, options model.DeviceGroupHelperOptions) (result model.DeviceGroupHelperResult, err error, code int) {
+func (c *Client) DeviceGroupHelper(ctx context.Context, token string, deviceIds []string, options model.DeviceGroupHelperOptions) (result model.DeviceGroupHelperResult, err error, code int) {
 	query := url.Values{}
 	if options.Search != "" {
 		query.Set("search", options.Search)
@@ -55,7 +56,7 @@ func (c *Client) DeviceGroupHelper(token string, deviceIds []string, options mod
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/device-group-helper"+queryString, bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/device-group-helper"+queryString, bytes.NewBuffer(b))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

@@ -17,35 +17,37 @@
 package controller
 
 import (
+	"context"
 	"errors"
+	"net/http"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/database"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
-	"net/http"
 )
 
-func (this *Controller) setAspectNodes(aspect models.Aspect) (err error) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) setAspectNodes(ctx context.Context, aspect models.Aspect) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
 	err = this.db.RemoveAspectNodesByRootId(ctx, aspect.Id)
 	if err != nil {
 		return err
 	}
-	_, err = CreateAspectNodes(this.db, aspect, aspect.Id, "", []string{})
+	_, err = CreateAspectNodes(ctx, this.db, aspect, aspect.Id, "", []string{})
 	return err
 }
 
-func CreateAspectNodes(db database.Database, aspect models.Aspect, rootId string, parentId string, ancestors []string) (descendents []string, err error) {
+func CreateAspectNodes(ctx context.Context, db database.Database, aspect models.Aspect, rootId string, parentId string, ancestors []string) (descendents []string, err error) {
 	descendents = []string{}
 	children := []string{}
 	for _, sub := range aspect.SubAspects {
 		children = append(children, sub.Id)
-		temp, err := CreateAspectNodes(db, sub, rootId, aspect.Id, append(ancestors, aspect.Id))
+		temp, err := CreateAspectNodes(ctx, db, sub, rootId, aspect.Id, append(ancestors, aspect.Id))
 		if err != nil {
 			return descendents, err
 		}
 		descendents = append(descendents, temp...)
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	err = db.SetAspectNode(ctx, models.AspectNode{
 		Id:            aspect.Id,
 		Name:          aspect.Name,
@@ -59,8 +61,8 @@ func CreateAspectNodes(db database.Database, aspect models.Aspect, rootId string
 	return append(descendents, aspect.Id), err
 }
 
-func (this *Controller) ListAspectNodes(listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListAspectNodes(ctx context.Context, listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListAspectNodes(ctx, listOptions)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -68,8 +70,8 @@ func (this *Controller) ListAspectNodes(listOptions model.AspectListOptions) (re
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspectNode(id string) (result models.AspectNode, err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetAspectNode(ctx context.Context, id string) (result models.AspectNode, err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetAspectNode(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -80,9 +82,9 @@ func (this *Controller) GetAspectNode(id string) (result models.AspectNode, err 
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspectNodes() (result []models.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNodes(ctx context.Context) (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllAspectNodes(ctx)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -90,9 +92,9 @@ func (this *Controller) GetAspectNodes() (result []models.AspectNode, err error,
 	return
 }
 
-func (this *Controller) GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) (result []models.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAspectNodesWithMeasuringFunction(ctx, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -100,9 +102,9 @@ func (this *Controller) GetAspectNodesWithMeasuringFunction(ancestors bool, desc
 	return
 }
 
-func (this *Controller) GetAspectNodesWithControllingFunction(ancestors bool, descendants bool) (result []models.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNodesWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAspectNodesWithControllingFunction(ctx, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -110,9 +112,9 @@ func (this *Controller) GetAspectNodesWithControllingFunction(ancestors bool, de
 	return
 }
 
-func (this *Controller) GetAspectNodesByIdList(ids []string) (result []models.AspectNode, err error, code int) {
+func (this *Controller) GetAspectNodesByIdList(ctx context.Context, ids []string) (result []models.AspectNode, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAspectNodesByIdList(ctx, ids)
 	if err != nil {
 		code = http.StatusInternalServerError

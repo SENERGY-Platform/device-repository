@@ -71,7 +71,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 	var protocol models.Protocol
 
 	t.Run("create protocols", func(t *testing.T) {
-		protocol, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		protocol, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Name:    "p1",
 			Handler: "p1",
 			ProtocolSegments: []models.ProtocolSegment{{
@@ -87,7 +87,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 
 	var deviceType models.DeviceType
 	t.Run("create device-types", func(t *testing.T) {
-		deviceType, err, _ = c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		deviceType, err, _ = c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Name: "dt1",
 			Services: []models.Service{
 				{
@@ -108,7 +108,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 	t.Run("create devices", func(t *testing.T) {
 		for i := range 10 {
 			id := "d" + strconv.Itoa(i)
-			d, err, _ := c.CreateDevice(userjwt, models.Device{
+			d, err, _ := c.CreateDevice(context.Background(), userjwt, models.Device{
 				LocalId:      id,
 				Name:         id,
 				DeviceTypeId: deviceType.Id,
@@ -125,7 +125,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 	var g2 models.Graph
 	var g3 models.Graph
 	t.Run("create graphs", func(t *testing.T) {
-		g1, err, _ = c.SetGraph(userjwt, models.Graph{
+		g1, err, _ = c.SetGraph(context.Background(), userjwt, models.Graph{
 			Attributes: []models.Attribute{{Key: "name", Value: "g1"}},
 			Nodes: []models.Node{
 				{Id: "1"},
@@ -150,7 +150,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 		if g1.Owner != userid {
 			t.Error("unexpected owner: ", g1.Owner)
 		}
-		g2, err, _ = c.SetGraph(userjwt, models.Graph{
+		g2, err, _ = c.SetGraph(context.Background(), userjwt, models.Graph{
 			Attributes: []models.Attribute{{Key: "name", Value: "g2"}},
 			Nodes: []models.Node{
 				{Id: "1"},
@@ -175,7 +175,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 		if g2.Owner != userid {
 			t.Error("unexpected owner: ", g2.Owner)
 		}
-		g3, err, _ = c.SetGraph(userjwt, models.Graph{
+		g3, err, _ = c.SetGraph(context.Background(), userjwt, models.Graph{
 			Attributes: []models.Attribute{{Key: "name", Value: "g3"}},
 			Nodes: []models.Node{
 				{Id: "1"},
@@ -204,7 +204,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 
 	t.Run("list graphs", func(t *testing.T) {
 		t.Run("no params", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -229,7 +229,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("limit offset", func(t *testing.T) {
-			all, _, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{SortBy: "id.asc"})
+			all, _, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{SortBy: "id.asc"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -239,7 +239,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 				return
 			}
 
-			limited, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{SortBy: "id.asc", Limit: 1, Offset: 1})
+			limited, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{SortBy: "id.asc", Limit: 1, Offset: 1})
 			if err != nil {
 				t.Error(err)
 				return
@@ -257,7 +257,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("by ids", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{Ids: []string{g2.Id, g3.Id}})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{Ids: []string{g2.Id, g3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -282,7 +282,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("by device ids 0", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[0]}})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[0]}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -307,7 +307,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("by device ids 0,1", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[0], deviceIds[1]}})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[0], deviceIds[1]}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -332,7 +332,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("by device ids 0,2", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[0], deviceIds[2]}})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[0], deviceIds[2]}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -358,7 +358,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 		})
 		t.Run("by device ids 2", func(t *testing.T) {
 			//device is not assigned to any graph
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[2]}})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{DeviceIds: []string{deviceIds[2]}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -371,7 +371,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("by attr name", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{Attributes: []models.Attribute{{Key: "name"}}})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{Attributes: []models.Attribute{{Key: "name"}}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -396,7 +396,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("by attr name:g2", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{Attributes: []models.Attribute{{Key: "name", Value: "g2"}}})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{Attributes: []models.Attribute{{Key: "name", Value: "g2"}}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -421,7 +421,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 			}
 		})
 		t.Run("by attr search g2", func(t *testing.T) {
-			list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{Search: "g2"})
+			list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{Search: "g2"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -448,7 +448,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 	})
 
 	t.Run("get graph", func(t *testing.T) {
-		result, err, _ := c.ReadGraph(userjwt, g1.Id)
+		result, err, _ := c.ReadGraph(context.Background(), userjwt, g1.Id)
 		if err != nil {
 			t.Error(err)
 			return
@@ -469,12 +469,12 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 	}
 
 	t.Run("delete device", func(t *testing.T) {
-		err, _ = c.DeleteDevice(userjwt, deviceIds[0])
+		err, _ = c.DeleteDevice(context.Background(), userjwt, deviceIds[0])
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		err, _ = c.DeleteDevice(userjwt, deviceIds[2]) //device is not assigned to any graph
+		err, _ = c.DeleteDevice(context.Background(), userjwt, deviceIds[2]) //device is not assigned to any graph
 		if err != nil {
 			t.Error(err)
 			return
@@ -550,7 +550,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 				{Id: "id-2", FromNodeId: "1", ToNodeId: "4", Weight: 40, Attributes: []models.Attribute{{Key: models.GraphEdgeAttrSystemChanged, Value: "true"}}},
 			},
 		}
-		list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{})
+		list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -581,7 +581,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 	})
 
 	t.Run("delete graph", func(t *testing.T) {
-		err, _ = c.DeleteGraph(userjwt, g2.Id)
+		err, _ = c.DeleteGraph(context.Background(), userjwt, g2.Id)
 		if err != nil {
 			t.Error(err)
 			return
@@ -589,7 +589,7 @@ func TestGraphUpdateOnDeviceDelete(t *testing.T) {
 	})
 
 	t.Run("check graphs after graph delete", func(t *testing.T) {
-		list, total, err, _ := c.ListGraphs(userjwt, client.GraphListOptions{})
+		list, total, err, _ := c.ListGraphs(context.Background(), userjwt, client.GraphListOptions{})
 		if err != nil {
 			t.Error(err)
 			return

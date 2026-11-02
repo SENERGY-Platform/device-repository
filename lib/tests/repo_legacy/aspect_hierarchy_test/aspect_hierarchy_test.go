@@ -218,7 +218,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 		return
 	}
 
-	_, err, _ = ctrl.SetAspect(testenv.AdminToken, initialAspect)
+	_, err, _ = ctrl.SetAspect(context.Background(), testenv.AdminToken, initialAspect)
 	if err != nil {
 		t.Error(err)
 		return
@@ -249,7 +249,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 			},
 		},
 	}
-	_, err, _ = ctrl.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+	_, err, _ = ctrl.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -263,7 +263,7 @@ func TestSubAspectMoveSNRGY2202(t *testing.T) {
 	}
 
 	t.Run("validate", func(t *testing.T) {
-		err, _ = ctrl.ValidateAspect(changedAspect)
+		err, _ = ctrl.ValidateAspect(context.Background(), changedAspect)
 		if err != nil {
 			t.Error(err)
 			return
@@ -309,7 +309,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "a1",
 		Name: "a1",
 		SubAspects: []models.Aspect{
@@ -330,7 +330,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "a2",
 		Name: "a2",
 		SubAspects: []models.Aspect{
@@ -408,7 +408,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 	}))
 
 	t.Run("aspect-nodes move", func(t *testing.T) {
-		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+		_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 			Id:   "a1",
 			Name: "a1",
 			SubAspects: []models.Aspect{
@@ -510,7 +510,7 @@ func TestSubAspectMoveRoot(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "a1",
 		Name: "a1",
 		SubAspects: []models.Aspect{
@@ -531,7 +531,7 @@ func TestSubAspectMoveRoot(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "a2",
 		Name: "a2",
 		SubAspects: []models.Aspect{
@@ -609,7 +609,7 @@ func TestSubAspectMoveRoot(t *testing.T) {
 	}))
 
 	t.Run("aspect-nodes move", func(t *testing.T) {
-		_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+		_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 			Id:   "a1",
 			Name: "a1",
 			SubAspects: []models.Aspect{
@@ -717,7 +717,7 @@ func TestAspectFunctions(t *testing.T) {
 	}
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{
+	_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{
 		Id:        "fid",
 		Name:      "fid",
 		ConceptId: "concept_1",
@@ -727,7 +727,7 @@ func TestAspectFunctions(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetFunction(testenv.AdminToken, models.Function{
+	_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{
 		Id:        "fid_2",
 		Name:      "fid_2",
 		ConceptId: "concept_2",
@@ -737,7 +737,7 @@ func TestAspectFunctions(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "parent_2",
 		Name: "parent_2",
 		SubAspects: []models.Aspect{
@@ -774,7 +774,7 @@ func TestAspectFunctions(t *testing.T) {
 			},
 		},
 	}
-	_, err, _ = c.SetAspect(testenv.AdminToken, aspect)
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, aspect)
 	if err != nil {
 		t.Error(err)
 		return
@@ -805,7 +805,7 @@ func TestAspectFunctions(t *testing.T) {
 			},
 		},
 	}
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -1003,7 +1003,7 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "parent",
 		Name: "parent",
 		SubAspects: []models.Aspect{
@@ -1077,7 +1077,7 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return

@@ -83,6 +83,8 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 func pull(config configuration.Config, db database.Database, checkLastUpdate bool, uncheckedCollections map[string]bool) {
 	config.GetLogger().Info("start mgw mirror pull")
 	defer config.GetLogger().Info("finished mgw mirror pull")
+	//a pull is shared by all requests that triggered it, so it belongs to none of their traces
+	ctx := context.Background()
 	c := client.NewClient(config.MgwMirrorSourceUrl, nil)
 	token := ""
 
@@ -98,7 +100,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 	}
 
 	if checkLastUpdate {
-		sourceLastUpdateTimestamps, err, _ := c.GetLastUpdateTimestamps(token, "")
+		sourceLastUpdateTimestamps, err, _ := c.GetLastUpdateTimestamps(ctx, token, "")
 		if err != nil {
 			config.GetLogger().Error("error while getting source last update timestamps for mgw mirror pull", "error", err)
 			return
@@ -136,7 +138,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for p, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Protocol, err error) {
-			list, err, _ = c.ListProtocols(token, limit, offset, "")
+			list, err, _ = c.ListProtocols(ctx, token, limit, offset, "")
 			return
 		}) {
 			if err != nil {
@@ -159,7 +161,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.Protocol) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.ReadProtocol(id, token)
+					_, err, code = c.ReadProtocol(ctx, id, token)
 					return
 				},
 				func(e models.Protocol) error {
@@ -172,7 +174,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.AspectClass, err error) {
-			list, _, err, _ = c.ListAspectClasses(client.AspectClassListOptions{
+			list, _, err, _ = c.ListAspectClasses(ctx, client.AspectClassListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -199,7 +201,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.AspectClass) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetAspectClass(id)
+					_, err, code = c.GetAspectClass(ctx, id)
 					return
 				},
 				func(e models.AspectClass) error {
@@ -212,7 +214,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Aspect, err error) {
-			list, _, err, _ = c.ListAspects(client.AspectListOptions{
+			list, _, err, _ = c.ListAspects(ctx, client.AspectListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -246,7 +248,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.Aspect) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetAspect(id)
+					_, err, code = c.GetAspect(ctx, id)
 					return
 				},
 				func(e models.Aspect) error {
@@ -258,7 +260,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		sourceNodesByRoot := map[string][]models.AspectNode{}
 		completeNodes := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.AspectNode, err error) {
-			list, _, err, _ = c.ListAspectNodes(client.AspectListOptions{
+			list, _, err, _ = c.ListAspectNodes(ctx, client.AspectListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -289,7 +291,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.AspectNode) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetAspectNode(id)
+					_, err, code = c.GetAspectNode(ctx, id)
 					return
 				},
 				func(e models.AspectNode) error {
@@ -320,7 +322,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Characteristic, err error) {
-			list, _, err, _ = c.ListCharacteristics(client.CharacteristicListOptions{
+			list, _, err, _ = c.ListCharacteristics(ctx, client.CharacteristicListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -347,7 +349,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.Characteristic) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetCharacteristic(id)
+					_, err, code = c.GetCharacteristic(ctx, id)
 					return
 				},
 				func(e models.Characteristic) error {
@@ -360,7 +362,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Concept, err error) {
-			list, _, err, _ = c.ListConcepts(client.ConceptListOptions{
+			list, _, err, _ = c.ListConcepts(ctx, client.ConceptListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -387,7 +389,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.Concept) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetConceptWithoutCharacteristics(id)
+					_, err, code = c.GetConceptWithoutCharacteristics(ctx, id)
 					return
 				},
 				func(e models.Concept) error {
@@ -400,7 +402,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.DeviceClass, err error) {
-			list, _, err, _ = c.ListDeviceClasses(client.DeviceClassListOptions{
+			list, _, err, _ = c.ListDeviceClasses(ctx, client.DeviceClassListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -427,7 +429,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.DeviceClass) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetDeviceClass(id)
+					_, err, code = c.GetDeviceClass(ctx, id)
 					return
 				},
 				func(e models.DeviceClass) error {
@@ -440,7 +442,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Function, err error) {
-			list, _, err, _ = c.ListFunctions(client.FunctionListOptions{
+			list, _, err, _ = c.ListFunctions(ctx, client.FunctionListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -467,7 +469,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.Function) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetFunction(id)
+					_, err, code = c.GetFunction(ctx, id)
 					return
 				},
 				func(e models.Function) error {
@@ -480,7 +482,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(100, func(limit int64, offset int64) (list []models.DeviceType, err error) {
-			list, _, err, _ = c.ListDeviceTypesV3(token, client.DeviceTypeListOptions{
+			list, _, err, _ = c.ListDeviceTypesV3(ctx, token, client.DeviceTypeListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -510,7 +512,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.DeviceType) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.ReadDeviceType(id, token)
+					_, err, code = c.ReadDeviceType(ctx, id, token)
 					return
 				},
 				func(e models.DeviceType) error {
@@ -523,7 +525,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Device, err error) {
-			list, err, _ = c.ListDevices(token, client.DeviceListOptions{
+			list, err, _ = c.ListDevices(ctx, token, client.DeviceListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -550,7 +552,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e model.DeviceWithConnectionState) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.ReadDevice(id, token, model.READ)
+					_, err, code = c.ReadDevice(ctx, id, token, model.READ)
 					return
 				},
 				func(e model.DeviceWithConnectionState) error {
@@ -563,7 +565,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.DeviceGroup, err error) {
-			list, _, err, _ = c.ListDeviceGroups(token, client.DeviceGroupListOptions{
+			list, _, err, _ = c.ListDeviceGroups(ctx, token, client.DeviceGroupListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -593,7 +595,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.DeviceGroup) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.ReadDeviceGroup(id, token, false)
+					_, err, code = c.ReadDeviceGroup(ctx, id, token, false)
 					return
 				},
 				func(e models.DeviceGroup) error {
@@ -606,7 +608,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Hub, err error) {
-			list, err, _ = c.ListHubs(token, client.HubListOptions{
+			list, err, _ = c.ListHubs(ctx, token, client.HubListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -633,7 +635,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e model.HubWithConnectionState) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.ReadHub(id, token, model.READ)
+					_, err, code = c.ReadHub(ctx, id, token, model.READ)
 					return
 				},
 				func(e model.HubWithConnectionState) error {
@@ -646,7 +648,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		seen := map[string]bool{}
 		complete := true
 		for e, err := range util.IterBatch(500, func(limit int64, offset int64) (list []models.Location, err error) {
-			list, _, err, _ = c.ListLocations(token, client.LocationListOptions{
+			list, _, err, _ = c.ListLocations(ctx, token, client.LocationListOptions{
 				Limit:  limit,
 				Offset: offset,
 			})
@@ -673,7 +675,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 				},
 				func(e models.Location) string { return e.Id },
 				func(id string) (err error, code int) {
-					_, err, code = c.GetLocation(id, token)
+					_, err, code = c.GetLocation(ctx, id, token)
 					return
 				},
 				func(e models.Location) error {

@@ -3,14 +3,15 @@ package semantic_legacy
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
-	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sort"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestConceptCharacteristic(t *testing.T) {
@@ -45,17 +46,17 @@ func TestConceptCharacteristic(t *testing.T) {
 		Type: models.Boolean,
 	}
 
-	_, err, _ = ctrl.SetConcept(testenv.AdminToken, concept)
+	_, err, _ = ctrl.SetConcept(context.Background(), testenv.AdminToken, concept)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	_, err, _ = ctrl.SetCharacteristic(testenv.AdminToken, characterisitc1)
+	_, err, _ = ctrl.SetCharacteristic(context.Background(), testenv.AdminToken, characterisitc1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	_, err, _ = ctrl.SetCharacteristic(testenv.AdminToken, characterisitc2)
+	_, err, _ = ctrl.SetCharacteristic(context.Background(), testenv.AdminToken, characterisitc2)
 	if err != nil {
 		t.Error(err)
 		return
@@ -63,14 +64,14 @@ func TestConceptCharacteristic(t *testing.T) {
 
 	t.Run("check after init", checkConcept(ctrl, "urn:ses:infai:concept:c", concept))
 
-	_, err, _ = ctrl.SetConcept(testenv.AdminToken, concept)
+	_, err, _ = ctrl.SetConcept(context.Background(), testenv.AdminToken, concept)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	t.Run("check after reset concept", checkConcept(ctrl, "urn:ses:infai:concept:c", concept))
 
-	_, err, _ = ctrl.SetCharacteristic(testenv.AdminToken, characterisitc1)
+	_, err, _ = ctrl.SetCharacteristic(context.Background(), testenv.AdminToken, characterisitc1)
 	if err != nil {
 		t.Error(err)
 		return
@@ -80,7 +81,7 @@ func TestConceptCharacteristic(t *testing.T) {
 
 func checkConcept(ctrl *controller.Controller, id string, expected models.Concept) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err, _ := ctrl.GetConceptWithoutCharacteristics(id)
+		result, err, _ := ctrl.GetConceptWithoutCharacteristics(context.Background(), id)
 		if err != nil {
 			t.Error(err, result)
 			return

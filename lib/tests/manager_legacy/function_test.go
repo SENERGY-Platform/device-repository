@@ -17,14 +17,16 @@
 package tests
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/manager_legacy/helper"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/manager_legacy/helper"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func testFunction(port string) func(t *testing.T) {
@@ -76,7 +78,7 @@ func testFunction(port string) func(t *testing.T) {
 			t.Fatal(result)
 		}
 
-		resultList, _, err, _ := client.NewClient("http://localhost:"+port, nil).ListFunctions(client.FunctionListOptions{
+		resultList, _, err, _ := client.NewClient("http://localhost:"+port, nil).ListFunctions(context.Background(), client.FunctionListOptions{
 			Ids: []string{function.Id},
 		})
 		if err != nil {

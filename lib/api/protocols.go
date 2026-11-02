@@ -18,11 +18,12 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
-	"net/http"
-	"strconv"
 )
 
 func init() {
@@ -48,7 +49,7 @@ type ProtocolEndpoints struct{}
 func (this *ProtocolEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.ReadProtocol(id, util.GetAuthToken(request))
+		result, err, errCode := control.ReadProtocol(request.Context(), id, util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -106,7 +107,7 @@ func (this *ProtocolEndpoints) List(config configuration.Config, router *http.Se
 			sort = "name.asc"
 		}
 
-		result, err, errCode := control.ListProtocols(util.GetAuthToken(request), limit, offset, sort)
+		result, err, errCode := control.ListProtocols(request.Context(), util.GetAuthToken(request), limit, offset, sort)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -149,7 +150,7 @@ func (this *ProtocolEndpoints) Validate(config configuration.Config, router *htt
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateProtocol(dt)
+		err, code := control.ValidateProtocol(request.Context(), dt)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -182,7 +183,7 @@ func (this *ProtocolEndpoints) Create(config configuration.Config, router *http.
 		}
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetProtocol(token, protocol)
+		result, err, errCode := control.SetProtocol(request.Context(), token, protocol)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -227,7 +228,7 @@ func (this *ProtocolEndpoints) Set(config configuration.Config, router *http.Ser
 			return
 		}
 
-		result, err, errCode := control.SetProtocol(token, protocol)
+		result, err, errCode := control.SetProtocol(request.Context(), token, protocol)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -259,7 +260,7 @@ func (this *ProtocolEndpoints) Delete(config configuration.Config, router *http.
 	router.HandleFunc("DELETE /protocols/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
-		err, errCode := control.DeleteProtocol(token, id)
+		err, errCode := control.DeleteProtocol(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

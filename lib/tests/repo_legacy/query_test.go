@@ -18,12 +18,13 @@ package repo_legacy
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestQueryDeviceTypeReferences(t *testing.T) {
@@ -111,7 +112,7 @@ func TestQueryDeviceTypeReferences(t *testing.T) {
 	}
 
 	t.Run("query default", func(t *testing.T) {
-		result, err, _ := c.GetUsedInDeviceType(query)
+		result, err, _ := c.GetUsedInDeviceType(context.Background(), query)
 		if err != nil {
 			t.Error(err)
 			return
@@ -251,7 +252,7 @@ func TestQueryDeviceTypeReferences(t *testing.T) {
 
 	t.Run("query count device-type", func(t *testing.T) {
 		query.CountBy = "device-type"
-		result, err, _ := c.GetUsedInDeviceType(query)
+		result, err, _ := c.GetUsedInDeviceType(context.Background(), query)
 		if err != nil {
 			t.Error(err)
 			return
@@ -388,7 +389,7 @@ func TestQueryDeviceTypeReferences(t *testing.T) {
 
 	t.Run("query count service", func(t *testing.T) {
 		query.CountBy = "service"
-		result, err, _ := c.GetUsedInDeviceType(query)
+		result, err, _ := c.GetUsedInDeviceType(context.Background(), query)
 		if err != nil {
 			t.Error(err)
 			return
@@ -526,7 +527,7 @@ func TestQueryDeviceTypeReferences(t *testing.T) {
 	t.Run("query with service", func(t *testing.T) {
 		query.CountBy = "service"
 		query.With = "service"
-		result, err, _ := c.GetUsedInDeviceType(query)
+		result, err, _ := c.GetUsedInDeviceType(context.Background(), query)
 		if err != nil {
 			t.Error(err)
 			return

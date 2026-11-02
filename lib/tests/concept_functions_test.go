@@ -73,7 +73,7 @@ func TestConceptFunctions(t *testing.T) {
 
 	conceptFunctions := func(t *testing.T, conceptId string, rdfType string) []models.Function {
 		t.Helper()
-		functions, _, err, _ := c.ListFunctions(client.FunctionListOptions{RdfType: rdfType, Limit: 1000})
+		functions, _, err, _ := c.ListFunctions(context.Background(), client.FunctionListOptions{RdfType: rdfType, Limit: 1000})
 		if err != nil {
 			t.Error(err)
 			return nil
@@ -104,7 +104,7 @@ func TestConceptFunctions(t *testing.T) {
 	}
 
 	t.Run("a new concept gets its function pair", func(t *testing.T) {
-		concept, err, _ := c.SetConcept(client.InternalAdminToken, models.Concept{Name: "Temperature"})
+		concept, err, _ := c.SetConcept(context.Background(), client.InternalAdminToken, models.Concept{Name: "Temperature"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -128,7 +128,7 @@ func TestConceptFunctions(t *testing.T) {
 
 		t.Run("renaming the concept renames the pair", func(t *testing.T) {
 			concept.Name = "Humidity"
-			_, err, _ := c.SetConcept(client.InternalAdminToken, concept)
+			_, err, _ := c.SetConcept(context.Background(), client.InternalAdminToken, concept)
 			if err != nil {
 				t.Error(err)
 				return
@@ -138,7 +138,7 @@ func TestConceptFunctions(t *testing.T) {
 	})
 
 	t.Run("a name the user set is not overwritten", func(t *testing.T) {
-		concept, err, _ := c.SetConcept(client.InternalAdminToken, models.Concept{Name: "Pressure"})
+		concept, err, _ := c.SetConcept(context.Background(), client.InternalAdminToken, models.Concept{Name: "Pressure"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -151,14 +151,14 @@ func TestConceptFunctions(t *testing.T) {
 		renamed := measuring[0]
 		renamed.Name = "read the barometer"
 		renamed.DisplayName = "read the barometer"
-		_, err, _ = c.SetFunction(client.InternalAdminToken, renamed)
+		_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, renamed)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
 		concept.Name = "AirPressure"
-		_, err, _ = c.SetConcept(client.InternalAdminToken, concept)
+		_, err, _ = c.SetConcept(context.Background(), client.InternalAdminToken, concept)
 		if err != nil {
 			t.Error(err)
 			return
@@ -176,7 +176,7 @@ func TestConceptFunctions(t *testing.T) {
 	})
 
 	t.Run("a display name of its own survives the rename", func(t *testing.T) {
-		concept, err, _ := c.SetConcept(client.InternalAdminToken, models.Concept{Name: "Brightness"})
+		concept, err, _ := c.SetConcept(context.Background(), client.InternalAdminToken, models.Concept{Name: "Brightness"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -188,14 +188,14 @@ func TestConceptFunctions(t *testing.T) {
 		}
 		withDisplayName := measuring[0]
 		withDisplayName.DisplayName = "Helligkeit ablesen"
-		_, err, _ = c.SetFunction(client.InternalAdminToken, withDisplayName)
+		_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, withDisplayName)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
 		concept.Name = "Luminance"
-		_, err, _ = c.SetConcept(client.InternalAdminToken, concept)
+		_, err, _ = c.SetConcept(context.Background(), client.InternalAdminToken, concept)
 		if err != nil {
 			t.Error(err)
 			return

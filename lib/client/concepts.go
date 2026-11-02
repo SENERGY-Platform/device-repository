@@ -18,25 +18,27 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetConcept(token string, concept models.Concept) (result models.Concept, err error, code int) {
+func (c *Client) SetConcept(ctx context.Context, token string, concept models.Concept) (result models.Concept, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(concept)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if concept.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/concepts", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/concepts", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/concepts/"+url.PathEscape(concept.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/concepts/"+url.PathEscape(concept.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -45,8 +47,8 @@ func (c *Client) SetConcept(token string, concept models.Concept) (result models
 	return do[models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteConcept(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/concepts/"+url.PathEscape(id), nil)
+func (c *Client) DeleteConcept(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/concepts/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -54,7 +56,7 @@ func (c *Client) DeleteConcept(token string, id string) (err error, code int) {
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListConcepts(options model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int) {
+func (c *Client) ListConcepts(ctx context.Context, options model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -75,14 +77,14 @@ func (c *Client) ListConcepts(options model.ConceptListOptions) (result []models
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v2/concepts"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/v2/concepts"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListConceptsWithCharacteristics(options model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int) {
+func (c *Client) ListConceptsWithCharacteristics(ctx context.Context, options model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -103,33 +105,33 @@ func (c *Client) ListConceptsWithCharacteristics(options model.ConceptListOption
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v2/concepts-with-characteristics"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/v2/concepts-with-characteristics"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.ConceptWithCharacteristics](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetConceptWithCharacteristics(id string) (models.ConceptWithCharacteristics, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/concepts/"+id+"?sub-class=true", nil)
+func (c *Client) GetConceptWithCharacteristics(ctx context.Context, id string) (models.ConceptWithCharacteristics, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/concepts/"+id+"?sub-class=true", nil)
 	if err != nil {
 		return models.ConceptWithCharacteristics{}, err, http.StatusInternalServerError
 	}
 	return do[models.ConceptWithCharacteristics](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetConceptWithoutCharacteristics(id string) (models.Concept, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/concepts/"+id+"?sub-class=false", nil)
+func (c *Client) GetConceptWithoutCharacteristics(ctx context.Context, id string) (models.Concept, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/concepts/"+id+"?sub-class=false", nil)
 	if err != nil {
 		return models.Concept{}, err, http.StatusInternalServerError
 	}
 	return do[models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateConcept(concept models.Concept) (err error, code int) {
-	return c.validate("/concepts", concept)
+func (c *Client) ValidateConcept(ctx context.Context, concept models.Concept) (err error, code int) {
+	return c.validate(ctx, "/concepts", concept)
 }
 
-func (c *Client) ValidateConceptDelete(id string) (err error, code int) {
-	return c.validateDelete("/concepts/" + id)
+func (c *Client) ValidateConceptDelete(ctx context.Context, id string) (err error, code int) {
+	return c.validateDelete(ctx, "/concepts/"+id)
 }

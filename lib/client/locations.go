@@ -18,25 +18,27 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetLocation(token string, location models.Location) (result models.Location, err error, code int) {
+func (c *Client) SetLocation(ctx context.Context, token string, location models.Location) (result models.Location, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(location)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if location.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/locations", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/locations", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/locations/"+url.PathEscape(location.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/locations/"+url.PathEscape(location.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -45,8 +47,8 @@ func (c *Client) SetLocation(token string, location models.Location) (result mod
 	return do[models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteLocation(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/locations/"+url.PathEscape(id), nil)
+func (c *Client) DeleteLocation(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/locations/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -54,8 +56,8 @@ func (c *Client) DeleteLocation(token string, id string) (err error, code int) {
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetLocation(id string, token string) (location models.Location, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/locations/"+id, nil)
+func (c *Client) GetLocation(ctx context.Context, id string, token string) (location models.Location, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/locations/"+id, nil)
 	if err != nil {
 		return location, err, http.StatusInternalServerError
 	}
@@ -63,19 +65,19 @@ func (c *Client) GetLocation(id string, token string) (location models.Location,
 	return do[models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateLocation(location models.Location) (err error, code int) {
-	return c.validate("/locations", location)
+func (c *Client) ValidateLocation(ctx context.Context, location models.Location) (err error, code int) {
+	return c.validate(ctx, "/locations", location)
 }
 
-func (c *Client) ListLocations(token string, options model.LocationListOptions) (result []models.Location, total int64, err error, errCode int) {
-	return listLocations[models.Location](c, token, options, "/locations")
+func (c *Client) ListLocations(ctx context.Context, token string, options model.LocationListOptions) (result []models.Location, total int64, err error, errCode int) {
+	return listLocations[models.Location](ctx, c, token, options, "/locations")
 }
 
-func (c *Client) ListExtendedLocations(token string, options model.LocationListOptions) (result []models.ExtendedLocation, total int64, err error, errCode int) {
-	return listLocations[models.ExtendedLocation](c, token, options, "/extended-locations")
+func (c *Client) ListExtendedLocations(ctx context.Context, token string, options model.LocationListOptions) (result []models.ExtendedLocation, total int64, err error, errCode int) {
+	return listLocations[models.ExtendedLocation](ctx, c, token, options, "/extended-locations")
 }
 
-func listLocations[T any](c *Client, token string, options model.LocationListOptions, path string) (result []T, total int64, err error, errCode int) {
+func listLocations[T any](ctx context.Context, c *Client, token string, options model.LocationListOptions, path string) (result []T, total int64, err error, errCode int) {
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
 		query.Set("p", string(options.Permission))
@@ -99,7 +101,7 @@ func listLocations[T any](c *Client, token string, options model.LocationListOpt
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+path+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+path+queryString, nil)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}

@@ -18,16 +18,18 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) ListAspectNodes(options model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int) {
+func (c *Client) ListAspectNodes(ctx context.Context, options model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -51,39 +53,39 @@ func (c *Client) ListAspectNodes(options model.AspectListOptions) (result []mode
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v2/aspect-nodes"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/v2/aspect-nodes"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNode(id string) (models.AspectNode, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes/"+id, nil)
+func (c *Client) GetAspectNode(ctx context.Context, id string) (models.AspectNode, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-nodes/"+id, nil)
 	if err != nil {
 		return models.AspectNode{}, err, http.StatusInternalServerError
 	}
 	return do[models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNodes() ([]models.AspectNode, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes", nil)
+func (c *Client) GetAspectNodes(ctx context.Context) ([]models.AspectNode, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-nodes", nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNodesWithMeasuringFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes?function=measuring-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+func (c *Client) GetAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-nodes?function=measuring-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNodesMeasuringFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes/"+id+"/measuring-functions?ancestors="+
+func (c *Client) GetAspectNodesMeasuringFunctions(ctx context.Context, id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-nodes/"+id+"/measuring-functions?ancestors="+
 		strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -91,16 +93,16 @@ func (c *Client) GetAspectNodesMeasuringFunctions(id string, ancestors bool, des
 	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNodesWithControllingFunction(ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes?function=controlling-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+func (c *Client) GetAspectNodesWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-nodes?function=controlling-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNodesControllingFunctions(id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes/"+id+"/controlling-functions?ancestors="+
+func (c *Client) GetAspectNodesControllingFunctions(ctx context.Context, id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-nodes/"+id+"/controlling-functions?ancestors="+
 		strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -108,20 +110,20 @@ func (c *Client) GetAspectNodesControllingFunctions(id string, ancestors bool, d
 	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNodesWithFunction(function string, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-nodes?function="+function+"&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+func (c *Client) GetAspectNodesWithFunction(ctx context.Context, function string, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-nodes?function="+function+"&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectNodesByIdList(ids []string) (result []models.AspectNode, err error, code int) {
+func (c *Client) GetAspectNodesByIdList(ctx context.Context, ids []string) (result []models.AspectNode, err error, code int) {
 	b, err := json.Marshal(ids)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/query/aspect-nodes", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/query/aspect-nodes", bytes.NewBuffer(b))
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}

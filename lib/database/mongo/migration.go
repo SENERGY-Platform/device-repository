@@ -67,15 +67,15 @@ func (this *Mongo) RunStartupMigrations(helper MigrationMethods) error {
 
 type MigrationMethods interface {
 	DeviceIdToGeneratedDeviceGroupId(deviceId string) string
-	EnsureGeneratedDeviceGroup(old models.Device, device models.Device) (err error)
+	EnsureGeneratedDeviceGroup(ctx context.Context, old models.Device, device models.Device) (err error)
 	//SetContentVariableAspectIdsOnWrite is needed to read stored device-types that predate
 	//models.ContentVariable.AspectIds. It lives in the controller, which this package may
 	//not import, so it is handed in.
 	SetContentVariableAspectIdsOnWrite(deviceType *models.DeviceType)
-	GetDeviceGroupCriteria(deviceIds []string) (result []models.DeviceGroupFilterCriteria, err error, code int)
+	GetDeviceGroupCriteria(ctx context.Context, deviceIds []string) (result []models.DeviceGroupFilterCriteria, err error, code int)
 	//PublishFunction is the sync handler of a function write. The concept-function
 	//migration creates functions no consumer has seen, so it has to publish them.
-	PublishFunction(function models.Function) error
+	PublishFunction(ctx context.Context, function models.Function) error
 }
 
 func (this *Mongo) runDeviceGroupMigration(helper MigrationMethods) error {
@@ -108,7 +108,7 @@ func (this *Mongo) runDeviceGroupMigration(helper MigrationMethods) error {
 		}
 		if !exists {
 			this.config.GetLogger().Debug("generate device-group", "deviceId", device.Id, "deviceName", device.Name)
-			err = helper.EnsureGeneratedDeviceGroup(device, device)
+			err = helper.EnsureGeneratedDeviceGroup(context.Background(), device, device)
 			if err != nil {
 				debug.PrintStack()
 				return err
@@ -267,7 +267,7 @@ func (this *Mongo) runGeneratedDeviceGroupCriteriaMigration(helper MigrationMeth
 			debug.PrintStack()
 			return err
 		}
-		criteria, err, _ := helper.GetDeviceGroupCriteria(deviceGroup.DeviceIds)
+		criteria, err, _ := helper.GetDeviceGroupCriteria(ctx, deviceGroup.DeviceIds)
 		if err != nil {
 			debug.PrintStack()
 			return err
@@ -404,7 +404,9 @@ func (this *Mongo) migrateConceptFunctions(ctx context.Context, helper Migration
 			}
 			function.Name = name
 			this.config.GetLogger().Debug("rename concept function", "conceptId", concept.Id, "functionId", function.Id, "name", name)
-			err = this.SetFunction(ctx, function, helper.PublishFunction)
+			err = this.SetFunction(ctx, function, func(function models.Function) error {
+				return helper.PublishFunction(ctx, function)
+			})
 			if err != nil {
 				return err
 			}
@@ -416,7 +418,9 @@ func (this *Mongo) migrateConceptFunctions(ctx context.Context, helper Migration
 				function.DisplayName = function.DisplayName + deprecatedFunctionNameSuffix
 			}
 			this.config.GetLogger().Debug("deprecate concept function", "conceptId", concept.Id, "functionId", function.Id)
-			err = this.SetFunction(ctx, function, helper.PublishFunction)
+			err = this.SetFunction(ctx, function, func(function models.Function) error {
+				return helper.PublishFunction(ctx, function)
+			})
 			if err != nil {
 				return err
 			}
@@ -429,7 +433,9 @@ func (this *Mongo) migrateConceptFunctions(ctx context.Context, helper Migration
 		}
 		function.GenerateId()
 		this.config.GetLogger().Debug("create concept function", "conceptId", concept.Id, "functionId", function.Id, "name", name)
-		err = this.SetFunction(ctx, function, helper.PublishFunction)
+		err = this.SetFunction(ctx, function, func(function models.Function) error {
+			return helper.PublishFunction(ctx, function)
+		})
 		if err != nil {
 			return err
 		}

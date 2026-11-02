@@ -78,14 +78,14 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 
 	t.Run("create metadata", func(t *testing.T) {
 		for _, id := range []string{airClass, waterClass} {
-			_, err, _ := c.SetAspectClass(client.InternalAdminToken, models.AspectClass{Id: id, Name: id})
+			_, err, _ := c.SetAspectClass(context.Background(), client.InternalAdminToken, models.AspectClass{Id: id, Name: id})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 		//two aspects of the same class, sitting in one hierarchy
-		_, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{
+		_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id:            models.URN_PREFIX + "aspect:air",
 			Name:          "air",
 			AspectClassId: airClass,
@@ -99,7 +99,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 			return
 		}
 		//one aspect of a second class
-		_, err, _ = c.SetAspect(client.InternalAdminToken, models.Aspect{
+		_, err, _ = c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id: models.URN_PREFIX + "aspect:water", Name: "water", AspectClassId: waterClass,
 			SubAspects: []models.Aspect{{Id: lake, Name: "lake"}},
 		})
@@ -109,13 +109,13 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 		}
 		//two aspects without any class
 		for _, id := range []string{freeA, freeB} {
-			_, err, _ = c.SetAspect(client.InternalAdminToken, models.Aspect{Id: id, Name: id})
+			_, err, _ = c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{Id: id, Name: id})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
-		_, err, _ = c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id: measuringFunction, Name: "getTemperature", DisplayName: "getTemperature",
 			RdfType: models.SES_ONTOLOGY_MEASURING_FUNCTION,
 		})
@@ -123,12 +123,12 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id: "p1", Name: "p1", Handler: "p1",
 			ProtocolSegments: []models.ProtocolSegment{{Id: "ps1", Name: "ps1"}},
 		})
@@ -157,7 +157,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 	}
 
 	t.Run("two aspects of different classes", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken,
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken,
 			deviceTypeWithAspects("dt_two_classes", []string{insideAir, lake}), client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Error(err)
@@ -165,7 +165,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 	})
 
 	t.Run("two aspects of the same class", func(t *testing.T) {
-		_, err, code := c.SetDeviceType(client.InternalAdminToken,
+		_, err, code := c.SetDeviceType(context.Background(), client.InternalAdminToken,
 			deviceTypeWithAspects("dt_same_class", []string{insideAir, outsideAir}), client.DeviceTypeUpdateOptions{})
 		if err == nil {
 			t.Error("expected an error for two aspects of one aspect-class")
@@ -183,7 +183,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 
 	t.Run("two aspects without a class", func(t *testing.T) {
 		//no class means no collision
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken,
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken,
 			deviceTypeWithAspects("dt_classless", []string{freeA, freeB}), client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Error(err)
@@ -193,7 +193,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 	t.Run("the same aspect twice", func(t *testing.T) {
 		//a repeated id shares its own aspect-class with itself, so the rule catches it —
 		//with a message that says "listed twice" rather than naming two aspects
-		_, err, code := c.SetDeviceType(client.InternalAdminToken,
+		_, err, code := c.SetDeviceType(context.Background(), client.InternalAdminToken,
 			deviceTypeWithAspects("dt_repeat", []string{insideAir, insideAir}), client.DeviceTypeUpdateOptions{})
 		if err == nil {
 			t.Error("expected an error for the same aspect listed twice")
@@ -209,7 +209,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 
 	t.Run("the same unclassified aspect twice", func(t *testing.T) {
 		//without a class there is nothing to collide on, so this is not caught here
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken,
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken,
 			deviceTypeWithAspects("dt_repeat_classless", []string{freeA, freeA}), client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Error(err)
@@ -225,7 +225,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 				FunctionId: measuringFunction, AspectIds: []string{insideAir, outsideAir},
 			}},
 		}
-		_, err, code := c.SetDeviceType(client.InternalAdminToken, dt, client.DeviceTypeUpdateOptions{})
+		_, err, code := c.SetDeviceType(context.Background(), client.InternalAdminToken, dt, client.DeviceTypeUpdateOptions{})
 		if err == nil {
 			t.Error("expected an error for two aspects of one aspect-class in a sub content variable")
 			return

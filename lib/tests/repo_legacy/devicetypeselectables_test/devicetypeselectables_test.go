@@ -21,11 +21,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"log"
 	"net/http"
@@ -37,6 +32,12 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestDeviceTypeSelectables(t *testing.T) {
@@ -2679,7 +2680,7 @@ func createTestMetadata(config configuration.Config, interaction models.Interact
 		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 
 		for _, aspect := range aspects {
-			_, err, _ := c.SetAspect(testenv.AdminToken, aspect)
+			_, err, _ := c.SetAspect(context.Background(), testenv.AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2687,7 +2688,7 @@ func createTestMetadata(config configuration.Config, interaction models.Interact
 		}
 
 		for _, function := range functions {
-			_, err, _ := c.SetFunction(testenv.AdminToken, function)
+			_, err, _ := c.SetFunction(context.Background(), testenv.AdminToken, function)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2695,7 +2696,7 @@ func createTestMetadata(config configuration.Config, interaction models.Interact
 		}
 
 		for _, dt := range devicetypes {
-			_, err, _ := c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+			_, err, _ := c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -2731,7 +2732,7 @@ func createTestMetadataFromString(config configuration.Config, deviceTypesStr st
 		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 
 		for _, aspect := range aspects {
-			_, err, _ = c.SetAspect(testenv.AdminToken, aspect)
+			_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2739,7 +2740,7 @@ func createTestMetadataFromString(config configuration.Config, deviceTypesStr st
 		}
 
 		for _, function := range functions {
-			_, err, _ = c.SetFunction(testenv.AdminToken, function)
+			_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, function)
 			if err != nil {
 				t.Error(err)
 				return
@@ -2747,7 +2748,7 @@ func createTestMetadataFromString(config configuration.Config, deviceTypesStr st
 		}
 
 		for _, dt := range devicetypes {
-			_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+			_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return

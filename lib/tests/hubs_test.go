@@ -65,7 +65,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 
 	t.Run("create protocols", func(t *testing.T) {
-		_, err, _ := c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ := c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:      "p1",
 			Name:    "p1",
 			Handler: "p1",
@@ -81,7 +81,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 	})
 
 	t.Run("create device-types", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Id:   "dt1",
 			Name: "dt1",
 			Services: []models.Service{
@@ -105,7 +105,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 		for i := range 100 {
 			id := "d" + strconv.Itoa(i)
 			deviceIds = append(deviceIds, id)
-			_, err, _ := c.SetDevice(client.InternalAdminToken, models.Device{
+			_, err, _ := c.SetDevice(context.Background(), client.InternalAdminToken, models.Device{
 				Id:           id,
 				LocalId:      id,
 				Name:         id,
@@ -119,7 +119,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 	})
 
 	t.Run("create hubs", func(t *testing.T) {
-		_, err, _ := c.SetHub(client.InternalAdminToken, models.Hub{
+		_, err, _ := c.SetHub(context.Background(), client.InternalAdminToken, models.Hub{
 			Id:             "h1",
 			Name:           "h1",
 			Hash:           "foo",
@@ -130,7 +130,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetHub(client.InternalAdminToken, models.Hub{
+		_, err, _ = c.SetHub(context.Background(), client.InternalAdminToken, models.Hub{
 			Id:             "h2",
 			Name:           "h2",
 			Hash:           "bar",
@@ -145,7 +145,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 
 	t.Run("delete devices", func(t *testing.T) {
 		for _, id := range deviceIds[2:] {
-			err, _ := c.DeleteDevice(client.InternalAdminToken, id)
+			err, _ := c.DeleteDevice(context.Background(), client.InternalAdminToken, id)
 			if err != nil {
 				t.Error(err)
 				return
@@ -154,7 +154,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 	})
 
 	t.Run("check hubs", func(t *testing.T) {
-		hubs, err, _ := c.ListHubs(client.InternalAdminToken, client.HubListOptions{SortBy: "name.asc"})
+		hubs, err, _ := c.ListHubs(context.Background(), client.InternalAdminToken, client.HubListOptions{SortBy: "name.asc"})
 		if err != nil {
 			t.Error(err)
 			return

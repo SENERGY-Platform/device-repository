@@ -17,21 +17,23 @@
 package controller
 
 import (
+	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/idmodifier"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"slices"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/idmodifier"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (this *Controller) modifyDevice(device models.Device, modifier map[string][]string) (result models.Device, err error, code int) {
+func (this *Controller) modifyDevice(ctx context.Context, device models.Device, modifier map[string][]string) (result models.Device, err error, code int) {
 	code = http.StatusOK
 	result = device
 	for key, params := range modifier {
 		switch key {
 		case ServiceGroupSelectionIdModifier:
-			result, err, code = this.modifyDeviceServiceGroupSelection(result, params)
+			result, err, code = this.modifyDeviceServiceGroupSelection(ctx, result, params)
 			if err != nil {
 				return result, err, code
 			}
@@ -101,13 +103,13 @@ func sortDeviceTypes(list []models.DeviceType, sort string) []models.DeviceType 
 
 const ServiceGroupSelectionIdModifier = "service_group_selection"
 
-func (this *Controller) modifyDeviceServiceGroupSelection(device models.Device, params []string) (result models.Device, err error, ode int) {
+func (this *Controller) modifyDeviceServiceGroupSelection(ctx context.Context, device models.Device, params []string) (result models.Device, err error, ode int) {
 	if len(params) == 0 {
 		return result, errors.New("missing service-group-key in " + ServiceGroupSelectionIdModifier + " id parameter"), http.StatusBadRequest
 	}
 	result = device
 	sgKey := params[0]
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	dt, exists, err := this.db.GetDeviceType(ctx, device.DeviceTypeId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError

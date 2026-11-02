@@ -20,13 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsoncodec"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"log"
 	"net/http"
 	"reflect"
@@ -34,6 +27,15 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsoncodec"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
 )
 
 type Mongo struct {
@@ -109,7 +111,7 @@ func validateConfig(conf configuration.Config) error {
 
 // clientOptions applies the credentials after the URI so they replace any given in MONGO_URL.
 func clientOptions(conf configuration.Config) *options.ClientOptions {
-	opts := options.Client().ApplyURI(conf.MongoUrl).SetReadConcern(readconcern.Majority())
+	opts := options.Client().ApplyURI(conf.MongoUrl).SetReadConcern(readconcern.Majority()).SetMonitor(otelmongo.NewMonitor())
 	if conf.MongoUser != "" {
 		opts.SetAuth(options.Credential{
 			Username:   conf.MongoUser,

@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"slices"
@@ -31,33 +32,33 @@ import (
 
 // DeviceGroupHelper answers what a device-group holding the given devices would look like: the
 // criteria it would have, and the devices that may still be added to it.
-func (this *Controller) DeviceGroupHelper(token string, deviceIds []string, options model.DeviceGroupHelperOptions) (result model.DeviceGroupHelperResult, err error, code int) {
+func (this *Controller) DeviceGroupHelper(ctx context.Context, token string, deviceIds []string, options model.DeviceGroupHelperOptions) (result model.DeviceGroupHelperResult, err error, code int) {
 	if options.Limit <= 0 {
 		options.Limit = 100
 	}
 	//the criteria are read from the database without a permission check, so the ids of the
 	//request are checked here - otherwise the endpoint would answer what a device measures to
 	//anyone able to guess its id
-	err, code = this.checkDeviceGroupHelperDeviceIds(token, deviceIds)
+	err, code = this.checkDeviceGroupHelperDeviceIds(ctx, token, deviceIds)
 	if err != nil {
 		return result, err, code
 	}
-	result.Criteria, err, code = this.GetDeviceGroupCriteria(deviceIds)
+	result.Criteria, err, code = this.GetDeviceGroupCriteria(ctx, deviceIds)
 	if err != nil {
 		return result, err, code
 	}
-	result.Options, err, code = this.getDeviceGroupHelperOptions(token, deviceIds, result.Criteria, options)
+	result.Options, err, code = this.getDeviceGroupHelperOptions(ctx, token, deviceIds, result.Criteria, options)
 	if err != nil {
 		return result, err, code
 	}
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) checkDeviceGroupHelperDeviceIds(token string, deviceIds []string) (err error, code int) {
+func (this *Controller) checkDeviceGroupHelperDeviceIds(ctx context.Context, token string, deviceIds []string) (err error, code int) {
 	if len(deviceIds) == 0 {
 		return nil, http.StatusOK
 	}
-	access, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.DeviceTopic, deviceIds, permissions.Permission(model.READ))
+	access, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.DeviceTopic, deviceIds, permissions.Permission(model.READ))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -76,10 +77,10 @@ type deviceGroupHelperEffect struct {
 	maintains bool
 }
 
-func (this *Controller) getDeviceGroupHelperOptions(token string, currentDeviceIds []string, criteria []models.DeviceGroupFilterCriteria, options model.DeviceGroupHelperOptions) (result []model.DeviceGroupOption, err error, code int) {
+func (this *Controller) getDeviceGroupHelperOptions(ctx context.Context, token string, currentDeviceIds []string, criteria []models.DeviceGroupFilterCriteria, options model.DeviceGroupHelperOptions) (result []model.DeviceGroupOption, err error, code int) {
 	result = []model.DeviceGroupOption{}
 	blocked := blockedFunctionSet(options.FunctionBlockList)
-	devices, err, code := this.getDeviceGroupHelperOptionDevices(token, currentDeviceIds, criteria, blocked, options)
+	devices, err, code := this.getDeviceGroupHelperOptionDevices(ctx, token, currentDeviceIds, criteria, blocked, options)
 	if err != nil {
 		return result, err, code
 	}
@@ -89,7 +90,7 @@ func (this *Controller) getDeviceGroupHelperOptions(token string, currentDeviceI
 	for _, device := range devices {
 		effect, cached := effects[device.DeviceTypeId]
 		if !cached {
-			removes, keeps, deviceCriteria, err, code := this.getDeviceGroupHelperCriteriaSplit(criteria, device.Device)
+			removes, keeps, deviceCriteria, err, code := this.getDeviceGroupHelperCriteriaSplit(ctx, criteria, device.Device)
 			if err != nil {
 				return result, err, code
 			}
@@ -120,10 +121,10 @@ func (this *Controller) getDeviceGroupHelperOptions(token string, currentDeviceI
 // falls away with its function, so the check is the same Short() comparison
 // GetDeviceGroupCriteria intersects by. The function block list does not enter here:
 // RemovesCriteria reports what actually falls away, blocked or not.
-func (this *Controller) getDeviceGroupHelperCriteriaSplit(currentCriteria []models.DeviceGroupFilterCriteria, device models.Device) (removes []models.DeviceGroupFilterCriteria, keeps []models.DeviceGroupFilterCriteria, deviceCriteria []models.DeviceGroupFilterCriteria, err error, code int) {
+func (this *Controller) getDeviceGroupHelperCriteriaSplit(ctx context.Context, currentCriteria []models.DeviceGroupFilterCriteria, device models.Device) (removes []models.DeviceGroupFilterCriteria, keeps []models.DeviceGroupFilterCriteria, deviceCriteria []models.DeviceGroupFilterCriteria, err error, code int) {
 	removes = []models.DeviceGroupFilterCriteria{}
 	keeps = []models.DeviceGroupFilterCriteria{}
-	deviceCriteria, err, code = this.getDeviceGroupCriteriaOfDevice(device)
+	deviceCriteria, err, code = this.getDeviceGroupCriteriaOfDevice(ctx, device)
 	if err != nil {
 		return removes, keeps, deviceCriteria, err, code
 	}
@@ -165,24 +166,24 @@ func containsCountingFunction(criteria []models.DeviceGroupFilterCriteria, block
 // getDeviceGroupHelperOptionDevices lists the devices that may be offered for the group. Both
 // unmodified devices and the modified variants a device-type with service-groups produces are
 // candidates - a device-group may hold either.
-func (this *Controller) getDeviceGroupHelperOptionDevices(token string, currentDeviceIds []string, criteria []models.DeviceGroupFilterCriteria, blocked map[string]bool, options model.DeviceGroupHelperOptions) (result []models.ExtendedDevice, err error, code int) {
+func (this *Controller) getDeviceGroupHelperOptionDevices(ctx context.Context, token string, currentDeviceIds []string, criteria []models.DeviceGroupFilterCriteria, blocked map[string]bool, options model.DeviceGroupHelperOptions) (result []models.ExtendedDevice, err error, code int) {
 	//when only usable options are wanted, the device-types that answer none of the counting
 	//criteria are dropped before paging, so that the limit counts options the caller actually
 	//gets. With every criteria blocked the set is empty and no device is offered, which is the
 	//honest answer: nothing can make this group meaningful under the caller's own rule.
 	var validDeviceTypeIds []string //nil means: no device-type filter
 	if options.MaintainsGroupUsability && len(criteria) > 0 {
-		validDeviceTypeIds, err = this.getDeviceTypeIdsForAnyDeviceGroupCriteria(criteria, blocked)
+		validDeviceTypeIds, err = this.getDeviceTypeIdsForAnyDeviceGroupCriteria(ctx, criteria, blocked)
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
 	}
 
-	unmodified, err, code := this.getDeviceGroupHelperUnmodifiedOptionDevices(token, currentDeviceIds, validDeviceTypeIds, options)
+	unmodified, err, code := this.getDeviceGroupHelperUnmodifiedOptionDevices(ctx, token, currentDeviceIds, validDeviceTypeIds, options)
 	if err != nil {
 		return result, err, code
 	}
-	modified, err, code := this.getDeviceGroupHelperModifiedOptionDevices(token, currentDeviceIds, validDeviceTypeIds, options)
+	modified, err, code := this.getDeviceGroupHelperModifiedOptionDevices(ctx, token, currentDeviceIds, validDeviceTypeIds, options)
 	if err != nil {
 		return result, err, code
 	}
@@ -214,7 +215,7 @@ func (this *Controller) getDeviceGroupHelperOptionDevices(token string, currentD
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) getDeviceGroupHelperUnmodifiedOptionDevices(token string, currentDeviceIds []string, validDeviceTypeIds []string, options model.DeviceGroupHelperOptions) (result []models.ExtendedDevice, err error, code int) {
+func (this *Controller) getDeviceGroupHelperUnmodifiedOptionDevices(ctx context.Context, token string, currentDeviceIds []string, validDeviceTypeIds []string, options model.DeviceGroupHelperOptions) (result []models.ExtendedDevice, err error, code int) {
 	var deviceTypeIds []string //nil means: no device-type filter
 	if validDeviceTypeIds != nil {
 		deviceTypeIds = []string{}
@@ -224,7 +225,7 @@ func (this *Controller) getDeviceGroupHelperUnmodifiedOptionDevices(token string
 			}
 		}
 	}
-	result, _, err, code = this.ListExtendedDevices(token, model.ExtendedDeviceListOptions{
+	result, _, err, code = this.ListExtendedDevices(ctx, token, model.ExtendedDeviceListOptions{
 		DeviceTypeIds: deviceTypeIds,
 		Search:        options.Search,
 		//the devices already in the group are filtered out afterwards, so the page is read
@@ -239,11 +240,11 @@ func (this *Controller) getDeviceGroupHelperUnmodifiedOptionDevices(token string
 // getDeviceGroupHelperModifiedOptionDevices lists the modified variants of the candidate
 // devices. A modified device is not stored; its id is the id of the stored device joined with
 // the modifier of a modified device-type id, and reading it back applies the modifier.
-func (this *Controller) getDeviceGroupHelperModifiedOptionDevices(token string, currentDeviceIds []string, validDeviceTypeIds []string, options model.DeviceGroupHelperOptions) (result []models.ExtendedDevice, err error, code int) {
+func (this *Controller) getDeviceGroupHelperModifiedOptionDevices(ctx context.Context, token string, currentDeviceIds []string, validDeviceTypeIds []string, options model.DeviceGroupHelperOptions) (result []models.ExtendedDevice, err error, code int) {
 	result = []models.ExtendedDevice{}
 	if validDeviceTypeIds == nil {
 		//no criteria filter: every modified device-type is a candidate
-		validDeviceTypeIds, err = this.getModifiedDeviceTypeIds()
+		validDeviceTypeIds, err = this.getModifiedDeviceTypeIds(ctx)
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
@@ -266,7 +267,7 @@ func (this *Controller) getDeviceGroupHelperModifiedOptionDevices(token string, 
 		return result, nil, http.StatusOK
 	}
 
-	devices, err, code := this.ListDevices(token, model.DeviceListOptions{
+	devices, err, code := this.ListDevices(ctx, token, model.DeviceListOptions{
 		DeviceTypeIds: pureDeviceTypeIds,
 		Search:        options.Search,
 		Limit:         options.Limit + int64(len(currentDeviceIds)),
@@ -287,7 +288,7 @@ func (this *Controller) getDeviceGroupHelperModifiedOptionDevices(token string, 
 		return result, nil, http.StatusOK
 	}
 
-	result, _, err, code = this.ListExtendedDevices(token, model.ExtendedDeviceListOptions{
+	result, _, err, code = this.ListExtendedDevices(ctx, token, model.ExtendedDeviceListOptions{
 		Ids:    modifiedDeviceIds,
 		SortBy: "name.asc",
 	})
@@ -298,10 +299,10 @@ func (this *Controller) getDeviceGroupHelperModifiedOptionDevices(token string, 
 // the criteria whose function counts, modified ids included. That is exactly the set of
 // device-types whose devices leave the group with a criteria worth having, so it is the
 // pre-filter for the usable options.
-func (this *Controller) getDeviceTypeIdsForAnyDeviceGroupCriteria(criteria []models.DeviceGroupFilterCriteria, blocked map[string]bool) (result []string, err error) {
+func (this *Controller) getDeviceTypeIdsForAnyDeviceGroupCriteria(ctx context.Context, criteria []models.DeviceGroupFilterCriteria, blocked map[string]bool) (result []string, err error) {
 	result = []string{}
 	seen := map[string]bool{}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	for _, c := range criteria {
 		if blocked[c.FunctionId] {
 			continue
@@ -328,9 +329,9 @@ func (this *Controller) getDeviceTypeIdsForAnyDeviceGroupCriteria(criteria []mod
 
 // getModifiedDeviceTypeIds lists every modified device-type id. The empty criteria matches
 // every row of the device-type criteria collection, which is where the modified ids live.
-func (this *Controller) getModifiedDeviceTypeIds() (result []string, err error) {
+func (this *Controller) getModifiedDeviceTypeIds(ctx context.Context) (result []string, err error) {
 	result = []string{}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	ids, err := this.db.GetDeviceTypeIdsByFilterCriteriaV2(ctx, []model.FilterCriteria{{}}, true)
 	if err != nil {
 		return result, err

@@ -64,7 +64,7 @@ func (this *AspectNodeEndpoints) Query(config configuration.Config, router *http
 			return
 		}
 		if query.Ids != nil {
-			result, err, errCode := control.GetAspectNodesByIdList(*query.Ids)
+			result, err, errCode := control.GetAspectNodesByIdList(request.Context(), *query.Ids)
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
 				return
@@ -149,7 +149,7 @@ func (this *AspectEndpoints) ListAspectNodes(config configuration.Config, router
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListAspectNodes(listoptions)
+		result, total, err, errCode := control.ListAspectNodes(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -191,7 +191,7 @@ func (this *AspectNodeEndpoints) List(config configuration.Config, router *http.
 		function := request.URL.Query().Get("function")
 
 		if function == "" {
-			result, err, errCode = control.GetAspectNodes()
+			result, err, errCode = control.GetAspectNodes(request.Context())
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
 				return
@@ -217,9 +217,9 @@ func (this *AspectNodeEndpoints) List(config configuration.Config, router *http.
 			}
 			switch function {
 			case "measuring-function":
-				result, err, errCode = control.GetAspectNodesWithMeasuringFunction(ancestors, descendants)
+				result, err, errCode = control.GetAspectNodesWithMeasuringFunction(request.Context(), ancestors, descendants)
 			case "controlling-function":
-				result, err, errCode = control.GetAspectNodesWithControllingFunction(ancestors, descendants)
+				result, err, errCode = control.GetAspectNodesWithControllingFunction(request.Context(), ancestors, descendants)
 			}
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
@@ -253,7 +253,7 @@ func (this *AspectNodeEndpoints) List(config configuration.Config, router *http.
 func (this *AspectNodeEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-nodes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetAspectNode(id)
+		result, err, errCode := control.GetAspectNode(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -305,7 +305,7 @@ func (this *AspectNodeEndpoints) ListMeasuringFunctions(config configuration.Con
 				return
 			}
 		}
-		result, err, errCode := control.GetAspectNodesMeasuringFunctions(id, ancestors, descendants)
+		result, err, errCode := control.GetAspectNodesMeasuringFunctions(request.Context(), id, ancestors, descendants)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -357,7 +357,7 @@ func (this *AspectNodeEndpoints) ListControllingFunctions(config configuration.C
 				return
 			}
 		}
-		result, err, errCode := control.GetAspectNodesControllingFunctions(id, ancestors, descendants)
+		result, err, errCode := control.GetAspectNodesControllingFunctions(request.Context(), id, ancestors, descendants)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

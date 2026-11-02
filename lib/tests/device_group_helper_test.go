@@ -110,13 +110,13 @@ func TestDeviceGroupHelper(t *testing.T) {
 			{Id: aspectR, Name: "r"},
 		}
 		for _, aspect := range aspects {
-			_, err, _ := c.SetAspect(client.InternalAdminToken, aspect)
+			_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
-		_, err, _ := c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ := c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          getTemperature,
 			Name:        "getTemperature",
 			DisplayName: "getTemperature",
@@ -126,7 +126,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          getHumidity,
 			Name:        "getHumidity",
 			DisplayName: "getHumidity",
@@ -136,7 +136,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          setState,
 			Name:        "setState",
 			DisplayName: "setState",
@@ -146,12 +146,12 @@ func TestDeviceGroupHelper(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "thermostat"})
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "thermostat"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:               "p1",
 			Name:             "p1",
 			Handler:          "p1",
@@ -274,13 +274,13 @@ func TestDeviceGroupHelper(t *testing.T) {
 			})
 		}
 		for _, deviceType := range deviceTypes {
-			_, err, _ := c.SetDeviceType(client.InternalAdminToken, deviceType, client.DeviceTypeUpdateOptions{})
+			_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, deviceType, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(deviceType.Id, err)
 				return
 			}
 			deviceId := strings.Replace(deviceType.Id, "dt_", "device_", 1)
-			_, err, _ = c.SetDevice(client.InternalAdminToken, models.Device{
+			_, err, _ = c.SetDevice(context.Background(), client.InternalAdminToken, models.Device{
 				Id:           deviceId,
 				LocalId:      deviceId,
 				Name:         deviceId,
@@ -414,7 +414,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 	t.Run("a device the requesting user may not read is refused", func(t *testing.T) {
 		//every device of this test belongs to the admin, so the plain user token reaches none
 		const userjwt = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwOGM0N2E4OC0yYzc5LTQyMGYtODEwNC02NWJkOWViYmU0MWUiLCJleHAiOjE1NDY1MDcyMzMsIm5iZiI6MCwiaWF0IjoxNTQ2NTA3MTczLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDEvYXV0aC9yZWFsbXMvbWFzdGVyIiwiYXVkIjoiZnJvbnRlbmQiLCJzdWIiOiJ0ZXN0T3duZXIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJmcm9udGVuZCIsIm5vbmNlIjoiOTJjNDNjOTUtNzViMC00NmNmLTgwYWUtNDVkZDk3M2I0YjdmIiwiYXV0aF90aW1lIjoxNTQ2NTA3MDA5LCJzZXNzaW9uX3N0YXRlIjoiNWRmOTI4ZjQtMDhmMC00ZWI5LTliNjAtM2EwYWUyMmVmYzczIiwiYWNyIjoiMCIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJ1c2VyIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsibWFzdGVyLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJyb2xlcyI6WyJ1c2VyIl19.ykpuOmlpzj75ecSI6cHbCATIeY4qpyut2hMc1a67Ycg`
-		_, err, code := c.DeviceGroupHelper(userjwt, []string{"device_ab"}, client.DeviceGroupHelperOptions{})
+		_, err, code := c.DeviceGroupHelper(context.Background(), userjwt, []string{"device_ab"}, client.DeviceGroupHelperOptions{})
 		if err == nil {
 			t.Error("expected the request to be refused")
 			return
@@ -425,7 +425,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 	})
 
 	t.Run("options", func(t *testing.T) {
-		result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{})
+		result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{})
 		if err != nil {
 			t.Error(err, code)
 			return
@@ -528,7 +528,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 	})
 
 	t.Run("options: maintains_group_usability drops the unusable ones", func(t *testing.T) {
-		result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{
+		result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{
 			MaintainsGroupUsability: true,
 		})
 		if err != nil {
@@ -564,7 +564,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 		}))
 
 		t.Run("without a block list both functions count", func(t *testing.T) {
-			result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, group, client.DeviceGroupHelperOptions{})
+			result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, group, client.DeviceGroupHelperOptions{})
 			if err != nil {
 				t.Error(err, code)
 				return
@@ -580,7 +580,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 		})
 
 		t.Run("a blocked function stops counting", func(t *testing.T) {
-			result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
+			result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
 				FunctionBlockList: []string{getTemperature},
 			})
 			if err != nil {
@@ -612,7 +612,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 		})
 
 		t.Run("the block list narrows the filtered listing", func(t *testing.T) {
-			result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
+			result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
 				MaintainsGroupUsability: true,
 				FunctionBlockList:       []string{getTemperature},
 			})
@@ -628,7 +628,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 		})
 
 		t.Run("blocking every function of the group leaves no option", func(t *testing.T) {
-			result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
+			result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
 				MaintainsGroupUsability: true,
 				FunctionBlockList:       []string{getTemperature, getHumidity},
 			})
@@ -647,7 +647,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 		})
 
 		t.Run("an unknown blocked function changes nothing", func(t *testing.T) {
-			withBlock, err, code := c.DeviceGroupHelper(client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
+			withBlock, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
 				MaintainsGroupUsability: true,
 				FunctionBlockList:       []string{models.URN_PREFIX + "measuring-function:notUsedHere"},
 			})
@@ -655,7 +655,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 				t.Error(err, code)
 				return
 			}
-			without, err, code := c.DeviceGroupHelper(client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
+			without, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
 				MaintainsGroupUsability: true,
 			})
 			if err != nil {
@@ -670,7 +670,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 		//the block list reaches the service as one comma-separated query parameter, so an entry
 		//padded with spaces has to survive the split
 		t.Run("entries are trimmed", func(t *testing.T) {
-			result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
+			result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, group, client.DeviceGroupHelperOptions{
 				MaintainsGroupUsability: true,
 				FunctionBlockList:       []string{" " + getTemperature + " "},
 			})
@@ -685,7 +685,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 	})
 
 	t.Run("options: search filters the listing", func(t *testing.T) {
-		result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{
+		result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{
 			Search: "device_bc",
 		})
 		if err != nil {
@@ -698,7 +698,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 	})
 
 	t.Run("options: limit caps the listing", func(t *testing.T) {
-		result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{
+		result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, []string{"device_ab"}, client.DeviceGroupHelperOptions{
 			Limit: 2,
 		})
 		if err != nil {
@@ -716,7 +716,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 	})
 
 	t.Run("options: an empty group offers every device that has a criteria", func(t *testing.T) {
-		result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, []string{}, client.DeviceGroupHelperOptions{
+		result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, []string{}, client.DeviceGroupHelperOptions{
 			MaintainsGroupUsability: true,
 		})
 		if err != nil {
@@ -737,7 +737,7 @@ func TestDeviceGroupHelper(t *testing.T) {
 
 func testDeviceGroupHelperCriteria(c client.Interface, deviceIds []string, expected []models.DeviceGroupFilterCriteria) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err, code := c.DeviceGroupHelper(client.InternalAdminToken, deviceIds, client.DeviceGroupHelperOptions{})
+		result, err, code := c.DeviceGroupHelper(context.Background(), client.InternalAdminToken, deviceIds, client.DeviceGroupHelperOptions{})
 		if err != nil {
 			t.Error(err, code)
 			return

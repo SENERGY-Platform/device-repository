@@ -78,12 +78,12 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 	var expected []string
 
 	t.Run("create resources", func(t *testing.T) {
-		_, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{Id: airAspect, Name: "air"})
+		_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{Id: airAspect, Name: "air"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          measuringFunction,
 			Name:        "getTemperature",
 			DisplayName: "getTemperature",
@@ -93,12 +93,12 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:               "p1",
 			Name:             "p1",
 			Handler:          "p1",
@@ -108,7 +108,7 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		_, err, _ = c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Id:            "dt1",
 			Name:          "dt1",
 			DeviceClassId: deviceClass,
@@ -136,7 +136,7 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		device, err, _ := c.CreateDevice(client.InternalAdminToken, models.Device{
+		device, err, _ := c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 			LocalId:      "d1",
 			Name:         "d1",
 			DeviceTypeId: "dt1",
@@ -146,7 +146,7 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 			return
 		}
 		generatedGroupId = model.DeviceIdToGeneratedDeviceGroupId(device.Id)
-		generated, err, _ := c.ReadDeviceGroup(generatedGroupId, client.InternalAdminToken, false)
+		generated, err, _ := c.ReadDeviceGroup(context.Background(), generatedGroupId, client.InternalAdminToken, false)
 		if err != nil {
 			t.Error(err)
 			return
@@ -156,7 +156,7 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 			t.Error("expected the generated group to have criteria", generated)
 			return
 		}
-		manualGroup, err, _ = c.SetDeviceGroup(client.InternalAdminToken, models.DeviceGroup{
+		manualGroup, err, _ = c.SetDeviceGroup(context.Background(), client.InternalAdminToken, models.DeviceGroup{
 			Name:      "manual",
 			DeviceIds: []string{device.Id},
 			Criteria:  generated.Criteria,
@@ -198,7 +198,7 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 
 	criteriaOf := func(t *testing.T, id string) []string {
 		t.Helper()
-		dg, err, _ := c.ReadDeviceGroup(id, client.InternalAdminToken, false)
+		dg, err, _ := c.ReadDeviceGroup(context.Background(), id, client.InternalAdminToken, false)
 		if err != nil {
 			t.Error(err)
 			return nil
@@ -220,14 +220,14 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 	}
 
 	t.Run("non admin is rejected", func(t *testing.T) {
-		err, code := c.RecomputeDeviceGroupCriteria(userToken, nil)
+		err, code := c.RecomputeDeviceGroupCriteria(context.Background(), userToken, nil)
 		if err == nil || code != http.StatusForbidden {
 			t.Error("expected 403", err, code)
 		}
 	})
 
 	t.Run("ids limit the recompute", func(t *testing.T) {
-		err, _ := c.RecomputeDeviceGroupCriteria(client.InternalAdminToken, []string{manualGroup.Id})
+		err, _ := c.RecomputeDeviceGroupCriteria(context.Background(), client.InternalAdminToken, []string{manualGroup.Id})
 		if err != nil {
 			t.Error(err)
 			return
@@ -241,7 +241,7 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 	})
 
 	t.Run("without ids every group is recomputed", func(t *testing.T) {
-		err, _ := c.RecomputeDeviceGroupCriteria(client.InternalAdminToken, nil)
+		err, _ := c.RecomputeDeviceGroupCriteria(context.Background(), client.InternalAdminToken, nil)
 		if err != nil {
 			t.Error(err)
 			return

@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -27,8 +28,8 @@ import (
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
-func (this *Controller) ListAspectClasses(listOptions model.AspectClassListOptions) (result []models.AspectClass, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListAspectClasses(ctx context.Context, listOptions model.AspectClassListOptions) (result []models.AspectClass, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListAspectClasses(ctx, listOptions)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -36,8 +37,8 @@ func (this *Controller) ListAspectClasses(listOptions model.AspectClassListOptio
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspectClass(id string) (result models.AspectClass, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetAspectClass(ctx context.Context, id string) (result models.AspectClass, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetAspectClass(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -48,7 +49,7 @@ func (this *Controller) GetAspectClass(id string) (result models.AspectClass, er
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) SetAspectClass(token string, aspectClass models.AspectClass) (result models.AspectClass, err error, code int) {
+func (this *Controller) SetAspectClass(ctx context.Context, token string, aspectClass models.AspectClass) (result models.AspectClass, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -60,28 +61,28 @@ func (this *Controller) SetAspectClass(token string, aspectClass models.AspectCl
 	//ensure ids
 	aspectClass.GenerateId()
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateAspectClass(aspectClass)
+		err, code = this.ValidateAspectClass(ctx, aspectClass)
 		if err != nil {
 			return result, err, code
 		}
 	}
-	err = this.setAspectClass(aspectClass)
+	err = this.setAspectClass(ctx, aspectClass)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return aspectClass, nil, http.StatusOK
 }
 
-func (this *Controller) setAspectClass(aspectClass models.AspectClass) (err error) {
-	ctx, _ := getTimeoutContext()
-	return this.db.SetAspectClass(ctx, aspectClass, this.setAspectClassSyncHandler)
+func (this *Controller) setAspectClass(ctx context.Context, aspectClass models.AspectClass) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
+	return this.db.SetAspectClass(ctx, aspectClass, withContext(ctx, this.setAspectClassSyncHandler))
 }
 
-func (this *Controller) setAspectClassSyncHandler(aspectClass models.AspectClass) error {
+func (this *Controller) setAspectClassSyncHandler(ctx context.Context, aspectClass models.AspectClass) error {
 	return this.publisher.PublishAspectClass(aspectClass)
 }
 
-func (this *Controller) DeleteAspectClass(token string, id string) (error, int) {
+func (this *Controller) DeleteAspectClass(ctx context.Context, token string, id string) (error, int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -89,23 +90,23 @@ func (this *Controller) DeleteAspectClass(token string, id string) (error, int) 
 	if !jwtToken.IsAdmin() {
 		return errors.New("token is not an admin"), http.StatusUnauthorized
 	}
-	err, code := this.ValidateAspectClassDelete(id)
+	err, code := this.ValidateAspectClassDelete(ctx, id)
 	if err != nil {
 		return err, code
 	}
-	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveAspectClass(ctx, id, this.deleteAspectClassSyncHandler)
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.RemoveAspectClass(ctx, id, withContext(ctx, this.deleteAspectClassSyncHandler))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteAspectClassSyncHandler(aspectClass models.AspectClass) error {
+func (this *Controller) deleteAspectClassSyncHandler(ctx context.Context, aspectClass models.AspectClass) error {
 	return this.publisher.PublishAspectClassDelete(aspectClass.Id)
 }
 
-func (this *Controller) ValidateAspectClass(aspectClass models.AspectClass) (err error, code int) {
+func (this *Controller) ValidateAspectClass(ctx context.Context, aspectClass models.AspectClass) (err error, code int) {
 	if aspectClass.Id == "" {
 		return errors.New("missing aspect class id"), http.StatusBadRequest
 	}
@@ -122,8 +123,8 @@ func (this *Controller) ValidateAspectClass(aspectClass models.AspectClass) (err
 // itself comes from the listing's total, so it stays exact.
 const aspectClassUsageErrorLimit = 20
 
-func (this *Controller) ValidateAspectClassDelete(id string) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateAspectClassDelete(ctx context.Context, id string) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	//the aspect nodes are the flat index: an aspect tree is one nested document, while
 	//every aspect of it has exactly one node carrying the class
 	nodes, total, err := this.db.ListAspectNodes(ctx, model.AspectListOptions{

@@ -17,21 +17,23 @@
 package controller
 
 import (
+	"context"
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
-	"strings"
 )
 
-func (this *Controller) setAspectSyncHandler(aspect models.Aspect) (err error) {
+func (this *Controller) setAspectSyncHandler(ctx context.Context, aspect models.Aspect) (err error) {
 	descendentNodeIds := getDescendentNodeIds(aspect)
-	err = this.handleMovedSubAspects(aspect, descendentNodeIds)
+	err = this.handleMovedSubAspects(ctx, aspect, descendentNodeIds)
 	if err != nil {
 		return err
 	}
-	err = this.setAspectNodes(aspect)
+	err = this.setAspectNodes(ctx, aspect)
 	if err != nil {
 		return err
 	}
@@ -42,9 +44,9 @@ func (this *Controller) setAspectSyncHandler(aspect models.Aspect) (err error) {
 	return nil
 }
 
-func (this *Controller) setAspect(aspect models.Aspect) error {
-	ctx, _ := getTimeoutContext()
-	err := this.db.SetAspect(ctx, aspect, this.setAspectSyncHandler)
+func (this *Controller) setAspect(ctx context.Context, aspect models.Aspect) error {
+	ctx, _ = getTimeoutContext(ctx)
+	err := this.db.SetAspect(ctx, aspect, withContext(ctx, this.setAspectSyncHandler))
 	if err != nil {
 		return err
 	}
@@ -59,8 +61,8 @@ func getDescendentNodeIds(aspect models.Aspect) (result []string) {
 	return result
 }
 
-func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNodesIds []string) error {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) handleMovedSubAspects(ctx context.Context, aspect models.Aspect, descendentNodesIds []string) error {
+	ctx, _ = getTimeoutContext(ctx)
 	nodes, err := this.db.ListAspectNodesByIdList(ctx, descendentNodesIds)
 	if err != nil {
 		return err
@@ -75,7 +77,7 @@ func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNo
 		//sub aspect is moved root aspect
 		if node.Id == node.RootId && node.Id != aspect.Id {
 			deletedAspect[node.Id] = true
-			err = this.deleteAspect(node.Id)
+			err = this.deleteAspect(ctx, node.Id)
 			if err != nil {
 				return err
 			}
@@ -89,7 +91,7 @@ func (this *Controller) handleMovedSubAspects(aspect models.Aspect, descendentNo
 			}
 			if exists {
 				changedAspect := filterSubAspects(sourceAspect, movedIds)
-				err = this.setAspect(changedAspect)
+				err = this.setAspect(ctx, changedAspect)
 				if err != nil {
 					return err
 				}
@@ -114,7 +116,7 @@ func filterSubAspects(aspect models.Aspect, ids []string) models.Aspect {
 	return aspect
 }
 
-func (this *Controller) SetAspect(token string, aspect models.Aspect) (result models.Aspect, err error, code int) {
+func (this *Controller) SetAspect(ctx context.Context, token string, aspect models.Aspect) (result models.Aspect, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -131,20 +133,20 @@ func (this *Controller) SetAspect(token string, aspect models.Aspect) (result mo
 		return aspect, err, code
 	}
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateAspect(aspect)
+		err, code = this.ValidateAspect(ctx, aspect)
 		if err != nil {
 			return aspect, err, code
 		}
 	}
 
-	err = this.setAspect(aspect)
+	err = this.setAspect(ctx, aspect)
 	if err != nil {
 		return aspect, err, http.StatusInternalServerError
 	}
 	return aspect, nil, http.StatusOK
 }
 
-func (this *Controller) DeleteAspect(token string, id string) (err error, code int) {
+func (this *Controller) DeleteAspect(ctx context.Context, token string, id string) (err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -152,19 +154,19 @@ func (this *Controller) DeleteAspect(token string, id string) (err error, code i
 	if !jwtToken.IsAdmin() {
 		return errors.New("token is not an admin"), http.StatusUnauthorized
 	}
-	err, code = this.ValidateAspectDelete(id)
+	err, code = this.ValidateAspectDelete(ctx, id)
 	if err != nil {
 		return err, code
 	}
-	err = this.deleteAspect(id)
+	err = this.deleteAspect(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteAspectSyncHandler(aspect models.Aspect) (err error) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) deleteAspectSyncHandler(ctx context.Context, aspect models.Aspect) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
 	err = this.db.RemoveAspectNodesByRootId(ctx, aspect.Id)
 	if err != nil {
 		return err
@@ -176,18 +178,18 @@ func (this *Controller) deleteAspectSyncHandler(aspect models.Aspect) (err error
 	return nil
 }
 
-func (this *Controller) deleteAspect(id string) (err error) {
-	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveAspect(ctx, id, this.deleteAspectSyncHandler)
+func (this *Controller) deleteAspect(ctx context.Context, id string) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.RemoveAspect(ctx, id, withContext(ctx, this.deleteAspectSyncHandler))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (this *Controller) GetAspects() (result []models.Aspect, err error, code int) {
+func (this *Controller) GetAspects(ctx context.Context) (result []models.Aspect, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllAspects(ctx)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -195,8 +197,8 @@ func (this *Controller) GetAspects() (result []models.Aspect, err error, code in
 	return
 }
 
-func (this *Controller) ListAspects(listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListAspects(ctx context.Context, listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListAspects(ctx, listOptions)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -204,8 +206,8 @@ func (this *Controller) ListAspects(listOptions model.AspectListOptions) (result
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspect(id string) (result models.Aspect, err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetAspect(ctx context.Context, id string) (result models.Aspect, err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetAspect(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -216,9 +218,9 @@ func (this *Controller) GetAspect(id string) (result models.Aspect, err error, c
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) (result []models.Aspect, err error, code int) {
+func (this *Controller) GetAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.Aspect, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAspectsWithMeasuringFunction(ctx, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -226,9 +228,9 @@ func (this *Controller) GetAspectsWithMeasuringFunction(ancestors bool, descenda
 	return
 }
 
-func (this *Controller) GetAspectsWithControllingFunction(ancestors bool, descendants bool) (result []models.Aspect, err error, code int) {
+func (this *Controller) GetAspectsWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) (result []models.Aspect, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAspectsWithControllingFunction(ctx, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -236,30 +238,30 @@ func (this *Controller) GetAspectsWithControllingFunction(ancestors bool, descen
 	return
 }
 
-func (this *Controller) ValidateAspect(aspect models.Aspect) (err error, code int) {
+func (this *Controller) ValidateAspect(ctx context.Context, aspect models.Aspect) (err error, code int) {
 	//the hierarchy's aspect-class has to be resolved before it can be checked; dry-run
 	//requests and imports reach this without passing SetAspect
 	err, code = ResolveAspectClassIds(&aspect)
 	if err != nil {
 		return err, code
 	}
-	err, code = this.validateAspectClassOfHierarchy(aspect)
+	err, code = this.validateAspectClassOfHierarchy(ctx, aspect)
 	if err != nil {
 		return err, code
 	}
-	return this.validateAspect(aspect, true)
+	return this.validateAspect(ctx, aspect, true)
 }
 
 // validateAspectClassOfHierarchy checks the root's aspect-class, which after
 // ResolveAspectClassIds is the aspect-class of every aspect in the hierarchy.
-func (this *Controller) validateAspectClassOfHierarchy(aspect models.Aspect) (err error, code int) {
+func (this *Controller) validateAspectClassOfHierarchy(ctx context.Context, aspect models.Aspect) (err error, code int) {
 	if aspect.AspectClassId == "" {
 		if this.config.AspectClassIdRequired {
 			return errors.New("missing aspect class id in " + aspect.Id), http.StatusBadRequest
 		}
 		return nil, http.StatusOK
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	_, exists, err := this.db.GetAspectClass(ctx, aspect.AspectClassId)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -270,7 +272,7 @@ func (this *Controller) validateAspectClassOfHierarchy(aspect models.Aspect) (er
 	return nil, http.StatusOK
 }
 
-func (this *Controller) validateAspect(aspect models.Aspect, checkDelete bool) (err error, code int) {
+func (this *Controller) validateAspect(ctx context.Context, aspect models.Aspect, checkDelete bool) (err error, code int) {
 	if aspect.Id == "" {
 		return errors.New("missing aspect id"), http.StatusBadRequest
 	}
@@ -281,7 +283,7 @@ func (this *Controller) validateAspect(aspect models.Aspect, checkDelete bool) (
 		return errors.New("missing aspect name"), http.StatusBadRequest
 	}
 	for _, sub := range aspect.SubAspects {
-		err, code = this.validateAspect(sub, false)
+		err, code = this.validateAspect(ctx, sub, false)
 		if err != nil {
 			return err, code
 		}
@@ -289,7 +291,7 @@ func (this *Controller) validateAspect(aspect models.Aspect, checkDelete bool) (
 
 	//check for deleted sub aspects; but only for the root aspect, to prevent errors when moving sub aspect
 	if checkDelete {
-		ctx, _ := getTimeoutContext()
+		ctx, _ := getTimeoutContext(ctx)
 		old, exists, err := this.db.GetAspectNode(ctx, aspect.Id)
 		if err != nil {
 			return err, http.StatusInternalServerError
@@ -317,8 +319,8 @@ func (this *Controller) validateAspect(aspect models.Aspect, checkDelete bool) (
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateAspectDelete(id string) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateAspectDelete(ctx context.Context, id string) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	aspect, exists, err := this.db.GetAspectNode(ctx, id)
 	if !exists {
 		//deleting nothing is ok

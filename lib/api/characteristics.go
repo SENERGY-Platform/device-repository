@@ -92,7 +92,7 @@ func (this *CharacteristicsEndpoints) ListCharacteristics(config configuration.C
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListCharacteristics(listoptions)
+		result, total, err, errCode := control.ListCharacteristics(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -135,7 +135,7 @@ func (this *CharacteristicsEndpoints) List(config configuration.Config, router *
 			}
 		}
 
-		result, err, errCode := control.GetCharacteristics(leafsOnly)
+		result, err, errCode := control.GetCharacteristics(request.Context(), leafsOnly)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -167,7 +167,7 @@ func (this *CharacteristicsEndpoints) List(config configuration.Config, router *
 func (this *CharacteristicsEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /characteristics/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetCharacteristic(id)
+		result, err, errCode := control.GetCharacteristic(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -210,7 +210,7 @@ func (this *CharacteristicsEndpoints) Validate(config configuration.Config, rout
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateCharacteristics(characteristic)
+		err, code := control.ValidateCharacteristics(request.Context(), characteristic)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -243,7 +243,7 @@ func (this *CharacteristicsEndpoints) Delete(config configuration.Config, router
 			}
 		}
 		if dryRun {
-			err, code := control.ValidateCharacteristicDelete(id)
+			err, code := control.ValidateCharacteristicDelete(request.Context(), id)
 			if err != nil {
 				http.Error(writer, err.Error(), code)
 				return
@@ -252,7 +252,7 @@ func (this *CharacteristicsEndpoints) Delete(config configuration.Config, router
 			return
 		}
 		token := util.GetAuthToken(request)
-		err, errCode := control.DeleteCharacteristic(token, id)
+		err, errCode := control.DeleteCharacteristic(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -290,7 +290,7 @@ func (this *CharacteristicsEndpoints) Create(config configuration.Config, router
 		}
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetCharacteristic(token, characteristic)
+		result, err, errCode := control.SetCharacteristic(request.Context(), token, characteristic)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -337,7 +337,7 @@ func (this *CharacteristicsEndpoints) Update(config configuration.Config, router
 
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetCharacteristic(token, characteristic)
+		result, err, errCode := control.SetCharacteristic(request.Context(), token, characteristic)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

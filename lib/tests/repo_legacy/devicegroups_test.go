@@ -58,7 +58,7 @@ func TestListDeviceGroups(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	for _, dg := range resources.DeviceGroupExamples {
-		_, err, _ := c.SetDeviceGroup(Userjwt, dg)
+		_, err, _ := c.SetDeviceGroup(context.Background(), Userjwt, dg)
 		if err != nil {
 			t.Error(err)
 			return
@@ -98,7 +98,7 @@ func TestListDeviceGroups(t *testing.T) {
 	f := func(options model.DeviceGroupListOptions, expectedTotal int64, expectedGroups []models.DeviceGroup) func(t *testing.T) {
 		return func(t *testing.T) {
 			t.Helper()
-			actualGroups, actualTotal, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(Userjwt, options)
+			actualGroups, actualTotal, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(context.Background(), Userjwt, options)
 			if err != nil {
 				t.Error(err)
 				return
@@ -120,7 +120,7 @@ func TestListDeviceGroups(t *testing.T) {
 	}, 3, expectedResultOfDeviceFilter))
 
 	t.Run("other user may not access", func(t *testing.T) {
-		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(SecondOwnerToken, client.DeviceGroupListOptions{})
+		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(context.Background(), SecondOwnerToken, client.DeviceGroupListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -552,7 +552,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	_, err, _ = ctrl.SetAspect(AdminToken, models.Aspect{
+	_, err, _ = ctrl.SetAspect(context.Background(), AdminToken, models.Aspect{
 		Id:   "parent",
 		Name: "parent",
 		SubAspects: []models.Aspect{
@@ -572,7 +572,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	_, err, _ = ctrl.SetDeviceType(AdminToken, models.DeviceType{
+	_, err, _ = ctrl.SetDeviceType(context.Background(), AdminToken, models.DeviceType{
 		Id:            "dt1",
 		DeviceClassId: "dcid",
 		Services: []models.Service{{
@@ -592,7 +592,7 @@ func TestDeviceGroupsValidation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	_, err, _ = ctrl.SetDevice(Userjwt, models.Device{
+	_, err, _ = ctrl.SetDevice(context.Background(), Userjwt, models.Device{
 		Id:           "did",
 		DeviceTypeId: "dt1",
 	}, client.DeviceUpdateOptions{})
@@ -745,7 +745,7 @@ func testDeviceGroupValidation(ctrl *controller.Controller, group models.DeviceG
 				t.Error(r, "\n", string(debug.Stack()))
 			}
 		}()
-		err, code := ctrl.ValidateDeviceGroup(adminjwt, group)
+		err, code := ctrl.ValidateDeviceGroup(context.Background(), adminjwt, group)
 		if (err != nil) != expectError {
 			t.Error(expectError, err)
 			return
@@ -890,7 +890,7 @@ func testDeviceGroupsDeviceFilter(ctrl *controller.Controller, group models.Devi
 				t.Error(r, "\n", string(debug.Stack()))
 			}
 		}()
-		result, err, code := ctrl.FilterDevicesOfGroupByAccess(userjwt, group)
+		result, err, code := ctrl.FilterDevicesOfGroupByAccess(context.Background(), userjwt, group)
 		if err != nil {
 			t.Error(err)
 			return
@@ -922,7 +922,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{
 		Id:            devicetype1id,
 		Name:          devicetype1name,
 		DeviceClassId: "dcid",
@@ -949,7 +949,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		DeviceTypeId: devicetype1id,
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -966,7 +966,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		DeviceIds: []string{device1id},
 	}
 
-	_, err, _ = c.SetDeviceGroup(userjwt, dg1)
+	_, err, _ = c.SetDeviceGroup(context.Background(), userjwt, dg1)
 	if err != nil {
 		t.Error(err)
 		return
@@ -1015,7 +1015,7 @@ func TestDeviceGroupsAttributes(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceGroup(userjwt, dg1)
+	_, err, _ = c.SetDeviceGroup(context.Background(), userjwt, dg1)
 	if err != nil {
 		t.Error(err)
 		return

@@ -105,7 +105,7 @@ func (this *AspectEndpoints) ListAspects(config configuration.Config, router *ht
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListAspects(listoptions)
+		result, total, err, errCode := control.ListAspects(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -147,7 +147,7 @@ func (this *AspectEndpoints) List(config configuration.Config, router *http.Serv
 		function := request.URL.Query().Get("function")
 
 		if function == "" {
-			result, err, errCode = control.GetAspects()
+			result, err, errCode = control.GetAspects(request.Context())
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
 				return
@@ -173,9 +173,9 @@ func (this *AspectEndpoints) List(config configuration.Config, router *http.Serv
 			}
 			switch function {
 			case "measuring-function":
-				result, err, errCode = control.GetAspectsWithMeasuringFunction(ancestors, descendants)
+				result, err, errCode = control.GetAspectsWithMeasuringFunction(request.Context(), ancestors, descendants)
 			case "controlling-function":
-				result, err, errCode = control.GetAspectsWithControllingFunction(ancestors, descendants)
+				result, err, errCode = control.GetAspectsWithControllingFunction(request.Context(), ancestors, descendants)
 			}
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
@@ -209,7 +209,7 @@ func (this *AspectEndpoints) List(config configuration.Config, router *http.Serv
 func (this *AspectEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspects/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetAspect(id)
+		result, err, errCode := control.GetAspect(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -252,7 +252,7 @@ func (this *AspectEndpoints) Validate(config configuration.Config, router *http.
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateAspect(aspect)
+		err, code := control.ValidateAspect(request.Context(), aspect)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -293,7 +293,7 @@ func (this *AspectEndpoints) Set(config configuration.Config, router *http.Serve
 			return
 		}
 
-		result, err, errCode := control.SetAspect(token, aspect)
+		result, err, errCode := control.SetAspect(request.Context(), token, aspect)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -333,7 +333,7 @@ func (this *AspectEndpoints) Create(config configuration.Config, router *http.Se
 		}
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetAspect(token, aspect)
+		result, err, errCode := control.SetAspect(request.Context(), token, aspect)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -371,7 +371,7 @@ func (this *AspectEndpoints) DeleteAspect(config configuration.Config, router *h
 			}
 		}
 		if dryRun {
-			err, code := control.ValidateAspectDelete(id)
+			err, code := control.ValidateAspectDelete(request.Context(), id)
 			if err != nil {
 				http.Error(writer, err.Error(), code)
 				return
@@ -380,7 +380,7 @@ func (this *AspectEndpoints) DeleteAspect(config configuration.Config, router *h
 			return
 		}
 		token := util.GetAuthToken(request)
-		err, errCode := control.DeleteAspect(token, id)
+		err, errCode := control.DeleteAspect(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -432,7 +432,7 @@ func (this *AspectEndpoints) GetMeasuringFunctions(config configuration.Config, 
 				return
 			}
 		}
-		result, err, errCode := control.GetAspectNodesMeasuringFunctions(id, ancestors, descendants)
+		result, err, errCode := control.GetAspectNodesMeasuringFunctions(request.Context(), id, ancestors, descendants)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -484,7 +484,7 @@ func (this *AspectEndpoints) GetControllingFunctions(config configuration.Config
 				return
 			}
 		}
-		result, err, errCode := control.GetAspectNodesControllingFunctions(id, ancestors, descendants)
+		result, err, errCode := control.GetAspectNodesControllingFunctions(request.Context(), id, ancestors, descendants)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

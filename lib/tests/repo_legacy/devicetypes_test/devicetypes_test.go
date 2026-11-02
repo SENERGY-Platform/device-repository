@@ -56,7 +56,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetAspect(testenv.AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "parent_2",
 		Name: "parent_2",
 		SubAspects: []models.Aspect{
@@ -77,7 +77,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetProtocol(testenv.AdminToken, models.Protocol{
+	_, err, _ = c.SetProtocol(context.Background(), testenv.AdminToken, models.Protocol{
 		Id:      "p",
 		Name:    "p",
 		Handler: "p",
@@ -166,7 +166,7 @@ func TestServiceQuery(t *testing.T) {
 	}
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -214,7 +214,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -246,7 +246,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dtUpdated, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dtUpdated, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -273,7 +273,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		}},
 	}
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dtSubVarDeleted, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dtSubVarDeleted, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -295,13 +295,13 @@ func TestDeviceTypeQuery(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: uuid.NewString(), Name: uuid.NewString()}, client.DeviceTypeUpdateOptions{})
+		_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, models.DeviceType{Id: uuid.NewString(), Name: uuid.NewString()}, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -327,7 +327,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 		testDeviceTypeListSort(t, conf)
 	})
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -435,7 +435,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		}
 	})
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -462,7 +462,7 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}}
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -507,7 +507,7 @@ func TestServiceWithAttribute(t *testing.T) {
 		},
 	}}
 
-	_, err, _ = c.SetDeviceType(testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, dt, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return

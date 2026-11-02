@@ -2,15 +2,16 @@ package semantic_legacy
 
 import (
 	"context"
+	"reflect"
+	"sort"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
-	"reflect"
-	"sort"
-	"sync"
-	"testing"
 )
 
 func TestLocation(t *testing.T) {
@@ -43,7 +44,7 @@ func TestLocation(t *testing.T) {
 func testProduceLocation(conf configuration.Config, location models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetLocation(testenv.AdminToken, location)
+		_, err, _ := c.SetLocation(context.Background(), testenv.AdminToken, location)
 		if err != nil {
 			t.Error(err)
 			return
@@ -53,7 +54,7 @@ func testProduceLocation(conf configuration.Config, location models.Location) fu
 
 func testLocationRead(con *controller.Controller, id string, expectedLocation *models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err, code := con.GetLocation(id, testenv.AdminToken)
+		result, err, code := con.GetLocation(context.Background(), id, testenv.AdminToken)
 		if err != nil {
 			if expectedLocation != nil {
 				t.Error(code, err)
@@ -85,7 +86,7 @@ func testLocationRead(con *controller.Controller, id string, expectedLocation *m
 func testLocationDelete(conf configuration.Config, id string) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		err, _ := c.DeleteLocation(testenv.AdminToken, id)
+		err, _ := c.DeleteLocation(context.Background(), testenv.AdminToken, id)
 		if err != nil {
 			t.Error(err)
 			return

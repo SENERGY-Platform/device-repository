@@ -178,7 +178,7 @@ func (this *DeviceEndpoints) List(config configuration.Config, router *http.Serv
 			deviceListOptions.DeviceAttributeBlacklist = blacklist
 		}
 
-		result, err, errCode := control.ListDevices(util.GetAuthToken(request), deviceListOptions)
+		result, err, errCode := control.ListDevices(request.Context(), util.GetAuthToken(request), deviceListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -234,9 +234,9 @@ func (this *DeviceEndpoints) Get(config configuration.Config, router *http.Serve
 		var result models.Device
 		var errCode int
 		if as == "local_id" {
-			result, err, errCode = control.ReadDeviceByLocalId(ownerId, id, util.GetAuthToken(request), permission)
+			result, err, errCode = control.ReadDeviceByLocalId(request.Context(), ownerId, id, util.GetAuthToken(request), permission)
 		} else {
-			result, err, errCode = control.ReadDevice(id, util.GetAuthToken(request), permission)
+			result, err, errCode = control.ReadDevice(request.Context(), id, util.GetAuthToken(request), permission)
 		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
@@ -280,7 +280,7 @@ func (this *DeviceEndpoints) Validate(config configuration.Config, router *http.
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDevice(util.GetAuthToken(request), device)
+		err, code := control.ValidateDevice(request.Context(), util.GetAuthToken(request), device)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -319,7 +319,7 @@ func (this *DeviceEndpoints) Create(config configuration.Config, router *http.Se
 			return
 		}
 
-		result, err, errCode := control.CreateDevice(token, device)
+		result, err, errCode := control.CreateDevice(request.Context(), token, device)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -371,7 +371,7 @@ func (this *DeviceEndpoints) Set(config configuration.Config, router *http.Serve
 			options.UpdateOnlySameOriginAttributes = strings.Split(temp, ",")
 		}
 
-		result, err, errCode := control.SetDevice(token, device, options)
+		result, err, errCode := control.SetDevice(request.Context(), token, device, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -423,14 +423,14 @@ func (this *DeviceEndpoints) SetAttributes(config configuration.Config, router *
 			options.UpdateOnlySameOriginAttributes = strings.Split(temp, ",")
 		}
 
-		device, err, errCode := control.ReadDevice(id, token, model.WRITE)
+		device, err, errCode := control.ReadDevice(request.Context(), id, token, model.WRITE)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
 		device.Attributes = attributes
 
-		result, err, errCode := control.SetDevice(token, device, options)
+		result, err, errCode := control.SetDevice(request.Context(), token, device, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -472,7 +472,7 @@ func (this *DeviceEndpoints) SetDisplayName(config configuration.Config, router 
 		}
 		token := util.GetAuthToken(request)
 
-		device, err, errCode := control.ReadDevice(id, token, model.WRITE)
+		device, err, errCode := control.ReadDevice(request.Context(), id, token, model.WRITE)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -490,7 +490,7 @@ func (this *DeviceEndpoints) SetDisplayName(config configuration.Config, router 
 			device.Attributes = append(device.Attributes, models.Attribute{Key: DisplayNameAttributeKey, Value: displayName, Origin: DisplayNameAttributeOrigin})
 		}
 
-		result, err, errCode := control.SetDevice(token, device, model.DeviceUpdateOptions{})
+		result, err, errCode := control.SetDevice(request.Context(), token, device, model.DeviceUpdateOptions{})
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -524,7 +524,7 @@ func (this *DeviceEndpoints) Delete(config configuration.Config, router *http.Se
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.DeleteDevice(token, id)
+		err, errCode := control.DeleteDevice(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -563,7 +563,7 @@ func (this *DeviceEndpoints) DeleteMany(config configuration.Config, router *htt
 		token := util.GetAuthToken(request)
 
 		for _, id := range ids {
-			err, errCode := control.DeleteDevice(token, id)
+			err, errCode := control.DeleteDevice(request.Context(), token, id)
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
 				return
@@ -606,7 +606,7 @@ func (this *DeviceEndpoints) SetConnectionState(config configuration.Config, rou
 		}
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.SetDeviceConnectionState(token, id, connected)
+		err, errCode := control.SetDeviceConnectionState(request.Context(), token, id, connected)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -643,7 +643,7 @@ func (this *DeviceEndpoints) SetConnectionStates(config configuration.Config, ro
 		}
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.SetDeviceConnectionStates(token, states)
+		err, errCode := control.SetDeviceConnectionStates(request.Context(), token, states)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

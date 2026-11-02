@@ -51,7 +51,7 @@ type GraphEndpoints struct{}
 func (this *GraphEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /graphs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.ReadGraph(util.GetAuthToken(request), id)
+		result, err, errCode := control.ReadGraph(request.Context(), util.GetAuthToken(request), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -174,7 +174,7 @@ func (this *GraphEndpoints) List(config configuration.Config, router *http.Serve
 			graphListOptions.Permission = model.READ
 		}
 
-		result, total, err, errCode := control.ListGraphs(util.GetAuthToken(request), graphListOptions)
+		result, total, err, errCode := control.ListGraphs(request.Context(), util.GetAuthToken(request), graphListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -217,7 +217,7 @@ func (this *GraphEndpoints) Create(config configuration.Config, router *http.Ser
 			return
 		}
 
-		result, err, errCode := control.SetGraph(token, graph)
+		result, err, errCode := control.SetGraph(request.Context(), token, graph)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -268,7 +268,7 @@ func (this *GraphEndpoints) Set(config configuration.Config, router *http.ServeM
 
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetGraph(token, graph)
+		result, err, errCode := control.SetGraph(request.Context(), token, graph)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -301,7 +301,7 @@ func (this *GraphEndpoints) Delete(config configuration.Config, router *http.Ser
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.DeleteGraph(token, id)
+		err, errCode := control.DeleteGraph(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

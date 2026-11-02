@@ -19,10 +19,6 @@ package repo_legacy
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/google/uuid"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -30,6 +26,11 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/google/uuid"
 )
 
 var protocol1id = uuid.NewString()
@@ -53,7 +54,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 	protocolIds := []string{protocol1id, protocol2id, "foobarprotocol"}
 	t.Run("create protocols", func(t *testing.T) {
 		for _, id := range protocolIds {
-			_, err, _ = c.SetProtocol(AdminToken, models.Protocol{Id: id, Name: protocol1name})
+			_, err, _ = c.SetProtocol(context.Background(), AdminToken, models.Protocol{Id: id, Name: protocol1name})
 			if err != nil {
 				t.Error(err)
 				return
@@ -106,7 +107,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 
 	t.Run("create device-types", func(t *testing.T) {
 		for _, dt := range deviceTypes {
-			_, err, _ = c.SetDeviceType(AdminToken, dt, client.DeviceTypeUpdateOptions{})
+			_, err, _ = c.SetDeviceType(context.Background(), AdminToken, dt, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -117,7 +118,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 	t.Run("find device-types by protocolIds", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("0", func(t *testing.T) {
-			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(context.Background(), userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0]},
 			})
 			if err != nil {
@@ -135,7 +136,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("1", func(t *testing.T) {
-			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(context.Background(), userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[1]},
 			})
 			if err != nil {
@@ -153,7 +154,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("2", func(t *testing.T) {
-			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(context.Background(), userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[2]},
 			})
 			if err != nil {
@@ -171,7 +172,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("0,1", func(t *testing.T) {
-			list, _, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, _, err, _ := c.ListDeviceTypesV3(context.Background(), userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0], protocolIds[1]},
 			})
 			if err != nil {
@@ -189,7 +190,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 			}
 		})
 		t.Run("0,2", func(t *testing.T) {
-			list, total, err, _ := c.ListDeviceTypesV3(userjwt, client.DeviceTypeListOptions{
+			list, total, err, _ := c.ListDeviceTypesV3(context.Background(), userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0], protocolIds[2]},
 			})
 			if err != nil {
@@ -225,13 +226,13 @@ func TestProtocolQuery(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetProtocol(AdminToken, models.Protocol{Id: protocol1id, Name: protocol1name})
+	_, err, _ = c.SetProtocol(context.Background(), AdminToken, models.Protocol{Id: protocol1id, Name: protocol1name})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for i := 0; i < 20; i++ {
-		_, err, _ = c.SetProtocol(AdminToken, models.Protocol{Id: uuid.NewString(), Name: uuid.NewString()})
+		_, err, _ = c.SetProtocol(context.Background(), AdminToken, models.Protocol{Id: uuid.NewString(), Name: uuid.NewString()})
 		if err != nil {
 			t.Error(err)
 			return

@@ -21,56 +21,57 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
-	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 	"io"
 	"net/http"
 	"net/url"
 	"slices"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
+	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
-func (this *Controller) Export(token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int) {
+func (this *Controller) Export(ctx context.Context, token string, options model.ImportExportOptions) (result model.ImportExport, err error, code int) {
 	result = model.ImportExport{}
 
-	result.Protocols, err, code = this.ExportProtocols(options)
+	result.Protocols, err, code = this.ExportProtocols(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
 
-	result.Functions, err, code = this.ExportFunctions(options)
+	result.Functions, err, code = this.ExportFunctions(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
 
-	result.Aspects, err, code = this.ExportAspects(options)
+	result.Aspects, err, code = this.ExportAspects(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
 
-	result.AspectClasses, err, code = this.ExportAspectClasses(options)
+	result.AspectClasses, err, code = this.ExportAspectClasses(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
 
-	result.Concepts, err, code = this.ExportConcepts(options)
+	result.Concepts, err, code = this.ExportConcepts(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
 
-	result.Characteristics, err, code = this.ExportCharacteristics(options)
+	result.Characteristics, err, code = this.ExportCharacteristics(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
 
-	result.DeviceClasses, err, code = this.ExportDeviceClasses(options)
+	result.DeviceClasses, err, code = this.ExportDeviceClasses(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
 
-	result.DeviceTypes, err, code = this.ExportDeviceTypes(options)
+	result.DeviceTypes, err, code = this.ExportDeviceTypes(ctx, options)
 	if err != nil {
 		return result, err, code
 	}
@@ -86,25 +87,25 @@ func (this *Controller) Export(token string, options model.ImportExportOptions) 
 
 		var tempPerm []client.Resource
 
-		result.Devices, tempPerm, err, code = this.ExportDevices(token, options)
+		result.Devices, tempPerm, err, code = this.ExportDevices(ctx, token, options)
 		if err != nil {
 			return result, err, code
 		}
 		result.Permissions = append(result.Permissions, tempPerm...)
 
-		result.DeviceGroups, tempPerm, err, code = this.ExportDeviceGroups(token, options)
+		result.DeviceGroups, tempPerm, err, code = this.ExportDeviceGroups(ctx, token, options)
 		if err != nil {
 			return result, err, code
 		}
 		result.Permissions = append(result.Permissions, tempPerm...)
 
-		result.Hubs, tempPerm, err, code = this.ExportHubs(token, options)
+		result.Hubs, tempPerm, err, code = this.ExportHubs(ctx, token, options)
 		if err != nil {
 			return result, err, code
 		}
 		result.Permissions = append(result.Permissions, tempPerm...)
 
-		result.Locations, tempPerm, err, code = this.ExportLocations(token, options)
+		result.Locations, tempPerm, err, code = this.ExportLocations(ctx, token, options)
 		if err != nil {
 			return result, err, code
 		}
@@ -114,9 +115,9 @@ func (this *Controller) Export(token string, options model.ImportExportOptions) 
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ExportProtocols(options model.ImportExportOptions) (result []models.Protocol, err error, code int) {
+func (this *Controller) ExportProtocols(ctx context.Context, options model.ImportExportOptions) (result []models.Protocol, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "protocols") {
-		result, err = this.db.ListProtocols(context.Background(), 0, 0, "name.asc")
+		result, err = this.db.ListProtocols(context.WithoutCancel(ctx), 0, 0, "name.asc")
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -133,9 +134,9 @@ func (this *Controller) ExportProtocols(options model.ImportExportOptions) (resu
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportAspectClasses(options model.ImportExportOptions) (result []models.AspectClass, err error, code int) {
+func (this *Controller) ExportAspectClasses(ctx context.Context, options model.ImportExportOptions) (result []models.AspectClass, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "aspect-classes") {
-		result, _, err = this.db.ListAspectClasses(context.Background(), model.AspectClassListOptions{Ids: options.FilterIds})
+		result, _, err = this.db.ListAspectClasses(context.WithoutCancel(ctx), model.AspectClassListOptions{Ids: options.FilterIds})
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -143,9 +144,9 @@ func (this *Controller) ExportAspectClasses(options model.ImportExportOptions) (
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportConcepts(options model.ImportExportOptions) (result []models.Concept, err error, code int) {
+func (this *Controller) ExportConcepts(ctx context.Context, options model.ImportExportOptions) (result []models.Concept, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "concepts") {
-		result, _, err = this.db.ListConcepts(context.Background(), model.ConceptListOptions{Ids: options.FilterIds})
+		result, _, err = this.db.ListConcepts(context.WithoutCancel(ctx), model.ConceptListOptions{Ids: options.FilterIds})
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -153,9 +154,9 @@ func (this *Controller) ExportConcepts(options model.ImportExportOptions) (resul
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportFunctions(options model.ImportExportOptions) (result []models.Function, err error, code int) {
+func (this *Controller) ExportFunctions(ctx context.Context, options model.ImportExportOptions) (result []models.Function, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "functions") {
-		result, _, err = this.db.ListFunctions(context.Background(), model.FunctionListOptions{Ids: options.FilterIds})
+		result, _, err = this.db.ListFunctions(context.WithoutCancel(ctx), model.FunctionListOptions{Ids: options.FilterIds})
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -163,9 +164,9 @@ func (this *Controller) ExportFunctions(options model.ImportExportOptions) (resu
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportAspects(options model.ImportExportOptions) (result []models.Aspect, err error, code int) {
+func (this *Controller) ExportAspects(ctx context.Context, options model.ImportExportOptions) (result []models.Aspect, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "aspects") {
-		result, _, err = this.db.ListAspects(context.Background(), model.AspectListOptions{Ids: options.FilterIds})
+		result, _, err = this.db.ListAspects(context.WithoutCancel(ctx), model.AspectListOptions{Ids: options.FilterIds})
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -173,9 +174,9 @@ func (this *Controller) ExportAspects(options model.ImportExportOptions) (result
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportCharacteristics(options model.ImportExportOptions) (result []models.Characteristic, err error, code int) {
+func (this *Controller) ExportCharacteristics(ctx context.Context, options model.ImportExportOptions) (result []models.Characteristic, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "characteristics") {
-		result, _, err = this.db.ListCharacteristics(context.Background(), model.CharacteristicListOptions{Ids: options.FilterIds})
+		result, _, err = this.db.ListCharacteristics(context.WithoutCancel(ctx), model.CharacteristicListOptions{Ids: options.FilterIds})
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -183,9 +184,9 @@ func (this *Controller) ExportCharacteristics(options model.ImportExportOptions)
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportDeviceClasses(options model.ImportExportOptions) (result []models.DeviceClass, err error, code int) {
+func (this *Controller) ExportDeviceClasses(ctx context.Context, options model.ImportExportOptions) (result []models.DeviceClass, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-classes") {
-		result, _, err = this.db.ListDeviceClasses(context.Background(), model.DeviceClassListOptions{Ids: options.FilterIds})
+		result, _, err = this.db.ListDeviceClasses(context.WithoutCancel(ctx), model.DeviceClassListOptions{Ids: options.FilterIds})
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -193,9 +194,9 @@ func (this *Controller) ExportDeviceClasses(options model.ImportExportOptions) (
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportDeviceTypes(options model.ImportExportOptions) (result []models.DeviceType, err error, code int) {
+func (this *Controller) ExportDeviceTypes(ctx context.Context, options model.ImportExportOptions) (result []models.DeviceType, err error, code int) {
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-types") {
-		result, _, err = this.db.ListDeviceTypesV3(context.Background(), model.DeviceTypeListOptions{Ids: options.FilterIds})
+		result, _, err = this.db.ListDeviceTypesV3(context.WithoutCancel(ctx), model.DeviceTypeListOptions{Ids: options.FilterIds})
 	}
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -204,76 +205,76 @@ func (this *Controller) ExportDeviceTypes(options model.ImportExportOptions) (re
 	return result, err, http.StatusOK
 }
 
-func (this *Controller) ExportDevices(token string, options model.ImportExportOptions) (result []models.Device, perm []client.Resource, err error, code int) {
+func (this *Controller) ExportDevices(ctx context.Context, token string, options model.ImportExportOptions) (result []models.Device, perm []client.Resource, err error, code int) {
 	if options.FilterResourceTypes != nil && !slices.Contains(options.FilterResourceTypes, "devices") {
 		return nil, nil, nil, http.StatusOK
 	}
-	tempDevices, _, err := this.db.ListDevices(context.Background(), model.DeviceListOptions{Ids: options.FilterIds}, false)
+	tempDevices, _, err := this.db.ListDevices(context.WithoutCancel(ctx), model.DeviceListOptions{Ids: options.FilterIds}, false)
 	if err != nil {
 		return result, perm, err, http.StatusInternalServerError
 	}
 	for _, d := range tempDevices {
 		result = append(result, d.Device)
 	}
-	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermission(token, this.config.DeviceTopic, client.ListOptions{Ids: options.FilterIds})
+	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermissionContext(ctx, token, this.config.DeviceTopic, client.ListOptions{Ids: options.FilterIds})
 	if err != nil {
 		return result, perm, err, code
 	}
 	return result, perm, nil, http.StatusOK
 }
 
-func (this *Controller) ExportDeviceGroups(token string, options model.ImportExportOptions) (result []models.DeviceGroup, perm []client.Resource, err error, code int) {
+func (this *Controller) ExportDeviceGroups(ctx context.Context, token string, options model.ImportExportOptions) (result []models.DeviceGroup, perm []client.Resource, err error, code int) {
 	if options.FilterResourceTypes != nil && !slices.Contains(options.FilterResourceTypes, "device-groups") {
 		return nil, nil, nil, http.StatusOK
 	}
-	result, _, err = this.db.ListDeviceGroups(context.Background(), model.DeviceGroupListOptions{Ids: options.FilterIds})
+	result, _, err = this.db.ListDeviceGroups(context.WithoutCancel(ctx), model.DeviceGroupListOptions{Ids: options.FilterIds})
 	if err != nil {
 		return result, perm, err, http.StatusInternalServerError
 	}
 	//read straight from the database: device-groups written before the migration carry only
 	//the deprecated DeviceGroupFilterCriteria.AspectId
 	setDeviceGroupCriteriaAspectIdsOnReadList(result)
-	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermission(token, this.config.DeviceGroupTopic, client.ListOptions{Ids: options.FilterIds})
+	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermissionContext(ctx, token, this.config.DeviceGroupTopic, client.ListOptions{Ids: options.FilterIds})
 	if err != nil {
 		return result, perm, err, code
 	}
 	return result, perm, nil, http.StatusOK
 }
 
-func (this *Controller) ExportHubs(token string, options model.ImportExportOptions) (result []models.Hub, perm []client.Resource, err error, code int) {
+func (this *Controller) ExportHubs(ctx context.Context, token string, options model.ImportExportOptions) (result []models.Hub, perm []client.Resource, err error, code int) {
 	if options.FilterResourceTypes != nil && !slices.Contains(options.FilterResourceTypes, "hubs") {
 		return nil, nil, nil, http.StatusOK
 	}
-	tempHubs, _, err := this.db.ListHubs(context.Background(), model.HubListOptions{Ids: options.FilterIds}, false)
+	tempHubs, _, err := this.db.ListHubs(context.WithoutCancel(ctx), model.HubListOptions{Ids: options.FilterIds}, false)
 	if err != nil {
 		return result, perm, err, http.StatusInternalServerError
 	}
 	for _, d := range tempHubs {
 		result = append(result, d.Hub)
 	}
-	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermission(token, this.config.HubTopic, client.ListOptions{Ids: options.FilterIds})
+	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermissionContext(ctx, token, this.config.HubTopic, client.ListOptions{Ids: options.FilterIds})
 	if err != nil {
 		return result, perm, err, code
 	}
 	return result, perm, nil, http.StatusOK
 }
 
-func (this *Controller) ExportLocations(token string, options model.ImportExportOptions) (result []models.Location, perm []client.Resource, err error, code int) {
+func (this *Controller) ExportLocations(ctx context.Context, token string, options model.ImportExportOptions) (result []models.Location, perm []client.Resource, err error, code int) {
 	if options.FilterResourceTypes != nil && !slices.Contains(options.FilterResourceTypes, "locations") {
 		return nil, nil, nil, http.StatusOK
 	}
-	result, _, err = this.db.ListLocations(context.Background(), model.LocationListOptions{Ids: options.FilterIds})
+	result, _, err = this.db.ListLocations(context.WithoutCancel(ctx), model.LocationListOptions{Ids: options.FilterIds})
 	if err != nil {
 		return result, perm, err, http.StatusInternalServerError
 	}
-	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermission(token, this.config.LocationTopic, client.ListOptions{Ids: options.FilterIds})
+	perm, err, code = this.permissionsV2Client.ListResourcesWithAdminPermissionContext(ctx, token, this.config.LocationTopic, client.ListOptions{Ids: options.FilterIds})
 	if err != nil {
 		return result, perm, err, code
 	}
 	return result, perm, nil, http.StatusOK
 }
 
-func (this *Controller) Import(token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int) {
+func (this *Controller) Import(ctx context.Context, token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusBadRequest
@@ -285,11 +286,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "protocols") {
 		for _, p := range importModel.Protocols {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, p.Id) {
-				err, code = this.ValidateProtocol(p)
+				err, code = this.ValidateProtocol(ctx, p)
 				if err != nil {
 					return err, code
 				}
-				err = this.setProtocol(p)
+				err = this.setProtocol(ctx, p)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -300,11 +301,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "characteristics") {
 		for _, characteristic := range importModel.Characteristics {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, characteristic.Id) {
-				err, code = this.ValidateCharacteristics(characteristic)
+				err, code = this.ValidateCharacteristics(ctx, characteristic)
 				if err != nil {
 					return err, code
 				}
-				err = this.setCharacteristic(characteristic)
+				err = this.setCharacteristic(ctx, characteristic)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -315,11 +316,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "concepts") {
 		for _, concept := range importModel.Concepts {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, concept.Id) {
-				err, code = this.ValidateConcept(concept)
+				err, code = this.ValidateConcept(ctx, concept)
 				if err != nil {
 					return err, code
 				}
-				err = this.setConcept(concept)
+				err = this.setConcept(ctx, concept)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -330,11 +331,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "functions") {
 		for _, f := range importModel.Functions {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, f.Id) {
-				err, code = this.ValidateFunction(f)
+				err, code = this.ValidateFunction(ctx, f)
 				if err != nil {
 					return err, code
 				}
-				err = this.setFunction(f)
+				err = this.setFunction(ctx, f)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -349,11 +350,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 				if err != nil {
 					return err, code
 				}
-				err, code = this.ValidateAspect(a)
+				err, code = this.ValidateAspect(ctx, a)
 				if err != nil {
 					return err, code
 				}
-				err = this.setAspect(a)
+				err = this.setAspect(ctx, a)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -364,11 +365,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "aspect-classes") {
 		for _, ac := range importModel.AspectClasses {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, ac.Id) {
-				err, code = this.ValidateAspectClass(ac)
+				err, code = this.ValidateAspectClass(ctx, ac)
 				if err != nil {
 					return err, code
 				}
-				err = this.setAspectClass(ac)
+				err = this.setAspectClass(ctx, ac)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -379,11 +380,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "device-classes") {
 		for _, dc := range importModel.DeviceClasses {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, dc.Id) {
-				err, code = this.ValidateDeviceClass(dc)
+				err, code = this.ValidateDeviceClass(ctx, dc)
 				if err != nil {
 					return err, code
 				}
-				err = this.setDeviceClass(dc)
+				err = this.setDeviceClass(ctx, dc)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -395,11 +396,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		for _, dt := range importModel.DeviceTypes {
 			if options.FilterIds == nil || slices.Contains(options.FilterIds, dt.Id) {
 				SetContentVariableAspectIdsOnWrite(&dt)
-				err, code = this.ValidateDeviceType(dt, model.ValidationOptions{})
+				err, code = this.ValidateDeviceType(ctx, dt, model.ValidationOptions{})
 				if err != nil {
 					return err, code
 				}
-				err = this.setDeviceType(dt)
+				err = this.setDeviceType(ctx, dt)
 				if err != nil {
 					return err, http.StatusInternalServerError
 				}
@@ -411,7 +412,7 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		//set permissions before and after local db, to ensure validation and no permission changes
 		for _, p := range importModel.Permissions {
 			if (options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, p.TopicId)) && (options.FilterIds == nil || slices.Contains(options.FilterIds, p.Id)) {
-				_, err, code = this.permissionsV2Client.SetPermission(token, p.TopicId, p.Id, p.ResourcePermissions)
+				_, err, code = this.permissionsV2Client.SetPermissionContext(ctx, token, p.TopicId, p.Id, p.ResourcePermissions)
 				if err != nil {
 					return err, code
 				}
@@ -421,12 +422,12 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "devices") {
 			for _, d := range importModel.Devices {
 				if options.FilterIds == nil || slices.Contains(options.FilterIds, d.Id) {
-					err, code = this.ValidateDevice(token, d)
+					err, code = this.ValidateDevice(ctx, token, d)
 					if err != nil {
 						this.logger.Warn("device validation failed with error: " + err.Error())
 						return err, code
 					}
-					_, err, _ = this.setDevice(d)
+					_, err, _ = this.setDevice(ctx, d)
 					if err != nil {
 						return err, http.StatusInternalServerError
 					}
@@ -437,11 +438,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "hubs") {
 			for _, h := range importModel.Hubs {
 				if options.FilterIds == nil || slices.Contains(options.FilterIds, h.Id) {
-					err, code = this.ValidateHub(token, h)
+					err, code = this.ValidateHub(ctx, token, h)
 					if err != nil {
 						return err, code
 					}
-					err = this.setHub(model.HubWithConnectionState{
+					err = this.setHub(ctx, model.HubWithConnectionState{
 						Hub:             h,
 						ConnectionState: models.ConnectionStateUnknown,
 					})
@@ -458,11 +459,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 					//written with db.setDeviceGroup below, so the write normalization of
 					//Controller.SetDeviceGroup never runs on an imported group
 					SetDeviceGroupCriteriaAspectIdsOnWrite(&dg)
-					err, code = this.ValidateDeviceGroup(token, dg)
+					err, code = this.ValidateDeviceGroup(ctx, token, dg)
 					if err != nil {
 						return err, code
 					}
-					err = this.setDeviceGroup(dg, jwtToken.GetUserId())
+					err = this.setDeviceGroup(ctx, dg, jwtToken.GetUserId())
 					if err != nil {
 						return err, http.StatusInternalServerError
 					}
@@ -473,11 +474,11 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		if options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, "locations") {
 			for _, l := range importModel.Locations {
 				if options.FilterIds == nil || slices.Contains(options.FilterIds, l.Id) {
-					err, code = this.ValidateLocation(l)
+					err, code = this.ValidateLocation(ctx, l)
 					if err != nil {
 						return err, code
 					}
-					err = this.setLocation(l, jwtToken.GetUserId())
+					err = this.setLocation(ctx, l, jwtToken.GetUserId())
 					if err != nil {
 						return err, http.StatusInternalServerError
 					}
@@ -488,7 +489,7 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 		//set permissions before and after local db, to ensure validation and no permission changes
 		for _, p := range importModel.Permissions {
 			if (options.FilterResourceTypes == nil || slices.Contains(options.FilterResourceTypes, p.TopicId)) && (options.FilterIds == nil || slices.Contains(options.FilterIds, p.Id)) {
-				_, err, code = this.permissionsV2Client.SetPermission(token, p.TopicId, p.Id, p.ResourcePermissions)
+				_, err, code = this.permissionsV2Client.SetPermissionContext(ctx, token, p.TopicId, p.Id, p.ResourcePermissions)
 				if err != nil {
 					return err, code
 				}
@@ -498,7 +499,7 @@ func (this *Controller) Import(token string, importModel model.ImportExport, opt
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ImportFrom(token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int) {
+func (this *Controller) ImportFrom(ctx context.Context, token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusBadRequest
@@ -538,7 +539,7 @@ func (this *Controller) ImportFrom(token string, includeOwnedInformation bool, o
 		return err, http.StatusInternalServerError
 	}
 
-	return this.Import(token, export, ieoptions)
+	return this.Import(ctx, token, export, ieoptions)
 }
 
 func hasBearerPrefix(token string) bool {

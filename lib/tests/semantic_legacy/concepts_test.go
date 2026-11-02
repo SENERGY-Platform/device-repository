@@ -18,14 +18,15 @@ package semantic_legacy
 
 import (
 	"context"
+	"net/http"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
-	"net/http"
-	"sync"
-	"testing"
 )
 
 func TestConcepts(t *testing.T) {
@@ -60,7 +61,7 @@ func testProduceValidConcept1withCharIdAndBaseCharId(conf configuration.Config) 
 		concept.BaseCharacteristicId = "urn:ses:infai:characteristic:544433333"
 		concept.CharacteristicIds = []string{"urn:ses:infai:characteristic:544433333"}
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetConcept(testenv.AdminToken, concept)
+		_, err, _ := c.SetConcept(context.Background(), testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,7 +75,7 @@ func testProduceValidConcept1withNoCharId(conf configuration.Config) func(t *tes
 		concept.Name = "color1"
 		concept.CharacteristicIds = nil
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetConcept(testenv.AdminToken, concept)
+		_, err, _ := c.SetConcept(context.Background(), testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -89,7 +90,7 @@ func testProduceValidConcept1withCharId(conf configuration.Config) func(t *testi
 		concept.CharacteristicIds = []string{"urn:ses:infai:characteristic:544433333"}
 		concept.BaseCharacteristicId = "urn:ses:infai:characteristic:544433333"
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetConcept(testenv.AdminToken, concept)
+		_, err, _ := c.SetConcept(context.Background(), testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -112,7 +113,7 @@ func testProduceValidCharacteristicDependencie(conf configuration.Config) func(t
 			SubCharacteristics: nil,
 		}}
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
+		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -121,7 +122,7 @@ func testProduceValidCharacteristicDependencie(conf configuration.Config) func(t
 
 func testReadConcept1WithoutSubClass(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		concept, err, _ := con.GetConceptWithoutCharacteristics("urn:ses:infai:concept:1a1a1a")
+		concept, err, _ := con.GetConceptWithoutCharacteristics(context.Background(), "urn:ses:infai:concept:1a1a1a")
 
 		if err == nil {
 			if concept.Id != "urn:ses:infai:concept:1a1a1a" {
@@ -142,7 +143,7 @@ func testReadConcept1WithoutSubClass(con *controller.Controller) func(t *testing
 
 func testReadConcept1WithSubClass(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		concept, err, _ := con.GetConceptWithCharacteristics("urn:ses:infai:concept:1a1a1a")
+		concept, err, _ := con.GetConceptWithCharacteristics(context.Background(), "urn:ses:infai:concept:1a1a1a")
 		if err == nil {
 			if concept.Id != "urn:ses:infai:concept:1a1a1a" {
 				t.Fatal("wrong id")
@@ -176,7 +177,7 @@ func testDeleteConcept1(conf configuration.Config) func(t *testing.T) {
 		const conceptId = "urn:ses:infai:concept:1a1a1a"
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-		err, code := c.DeleteConcept(testenv.AdminToken, conceptId)
+		err, code := c.DeleteConcept(context.Background(), testenv.AdminToken, conceptId)
 		if err == nil {
 			t.Fatal("expected the delete to refuse while the generated functions exist")
 		}
@@ -184,7 +185,7 @@ func testDeleteConcept1(conf configuration.Config) func(t *testing.T) {
 			t.Fatal("unexpected code", code, err)
 		}
 
-		functions, _, err, _ := c.ListFunctions(client.FunctionListOptions{Limit: 1000})
+		functions, _, err, _ := c.ListFunctions(context.Background(), client.FunctionListOptions{Limit: 1000})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -192,13 +193,13 @@ func testDeleteConcept1(conf configuration.Config) func(t *testing.T) {
 			if function.ConceptId != conceptId {
 				continue
 			}
-			err, _ = c.DeleteFunction(testenv.AdminToken, function.Id)
+			err, _ = c.DeleteFunction(context.Background(), testenv.AdminToken, function.Id)
 			if err != nil {
 				t.Fatal(err)
 			}
 		}
 
-		err, _ = c.DeleteConcept(testenv.AdminToken, conceptId)
+		err, _ = c.DeleteConcept(context.Background(), testenv.AdminToken, conceptId)
 		if err != nil {
 			t.Fatal(err)
 		}

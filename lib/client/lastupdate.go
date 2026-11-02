@@ -17,13 +17,14 @@
 package client
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 )
 
-func (c *Client) GetLastUpdateTimestamps(token string, userId string) (result []model.LastUpdateTimestamp, err error, code int) {
+func (c *Client) GetLastUpdateTimestamps(ctx context.Context, token string, userId string) (result []model.LastUpdateTimestamp, err error, code int) {
 	queryString := ""
 	query := url.Values{}
 	if userId != "" {
@@ -32,7 +33,7 @@ func (c *Client) GetLastUpdateTimestamps(token string, userId string) (result []
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/last-update-timestamps"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/last-update-timestamps"+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

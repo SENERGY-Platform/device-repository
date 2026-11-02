@@ -137,7 +137,7 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 	})
 
 	t.Run("unknown id stays not found", func(t *testing.T) {
-		_, err, code := mirrorClient.ReadProtocol("unknown", "")
+		_, err, code := mirrorClient.ReadProtocol(context.Background(), "unknown", "")
 		if err == nil || code != http.StatusNotFound {
 			t.Error("expected 404, got", code, err)
 		}
@@ -145,7 +145,7 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 
 	protocol := models.Protocol{}
 	t.Run("protocol created in source after the initial pull", func(t *testing.T) {
-		protocol, err, _ = sourceClient.SetProtocol(client.InternalAdminToken, models.Protocol{
+		protocol, err, _ = sourceClient.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:               "p1",
 			Name:             "p1",
 			Handler:          "p1",
@@ -155,7 +155,7 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		result, err, code := mirrorClient.ReadProtocol(protocol.Id, "")
+		result, err, code := mirrorClient.ReadProtocol(context.Background(), protocol.Id, "")
 		if err != nil {
 			t.Error(code, err)
 			return
@@ -166,12 +166,12 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 	})
 
 	t.Run("repeated not found read waits for the backoff", func(t *testing.T) {
-		_, err, code := mirrorClient.ReadProtocol("p2", "")
+		_, err, code := mirrorClient.ReadProtocol(context.Background(), "p2", "")
 		if err == nil || code != http.StatusNotFound {
 			t.Error("expected 404, got", code, err)
 			return
 		}
-		_, err, _ = sourceClient.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ = sourceClient.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:               "p2",
 			Name:             "p2",
 			Handler:          "p2",
@@ -181,13 +181,13 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, code = mirrorClient.ReadProtocol("p2", "")
+		_, err, code = mirrorClient.ReadProtocol(context.Background(), "p2", "")
 		if err == nil || code != http.StatusNotFound {
 			t.Error("expected 404 during the backoff, got", code, err)
 			return
 		}
 		time.Sleep(5 * time.Second)
-		result, err, code := mirrorClient.ReadProtocol("p2", "")
+		result, err, code := mirrorClient.ReadProtocol(context.Background(), "p2", "")
 		if err != nil {
 			t.Error(code, err)
 			return
@@ -198,12 +198,12 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 	})
 
 	t.Run("device created in source after the initial pull", func(t *testing.T) {
-		dc, err, _ := sourceClient.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{Name: "dc1"})
+		dc, err, _ := sourceClient.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{Name: "dc1"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		dt, err, _ := sourceClient.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		dt, err, _ := sourceClient.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Name:          "dt1",
 			DeviceClassId: dc.Id,
 			Services: []models.Service{{
@@ -217,7 +217,7 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		device, err, _ := sourceClient.CreateDevice(testenv.SecondOwnerToken, models.Device{
+		device, err, _ := sourceClient.CreateDevice(context.Background(), testenv.SecondOwnerToken, models.Device{
 			LocalId:      "d1",
 			Name:         "d1",
 			DeviceTypeId: dt.Id,
@@ -227,7 +227,7 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		result, err, code := mirrorClient.ReadDeviceByLocalId(testenv.SecendOwnerTokenUser, "d1", "", model.READ)
+		result, err, code := mirrorClient.ReadDeviceByLocalId(context.Background(), testenv.SecendOwnerTokenUser, "d1", "", model.READ)
 		if err != nil {
 			t.Error(code, err)
 			return
@@ -236,7 +236,7 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			t.Errorf("unexpected result: %#v", result)
 		}
 		//the device-type changed in the same pull
-		_, err, code = mirrorClient.ReadDeviceType(dt.Id, "")
+		_, err, code = mirrorClient.ReadDeviceType(context.Background(), dt.Id, "")
 		if err != nil {
 			t.Error(code, err)
 		}

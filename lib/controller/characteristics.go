@@ -17,16 +17,18 @@
 package controller
 
 import (
+	"context"
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
-	"strings"
 )
 
-func (this *Controller) ListCharacteristics(listOptions model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListCharacteristics(ctx context.Context, listOptions model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListCharacteristics(ctx, listOptions)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -34,11 +36,11 @@ func (this *Controller) ListCharacteristics(listOptions model.CharacteristicList
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) setCharacteristicSyncHandler(c models.Characteristic) (err error) {
+func (this *Controller) setCharacteristicSyncHandler(ctx context.Context, c models.Characteristic) (err error) {
 	return this.publisher.PublishCharacteristic(c)
 }
 
-func (this *Controller) SetCharacteristic(token string, characteristic models.Characteristic) (result models.Characteristic, err error, code int) {
+func (this *Controller) SetCharacteristic(ctx context.Context, token string, characteristic models.Characteristic) (result models.Characteristic, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -49,30 +51,30 @@ func (this *Controller) SetCharacteristic(token string, characteristic models.Ch
 	//ensure ids
 	characteristic.GenerateId()
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateCharacteristics(characteristic)
+		err, code = this.ValidateCharacteristics(ctx, characteristic)
 		if err != nil {
 			return result, err, code
 		}
 	}
 
-	err = this.setCharacteristic(characteristic)
+	err = this.setCharacteristic(ctx, characteristic)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return characteristic, nil, http.StatusOK
 }
 
-func (this *Controller) setCharacteristic(characteristic models.Characteristic) (err error) {
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetCharacteristic(ctx, characteristic, this.setCharacteristicSyncHandler)
+func (this *Controller) setCharacteristic(ctx context.Context, characteristic models.Characteristic) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.SetCharacteristic(ctx, characteristic, withContext(ctx, this.setCharacteristicSyncHandler))
 	return err
 }
 
-func (this *Controller) deleteCharacteristicSyncHandler(c models.Characteristic) (err error) {
+func (this *Controller) deleteCharacteristicSyncHandler(ctx context.Context, c models.Characteristic) (err error) {
 	return this.publisher.PublishCharacteristicDelete(c.Id)
 }
 
-func (this *Controller) DeleteCharacteristic(token string, id string) (error, int) {
+func (this *Controller) DeleteCharacteristic(ctx context.Context, token string, id string) (error, int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -80,20 +82,20 @@ func (this *Controller) DeleteCharacteristic(token string, id string) (error, in
 	if !jwtToken.IsAdmin() {
 		return errors.New("token is not an admin"), http.StatusUnauthorized
 	}
-	err, code := this.ValidateCharacteristicDelete(id)
+	err, code := this.ValidateCharacteristicDelete(ctx, id)
 	if err != nil {
 		return err, code
 	}
-	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveCharacteristic(ctx, id, this.deleteCharacteristicSyncHandler)
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.RemoveCharacteristic(ctx, id, withContext(ctx, this.deleteCharacteristicSyncHandler))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) GetCharacteristics(leafsOnly bool) (result []models.Characteristic, err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetCharacteristics(ctx context.Context, leafsOnly bool) (result []models.Characteristic, err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllCharacteristics(ctx)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -115,8 +117,8 @@ func getLeafCharacteristics(list []models.Characteristic) (result []models.Chara
 	return result
 }
 
-func (this *Controller) GetCharacteristic(id string) (result models.Characteristic, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetCharacteristic(ctx context.Context, id string) (result models.Characteristic, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetCharacteristic(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -137,8 +139,8 @@ func characteristicIdToBaseCharacteristic(characteristic models.Characteristic) 
 	return result
 }
 
-func (this *Controller) ValidateCharacteristics(characteristic models.Characteristic) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateCharacteristics(ctx context.Context, characteristic models.Characteristic) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	knownCharacteristics, err := this.db.ListAllCharacteristics(ctx)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -203,8 +205,8 @@ func validateSubCharacteristics(characteristics []models.Characteristic) (error,
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateCharacteristicDelete(id string) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateCharacteristicDelete(ctx context.Context, id string) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	isUsed, where, err := this.db.CharacteristicIsUsed(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError

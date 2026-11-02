@@ -70,7 +70,7 @@ func TestUserDeviceTypes(t *testing.T) {
 	var protocol models.Protocol
 
 	t.Run("create protocol", func(t *testing.T) {
-		protocol, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		protocol, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Name:    "p1",
 			Handler: "p1",
 			ProtocolSegments: []models.ProtocolSegment{{
@@ -87,7 +87,7 @@ func TestUserDeviceTypes(t *testing.T) {
 	var deviceTypes []models.DeviceType
 	t.Run("create device-types", func(t *testing.T) {
 		for i := range 10 {
-			deviceType, err, _ := c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+			deviceType, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 				Name: "dt_" + strconv.Itoa(i),
 				Services: []models.Service{
 					{
@@ -118,7 +118,7 @@ func TestUserDeviceTypes(t *testing.T) {
 			case 2:
 				token = user2jwt
 			}
-			_, err, _ = c.CreateDevice(token, models.Device{
+			_, err, _ = c.CreateDevice(context.Background(), token, models.Device{
 				LocalId:      "d" + strconv.Itoa(i),
 				Name:         "d" + strconv.Itoa(i),
 				DeviceTypeId: deviceTypes[i].Id,
@@ -147,7 +147,7 @@ func TestUserDeviceTypes(t *testing.T) {
 	t.Run("check user device-types", func(t *testing.T) {
 		tokenList := []string{user1jwt, user2jwt, client.InternalAdminToken}
 		for i, token := range tokenList {
-			list, total, err, _ := c.ListDeviceTypesUsedByUser(token, model.DeviceTypeListOptions{})
+			list, total, err, _ := c.ListDeviceTypesUsedByUser(context.Background(), token, model.DeviceTypeListOptions{})
 			if err != nil {
 				t.Error(i, err)
 				return
@@ -176,7 +176,7 @@ func TestUserDeviceTypes(t *testing.T) {
 	})
 
 	t.Run("check user1 filtered device-types", func(t *testing.T) {
-		list, total, err, _ := c.ListDeviceTypesUsedByUser(user1jwt, model.DeviceTypeListOptions{Ids: []string{expectedDtsForUser[user1jwt][0], expectedDtsForUser[user2jwt][0], "unknown"}})
+		list, total, err, _ := c.ListDeviceTypesUsedByUser(context.Background(), user1jwt, model.DeviceTypeListOptions{Ids: []string{expectedDtsForUser[user1jwt][0], expectedDtsForUser[user2jwt][0], "unknown"}})
 		if err != nil {
 			t.Error(err)
 			return

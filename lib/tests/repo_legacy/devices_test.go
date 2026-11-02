@@ -88,7 +88,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -115,7 +115,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -143,7 +143,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -175,14 +175,14 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d3, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d3, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	t.Run("list none", func(t *testing.T) {
-		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{}})
+		result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{DeviceTypeIds: []string{}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -193,7 +193,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list none extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{}})
+		result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -204,7 +204,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list all", func(t *testing.T) {
-		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{})
+		result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -215,7 +215,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list all extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{})
+		result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -226,7 +226,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt1", func(t *testing.T) {
-		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
+		result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -237,7 +237,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt1 extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
+		result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype1id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -248,7 +248,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt2", func(t *testing.T) {
-		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
+		result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -259,7 +259,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt2 extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
+		result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype2id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -270,7 +270,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt1+dt2", func(t *testing.T) {
-		result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
+		result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -281,7 +281,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		}
 	})
 	t.Run("list dt1+dt2 extended", func(t *testing.T) {
-		result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
+		result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{DeviceTypeIds: []string{devicetype1id, devicetype2id}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -306,7 +306,7 @@ func TestDeviceQuery(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -348,7 +348,7 @@ func TestDeviceQuery(t *testing.T) {
 		DeviceType: &models.DeviceType{Id: devicetype1id, Name: devicetype1name},
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -376,7 +376,7 @@ func TestDeviceQuery(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -408,7 +408,7 @@ func TestDeviceQuery(t *testing.T) {
 		},
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d3, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d3, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -417,7 +417,7 @@ func TestDeviceQuery(t *testing.T) {
 	t.Run("check fulldt query param", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("ReadExtendedDevice", func(t *testing.T) {
-			result, err, _ := c.ReadExtendedDevice(d1.Id, userjwt, models.Read, true)
+			result, err, _ := c.ReadExtendedDevice(context.Background(), d1.Id, userjwt, models.Read, true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -431,7 +431,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("ReadExtendedDeviceByLocalId", func(t *testing.T) {
-			result, err, _ := c.ReadExtendedDeviceByLocalId(userid, d1.LocalId, userjwt, models.Read, true)
+			result, err, _ := c.ReadExtendedDeviceByLocalId(context.Background(), userid, d1.LocalId, userjwt, models.Read, true)
 			if err != nil {
 				t.Error(err)
 				return
@@ -443,7 +443,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("ListExtendedDevices", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{
 				Ids:    []string{d1.Id},
 				FullDt: true,
 			})
@@ -474,7 +474,7 @@ func TestDeviceQuery(t *testing.T) {
 	t.Run("test list devices", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("list none", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Ids: []string{}})
+			result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{Ids: []string{}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -485,7 +485,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list all", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid"})
+			result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -499,7 +499,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list limit/offset", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
+			result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -514,7 +514,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list ids all", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
+			result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -529,7 +529,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list ids d1, d3", func(t *testing.T) {
-			result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
+			result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -544,7 +544,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list as admin", func(t *testing.T) {
-			result, err, _ := c.ListDevices(adminjwt, client.DeviceListOptions{SortBy: "localid"})
+			result, err, _ := c.ListDevices(context.Background(), adminjwt, client.DeviceListOptions{SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -559,7 +559,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list as admin filter by owner=userid", func(t *testing.T) {
-			result, err, _ := c.ListDevices(adminjwt, client.DeviceListOptions{SortBy: "localid", Owner: userid})
+			result, err, _ := c.ListDevices(context.Background(), adminjwt, client.DeviceListOptions{SortBy: "localid", Owner: userid})
 			if err != nil {
 				t.Error(err)
 				return
@@ -573,7 +573,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list as admin filter by owner=foo", func(t *testing.T) {
-			result, err, _ := c.ListDevices(adminjwt, client.DeviceListOptions{SortBy: "localid", Owner: "foo"})
+			result, err, _ := c.ListDevices(context.Background(), adminjwt, client.DeviceListOptions{SortBy: "localid", Owner: "foo"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -589,7 +589,7 @@ func TestDeviceQuery(t *testing.T) {
 
 		t.Run("list by local_id", func(t *testing.T) {
 			t.Run("userjwt implicit owner", func(t *testing.T) {
-				result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
+				result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -603,7 +603,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("userjwt owner=userid", func(t *testing.T) {
-				result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
+				result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
 				if err != nil {
 					t.Error(err)
 					return
@@ -617,7 +617,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("userjwt owner=foo", func(t *testing.T) {
-				result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: "foo"})
+				result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: "foo"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -631,7 +631,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("AdminToken owner=userid", func(t *testing.T) {
-				result, err, _ := c.ListDevices(AdminToken, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
+				result, err, _ := c.ListDevices(context.Background(), AdminToken, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
 				if err != nil {
 					t.Error(err)
 					return
@@ -645,7 +645,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("AdminToken implicit owner", func(t *testing.T) {
-				result, err, _ := c.ListDevices(AdminToken, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
+				result, err, _ := c.ListDevices(context.Background(), AdminToken, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -659,7 +659,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("AdminToken empty list", func(t *testing.T) {
-				result, err, _ := c.ListDevices(AdminToken, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{}})
+				result, err, _ := c.ListDevices(context.Background(), AdminToken, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -673,7 +673,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("userjwt empty list", func(t *testing.T) {
-				result, err, _ := c.ListDevices(userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{}})
+				result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{SortBy: "localid", LocalIds: []string{}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -692,7 +692,7 @@ func TestDeviceQuery(t *testing.T) {
 	t.Run("test list extended-devices", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		t.Run("list none", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Ids: []string{}})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{Ids: []string{}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -703,7 +703,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list all", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid"})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -717,7 +717,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list limit/offset", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{Limit: 1, Offset: 1, SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -732,7 +732,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list ids all", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d2.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -747,7 +747,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list ids d1, d3", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Ids: []string{d1.Id, d3.Id}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -762,7 +762,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list as admin", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid"})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -777,7 +777,7 @@ func TestDeviceQuery(t *testing.T) {
 		})
 
 		t.Run("list as admin filter by owner=userid", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Owner: userid})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Owner: userid})
 			if err != nil {
 				t.Error(err)
 				return
@@ -791,7 +791,7 @@ func TestDeviceQuery(t *testing.T) {
 			}
 		})
 		t.Run("list as admin filter by owner=foo", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Owner: "foo"})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), adminjwt, client.ExtendedDeviceListOptions{SortBy: "localid", Owner: "foo"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -807,7 +807,7 @@ func TestDeviceQuery(t *testing.T) {
 
 		t.Run("list by local_id", func(t *testing.T) {
 			t.Run("userjwt implicit owner", func(t *testing.T) {
-				result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
+				result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -821,7 +821,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("userjwt owner=userid", func(t *testing.T) {
-				result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
+				result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
 				if err != nil {
 					t.Error(err)
 					return
@@ -835,7 +835,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("userjwt owner=foo", func(t *testing.T) {
-				result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: "foo"})
+				result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: "foo"})
 				if err != nil {
 					t.Error(err)
 					return
@@ -846,7 +846,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("AdminToken owner=userid", func(t *testing.T) {
-				result, _, err, _ := c.ListExtendedDevices(AdminToken, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
+				result, _, err, _ := c.ListExtendedDevices(context.Background(), AdminToken, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}, Owner: userid})
 				if err != nil {
 					t.Error(err)
 					return
@@ -861,7 +861,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("AdminToken implicit owner", func(t *testing.T) {
-				result, _, err, _ := c.ListExtendedDevices(AdminToken, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
+				result, _, err, _ := c.ListExtendedDevices(context.Background(), AdminToken, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{d1.LocalId, d3.LocalId}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -872,7 +872,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("AdminToken empty list", func(t *testing.T) {
-				result, _, err, _ := c.ListExtendedDevices(AdminToken, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{}})
+				result, _, err, _ := c.ListExtendedDevices(context.Background(), AdminToken, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -883,7 +883,7 @@ func TestDeviceQuery(t *testing.T) {
 				}
 			})
 			t.Run("userjwt empty list", func(t *testing.T) {
-				result, _, err, _ := c.ListExtendedDevices(userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{}})
+				result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{SortBy: "localid", LocalIds: []string{}})
 				if err != nil {
 					t.Error(err)
 					return
@@ -1071,7 +1071,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 		conf.DisableStrictValidationForTesting = true
 
 		t.Run("create device-type", func(t *testing.T) {
-			_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
+			_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1080,7 +1080,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 
 		t.Run("create devices", func(t *testing.T) {
 			for i := range 10 {
-				_, err, _ = c.SetDevice(testenv.TestToken, models.Device{
+				_, err, _ = c.SetDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/" + strconv.Itoa(i),
 					LocalId:      strconv.Itoa(i),
 					Name:         testenv.TestTokenUser + "/" + strconv.Itoa(i),
@@ -1091,7 +1091,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 					t.Error(err)
 					return
 				}
-				_, err, _ = c.SetDevice(testenv.SecondOwnerToken, models.Device{
+				_, err, _ = c.SetDevice(context.Background(), testenv.SecondOwnerToken, models.Device{
 					Id:           testenv.SecendOwnerTokenUser + "/" + strconv.Itoa(i),
 					LocalId:      strconv.Itoa(i),
 					Name:         testenv.SecendOwnerTokenUser + "/" + strconv.Itoa(i),
@@ -1104,7 +1104,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				}
 			}
 
-			_, err, _ = c.SetDevice(testenv.TestToken, models.Device{
+			_, err, _ = c.SetDevice(context.Background(), testenv.TestToken, models.Device{
 				Id:           testenv.TestTokenUser,
 				LocalId:      testenv.TestTokenUser,
 				Name:         testenv.TestTokenUser,
@@ -1116,7 +1116,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				return
 			}
 
-			_, err, _ = c.SetDevice(testenv.TestToken, models.Device{
+			_, err, _ = c.SetDevice(context.Background(), testenv.TestToken, models.Device{
 				Id:           testenv.SecendOwnerTokenUser,
 				LocalId:      testenv.SecendOwnerTokenUser,
 				Name:         testenv.SecendOwnerTokenUser,
@@ -1138,7 +1138,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 		t.Run("validates", func(t *testing.T) {
 			c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 			t.Run("user may add new device with new local-id", func(t *testing.T) {
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/20",
 					LocalId:      "20",
 					Name:         testenv.TestTokenUser + "/20",
@@ -1151,7 +1151,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				}
 			})
 			t.Run("user may update device with new local-id", func(t *testing.T) {
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "20",
 					Name:         testenv.TestTokenUser + "/1",
@@ -1164,7 +1164,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				}
 			})
 			t.Run("user may update device with local-id existing for other owner", func(t *testing.T) {
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      testenv.SecendOwnerTokenUser,
 					Name:         testenv.TestTokenUser + "/1",
@@ -1177,7 +1177,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				}
 			})
 			t.Run("user may update device", func(t *testing.T) {
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "1",
 					Name:         "updated name",
@@ -1190,7 +1190,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				}
 			})
 			t.Run("user may not add new device with existing local-id", func(t *testing.T) {
-				err, code := c.ValidateDevice(testenv.TestToken, models.Device{
+				err, code := c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/20",
 					LocalId:      "1",
 					Name:         testenv.TestTokenUser + "/20",
@@ -1203,7 +1203,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				}
 			})
 			t.Run("user may not update device with existing local-id", func(t *testing.T) {
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "2",
 					Name:         testenv.TestTokenUser + "/1",
@@ -1216,7 +1216,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 				}
 			})
 			t.Run("user may not update owner to none admin", func(t *testing.T) {
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "20",
 					Name:         testenv.TestTokenUser + "/1",
@@ -1247,7 +1247,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 					t.Error(err)
 					return
 				}
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "20",
 					Name:         testenv.TestTokenUser + "/1",
@@ -1276,7 +1276,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 					t.Error(err)
 					return
 				}
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser,
 					LocalId:      testenv.TestTokenUser,
 					Name:         testenv.TestTokenUser,
@@ -1305,7 +1305,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 					t.Error(err)
 					return
 				}
-				err, _ = c.ValidateDevice(testenv.TestToken, models.Device{
+				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/1",
 					LocalId:      "1",
 					Name:         testenv.TestTokenUser + "/1",

@@ -42,35 +42,35 @@ func New(config configuration.Config, db database.Database, p Publisher, permCli
 		logger:              getLogger(config),
 	}
 	if permClient != nil && config.InitPermissionsTopics {
-		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+		_, err, _ = ctrl.permissionsV2Client.SetTopicContext(context.Background(), client.InternalAdminToken, client.Topic{
 			Id:                  config.DeviceTopic,
 			PublishToKafkaTopic: config.DeviceTopic,
 		})
 		if err != nil {
 			return nil, err
 		}
-		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+		_, err, _ = ctrl.permissionsV2Client.SetTopicContext(context.Background(), client.InternalAdminToken, client.Topic{
 			Id:                  config.HubTopic,
 			PublishToKafkaTopic: config.HubTopic,
 		})
 		if err != nil {
 			return nil, err
 		}
-		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+		_, err, _ = ctrl.permissionsV2Client.SetTopicContext(context.Background(), client.InternalAdminToken, client.Topic{
 			Id:                  config.DeviceGroupTopic,
 			PublishToKafkaTopic: config.DeviceGroupTopic,
 		})
 		if err != nil {
 			return nil, err
 		}
-		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+		_, err, _ = ctrl.permissionsV2Client.SetTopicContext(context.Background(), client.InternalAdminToken, client.Topic{
 			Id:                  config.LocationTopic,
 			PublishToKafkaTopic: config.LocationTopic,
 		})
 		if err != nil {
 			return nil, err
 		}
-		_, err, _ = ctrl.permissionsV2Client.SetTopic(client.InternalAdminToken, client.Topic{
+		_, err, _ = ctrl.permissionsV2Client.SetTopicContext(context.Background(), client.InternalAdminToken, client.Topic{
 			Id:                  config.GraphTopic,
 			PublishToKafkaTopic: config.GraphTopic,
 		})
@@ -104,6 +104,22 @@ type Controller struct {
 	deviceGroupCriteriaRecomputeRunning atomic.Bool
 }
 
-func getTimeoutContext() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), 10*time.Second)
+// getTimeoutContext keeps the values of ctx (trace span, baggage) but not its cancellation:
+// a caller that disconnects must not abort a write halfway between database, permissions and kafka.
+func getTimeoutContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+}
+
+// withContext binds ctx to a sync handler, because the database calls sync handlers without a context.
+func withContext[T any](ctx context.Context, handler func(context.Context, T) error) func(T) error {
+	return func(element T) error {
+		return handler(ctx, element)
+	}
+}
+
+// withContext2 is withContext for sync handlers with two parameters.
+func withContext2[T any, U any](ctx context.Context, handler func(context.Context, T, U) error) func(T, U) error {
+	return func(first T, second U) error {
+		return handler(ctx, first, second)
+	}
 }

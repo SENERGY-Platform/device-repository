@@ -50,7 +50,7 @@ func TestHubs(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -63,7 +63,7 @@ func TestHubs(t *testing.T) {
 		DeviceTypeId: devicetype1id,
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -76,7 +76,7 @@ func TestHubs(t *testing.T) {
 		DeviceTypeId: devicetype2id,
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -98,7 +98,7 @@ func TestHubs(t *testing.T) {
 		OwnerId:        userid,
 	}
 
-	_, err, _ = c.SetHub(userjwt, h1, model.HubUpdateOptions{})
+	_, err, _ = c.SetHub(context.Background(), userjwt, h1, model.HubUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return

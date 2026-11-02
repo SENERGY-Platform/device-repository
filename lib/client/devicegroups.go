@@ -18,25 +18,27 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetDeviceGroup(token string, deviceGroup models.DeviceGroup) (result models.DeviceGroup, err error, code int) {
+func (c *Client) SetDeviceGroup(ctx context.Context, token string, deviceGroup models.DeviceGroup) (result models.DeviceGroup, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(deviceGroup)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if deviceGroup.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/device-groups", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/device-groups", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/device-groups/"+url.PathEscape(deviceGroup.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/device-groups/"+url.PathEscape(deviceGroup.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -45,8 +47,8 @@ func (c *Client) SetDeviceGroup(token string, deviceGroup models.DeviceGroup) (r
 	return do[models.DeviceGroup](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteDeviceGroup(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/device-groups/"+url.PathEscape(id), nil)
+func (c *Client) DeleteDeviceGroup(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/device-groups/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -54,7 +56,7 @@ func (c *Client) DeleteDeviceGroup(token string, id string) (err error, code int
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListDeviceGroups(token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
+func (c *Client) ListDeviceGroups(ctx context.Context, token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
@@ -100,7 +102,7 @@ func (c *Client) ListDeviceGroups(token string, options model.DeviceGroupListOpt
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-groups"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-groups"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
@@ -108,12 +110,12 @@ func (c *Client) ListDeviceGroups(token string, options model.DeviceGroupListOpt
 	return doWithTotalInResult[[]models.DeviceGroup](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
+func (c *Client) ReadDeviceGroup(ctx context.Context, id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
 	query := ""
 	if filterGenericDuplicateCriteria {
 		query = "?filter_generic_duplicate_criteria=true"
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-groups/"+id+query, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-groups/"+id+query, nil)
 	req.Header.Set("Authorization", token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -121,16 +123,16 @@ func (c *Client) ReadDeviceGroup(id string, token string, filterGenericDuplicate
 	return do[models.DeviceGroup](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateDeviceGroup(token string, deviceGroup models.DeviceGroup) (err error, code int) {
-	return c.validateWithToken(token, "/device-groups", deviceGroup)
+func (c *Client) ValidateDeviceGroup(ctx context.Context, token string, deviceGroup models.DeviceGroup) (err error, code int) {
+	return c.validateWithToken(ctx, token, "/device-groups", deviceGroup)
 }
 
-func (c *Client) RecomputeDeviceGroupCriteria(token string, ids []string) (err error, code int) {
+func (c *Client) RecomputeDeviceGroupCriteria(ctx context.Context, token string, ids []string) (err error, code int) {
 	endpoint := c.baseUrl + "/device-groups/criteria/recompute"
 	if ids != nil {
 		endpoint += "?" + url.Values{"ids": {strings.Join(ids, ",")}}.Encode()
 	}
-	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -138,6 +140,6 @@ func (c *Client) RecomputeDeviceGroupCriteria(token string, ids []string) (err e
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateDeviceGroupDelete(token string, id string) (err error, code int) {
-	return c.validateDeleteWithToken(token, "/device-groups/"+id)
+func (c *Client) ValidateDeviceGroupDelete(ctx context.Context, token string, id string) (err error, code int) {
+	return c.validateDeleteWithToken(ctx, token, "/device-groups/"+id)
 }

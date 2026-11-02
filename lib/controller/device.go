@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,7 +36,7 @@ import (
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
-func (this *Controller) ListExtendedDevices(token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
+func (this *Controller) ListExtendedDevices(ctx context.Context, token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
 	ids := []string{}
 	permissionFlag := options.Permission
 	if permissionFlag == models.UnsetPermissionFlag {
@@ -50,7 +51,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 		if options.Owner == "" {
 			options.Owner = jwtToken.GetUserId()
 		}
-		ctx, _ := getTimeoutContext()
+		ctx, _ := getTimeoutContext(ctx)
 		options.Ids, err = this.db.DeviceLocalIdsToIds(ctx, options.Owner, options.LocalIds)
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
@@ -62,7 +63,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIds(token, this.config.DeviceTopic, client.ListOptions{}, client.Permission(permissionFlag))
+			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIdsContext(ctx, token, this.config.DeviceTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -70,7 +71,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.DeviceTopic, options.Ids, client.Permission(permissionFlag))
+		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.DeviceTopic, options.Ids, client.Permission(permissionFlag))
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}
@@ -97,12 +98,12 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 
 	options.Ids = pureIds
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	devices, total, err := this.db.ListDevices(ctx, options.ToDeviceListOptions(), true)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
-	devices, err = this.applyDefaultDeviceAttributesToList(devices)
+	devices, err = this.applyDefaultDeviceAttributesToList(ctx, devices)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
@@ -158,7 +159,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 				defer wg.Done()
 				d.Id = rawId
 				_, modifier := idmodifier.SplitModifier(rawId)
-				modDevice, modErr, modErrCode := this.modifyDevice(d.Device, modifier)
+				modDevice, modErr, modErrCode := this.modifyDevice(ctx, d.Device, modifier)
 				if modErr != nil {
 					mux.Lock()
 					defer mux.Unlock()
@@ -169,7 +170,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 					return
 				}
 				d.Device = modDevice
-				extendedDevice, extendErr := this.extendDevice(token, d, deviceTypes, options.FullDt)
+				extendedDevice, extendErr := this.extendDevice(ctx, token, d, deviceTypes, options.FullDt)
 				if extendErr != nil {
 					mux.Lock()
 					defer mux.Unlock()
@@ -191,7 +192,7 @@ func (this *Controller) ListExtendedDevices(token string, options model.Extended
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) ListDevices(token string, options model.DeviceListOptions) (result []models.Device, err error, errCode int) {
+func (this *Controller) ListDevices(ctx context.Context, token string, options model.DeviceListOptions) (result []models.Device, err error, errCode int) {
 	ids := []string{}
 	permissionFlag := options.Permission
 	if permissionFlag == models.UnsetPermissionFlag {
@@ -213,7 +214,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIds(token, this.config.DeviceTopic, client.ListOptions{}, client.Permission(permissionFlag))
+			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIdsContext(ctx, token, this.config.DeviceTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, err, http.StatusInternalServerError
 			}
@@ -221,7 +222,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.DeviceTopic, options.Ids, client.Permission(permissionFlag))
+		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.DeviceTopic, options.Ids, client.Permission(permissionFlag))
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
@@ -247,12 +248,12 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 
 	options.Ids = pureIds
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	devices, _, err := this.db.ListDevices(ctx, options, false)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	devices, err = this.applyDefaultDeviceAttributesToList(devices)
+	devices, err = this.applyDefaultDeviceAttributesToList(ctx, devices)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -266,7 +267,7 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 		for _, id := range pureIdToRawIds[device.Id] {
 			device.Id = id
 			_, modifier := idmodifier.SplitModifier(id)
-			device.Device, err, errCode = this.modifyDevice(device.Device, modifier)
+			device.Device, err, errCode = this.modifyDevice(ctx, device.Device, modifier)
 			if err != nil {
 				return result, err, errCode
 			}
@@ -276,13 +277,13 @@ func (this *Controller) ListDevices(token string, options model.DeviceListOption
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
-	temp, err, errCode := this.readDevice(id, true)
+func (this *Controller) ReadDevice(ctx context.Context, id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+	temp, err, errCode := this.readDevice(ctx, id, true)
 	if err != nil {
 		return result, err, errCode
 	}
 	result = temp.Device
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Permission(action))
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -292,30 +293,30 @@ func (this *Controller) ReadDevice(id string, token string, action model.AuthAct
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
-	temp, err, errCode := this.readDevice(id, true)
+func (this *Controller) ReadExtendedDevice(ctx context.Context, id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
+	temp, err, errCode := this.readDevice(ctx, id, true)
 	if err != nil {
 		return result, err, errCode
 	}
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Permission(action))
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	if !ok {
 		return result, errors.New("access denied"), http.StatusForbidden
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	pureDtId, _ := idmodifier.SplitModifier(temp.DeviceTypeId)
 	dt, _, _ := this.db.GetDeviceType(ctx, pureDtId)
-	result, err = this.extendDevice(token, temp, []models.DeviceType{dt}, fullDt)
+	result, err = this.extendDevice(ctx, token, temp, []models.DeviceType{dt}, fullDt)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) readDevice(id string, addDefaultAttributes bool) (result model.DeviceWithConnectionState, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) readDevice(ctx context.Context, id string, addDefaultAttributes bool) (result model.DeviceWithConnectionState, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	pureId, modifier := idmodifier.SplitModifier(id)
 	device, exists, err := this.db.GetDevice(ctx, pureId)
 	if err != nil {
@@ -326,13 +327,13 @@ func (this *Controller) readDevice(id string, addDefaultAttributes bool) (result
 	}
 	device.Id = id
 	if addDefaultAttributes {
-		device, err = this.applyDefaultDeviceAttributes(device)
+		device, err = this.applyDefaultDeviceAttributes(ctx, device)
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
 	}
 	if modifier != nil && len(modifier) > 0 {
-		device.Device, err, errCode = this.modifyDevice(device.Device, modifier)
+		device.Device, err, errCode = this.modifyDevice(ctx, device.Device, modifier)
 		if err != nil {
 			return result, err, errCode
 		}
@@ -340,7 +341,7 @@ func (this *Controller) readDevice(id string, addDefaultAttributes bool) (result
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) extendDevice(token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType, fullDt bool) (result models.ExtendedDevice, err error) {
+func (this *Controller) extendDevice(ctx context.Context, token string, device model.DeviceWithConnectionState, deviceTypes []models.DeviceType, fullDt bool) (result models.ExtendedDevice, err error) {
 	var dtp *models.DeviceType
 	deviceTypeName := ""
 	for _, dt := range deviceTypes {
@@ -370,7 +371,7 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 	requestingUser := jwtToken.GetUserId()
 
 	pureDeviceId, _ := idmodifier.SplitModifier(device.Id)
-	computedPermissionList, err, _ := this.permissionsV2Client.ListComputedPermissions(token, this.config.DeviceTopic, []string{pureDeviceId})
+	computedPermissionList, err, _ := this.permissionsV2Client.ListComputedPermissionsContext(ctx, token, this.config.DeviceTopic, []string{pureDeviceId})
 	if err != nil {
 		return models.ExtendedDevice{}, err
 	}
@@ -395,8 +396,8 @@ func (this *Controller) extendDevice(token string, device model.DeviceWithConnec
 	}, err
 }
 
-func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ReadDeviceByLocalId(ctx context.Context, ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	device, exists, err := this.db.GetDeviceByLocalId(ctx, ownerId, localId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -404,11 +405,11 @@ func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, toke
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	device, err = this.applyDefaultDeviceAttributes(device)
+	device, err = this.applyDefaultDeviceAttributes(ctx, device)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Permission(action))
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, device.Id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -418,8 +419,8 @@ func (this *Controller) ReadDeviceByLocalId(ownerId string, localId string, toke
 	return device.Device, nil, http.StatusOK
 }
 
-func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ReadExtendedDeviceByLocalId(ctx context.Context, ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	device, exists, err := this.db.GetDeviceByLocalId(ctx, ownerId, localId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -427,11 +428,11 @@ func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId stri
 	if !exists {
 		return result, errors.New("not found"), http.StatusNotFound
 	}
-	device, err = this.applyDefaultDeviceAttributes(device)
+	device, err = this.applyDefaultDeviceAttributes(ctx, device)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Permission(action))
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, device.Id, client.Permission(action))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -440,7 +441,7 @@ func (this *Controller) ReadExtendedDeviceByLocalId(ownerId string, localId stri
 	}
 	pureDtId, _ := idmodifier.SplitModifier(device.DeviceTypeId)
 	dt, _, _ := this.db.GetDeviceType(ctx, pureDtId)
-	result, err = this.extendDevice(token, device, []models.DeviceType{dt}, fullDt)
+	result, err = this.extendDevice(ctx, token, device, []models.DeviceType{dt}, fullDt)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -465,7 +466,7 @@ func ValidateDeviceName(device models.Device) (err error) {
 	return nil
 }
 
-func (this *Controller) ValidateDevice(token string, device models.Device) (err error, code int) {
+func (this *Controller) ValidateDevice(ctx context.Context, token string, device models.Device) (err error, code int) {
 	if device.Id == "" {
 		return errors.New("missing device id"), http.StatusBadRequest
 	}
@@ -480,7 +481,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 		return errors.New("missing device type id"), http.StatusBadRequest
 	}
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 
 	original, exists, err := this.db.GetDevice(ctx, device.Id)
 	if err != nil {
@@ -491,7 +492,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 			return errors.New("device.device_type_id may not be updated"), http.StatusBadRequest
 		}
 		if device.OwnerId != original.OwnerId {
-			resource, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.DeviceTopic, device.Id)
+			resource, err, code := this.permissionsV2Client.GetResourceContext(ctx, client.InternalAdminToken, this.config.DeviceTopic, device.Id)
 			if err != nil {
 				return err, code
 			}
@@ -546,7 +547,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 	}
 
 	//local ids are globally unique
-	ctx, _ = getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	d, ok, err := this.db.GetDeviceByLocalId(ctx, device.OwnerId, device.LocalId)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -561,7 +562,7 @@ func (this *Controller) ValidateDevice(token string, device models.Device) (err 
 	return nil, http.StatusOK
 }
 
-func (this *Controller) CreateDevice(token string, device models.Device) (result models.Device, err error, code int) {
+func (this *Controller) CreateDevice(ctx context.Context, token string, device models.Device) (result models.Device, err error, code int) {
 	if device.Id != "" {
 		return result, errors.New("device id already set"), http.StatusBadRequest
 	}
@@ -581,17 +582,17 @@ func (this *Controller) CreateDevice(token string, device models.Device) (result
 		device.OwnerId = jwtToken.GetUserId()
 	}
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateDevice(token, device)
+		err, code = this.ValidateDevice(ctx, token, device)
 		if err != nil {
 			this.logger.Warn("device validation failed with error: " + err.Error())
 			return device, err, code
 		}
 	}
 
-	return this.setDevice(device)
+	return this.setDevice(ctx, device)
 }
 
-func (this *Controller) SetDevice(token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int) {
+func (this *Controller) SetDevice(ctx context.Context, token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int) {
 	if device.Id == "" {
 		return result, errors.New("missing device id"), http.StatusBadRequest
 	}
@@ -600,7 +601,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 		return result, err, http.StatusInternalServerError
 	}
 	if !jwtToken.IsAdmin() && !this.config.DisableStrictValidationForTesting {
-		ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Write)
+		ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, device.Id, client.Write)
 		if err != nil {
 			return device, err, code
 		}
@@ -611,7 +612,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 
 	var original model.DeviceWithConnectionState
 	var exists bool
-	original, err, code = this.readDevice(device.Id, false)
+	original, err, code = this.readDevice(ctx, device.Id, false)
 	if err != nil && code != http.StatusNotFound {
 		return device, err, code
 	}
@@ -637,7 +638,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 
 	if exists && original.OwnerId != device.OwnerId && original.OwnerId != "" {
 		if !jwtToken.IsAdmin() {
-			ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, device.Id, client.Administrate)
+			ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, device.Id, client.Administrate)
 			if err != nil {
 				return device, err, code
 			}
@@ -646,7 +647,7 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 			}
 		}
 
-		rights, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, this.config.DeviceTopic, device.Id)
+		rights, err, code := this.permissionsV2Client.GetResourceContext(ctx, client.InternalAdminToken, this.config.DeviceTopic, device.Id)
 		if err != nil && code != http.StatusNotFound {
 			this.config.GetLogger().Error("unable to get permission resource", "error", err)
 			debug.PrintStack()
@@ -661,14 +662,14 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 	}
 
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateDevice(token, device)
+		err, code = this.ValidateDevice(ctx, token, device)
 		if err != nil {
 			this.logger.Warn("device validation failed with error: " + err.Error())
 			return device, err, code
 		}
 	}
 
-	device, err, code = this.setDevice(device)
+	device, err, code = this.setDevice(ctx, device)
 	if err != nil {
 		return device, err, code
 	}
@@ -676,10 +677,10 @@ func (this *Controller) SetDevice(token string, device models.Device, options mo
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) setDevice(device models.Device) (result models.Device, err error, code int) {
+func (this *Controller) setDevice(ctx context.Context, device models.Device) (result models.Device, err error, code int) {
 	//update hub about changed device.local_id
 	this.config.GetLogger().Debug("create/update device", "id", device.Id, "name", device.Name)
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	old, exists, err := this.db.GetDevice(ctx, device.Id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -691,11 +692,11 @@ func (this *Controller) setDevice(device models.Device) (result models.Device, e
 	}
 
 	//save device
-	ctx, _ = getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	err = this.db.SetDevice(ctx, model.DeviceWithConnectionState{
 		Device:          device,
 		ConnectionState: connectionState,
-	}, this.setDeviceSyncHandler)
+	}, withContext2(ctx, this.setDeviceSyncHandler))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -703,19 +704,19 @@ func (this *Controller) setDevice(device models.Device) (result models.Device, e
 	return device, nil, http.StatusOK
 }
 
-func (this *Controller) setDeviceSyncHandler(oldDevice model.DeviceWithConnectionState, device model.DeviceWithConnectionState) (err error) {
-	err = this.EnsureInitialRights(this.config.DeviceTopic, device.Id, device.OwnerId)
+func (this *Controller) setDeviceSyncHandler(ctx context.Context, oldDevice model.DeviceWithConnectionState, device model.DeviceWithConnectionState) (err error) {
+	err = this.EnsureInitialRights(ctx, this.config.DeviceTopic, device.Id, device.OwnerId)
 	if err != nil {
 		return fmt.Errorf("unable to ensure initial device permissions: %w", err)
 	}
 
-	err = this.EnsureGeneratedDeviceGroup(oldDevice.Device, device.Device)
+	err = this.EnsureGeneratedDeviceGroup(ctx, oldDevice.Device, device.Device)
 	if err != nil {
 		return fmt.Errorf("unable to generate device group: %w", err)
 	}
 
 	//ensure that changed device-local-ids are mirrored in hubs
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	hubs, err := this.db.GetHubsByDeviceId(ctx, device.Id)
 	if err != nil {
 		return fmt.Errorf("unable to get hubs by device id to ensure changed device-local-ids are mirrored in hubs: %w", err)
@@ -731,7 +732,7 @@ func (this *Controller) setDeviceSyncHandler(oldDevice model.DeviceWithConnectio
 				hub.DeviceLocalIds = append(hub.DeviceLocalIds, d.LocalId)
 			}
 			hub.Hash = ""
-			err = this.setHub(hub)
+			err = this.setHub(ctx, hub)
 			if err != nil {
 				return fmt.Errorf("unable to update hub to ensure that changed device-local-ids are mirrored in hubs: %w", err)
 			}
@@ -744,8 +745,8 @@ func (this *Controller) setDeviceSyncHandler(oldDevice model.DeviceWithConnectio
 	return nil
 }
 
-func (this *Controller) DeleteDevice(token string, id string) (error, int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) DeleteDevice(ctx context.Context, token string, id string) (error, int) {
+	ctx, _ = getTimeoutContext(ctx)
 	_, exists, err := this.db.GetDevice(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -753,34 +754,34 @@ func (this *Controller) DeleteDevice(token string, id string) (error, int) {
 	if !exists {
 		return nil, http.StatusOK
 	}
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Administrate)
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, id, client.Administrate)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if !ok {
 		return errors.New("access denied"), http.StatusForbidden
 	}
-	err = this.deleteDevice(id)
+	err = this.deleteDevice(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteDeviceSyncHandler(old model.DeviceWithConnectionState) (err error) {
-	err = this.removeDeviceFromGraphs(old.Id)
+func (this *Controller) deleteDeviceSyncHandler(ctx context.Context, old model.DeviceWithConnectionState) (err error) {
+	err = this.removeDeviceFromGraphs(ctx, old.Id)
 	if err != nil {
 		return err
 	}
-	err = this.resetHubsForDeviceUpdate(old.Device)
+	err = this.resetHubsForDeviceUpdate(ctx, old.Device)
 	if err != nil {
 		return err
 	}
-	err = this.RemoveGeneratedDeviceGroup(old.Id, old.OwnerId)
+	err = this.RemoveGeneratedDeviceGroup(ctx, old.Id, old.OwnerId)
 	if err != nil {
 		return err
 	}
-	err = this.RemoveRights(this.config.DeviceTopic, old.Id)
+	err = this.RemoveRights(ctx, this.config.DeviceTopic, old.Id)
 	if err != nil {
 		return err
 	}
@@ -791,17 +792,17 @@ func (this *Controller) deleteDeviceSyncHandler(old model.DeviceWithConnectionSt
 	return nil
 }
 
-func (this *Controller) deleteDevice(id string) error {
-	ctx, _ := getTimeoutContext()
-	err := this.db.RemoveDevice(ctx, id, this.deleteDeviceSyncHandler)
+func (this *Controller) deleteDevice(ctx context.Context, id string) error {
+	ctx, _ = getTimeoutContext(ctx)
+	err := this.db.RemoveDevice(ctx, id, withContext(ctx, this.deleteDeviceSyncHandler))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) resetHubsForDeviceUpdate(ctx context.Context, old models.Device) error {
+	ctx, _ = getTimeoutContext(ctx)
 	hubs, err := this.db.GetHubsByDeviceId(ctx, old.Id)
 	if err != nil {
 		return err
@@ -829,7 +830,7 @@ func (this *Controller) resetHubsForDeviceUpdate(old models.Device) error {
 			hub.DeviceLocalIds = append(hub.DeviceLocalIds, d.LocalId)
 		}
 		hub.Hash = ""
-		err = this.setHub(hub)
+		err = this.setHub(ctx, hub)
 		if err != nil {
 			return err
 		}
@@ -863,13 +864,13 @@ func updateSameOriginAttributes(attributes []models.Attribute, update []models.A
 	return result
 }
 
-func (this *Controller) SetDeviceConnectionState(token string, id string, connected bool) (error, int) {
+func (this *Controller) SetDeviceConnectionState(ctx context.Context, token string, id string, connected bool) (error, int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
 	if !jwtToken.IsAdmin() {
-		ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceTopic, id, client.Write)
+		ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceTopic, id, client.Write)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
@@ -881,7 +882,7 @@ func (this *Controller) SetDeviceConnectionState(token string, id string, connec
 	if connected {
 		state = models.ConnectionStateOnline
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	err = this.db.SetDeviceConnectionState(ctx, id, state)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -889,7 +890,7 @@ func (this *Controller) SetDeviceConnectionState(token string, id string, connec
 	return nil, http.StatusOK
 }
 
-func (this *Controller) SetDeviceConnectionStates(token string, states map[string]bool) (error, int) {
+func (this *Controller) SetDeviceConnectionStates(ctx context.Context, token string, states map[string]bool) (error, int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusBadRequest
@@ -898,7 +899,7 @@ func (this *Controller) SetDeviceConnectionStates(token string, states map[strin
 		return nil, http.StatusOK
 	}
 	if !jwtToken.IsAdmin() {
-		res, err, _ := this.permissionsV2Client.CheckMultiplePermissions(
+		res, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx,
 			token,
 			this.config.DeviceTopic,
 			slices.Collect(maps.Keys(states)),
@@ -925,7 +926,7 @@ func (this *Controller) SetDeviceConnectionStates(token string, states map[strin
 		}
 		convertedStates[id] = state
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	err = this.db.SetDeviceConnectionStates(ctx, convertedStates)
 	if err != nil {
 		return err, http.StatusInternalServerError

@@ -34,7 +34,7 @@ import (
 
 const FilterDevicesOfGroupByAccess = true
 
-func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
+func (this *Controller) ListDeviceGroups(ctx context.Context, token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
 	setFilterCriteriaAspectIds(options.Criteria)
 	ids := []string{}
 	permissionFlag := options.Permission
@@ -51,7 +51,7 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 		if jwtToken.IsAdmin() {
 			ids = nil //no auth check for admins -> no id filter
 		} else {
-			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIds(token, this.config.DeviceGroupTopic, client.ListOptions{}, client.Permission(permissionFlag))
+			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIdsContext(ctx, token, this.config.DeviceGroupTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
@@ -62,7 +62,7 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 	} else {
 		options.Limit = 0
 		options.Offset = 0
-		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.DeviceGroupTopic, options.Ids, client.Permission(permissionFlag))
+		idMap, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.DeviceGroupTopic, options.Ids, client.Permission(permissionFlag))
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}
@@ -74,7 +74,7 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 	}
 	options.Ids = ids
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListDeviceGroups(ctx, options)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -94,8 +94,8 @@ func (this *Controller) ListDeviceGroups(token string, options model.DeviceGroup
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ReadDeviceGroup(ctx context.Context, id string, token string, filterGenericDuplicateCriteria bool) (result models.DeviceGroup, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetDeviceGroup(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -104,7 +104,7 @@ func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDu
 		return result, errors.New("not found"), http.StatusNotFound
 	}
 	setDeviceGroupCriteriaAspectIdsOnRead(&result)
-	ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceGroupTopic, id, client.Read)
+	ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceGroupTopic, id, client.Read)
 	if err != nil {
 		result = models.DeviceGroup{}
 		return result, err, http.StatusInternalServerError
@@ -124,17 +124,17 @@ func (this *Controller) ReadDeviceGroup(id string, token string, filterGenericDu
 	}
 
 	if FilterDevicesOfGroupByAccess {
-		return this.FilterDevicesOfGroupByAccess(token, result)
+		return this.FilterDevicesOfGroupByAccess(ctx, token, result)
 	} else {
 		return result, nil, http.StatusOK
 	}
 }
 
-func (this *Controller) FilterDevicesOfGroupByAccess(token string, group models.DeviceGroup) (result models.DeviceGroup, err error, code int) {
+func (this *Controller) FilterDevicesOfGroupByAccess(ctx context.Context, token string, group models.DeviceGroup) (result models.DeviceGroup, err error, code int) {
 	if len(group.DeviceIds) == 0 {
 		return group, nil, http.StatusOK
 	}
-	access, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.DeviceTopic, group.DeviceIds, client.Execute)
+	access, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.DeviceTopic, group.DeviceIds, client.Execute)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -151,11 +151,11 @@ func (this *Controller) FilterDevicesOfGroupByAccess(token string, group models.
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) checkAccessToDevicesOfGroup(token string, group models.DeviceGroup) (err error, code int) {
+func (this *Controller) checkAccessToDevicesOfGroup(ctx context.Context, token string, group models.DeviceGroup) (err error, code int) {
 	if len(group.DeviceIds) == 0 {
 		return nil, http.StatusOK
 	}
-	access, err, _ := this.permissionsV2Client.CheckMultiplePermissions(token, this.config.DeviceTopic, group.DeviceIds, client.Execute)
+	access, err, _ := this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.DeviceTopic, group.DeviceIds, client.Execute)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -168,14 +168,14 @@ func (this *Controller) checkAccessToDevicesOfGroup(token string, group models.D
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateDeviceGroup(token string, group models.DeviceGroup) (err error, code int) {
+func (this *Controller) ValidateDeviceGroup(ctx context.Context, token string, group models.DeviceGroup) (err error, code int) {
 	if group.Id == "" {
 		return errors.New("missing device-group id"), http.StatusBadRequest
 	}
 	if group.Name == "" {
 		return errors.New("missing device-group name"), http.StatusBadRequest
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	old, exists, err := this.db.GetDeviceGroup(ctx, group.Id)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -186,14 +186,14 @@ func (this *Controller) ValidateDeviceGroup(token string, group models.DeviceGro
 	if exists && old.AutoGeneratedByDevice != group.AutoGeneratedByDevice {
 		return fmt.Errorf("user may not change auto_generated_by_device (from '%v' to '%v')", old.AutoGeneratedByDevice, group.AutoGeneratedByDevice), http.StatusBadRequest
 	}
-	err, code = this.checkAccessToDevicesOfGroup(token, group)
+	err, code = this.checkAccessToDevicesOfGroup(ctx, token, group)
 	if err != nil {
 		return err, code
 	}
-	return this.ValidateDeviceGroupSelection(group.Criteria, group.DeviceIds)
+	return this.ValidateDeviceGroupSelection(ctx, group.Criteria, group.DeviceIds)
 }
 
-func (this *Controller) ValidateDeviceGroupSelection(criteria []models.DeviceGroupFilterCriteria, devices []string) (error, int) {
+func (this *Controller) ValidateDeviceGroupSelection(ctx context.Context, criteria []models.DeviceGroupFilterCriteria, devices []string) (error, int) {
 	setDeviceGroupFilterCriteriaAspectIds(criteria)
 	deviceCache := map[string]models.Device{}
 	deviceTypeCache := map[string]models.DeviceType{}
@@ -206,7 +206,7 @@ func (this *Controller) ValidateDeviceGroupSelection(criteria []models.DeviceGro
 			}
 			deviceUsedInMapping[deviceId] = true
 			deviceUsageCount[deviceId] = deviceUsageCount[deviceId] + 1
-			err, code := this.selectionMatchesCriteria(&deviceCache, &deviceTypeCache, c, deviceId)
+			err, code := this.selectionMatchesCriteria(ctx, &deviceCache, &deviceTypeCache, c, deviceId)
 			if err != nil {
 				return err, code
 			}
@@ -296,13 +296,13 @@ func DeviceGroupFilterGenericDuplicateCriteria(dg models.DeviceGroup, aspectNode
 	return result, nil
 }
 
-func (this *Controller) selectionMatchesCriteria(
+func (this *Controller) selectionMatchesCriteria(ctx context.Context,
 	dcache *map[string]models.Device,
 	dtcache *map[string]models.DeviceType,
 	criteria models.DeviceGroupFilterCriteria,
 	deviceId string) (err error, code int) {
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 
 	aspectNodes := []models.AspectNode{}
 	for _, aspectId := range criteria.AspectIds {
@@ -318,7 +318,7 @@ func (this *Controller) selectionMatchesCriteria(
 
 	device, ok := (*dcache)[deviceId]
 	if !ok {
-		temp, err, code := this.readDevice(deviceId, true)
+		temp, err, code := this.readDevice(ctx, deviceId, true)
 		if err != nil {
 			return fmt.Errorf("unable to read device %v: %w", deviceId, err), code
 		}
@@ -328,7 +328,7 @@ func (this *Controller) selectionMatchesCriteria(
 
 	deviceType, ok := (*dtcache)[device.DeviceTypeId]
 	if !ok {
-		deviceType, err, code = this.readDeviceType(device.DeviceTypeId)
+		deviceType, err, code = this.readDeviceType(ctx, device.DeviceTypeId)
 		if err != nil {
 			return fmt.Errorf("unable to read device-type %v: %w", device.DeviceTypeId, err), code
 		}
@@ -410,14 +410,14 @@ func listContains(list []string, search string) bool {
 	return false
 }
 
-func (this *Controller) ValidateDeviceGroupDelete(token string, id string) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateDeviceGroupDelete(ctx context.Context, token string, id string) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	dg, exists, err := this.db.GetDeviceGroup(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if exists {
-		ok, err, _ := this.permissionsV2Client.CheckPermission(token, this.config.DeviceGroupTopic, id, client.Administrate)
+		ok, err, _ := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceGroupTopic, id, client.Administrate)
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
@@ -431,7 +431,7 @@ func (this *Controller) ValidateDeviceGroupDelete(token string, id string) (err 
 	return nil, http.StatusOK
 }
 
-func (this *Controller) SetDeviceGroup(token string, dg models.DeviceGroup) (result models.DeviceGroup, err error, errCode int) {
+func (this *Controller) SetDeviceGroup(ctx context.Context, token string, dg models.DeviceGroup) (result models.DeviceGroup, err error, errCode int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -441,20 +441,20 @@ func (this *Controller) SetDeviceGroup(token string, dg models.DeviceGroup) (res
 	SetDeviceGroupCriteriaAspectIdsOnWrite(&dg)
 	dg.SetShortCriteria()
 	if !this.config.DisableStrictValidationForTesting {
-		dg.DeviceIds, err = this.filterInvalidDeviceIds(token, dg.DeviceIds, "r")
+		dg.DeviceIds, err = this.filterInvalidDeviceIds(ctx, token, dg.DeviceIds, "r")
 		if err != nil {
 			return dg, err, http.StatusInternalServerError
 		}
 	}
 
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	old, exists, err := this.db.GetDeviceGroup(ctx, dg.Id)
 	if err != nil {
 		return dg, err, http.StatusInternalServerError
 	}
 
 	if exists && !jwtToken.IsAdmin() && !this.config.DisableStrictValidationForTesting {
-		ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceGroupTopic, dg.Id, client.Write)
+		ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceGroupTopic, dg.Id, client.Write)
 		if err != nil {
 			debug.PrintStack()
 			return dg, err, code
@@ -469,14 +469,14 @@ func (this *Controller) SetDeviceGroup(token string, dg models.DeviceGroup) (res
 	}
 
 	if !this.config.DisableStrictValidationForTesting {
-		err, code := this.ValidateDeviceGroup(token, dg)
+		err, code := this.ValidateDeviceGroup(ctx, token, dg)
 		if err != nil {
 			debug.PrintStack()
 			return dg, err, code
 		}
 	}
 
-	err = this.setDeviceGroup(dg, jwtToken.GetUserId())
+	err = this.setDeviceGroup(ctx, dg, jwtToken.GetUserId())
 	if err != nil {
 		debug.PrintStack()
 		return dg, err, http.StatusInternalServerError
@@ -485,8 +485,8 @@ func (this *Controller) SetDeviceGroup(token string, dg models.DeviceGroup) (res
 	return dg, nil, http.StatusOK
 }
 
-func (this *Controller) filterInvalidDeviceIds(token string, ids []string, rights string) (result []string, err error) {
-	deviceIsAccessible, err, _ := this.permissionCheckForDeviceList(token, ids, rights)
+func (this *Controller) filterInvalidDeviceIds(ctx context.Context, token string, ids []string, rights string) (result []string, err error) {
+	deviceIsAccessible, err, _ := this.permissionCheckForDeviceList(ctx, token, ids, rights)
 	if err != nil {
 		return result, err
 	}
@@ -501,14 +501,14 @@ func (this *Controller) filterInvalidDeviceIds(token string, ids []string, right
 	return result, nil
 }
 
-func (this *Controller) permissionCheckForDeviceList(token string, ids []string, rights string) (result map[string]bool, err error, code int) {
+func (this *Controller) permissionCheckForDeviceList(ctx context.Context, token string, ids []string, rights string) (result map[string]bool, err error, code int) {
 	ids = append(ids, removeIdModifiers(ids)...)
 	ids = removeDuplicates(ids)
 	permissions, err := permissionListFromString(rights)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return this.permissionsV2Client.CheckMultiplePermissions(token, this.config.DeviceTopic, ids, permissions...)
+	return this.permissionsV2Client.CheckMultiplePermissionsContext(ctx, token, this.config.DeviceTopic, ids, permissions...)
 }
 
 func permissionListFromString(str string) (result client.PermissionList, err error) {
@@ -523,9 +523,9 @@ func permissionListFromString(str string) (result client.PermissionList, err err
 	return result, nil
 }
 
-func (this *Controller) setDeviceGroupSyncHandler(dg models.DeviceGroup, user string) error {
+func (this *Controller) setDeviceGroupSyncHandler(ctx context.Context, dg models.DeviceGroup, user string) error {
 	if user != "" {
-		err := this.EnsureInitialRights(this.config.DeviceGroupTopic, dg.Id, user)
+		err := this.EnsureInitialRights(ctx, this.config.DeviceGroupTopic, dg.Id, user)
 		if err != nil {
 			return err
 		}
@@ -533,17 +533,17 @@ func (this *Controller) setDeviceGroupSyncHandler(dg models.DeviceGroup, user st
 	return this.publisher.PublishDeviceGroup(dg)
 }
 
-func (this *Controller) setDeviceGroup(deviceGroup models.DeviceGroup, owner string) (err error) {
-	ctx, _ := getTimeoutContext()
-	return this.db.SetDeviceGroup(ctx, deviceGroup, this.setDeviceGroupSyncHandler, owner)
+func (this *Controller) setDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup, owner string) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
+	return this.db.SetDeviceGroup(ctx, deviceGroup, withContext2(ctx, this.setDeviceGroupSyncHandler), owner)
 }
 
-func (this *Controller) DeleteDeviceGroup(token string, id string) (err error, code int) {
+func (this *Controller) DeleteDeviceGroup(ctx context.Context, token string, id string) (err error, code int) {
 	err = preventIdModifier(id)
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	_, exists, err := this.db.GetDeviceGroup(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -551,7 +551,7 @@ func (this *Controller) DeleteDeviceGroup(token string, id string) (err error, c
 	if !exists {
 		return nil, http.StatusOK
 	}
-	ok, err, code := this.permissionsV2Client.CheckPermission(token, this.config.DeviceGroupTopic, id, client.Administrate)
+	ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.DeviceGroupTopic, id, client.Administrate)
 	if err != nil {
 		return err, code
 	}
@@ -559,37 +559,37 @@ func (this *Controller) DeleteDeviceGroup(token string, id string) (err error, c
 		return errors.New("access denied"), http.StatusForbidden
 	}
 
-	err, code = this.ValidateDeviceGroupDelete(token, id)
+	err, code = this.ValidateDeviceGroupDelete(ctx, token, id)
 	if err != nil {
 		return err, code
 	}
 
-	err = this.deleteDeviceGroup(id)
+	err = this.deleteDeviceGroup(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteDeviceGroupSyncHandler(dg models.DeviceGroup) (err error) {
-	err = this.RemoveRights(this.config.DeviceGroupTopic, dg.Id)
+func (this *Controller) deleteDeviceGroupSyncHandler(ctx context.Context, dg models.DeviceGroup) (err error) {
+	err = this.RemoveRights(ctx, this.config.DeviceGroupTopic, dg.Id)
 	if err != nil {
 		return err
 	}
 	return this.publisher.PublishDeviceGroupDelete(dg.Id)
 }
 
-func (this *Controller) deleteDeviceGroup(id string) error {
-	ctx, _ := getTimeoutContext()
-	err := this.db.RemoveDeviceGroup(ctx, id, this.deleteDeviceGroupSyncHandler)
+func (this *Controller) deleteDeviceGroup(ctx context.Context, id string) error {
+	ctx, _ = getTimeoutContext(ctx)
+	err := this.db.RemoveDeviceGroup(ctx, id, withContext(ctx, this.deleteDeviceGroupSyncHandler))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (this *Controller) UpdateDeviceGroupCriteria(dg models.DeviceGroup) (err error) {
-	user, exists, err := this.db.GetDeviceGroupSyncUser(context.Background(), dg.Id)
+func (this *Controller) UpdateDeviceGroupCriteria(ctx context.Context, dg models.DeviceGroup) (err error) {
+	user, exists, err := this.db.GetDeviceGroupSyncUser(context.WithoutCancel(ctx), dg.Id)
 	if err != nil {
 		return err
 	}
@@ -597,15 +597,15 @@ func (this *Controller) UpdateDeviceGroupCriteria(dg models.DeviceGroup) (err er
 		this.config.GetLogger().Warn("tried to update unknown device-group criteria")
 		return nil
 	}
-	dg, err = this.withCurrentDeviceGroupCriteria(dg)
+	dg, err = this.withCurrentDeviceGroupCriteria(ctx, dg)
 	if err != nil {
 		return err
 	}
-	return this.setDeviceGroup(dg, user)
+	return this.setDeviceGroup(ctx, dg, user)
 }
 
-func (this *Controller) withCurrentDeviceGroupCriteria(dg models.DeviceGroup) (result models.DeviceGroup, err error) {
-	dg.Criteria, err, _ = this.GetDeviceGroupCriteria(dg.DeviceIds)
+func (this *Controller) withCurrentDeviceGroupCriteria(ctx context.Context, dg models.DeviceGroup) (result models.DeviceGroup, err error) {
+	dg.Criteria, err, _ = this.GetDeviceGroupCriteria(ctx, dg.DeviceIds)
 	if err != nil {
 		return dg, err
 	}
@@ -622,7 +622,7 @@ func (this *Controller) withCurrentDeviceGroupCriteria(dg models.DeviceGroup) (r
 // is the manual trigger for criteria that went stale without such a write (ref SNRGY-4861).
 // It runs in the background because the generated groups alone are one per device, and
 // answers with 202 once started. Progress and result are only logged.
-func (this *Controller) RecomputeDeviceGroupCriteria(token string, ids []string) (err error, code int) {
+func (this *Controller) RecomputeDeviceGroupCriteria(ctx context.Context, token string, ids []string) (err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusBadRequest
@@ -637,17 +637,17 @@ func (this *Controller) RecomputeDeviceGroupCriteria(token string, ids []string)
 	}
 	go func() {
 		defer this.deviceGroupCriteriaRecomputeRunning.Store(false)
-		this.recomputeDeviceGroupCriteria(ids)
+		this.recomputeDeviceGroupCriteria(ctx, ids)
 	}()
 	return nil, http.StatusAccepted
 }
 
-func (this *Controller) recomputeDeviceGroupCriteria(ids []string) {
+func (this *Controller) recomputeDeviceGroupCriteria(ctx context.Context, ids []string) {
 	logger := this.config.GetLogger()
 	logger.Info("start device-group criteria recompute", "ids", ids)
 	checked, updated, failed := 0, 0, 0
 	for dg, err := range util.IterBatch(500, func(limit int64, offset int64) ([]models.DeviceGroup, error) {
-		ctx, cancel := getTimeoutContext()
+		ctx, cancel := getTimeoutContext(ctx)
 		defer cancel()
 		list, _, err := this.db.ListDeviceGroups(ctx, model.DeviceGroupListOptions{
 			Ids:    ids,
@@ -662,7 +662,7 @@ func (this *Controller) recomputeDeviceGroupCriteria(ids []string) {
 			return
 		}
 		checked++
-		changed, err := this.recomputeCriteriaOfDeviceGroup(dg)
+		changed, err := this.recomputeCriteriaOfDeviceGroup(ctx, dg)
 		if err != nil {
 			failed++
 			logger.Warn("unable to recompute device-group criteria", "error", err, "deviceGroupId", dg.Id)
@@ -681,22 +681,22 @@ func (this *Controller) recomputeDeviceGroupCriteria(ids []string) {
 
 // recomputeCriteriaOfDeviceGroup writes the group only if its criteria changed, so a repeated
 // run publishes nothing for the groups an earlier one already brought up to date.
-func (this *Controller) recomputeCriteriaOfDeviceGroup(dg models.DeviceGroup) (changed bool, err error) {
-	user, exists, err := this.db.GetDeviceGroupSyncUser(context.Background(), dg.Id)
+func (this *Controller) recomputeCriteriaOfDeviceGroup(ctx context.Context, dg models.DeviceGroup) (changed bool, err error) {
+	user, exists, err := this.db.GetDeviceGroupSyncUser(context.WithoutCancel(ctx), dg.Id)
 	if err != nil {
 		return false, err
 	}
 	if !exists {
 		return false, nil
 	}
-	current, err := this.withCurrentDeviceGroupCriteria(dg)
+	current, err := this.withCurrentDeviceGroupCriteria(ctx, dg)
 	if err != nil {
 		return false, err
 	}
 	if slices.Equal(sortedCriteriaShorts(dg.Criteria), current.CriteriaShort) && slices.Equal(slices.Sorted(slices.Values(dg.CriteriaShort)), current.CriteriaShort) {
 		return false, nil
 	}
-	return true, this.setDeviceGroup(current, user)
+	return true, this.setDeviceGroup(ctx, current, user)
 }
 
 func sortedCriteriaShorts(criteria []models.DeviceGroupFilterCriteria) []string {

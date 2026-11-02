@@ -17,16 +17,18 @@
 package controller
 
 import (
+	"context"
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
-	"strings"
 )
 
-func (this *Controller) ListDeviceClasses(listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListDeviceClasses(ctx context.Context, listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListDeviceClasses(ctx, listOptions)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -34,11 +36,11 @@ func (this *Controller) ListDeviceClasses(listOptions model.DeviceClassListOptio
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) setDeviceClassSyncHandler(c models.DeviceClass) error {
+func (this *Controller) setDeviceClassSyncHandler(ctx context.Context, c models.DeviceClass) error {
 	return this.publisher.PublishDeviceClass(c)
 }
 
-func (this *Controller) SetDeviceClass(token string, class models.DeviceClass) (result models.DeviceClass, err error, code int) {
+func (this *Controller) SetDeviceClass(ctx context.Context, token string, class models.DeviceClass) (result models.DeviceClass, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -50,29 +52,29 @@ func (this *Controller) SetDeviceClass(token string, class models.DeviceClass) (
 	//ensure ids
 	class.GenerateId()
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateDeviceClass(class)
+		err, code = this.ValidateDeviceClass(ctx, class)
 		if err != nil {
 			return result, err, code
 		}
 	}
-	err = this.setDeviceClass(class)
+	err = this.setDeviceClass(ctx, class)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return class, nil, http.StatusOK
 }
 
-func (this *Controller) setDeviceClass(class models.DeviceClass) (err error) {
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetDeviceClass(ctx, class, this.setDeviceClassSyncHandler)
+func (this *Controller) setDeviceClass(ctx context.Context, class models.DeviceClass) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.SetDeviceClass(ctx, class, withContext(ctx, this.setDeviceClassSyncHandler))
 	return err
 }
 
-func (this *Controller) deleteDeviceClassSyncHandler(c models.DeviceClass) error {
+func (this *Controller) deleteDeviceClassSyncHandler(ctx context.Context, c models.DeviceClass) error {
 	return this.publisher.PublishDeviceClassDelete(c.Id)
 }
 
-func (this *Controller) DeleteDeviceClass(token string, id string) (error, int) {
+func (this *Controller) DeleteDeviceClass(ctx context.Context, token string, id string) (error, int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -80,21 +82,21 @@ func (this *Controller) DeleteDeviceClass(token string, id string) (error, int) 
 	if !jwtToken.IsAdmin() {
 		return errors.New("token is not an admin"), http.StatusUnauthorized
 	}
-	err, code := this.ValidateDeviceClassDelete(id)
+	err, code := this.ValidateDeviceClassDelete(ctx, id)
 	if err != nil {
 		return err, code
 	}
-	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveDeviceClass(ctx, id, this.deleteDeviceClassSyncHandler)
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.RemoveDeviceClass(ctx, id, withContext(ctx, this.deleteDeviceClassSyncHandler))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) GetDeviceClasses() (result []models.DeviceClass, err error, code int) {
+func (this *Controller) GetDeviceClasses(ctx context.Context) (result []models.DeviceClass, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllDeviceClasses(ctx)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -102,8 +104,8 @@ func (this *Controller) GetDeviceClasses() (result []models.DeviceClass, err err
 	return
 }
 
-func (this *Controller) GetDeviceClass(id string) (result models.DeviceClass, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetDeviceClass(ctx context.Context, id string) (result models.DeviceClass, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetDeviceClass(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -114,7 +116,7 @@ func (this *Controller) GetDeviceClass(id string) (result models.DeviceClass, er
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateDeviceClass(deviceClass models.DeviceClass) (err error, code int) {
+func (this *Controller) ValidateDeviceClass(ctx context.Context, deviceClass models.DeviceClass) (err error, code int) {
 	if deviceClass.Id == "" {
 		return errors.New("missing device class id"), http.StatusBadRequest
 	}
@@ -127,9 +129,9 @@ func (this *Controller) ValidateDeviceClass(deviceClass models.DeviceClass) (err
 	return nil, http.StatusOK
 }
 
-func (this *Controller) GetDeviceClassesWithControllingFunctions() (result []models.DeviceClass, err error, code int) {
+func (this *Controller) GetDeviceClassesWithControllingFunctions(ctx context.Context) (result []models.DeviceClass, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllDeviceClassesUsedWithControllingFunctions(ctx)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -137,8 +139,8 @@ func (this *Controller) GetDeviceClassesWithControllingFunctions() (result []mod
 	return
 }
 
-func (this *Controller) ValidateDeviceClassDelete(id string) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateDeviceClassDelete(ctx context.Context, id string) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	isUsed, where, err := this.db.DeviceClassIsUsed(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError

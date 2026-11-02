@@ -18,11 +18,12 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"net/http"
-	"strconv"
 )
 
 func init() {
@@ -88,14 +89,14 @@ func (this *InvalidElements) DeviceTypes(config configuration.Config, router *ht
 			return
 		}
 
-		list, err, code := control.ListDeviceTypesV2(util.GetAuthToken(request), limit, offset, sort, nil, false, true)
+		list, err, code := control.ListDeviceTypesV2(request.Context(), util.GetAuthToken(request), limit, offset, sort, nil, false, true)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
 		}
 		result := []ValidationError{}
 		for _, e := range list {
-			err, code = control.ValidateDeviceType(e, options)
+			err, code = control.ValidateDeviceType(request.Context(), e, options)
 			if err != nil {
 				if code != http.StatusBadRequest {
 					http.Error(writer, err.Error(), code)

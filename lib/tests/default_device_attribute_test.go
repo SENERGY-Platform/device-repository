@@ -18,15 +18,16 @@ package tests
 
 import (
 	"context"
+	"reflect"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
-	"reflect"
-	"sync"
-	"testing"
-	"time"
 )
 
 func TestDefaultDeviceAttribute(t *testing.T) {
@@ -64,7 +65,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 
 	t.Run("create device-type", func(t *testing.T) {
 		// Create Protocol
-		protocol, err, _ := c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		protocol, err, _ := c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:      "urn:test:protocol:test",
 			Name:    "test",
 			Handler: "test",
@@ -80,7 +81,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 			return
 		}
 
-		dt, err, _ = c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		dt, err, _ = c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Name: "test",
 			Services: []models.Service{
 				{
@@ -100,7 +101,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 	var d1, d2, d3, d4 models.Device
 
 	t.Run("create devices", func(t *testing.T) {
-		d1, err, _ = c.CreateDevice(client.InternalAdminToken, models.Device{
+		d1, err, _ = c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 			LocalId:      "d1",
 			Name:         "d1",
 			Attributes:   nil,
@@ -111,7 +112,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 			return
 		}
 
-		d2, err, _ = c.CreateDevice(client.InternalAdminToken, models.Device{
+		d2, err, _ = c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 			LocalId:      "d2",
 			Name:         "d2",
 			DeviceTypeId: dt.Id,
@@ -128,7 +129,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 			return
 		}
 
-		d3, err, _ = c.CreateDevice(client.InternalAdminToken, models.Device{
+		d3, err, _ = c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 			LocalId:      "d3",
 			Name:         "d3",
 			DeviceTypeId: dt.Id,
@@ -147,7 +148,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 
 		const SecondOwnerToken = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwOGM0N2E4OC0yYzc5LTQyMGYtODEwNC02NWJkOWViYmU0MWUiLCJleHAiOjE1NDY1MDcyMzMsIm5iZiI6MCwiaWF0IjoxNTQ2NTA3MTczLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDEvYXV0aC9yZWFsbXMvbWFzdGVyIiwiYXVkIjoiZnJvbnRlbmQiLCJzdWIiOiJzZWNvbmRPd25lciIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZyb250ZW5kIiwibm9uY2UiOiI5MmM0M2M5NS03NWIwLTQ2Y2YtODBhZS00NWRkOTczYjRiN2YiLCJhdXRoX3RpbWUiOjE1NDY1MDcwMDksInNlc3Npb25fc3RhdGUiOiI1ZGY5MjhmNC0wOGYwLTRlYjktOWI2MC0zYTBhZTIyZWZjNzMiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1yZWFsbSIsInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInJvbGVzIjpbInVzZXIiXX0.cq8YeUuR0jSsXCEzp634fTzNbGkq_B8KbVrwBPgceJ4`
 
-		d4, err, _ = c.CreateDevice(SecondOwnerToken, models.Device{
+		d4, err, _ = c.CreateDevice(context.Background(), SecondOwnerToken, models.Device{
 			LocalId:      "d4",
 			Name:         "d4",
 			Attributes:   nil,
@@ -161,7 +162,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 	})
 
 	t.Run("set default device attribute", func(t *testing.T) {
-		err, _ = c.SetDefaultDeviceAttributes(client.InternalAdminToken, []models.Attribute{
+		err, _ = c.SetDefaultDeviceAttributes(context.Background(), client.InternalAdminToken, []models.Attribute{
 			{
 				Key:   "a2",
 				Value: "da2",
@@ -282,7 +283,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 
 	t.Run("check default device attribute", func(t *testing.T) {
 		t.Run("list extended", func(t *testing.T) {
-			result, _, err, _ := c.ListExtendedDevices(client.InternalAdminToken, client.ExtendedDeviceListOptions{SortBy: "name.asc"})
+			result, _, err, _ := c.ListExtendedDevices(context.Background(), client.InternalAdminToken, client.ExtendedDeviceListOptions{SortBy: "name.asc"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -293,7 +294,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 			}
 		})
 		t.Run("list", func(t *testing.T) {
-			result, err, _ := c.ListDevices(client.InternalAdminToken, client.DeviceListOptions{SortBy: "name.asc"})
+			result, err, _ := c.ListDevices(context.Background(), client.InternalAdminToken, client.DeviceListOptions{SortBy: "name.asc"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -306,7 +307,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 		t.Run("get", func(t *testing.T) {
 			for i, d := range expected {
 				t.Run(d.Name, func(t *testing.T) {
-					result, err, _ := c.ReadDevice(d.Id, client.InternalAdminToken, models.Read)
+					result, err, _ := c.ReadDevice(context.Background(), d.Id, client.InternalAdminToken, models.Read)
 					if err != nil {
 						t.Error(err)
 						return
@@ -321,7 +322,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 		t.Run("get extended", func(t *testing.T) {
 			for i, d := range expected {
 				t.Run(d.Name, func(t *testing.T) {
-					result, err, _ := c.ReadExtendedDevice(d.Id, client.InternalAdminToken, models.Read, false)
+					result, err, _ := c.ReadExtendedDevice(context.Background(), d.Id, client.InternalAdminToken, models.Read, false)
 					if err != nil {
 						t.Error(err)
 						return
@@ -335,7 +336,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 		})
 
 		t.Run("set default attr key", func(t *testing.T) {
-			_, err, _ = c.SetDevice(client.InternalAdminToken, models.Device{
+			_, err, _ = c.SetDevice(context.Background(), client.InternalAdminToken, models.Device{
 				Id:           d2.Id,
 				LocalId:      d2.LocalId,
 				Name:         d2.Name,
@@ -369,7 +370,7 @@ func TestDefaultDeviceAttribute(t *testing.T) {
 				return
 			}
 
-			result, err, _ := c.ReadDevice(d2.Id, client.InternalAdminToken, models.Read)
+			result, err, _ := c.ReadDevice(context.Background(), d2.Id, client.InternalAdminToken, models.Read)
 			if err != nil {
 				t.Error(err)
 				return

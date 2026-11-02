@@ -93,7 +93,7 @@ func (this *AspectClassEndpoints) ListAspectClasses(config configuration.Config,
 			listoptions.SortBy = "name.asc"
 		}
 
-		result, total, err, errCode := control.ListAspectClasses(listoptions)
+		result, total, err, errCode := control.ListAspectClasses(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -126,7 +126,7 @@ func (this *AspectClassEndpoints) ListAspectClasses(config configuration.Config,
 func (this *AspectClassEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /aspect-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetAspectClass(id)
+		result, err, errCode := control.GetAspectClass(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -169,7 +169,7 @@ func (this *AspectClassEndpoints) Validate(config configuration.Config, router *
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateAspectClass(aspectClass)
+		err, code := control.ValidateAspectClass(request.Context(), aspectClass)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -203,7 +203,7 @@ func (this *AspectClassEndpoints) Delete(config configuration.Config, router *ht
 			}
 		}
 		if dryRun {
-			err, code := control.ValidateAspectClassDelete(id)
+			err, code := control.ValidateAspectClassDelete(request.Context(), id)
 			if err != nil {
 				http.Error(writer, err.Error(), code)
 				return
@@ -212,7 +212,7 @@ func (this *AspectClassEndpoints) Delete(config configuration.Config, router *ht
 			return
 		}
 		token := util.GetAuthToken(request)
-		err, code := control.DeleteAspectClass(token, id)
+		err, code := control.DeleteAspectClass(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -245,7 +245,7 @@ func (this *AspectClassEndpoints) Create(config configuration.Config, router *ht
 		}
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetAspectClass(token, aspectClass)
+		result, err, errCode := control.SetAspectClass(request.Context(), token, aspectClass)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -291,7 +291,7 @@ func (this *AspectClassEndpoints) Set(config configuration.Config, router *http.
 			return
 		}
 
-		result, err, errCode := control.SetAspectClass(token, aspectClass)
+		result, err, errCode := control.SetAspectClass(request.Context(), token, aspectClass)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

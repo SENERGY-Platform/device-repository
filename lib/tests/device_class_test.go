@@ -19,16 +19,17 @@ package tests
 import (
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestListControllingDeviceClasses(t *testing.T) {
@@ -64,7 +65,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
 
 	t.Run("create device-classes", func(t *testing.T) {
-		_, err, _ := c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{
+		_, err, _ := c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{
 			Id:   "a",
 			Name: "a",
 		})
@@ -72,7 +73,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{
 			Id:   "b",
 			Name: "b",
 		})
@@ -80,7 +81,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{
 			Id:   "c",
 			Name: "c",
 		})
@@ -91,7 +92,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	})
 
 	t.Run("create functions", func(t *testing.T) {
-		_, err, _ := c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ := c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          models.URN_PREFIX + "controlling-function:f1",
 			Name:        "f1",
 			DisplayName: "f1",
@@ -101,7 +102,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          models.URN_PREFIX + "measuring-function:f2",
 			Name:        "f2",
 			DisplayName: "f2",
@@ -114,7 +115,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	})
 
 	t.Run("create protocols", func(t *testing.T) {
-		_, err, _ := c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ := c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:      "p1",
 			Name:    "p1",
 			Handler: "p1",
@@ -130,7 +131,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	})
 
 	t.Run("create aspect", func(t *testing.T) {
-		_, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{
+		_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id:   "a1",
 			Name: "a1",
 		})
@@ -141,7 +142,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	})
 
 	t.Run("create device-types", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Id:   "dt1",
 			Name: "dt1",
 			Services: []models.Service{
@@ -172,7 +173,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 			return
 		}
 
-		_, err, _ = c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		_, err, _ = c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Id:   "dt2",
 			Name: "dt2",
 			Services: []models.Service{
@@ -233,7 +234,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	})
 
 	t.Run("list controlling functions", func(t *testing.T) {
-		dcList, _, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{
+		dcList, _, err, _ := c.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{
 			UsedWithControllingFunction: true,
 		})
 		if err != nil {
@@ -251,7 +252,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	})
 
 	t.Run("list controlling functions filtered by ids (included)", func(t *testing.T) {
-		dcList, _, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{
+		dcList, _, err, _ := c.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{
 			Ids:                         []string{"a", "b", "c"},
 			UsedWithControllingFunction: true,
 		})
@@ -270,7 +271,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	})
 
 	t.Run("list controlling functions filtered by ids (excluded)", func(t *testing.T) {
-		dcList, _, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{
+		dcList, _, err, _ := c.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{
 			Ids:                         []string{"b", "c"},
 			UsedWithControllingFunction: true,
 		})

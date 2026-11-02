@@ -19,6 +19,13 @@ package tests
 import (
 	"context"
 	"errors"
+	"log"
+	"reflect"
+	"sort"
+	"strconv"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib"
 	devicerepo "github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
@@ -28,12 +35,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/manager_legacy/auth"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"log"
-	"reflect"
-	"sort"
-	"strconv"
-	"sync"
-	"testing"
 )
 
 func TestUserDelete(t *testing.T) {
@@ -94,7 +95,7 @@ func TestUserDelete(t *testing.T) {
 
 	dt := models.DeviceType{}
 	t.Run("create device-type", func(t *testing.T) {
-		protocol, err, _ := c.SetProtocol(user1a.Jwt(), models.Protocol{
+		protocol, err, _ := c.SetProtocol(context.Background(), user1a.Jwt(), models.Protocol{
 			Name:             "p2",
 			Handler:          "ph1",
 			ProtocolSegments: []models.ProtocolSegment{{Name: "ps2"}},
@@ -104,7 +105,7 @@ func TestUserDelete(t *testing.T) {
 			return
 		}
 
-		dt, err, _ = c.SetDeviceType(user1a.Jwt(), models.DeviceType{
+		dt, err, _ = c.SetDeviceType(context.Background(), user1a.Jwt(), models.DeviceType{
 			Name:          "foo",
 			DeviceClassId: "dc1",
 			Services: []models.Service{
@@ -142,7 +143,7 @@ func TestUserDelete(t *testing.T) {
 				Attributes:   nil,
 				DeviceTypeId: dt.Id,
 			}
-			_, err, _ = c.SetDevice(user1a.Jwt(), device, model.DeviceUpdateOptions{})
+			_, err, _ = c.SetDevice(context.Background(), user1a.Jwt(), device, model.DeviceUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -167,7 +168,7 @@ func TestUserDelete(t *testing.T) {
 				DeviceTypeId: dt.Id,
 			}
 			log.Println("test create device", id)
-			_, err, _ = c.SetDevice(user2a.Jwt(), device, model.DeviceUpdateOptions{})
+			_, err, _ = c.SetDevice(context.Background(), user2a.Jwt(), device, model.DeviceUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -223,7 +224,7 @@ func TestUserDelete(t *testing.T) {
 	t.Run("check user2 before delete", checkUserDevices(conf, user2, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39}))
 
 	t.Run("delete user1", func(t *testing.T) {
-		err, _ = c.DeleteUser(client.InternalAdminToken, user1.GetUserId())
+		err, _ = c.DeleteUser(context.Background(), client.InternalAdminToken, user1.GetUserId())
 		if err != nil {
 			t.Error(err)
 			return
@@ -237,7 +238,7 @@ func TestUserDelete(t *testing.T) {
 
 func checkUserDevices(conf configuration.Config, token auth.Token, expectedDeviceIdsAsInt []int) func(t *testing.T) {
 	return func(t *testing.T) {
-		devices, err, _ := devicerepo.NewClient("http://localhost:"+conf.ServerPort, nil).ListDevices(token.Jwt(), devicerepo.DeviceListOptions{Limit: 100})
+		devices, err, _ := devicerepo.NewClient("http://localhost:"+conf.ServerPort, nil).ListDevices(context.Background(), token.Jwt(), devicerepo.DeviceListOptions{Limit: 100})
 		if err != nil {
 			t.Error(err)
 			return

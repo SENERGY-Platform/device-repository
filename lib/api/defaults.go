@@ -18,10 +18,11 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
-	"net/http"
 )
 
 func init() {
@@ -45,7 +46,7 @@ type DefaultsEndpoints struct{}
 // @Router       /defaults/devices/attributes [GET]
 func (this *DefaultsEndpoints) GetDefaultDeviceAttributes(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /defaults/devices/attributes", func(writer http.ResponseWriter, request *http.Request) {
-		result, err, errCode := control.GetDefaultDeviceAttributes(util.GetAuthToken(request))
+		result, err, errCode := control.GetDefaultDeviceAttributes(request.Context(), util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -82,7 +83,7 @@ func (this *DefaultsEndpoints) SetDefaultDeviceAttributes(config configuration.C
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, errCode := control.SetDefaultDeviceAttributes(util.GetAuthToken(request), attributes)
+		err, errCode := control.SetDefaultDeviceAttributes(request.Context(), util.GetAuthToken(request), attributes)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

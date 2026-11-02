@@ -17,12 +17,14 @@
 package repo_legacy
 
 import (
+	"context"
+	"reflect"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/models/go/models"
-	"reflect"
-	"testing"
 )
 
 func testCharacteristicList(t *testing.T, conf configuration.Config) {
@@ -68,7 +70,7 @@ func testCharacteristicList(t *testing.T, conf configuration.Config) {
 	t.Run("create characteristics", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		for _, characteristic := range characteristics {
-			_, err, _ := c.SetCharacteristic(AdminToken, characteristic)
+			_, err, _ := c.SetCharacteristic(context.Background(), AdminToken, characteristic)
 			if err != nil {
 				t.Error(err)
 				return
@@ -77,7 +79,7 @@ func testCharacteristicList(t *testing.T, conf configuration.Config) {
 	})
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list all characteristics", func(t *testing.T) {
-		list, total, err, _ := c.ListCharacteristics(client.CharacteristicListOptions{})
+		list, total, err, _ := c.ListCharacteristics(context.Background(), client.CharacteristicListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -92,7 +94,7 @@ func testCharacteristicList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list b characteristics", func(t *testing.T) {
-		list, total, err, _ := c.ListCharacteristics(client.CharacteristicListOptions{Search: "b"})
+		list, total, err, _ := c.ListCharacteristics(context.Background(), client.CharacteristicListOptions{Search: "b"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -107,7 +109,7 @@ func testCharacteristicList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list a1,b3 characteristics", func(t *testing.T) {
-		list, total, err, _ := c.ListCharacteristics(client.CharacteristicListOptions{Ids: []string{"a1", "b3"}})
+		list, total, err, _ := c.ListCharacteristics(context.Background(), client.CharacteristicListOptions{Ids: []string{"a1", "b3"}})
 		if err != nil {
 			t.Error(err)
 			return

@@ -17,11 +17,13 @@
 package repo_legacy
 
 import (
+	"context"
+	"reflect"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
-	"reflect"
-	"testing"
 )
 
 func testListDeviceClasses(t *testing.T, conf configuration.Config) {
@@ -52,7 +54,7 @@ func testListDeviceClasses(t *testing.T, conf configuration.Config) {
 
 	t.Run("create device-classes", func(t *testing.T) {
 		for _, dc := range deviceClasses {
-			_, err, _ := c.SetDeviceClass(AdminToken, dc)
+			_, err, _ := c.SetDeviceClass(context.Background(), AdminToken, dc)
 			if err != nil {
 				t.Error(err)
 				return
@@ -61,7 +63,7 @@ func testListDeviceClasses(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("list all device-classes", func(t *testing.T) {
-		list, total, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{})
+		list, total, err, _ := c.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -77,7 +79,7 @@ func testListDeviceClasses(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("search c3 device-classes", func(t *testing.T) {
-		list, total, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{Search: "c3"})
+		list, total, err, _ := c.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{Search: "c3"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -93,7 +95,7 @@ func testListDeviceClasses(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("list c2,c4 device-classes", func(t *testing.T) {
-		list, total, err, _ := c.ListDeviceClasses(client.DeviceClassListOptions{Ids: []string{"c2", "c4"}})
+		list, total, err, _ := c.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{Ids: []string{"c2", "c4"}})
 		if err != nil {
 			t.Error(err)
 			return

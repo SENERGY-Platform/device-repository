@@ -18,11 +18,12 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 )
 
 func init() {
@@ -74,7 +75,7 @@ func (this *DeviceTypeSelectableEndpoints) Query(config configuration.Config, ro
 				return
 			}
 		}
-		result, err, errCode := control.GetDeviceTypeSelectables(query, pathPrefix, interactionsFilter, includeModified)
+		result, err, errCode := control.GetDeviceTypeSelectables(request.Context(), query, pathPrefix, interactionsFilter, includeModified)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -135,7 +136,7 @@ func (this *DeviceTypeSelectableEndpoints) QueryV2(config configuration.Config, 
 			}
 		}
 
-		result, err, errCode := control.GetDeviceTypeSelectablesV2(query, pathPrefix, includeModified, servicesMustMatchAllCriteria)
+		result, err, errCode := control.GetDeviceTypeSelectablesV2(request.Context(), query, pathPrefix, includeModified, servicesMustMatchAllCriteria)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

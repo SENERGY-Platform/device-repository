@@ -17,17 +17,19 @@
 package client
 
 import (
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
+	"context"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 const extendedHubPath = "extended-hubs"
 
-func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (result []models.ExtendedHub, total int64, err error, errCode int) {
+func (c *Client) ListExtendedHubs(ctx context.Context, token string, options model.HubListOptions) (result []models.ExtendedHub, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
@@ -60,7 +62,7 @@ func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (r
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedHubPath+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/"+extendedHubPath+queryString, nil)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
@@ -68,7 +70,7 @@ func (c *Client) ListExtendedHubs(token string, options model.HubListOptions) (r
 	return doWithTotalInResult[[]models.ExtendedHub](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadExtendedHub(id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) {
+func (c *Client) ReadExtendedHub(ctx context.Context, id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -77,7 +79,7 @@ func (c *Client) ReadExtendedHub(id string, token string, action model.AuthActio
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedHubPath+"/"+id+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/"+extendedHubPath+"/"+id+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

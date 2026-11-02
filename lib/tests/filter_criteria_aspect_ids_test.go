@@ -83,13 +83,13 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 
 	t.Run("create metadata", func(t *testing.T) {
 		for _, aspectId := range []string{airAspect, insideAspect, outsideAspect} {
-			_, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{Id: aspectId, Name: aspectId})
+			_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{Id: aspectId, Name: aspectId})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
-		_, err, _ := c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ := c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          measuringFunction,
 			Name:        "getTemperature",
 			DisplayName: "getTemperature",
@@ -99,12 +99,12 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:               "p1",
 			Name:             "p1",
 			Handler:          "p1",
@@ -145,7 +145,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 
 	selectableDeviceTypeIds := func(t *testing.T, criteria []model.FilterCriteria) []string {
 		t.Helper()
-		selectables, err, _ := c.GetDeviceTypeSelectablesV2(criteria, "", false, false)
+		selectables, err, _ := c.GetDeviceTypeSelectablesV2(context.Background(), criteria, "", false, false)
 		if err != nil {
 			t.Error(err)
 			return nil
@@ -164,7 +164,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 			"dt_both": {airAspect, insideAspect},
 			"dt_air":  {airAspect},
 		} {
-			_, err, _ := c.SetDeviceType(client.InternalAdminToken, deviceType(id, aspectIds), client.DeviceTypeUpdateOptions{})
+			_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, deviceType(id, aspectIds), client.DeviceTypeUpdateOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -204,7 +204,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 	})
 
 	t.Run("selectables: a path option names only the matched aspects", func(t *testing.T) {
-		selectables, err, _ := c.GetDeviceTypeSelectables([]model.FilterCriteria{{
+		selectables, err, _ := c.GetDeviceTypeSelectables(context.Background(), []model.FilterCriteria{{
 			FunctionId: measuringFunction,
 			AspectIds:  []string{airAspect},
 		}}, "", nil, false)
@@ -228,7 +228,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 	})
 
 	t.Run("selectables: a path option lists every matched aspect once", func(t *testing.T) {
-		selectables, err, _ := c.GetDeviceTypeSelectablesV2([]model.FilterCriteria{{
+		selectables, err, _ := c.GetDeviceTypeSelectablesV2(context.Background(), []model.FilterCriteria{{
 			FunctionId: measuringFunction,
 			AspectIds:  []string{airAspect, insideAspect},
 		}}, "", false, false)
@@ -260,7 +260,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 
 	t.Run("device-groups", func(t *testing.T) {
 		for _, deviceTypeId := range []string{"dt_both", "dt_air"} {
-			device, err, _ := c.CreateDevice(client.InternalAdminToken, models.Device{
+			device, err, _ := c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 				LocalId:      "d_" + deviceTypeId,
 				Name:         "d_" + deviceTypeId,
 				DeviceTypeId: deviceTypeId,
@@ -274,7 +274,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 
 		listGroupIds := func(t *testing.T, criteria []model.FilterCriteria) []string {
 			t.Helper()
-			groups, _, err, _ := c.ListDeviceGroups(client.InternalAdminToken, client.DeviceGroupListOptions{Criteria: criteria})
+			groups, _, err, _ := c.ListDeviceGroups(context.Background(), client.InternalAdminToken, client.DeviceGroupListOptions{Criteria: criteria})
 			if err != nil {
 				t.Error(err)
 				return nil
@@ -288,7 +288,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 		}
 
 		t.Run("generated criteria carry both aspect fields", func(t *testing.T) {
-			group, err, _ := c.ReadDeviceGroup(model.DeviceIdToGeneratedDeviceGroupId(devices["dt_both"].Id), client.InternalAdminToken, false)
+			group, err, _ := c.ReadDeviceGroup(context.Background(), model.DeviceIdToGeneratedDeviceGroupId(devices["dt_both"].Id), client.InternalAdminToken, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -335,7 +335,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 
 		t.Run("a stored criteria may name several aspects", func(t *testing.T) {
 			var err error
-			multiAspectGroup, err, _ = c.SetDeviceGroup(client.InternalAdminToken, models.DeviceGroup{
+			multiAspectGroup, err, _ = c.SetDeviceGroup(context.Background(), client.InternalAdminToken, models.DeviceGroup{
 				Name:      "group with a multi aspect criteria",
 				DeviceIds: []string{devices["dt_both"].Id},
 				Criteria:  multiAspectCriteria,
@@ -344,7 +344,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			stored, err, _ := c.ReadDeviceGroup(multiAspectGroup.Id, client.InternalAdminToken, false)
+			stored, err, _ := c.ReadDeviceGroup(context.Background(), multiAspectGroup.Id, client.InternalAdminToken, false)
 			if err != nil {
 				t.Error(err)
 				return
@@ -360,7 +360,7 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 		})
 
 		t.Run("a device that carries only one of the aspects is refused", func(t *testing.T) {
-			_, err, code := c.SetDeviceGroup(client.InternalAdminToken, models.DeviceGroup{
+			_, err, code := c.SetDeviceGroup(context.Background(), client.InternalAdminToken, models.DeviceGroup{
 				Name:      "group with a device that misses an aspect",
 				DeviceIds: []string{devices["dt_air"].Id},
 				Criteria:  multiAspectCriteria,

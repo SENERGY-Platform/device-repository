@@ -90,7 +90,7 @@ func TestGraphPublishing(t *testing.T) {
 		Edges:      []models.Edge{{Id: "1->2", FromNodeId: "1", ToNodeId: "2", Weight: 100}},
 	}
 
-	graph, err, _ := ctrl.SetGraph(graphTestUserJwt, graph)
+	graph, err, _ := ctrl.SetGraph(context.Background(), graphTestUserJwt, graph)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +102,7 @@ func TestGraphPublishing(t *testing.T) {
 	}
 
 	graph.Attributes = []models.Attribute{{Key: "name", Value: "g1-renamed"}}
-	graph, err, _ = ctrl.SetGraph(graphTestUserJwt, graph)
+	graph, err, _ = ctrl.SetGraph(context.Background(), graphTestUserJwt, graph)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +110,7 @@ func TestGraphPublishing(t *testing.T) {
 		t.Errorf("update was not published:\n%#v\n%#v", p.published, graph)
 	}
 
-	err, _ = ctrl.DeleteGraph(client.InternalAdminToken, graph.Id)
+	err, _ = ctrl.DeleteGraph(context.Background(), client.InternalAdminToken, graph.Id)
 	if err != nil {
 		t.Fatal(err)
 	}

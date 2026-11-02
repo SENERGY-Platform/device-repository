@@ -99,7 +99,7 @@ func TestExport(t *testing.T) {
 	devicegroups := []models.DeviceGroup{}
 	t.Run("create", func(t *testing.T) {
 		t.Run("protocol", func(t *testing.T) {
-			result, err, _ := c.SetProtocol(client.InternalAdminToken, models.Protocol{
+			result, err, _ := c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 				Name:    "test-protocol",
 				Handler: "test-handler",
 				ProtocolSegments: []models.ProtocolSegment{
@@ -117,7 +117,7 @@ func TestExport(t *testing.T) {
 			protocolId = result.Id
 			protocols = append(protocols, result)
 
-			result, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+			result, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 				Name:    "test-protocol-2",
 				Handler: "test-handler-2",
 				ProtocolSegments: []models.ProtocolSegment{
@@ -136,7 +136,7 @@ func TestExport(t *testing.T) {
 		})
 
 		t.Run("concepts", func(t *testing.T) {
-			temp, err, _ := c.SetConcept(client.InternalAdminToken, models.Concept{
+			temp, err, _ := c.SetConcept(context.Background(), client.InternalAdminToken, models.Concept{
 				Name: "test-concept",
 			})
 			if err != nil {
@@ -144,7 +144,7 @@ func TestExport(t *testing.T) {
 				return
 			}
 			concepts = append(concepts, temp)
-			temp, err, _ = c.SetConcept(client.InternalAdminToken, models.Concept{
+			temp, err, _ = c.SetConcept(context.Background(), client.InternalAdminToken, models.Concept{
 				Name: "test-concept-2",
 			})
 			if err != nil {
@@ -156,7 +156,7 @@ func TestExport(t *testing.T) {
 			//a concept owns a Get and a Set function, so each one adds two to the export
 			for _, concept := range concepts {
 				for _, rdfType := range model.ConceptFunctionRdfTypes {
-					list, _, err, _ := c.ListFunctions(client.FunctionListOptions{RdfType: rdfType, Limit: 1000})
+					list, _, err, _ := c.ListFunctions(context.Background(), client.FunctionListOptions{RdfType: rdfType, Limit: 1000})
 					if err != nil {
 						t.Error(err)
 						return
@@ -171,7 +171,7 @@ func TestExport(t *testing.T) {
 		})
 
 		t.Run("functions", func(t *testing.T) {
-			temp, err, _ := c.SetFunction(client.InternalAdminToken, models.Function{
+			temp, err, _ := c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 				Name:      "test-function",
 				ConceptId: concepts[0].Id,
 				RdfType:   models.SES_ONTOLOGY_CONTROLLING_FUNCTION,
@@ -181,7 +181,7 @@ func TestExport(t *testing.T) {
 				return
 			}
 			functions = append(functions, temp)
-			temp, err, _ = c.SetFunction(client.InternalAdminToken, models.Function{
+			temp, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 				Name:      "test-function-2",
 				ConceptId: concepts[0].Id,
 				RdfType:   models.SES_ONTOLOGY_CONTROLLING_FUNCTION,
@@ -194,7 +194,7 @@ func TestExport(t *testing.T) {
 		})
 
 		t.Run("aspects", func(t *testing.T) {
-			temp, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{
+			temp, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 				Name: "test-aspect",
 				SubAspects: []models.Aspect{
 					{Name: "sub1"},
@@ -206,7 +206,7 @@ func TestExport(t *testing.T) {
 				return
 			}
 			aspects = append(aspects, temp)
-			temp, err, _ = c.SetAspect(client.InternalAdminToken, models.Aspect{
+			temp, err, _ = c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 				Name: "test-aspect-2",
 			})
 			if err != nil {
@@ -217,7 +217,7 @@ func TestExport(t *testing.T) {
 		})
 
 		t.Run("device-types", func(t *testing.T) {
-			temp, err, _ := c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+			temp, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 				Name: "test-dt",
 				Services: []models.Service{
 					{
@@ -233,7 +233,7 @@ func TestExport(t *testing.T) {
 				return
 			}
 			deviceTypes = append(deviceTypes, temp)
-			temp, err, _ = c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+			temp, err, _ = c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 				Name: "test-dt-2",
 				Services: []models.Service{
 					{
@@ -252,7 +252,7 @@ func TestExport(t *testing.T) {
 		})
 
 		t.Run("devices", func(t *testing.T) {
-			temp, err, _ := c.CreateDevice(client.InternalAdminToken, models.Device{
+			temp, err, _ := c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 				LocalId:      "d1",
 				Name:         "d1",
 				Attributes:   nil,
@@ -263,7 +263,7 @@ func TestExport(t *testing.T) {
 				return
 			}
 			devices = append(devices, temp)
-			temp, err, _ = c.CreateDevice(client.InternalAdminToken, models.Device{
+			temp, err, _ = c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 				LocalId:      "d2",
 				Name:         "d2",
 				Attributes:   nil,
@@ -278,7 +278,7 @@ func TestExport(t *testing.T) {
 	})
 
 	t.Run("get generated device-groups", func(t *testing.T) {
-		temp, _, err, _ := c.ListDeviceGroups(client.InternalAdminToken, client.DeviceGroupListOptions{})
+		temp, _, err, _ := c.ListDeviceGroups(context.Background(), client.InternalAdminToken, client.DeviceGroupListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -288,7 +288,7 @@ func TestExport(t *testing.T) {
 
 	t.Run("export", func(t *testing.T) {
 		t.Run("default", func(t *testing.T) {
-			export, err, _ := c.Export(client.InternalAdminToken, client.ImportExportOptions{})
+			export, err, _ := c.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -306,7 +306,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("with devices", func(t *testing.T) {
-			export, err, _ := c.Export(client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
+			export, err, _ := c.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
 			if err != nil {
 				t.Error(err)
 				return
@@ -348,7 +348,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only device-types", func(t *testing.T) {
-			export, err, _ := c.Export(client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types"}})
+			export, err, _ := c.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types"}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -362,7 +362,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only first device-type", func(t *testing.T) {
-			export, err, _ := c.Export(client.InternalAdminToken, client.ImportExportOptions{
+			export, err, _ := c.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{
 				FilterResourceTypes: []string{"device-types"},
 				FilterIds:           []string{deviceTypes[0].Id},
 			})
@@ -379,7 +379,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only device-types and functions", func(t *testing.T) {
-			export, err, _ := c.Export(client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types", "functions"}})
+			export, err, _ := c.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types", "functions"}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -394,7 +394,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only first device-type and function", func(t *testing.T) {
-			export, err, _ := c.Export(client.InternalAdminToken, client.ImportExportOptions{
+			export, err, _ := c.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{
 				FilterResourceTypes: []string{"device-types", "functions"},
 				FilterIds:           []string{deviceTypes[0].Id, functions[0].Id},
 			})
@@ -416,7 +416,7 @@ func TestExport(t *testing.T) {
 	c2, _ := initRepo()
 
 	t.Run("import-from only concepts", func(t *testing.T) {
-		err, _ := c2.ImportFrom(client.InternalAdminToken, true, client.ImportFromOptions{
+		err, _ := c2.ImportFrom(context.Background(), client.InternalAdminToken, true, client.ImportFromOptions{
 			RemoteDeviceRepository: "http://localhost:" + config.ServerPort,
 			RemoteAuthToken:        client.InternalAdminToken,
 			FilterResourceTypes:    []string{"concepts"},
@@ -428,7 +428,7 @@ func TestExport(t *testing.T) {
 	})
 
 	t.Run("export after import-from concepts", func(t *testing.T) {
-		export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
+		export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
 		if err != nil {
 			t.Error(err)
 			return
@@ -443,7 +443,7 @@ func TestExport(t *testing.T) {
 	})
 
 	t.Run("import-from only function 0 and aspect 1", func(t *testing.T) {
-		err, _ := c2.ImportFrom(client.InternalAdminToken, true, client.ImportFromOptions{
+		err, _ := c2.ImportFrom(context.Background(), client.InternalAdminToken, true, client.ImportFromOptions{
 			RemoteDeviceRepository: "http://localhost:" + config.ServerPort,
 			RemoteAuthToken:        client.InternalAdminToken,
 			FilterResourceTypes:    []string{"functions", "aspects"},
@@ -456,7 +456,7 @@ func TestExport(t *testing.T) {
 	})
 
 	t.Run("export after import-from function 0 and aspect 1", func(t *testing.T) {
-		export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
+		export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
 		if err != nil {
 			t.Error(err)
 			return
@@ -473,7 +473,7 @@ func TestExport(t *testing.T) {
 	})
 
 	t.Run("import-from all", func(t *testing.T) {
-		err, _ := c2.ImportFrom(client.InternalAdminToken, true, client.ImportFromOptions{
+		err, _ := c2.ImportFrom(context.Background(), client.InternalAdminToken, true, client.ImportFromOptions{
 			RemoteDeviceRepository: "http://localhost:" + config.ServerPort,
 			RemoteAuthToken:        client.InternalAdminToken,
 		})
@@ -485,7 +485,7 @@ func TestExport(t *testing.T) {
 
 	t.Run("export after import-from all", func(t *testing.T) {
 		t.Run("default", func(t *testing.T) {
-			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{})
+			export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -503,7 +503,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("with devices", func(t *testing.T) {
-			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
+			export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{IncludeOwnedInformation: true})
 			if err != nil {
 				t.Error(err)
 				return
@@ -545,7 +545,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only device-types", func(t *testing.T) {
-			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types"}})
+			export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types"}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -559,7 +559,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only first device-type", func(t *testing.T) {
-			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{
+			export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{
 				FilterResourceTypes: []string{"device-types"},
 				FilterIds:           []string{deviceTypes[0].Id},
 			})
@@ -576,7 +576,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only device-types and functions", func(t *testing.T) {
-			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types", "functions"}})
+			export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{FilterResourceTypes: []string{"device-types", "functions"}})
 			if err != nil {
 				t.Error(err)
 				return
@@ -591,7 +591,7 @@ func TestExport(t *testing.T) {
 			}
 		})
 		t.Run("only first device-type and function", func(t *testing.T) {
-			export, err, _ := c2.Export(client.InternalAdminToken, client.ImportExportOptions{
+			export, err, _ := c2.Export(context.Background(), client.InternalAdminToken, client.ImportExportOptions{
 				FilterResourceTypes: []string{"device-types", "functions"},
 				FilterIds:           []string{deviceTypes[0].Id, functions[0].Id},
 			})

@@ -53,8 +53,9 @@ type Config struct {
 	LocationTopic                          string `json:"location_topic"`
 	GraphTopic                             string `json:"graph_topic"`
 	PermissionsV2Url                       string `json:"permissions_v2_url"`
-	MongoUrl                               string `json:"mongo_url"`  //full connection string with scheme; credentials belong in MongoUser/MongoPassword
-	MongoUser                              string `json:"mongo_user"` //empty: no authentication
+	OtelEndpoint                           string `json:"otel_endpoint"` //OTLP gRPC collector for traces; empty: default of gin-middleware/otelx
+	MongoUrl                               string `json:"mongo_url"`     //full connection string with scheme; credentials belong in MongoUser/MongoPassword
+	MongoUser                              string `json:"mongo_user"`    //empty: no authentication
 	MongoPassword                          string `json:"mongo_password" config:"secret"`
 	MongoAuthSource                        string `json:"mongo_auth_source"`
 	MongoDatabase                          string `json:"mongo_database"`

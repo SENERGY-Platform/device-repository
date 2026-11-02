@@ -17,12 +17,14 @@
 package client
 
 import (
-	"github.com/SENERGY-Platform/models/go/models"
+	"context"
 	"net/http"
+
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) GetService(id string) (result models.Service, err error, code int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/services/"+id, nil)
+func (c *Client) GetService(ctx context.Context, id string) (result models.Service, err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/services/"+id, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

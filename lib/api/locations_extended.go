@@ -106,7 +106,7 @@ func (this *ExtendedLocationEndpoints) ListExtended(config configuration.Config,
 			locationListOptions.Permission = model.READ
 		}
 
-		result, total, err, errCode := control.ListExtendedLocations(util.GetAuthToken(request), locationListOptions)
+		result, total, err, errCode := control.ListExtendedLocations(request.Context(), util.GetAuthToken(request), locationListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

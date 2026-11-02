@@ -17,11 +17,8 @@
 package tests
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/manager_legacy/helper"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"net/url"
@@ -29,6 +26,11 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/manager_legacy/helper"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func testConcepts(t *testing.T, conf configuration.Config) {
@@ -169,7 +171,7 @@ func testConcepts(t *testing.T, conf configuration.Config) {
 func deleteConceptFunctions(t *testing.T, conf configuration.Config, conceptId string) {
 	t.Helper()
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-	functions, _, err, _ := c.ListFunctions(client.FunctionListOptions{Limit: 1000})
+	functions, _, err, _ := c.ListFunctions(context.Background(), client.FunctionListOptions{Limit: 1000})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +179,7 @@ func deleteConceptFunctions(t *testing.T, conf configuration.Config, conceptId s
 		if function.ConceptId != conceptId {
 			continue
 		}
-		err, _ = c.DeleteFunction(client.InternalAdminToken, function.Id)
+		err, _ = c.DeleteFunction(context.Background(), client.InternalAdminToken, function.Id)
 		if err != nil {
 			t.Fatal(err)
 		}

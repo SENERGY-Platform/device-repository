@@ -21,14 +21,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestProtocolConstraintInValidation(t *testing.T) {
@@ -44,7 +45,7 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetProtocol(AdminToken, models.Protocol{
+	_, err, _ = c.SetProtocol(context.Background(), AdminToken, models.Protocol{
 		Id:      "p1",
 		Name:    "p1",
 		Handler: "p1",
@@ -58,7 +59,7 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetProtocol(AdminToken, models.Protocol{
+	_, err, _ = c.SetProtocol(context.Background(), AdminToken, models.Protocol{
 		Id:      "p2",
 		Name:    "p2",
 		Handler: "p2",
@@ -73,7 +74,7 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{
 		Id:          "dt1",
 		Name:        "dt1",
 		Description: "",
@@ -92,7 +93,7 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{
 		Id:          "dt2",
 		Name:        "dt2",
 		Description: "",
@@ -193,7 +194,7 @@ func TestDeleteValidations(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceClass(AdminToken, models.DeviceClass{
+	_, err, _ = c.SetDeviceClass(context.Background(), AdminToken, models.DeviceClass{
 		Id:   "used_device_class",
 		Name: "used_device_class",
 	})
@@ -201,7 +202,7 @@ func TestDeleteValidations(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	_, err, _ = c.SetDeviceClass(AdminToken, models.DeviceClass{
+	_, err, _ = c.SetDeviceClass(context.Background(), AdminToken, models.DeviceClass{
 		Id:   "unused_device_class",
 		Name: "unused_device_class",
 	})
@@ -210,7 +211,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetCharacteristic(AdminToken, models.Characteristic{
+	_, err, _ = c.SetCharacteristic(context.Background(), AdminToken, models.Characteristic{
 		Id:   "used_characteristic",
 		Name: "used_characteristic",
 	})
@@ -219,7 +220,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetCharacteristic(AdminToken, models.Characteristic{
+	_, err, _ = c.SetCharacteristic(context.Background(), AdminToken, models.Characteristic{
 		Id:   "used_characteristic_2",
 		Name: "used_characteristic_2",
 	})
@@ -228,7 +229,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetCharacteristic(AdminToken, models.Characteristic{
+	_, err, _ = c.SetCharacteristic(context.Background(), AdminToken, models.Characteristic{
 		Id:   "unused_characteristic",
 		Name: "unused_characteristic",
 	})
@@ -237,7 +238,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetFunction(AdminToken, models.Function{
+	_, err, _ = c.SetFunction(context.Background(), AdminToken, models.Function{
 		Id:        model.CONTROLLING_FUNCTION_PREFIX + "used_function",
 		Name:      "used_function",
 		ConceptId: "used_concept",
@@ -247,7 +248,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetFunction(AdminToken, models.Function{
+	_, err, _ = c.SetFunction(context.Background(), AdminToken, models.Function{
 		Id:        model.MEASURING_FUNCTION_PREFIX + "used_function_2",
 		Name:      "used_function_2",
 		ConceptId: "used_concept",
@@ -257,7 +258,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetFunction(AdminToken, models.Function{
+	_, err, _ = c.SetFunction(context.Background(), AdminToken, models.Function{
 		Id:        model.MEASURING_FUNCTION_PREFIX + "unused_function_2",
 		Name:      "unused_function_2",
 		ConceptId: "used_concept_2",
@@ -267,7 +268,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetFunction(AdminToken, models.Function{
+	_, err, _ = c.SetFunction(context.Background(), AdminToken, models.Function{
 		Id:        model.CONTROLLING_FUNCTION_PREFIX + "unused_function",
 		Name:      "unused_function",
 		ConceptId: "used_concept_2",
@@ -277,7 +278,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetConcept(AdminToken, models.Concept{
+	_, err, _ = c.SetConcept(context.Background(), AdminToken, models.Concept{
 		Id:   "used_concept",
 		Name: "used_concept",
 	})
@@ -286,7 +287,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetConcept(AdminToken, models.Concept{
+	_, err, _ = c.SetConcept(context.Background(), AdminToken, models.Concept{
 		Id:   "used_concept_2",
 		Name: "used_concept_2",
 	})
@@ -295,7 +296,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetConcept(AdminToken, models.Concept{
+	_, err, _ = c.SetConcept(context.Background(), AdminToken, models.Concept{
 		Id:   "unused_concept",
 		Name: "unused_concept",
 	})
@@ -304,7 +305,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetAspect(AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), AdminToken, models.Aspect{
 		Id:   model.URN_PREFIX + "used_root_aspect",
 		Name: "used_root_aspect",
 		SubAspects: []models.Aspect{
@@ -319,7 +320,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetAspect(AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), AdminToken, models.Aspect{
 		Id:   model.URN_PREFIX + "root_aspect",
 		Name: "root_aspect",
 		SubAspects: []models.Aspect{
@@ -334,7 +335,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetAspect(AdminToken, models.Aspect{
+	_, err, _ = c.SetAspect(context.Background(), AdminToken, models.Aspect{
 		Id:   model.URN_PREFIX + "unused_root_aspect",
 		Name: "unused_root_aspect",
 		SubAspects: []models.Aspect{
@@ -349,7 +350,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name,
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name,
 		DeviceClassId: "used_device_class",
 		Services: []models.Service{
 			{

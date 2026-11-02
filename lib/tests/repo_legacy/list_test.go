@@ -18,10 +18,11 @@ package repo_legacy
 
 import (
 	"context"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"net/http"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 )
 
 func TestResourceList(t *testing.T) {
@@ -58,7 +59,7 @@ func TestResourceList(t *testing.T) {
 
 	t.Run("EOF /aspect-nodes/", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, _, code := c.GetAspectNode("")
+		_, _, code := c.GetAspectNode(context.Background(), "")
 		if code != http.StatusNotFound {
 			t.Error(err, code)
 			return

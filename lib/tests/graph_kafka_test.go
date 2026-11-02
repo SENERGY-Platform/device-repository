@@ -93,7 +93,7 @@ func TestGraphKafkaPublish(t *testing.T) {
 	}
 
 	t.Run("create graph", func(t *testing.T) {
-		graph, err, _ = c.SetGraph(userjwt, graph)
+		graph, err, _ = c.SetGraph(context.Background(), userjwt, graph)
 		if err != nil {
 			t.Error(err)
 			return
@@ -124,7 +124,7 @@ func TestGraphKafkaPublish(t *testing.T) {
 
 	t.Run("update is published", func(t *testing.T) {
 		graph.Attributes = []models.Attribute{{Key: "name", Value: "g1-renamed"}}
-		graph, err, _ = c.SetGraph(userjwt, graph)
+		graph, err, _ = c.SetGraph(context.Background(), userjwt, graph)
 		if err != nil {
 			t.Error(err)
 			return
@@ -140,7 +140,7 @@ func TestGraphKafkaPublish(t *testing.T) {
 	})
 
 	t.Run("delete is published", func(t *testing.T) {
-		err, _ := c.DeleteGraph(userjwt, graph.Id)
+		err, _ := c.DeleteGraph(context.Background(), userjwt, graph.Id)
 		if err != nil {
 			t.Error(err)
 			return

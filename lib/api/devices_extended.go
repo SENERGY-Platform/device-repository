@@ -177,7 +177,7 @@ func (this *ExtendedDeviceEndpoints) List(config configuration.Config, router *h
 			deviceListOptions.DeviceAttributeBlacklist = blacklist
 		}
 
-		result, total, err, errCode := control.ListExtendedDevices(util.GetAuthToken(request), deviceListOptions)
+		result, total, err, errCode := control.ListExtendedDevices(request.Context(), util.GetAuthToken(request), deviceListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -235,9 +235,9 @@ func (this *ExtendedDeviceEndpoints) Get(config configuration.Config, router *ht
 		var result models.ExtendedDevice
 		var errCode int
 		if as == "local_id" {
-			result, err, errCode = control.ReadExtendedDeviceByLocalId(ownerId, id, util.GetAuthToken(request), permission, fulldt)
+			result, err, errCode = control.ReadExtendedDeviceByLocalId(request.Context(), ownerId, id, util.GetAuthToken(request), permission, fulldt)
 		} else {
-			result, err, errCode = control.ReadExtendedDevice(id, util.GetAuthToken(request), permission, fulldt)
+			result, err, errCode = control.ReadExtendedDevice(request.Context(), id, util.GetAuthToken(request), permission, fulldt)
 		}
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)

@@ -77,13 +77,13 @@ func TestContentVariableAspectIds(t *testing.T) {
 
 	t.Run("create metadata", func(t *testing.T) {
 		for _, aspectId := range []string{airAspect, waterAspect} {
-			_, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{Id: aspectId, Name: aspectId})
+			_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{Id: aspectId, Name: aspectId})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
-		_, err, _ := c.SetFunction(client.InternalAdminToken, models.Function{
+		_, err, _ := c.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Id:          measuringFunction,
 			Name:        "getTemperature",
 			DisplayName: "getTemperature",
@@ -93,12 +93,12 @@ func TestContentVariableAspectIds(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "dc1"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:               "p1",
 			Name:             "p1",
 			Handler:          "p1",
@@ -133,7 +133,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 
 	readVariable := func(t *testing.T, deviceTypeId string) models.ContentVariable {
 		t.Helper()
-		dt, err, _ := c.ReadDeviceType(deviceTypeId, client.InternalAdminToken)
+		dt, err, _ := c.ReadDeviceType(context.Background(), deviceTypeId, client.InternalAdminToken)
 		if err != nil {
 			t.Error(err)
 			return models.ContentVariable{}
@@ -146,7 +146,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 	}
 
 	t.Run("write deprecated aspect_id only", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken, deviceType("dt_deprecated", models.ContentVariable{
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, deviceType("dt_deprecated", models.ContentVariable{
 			Id:         "dt_deprecated_cv1",
 			Name:       "temperature",
 			Type:       models.String,
@@ -167,7 +167,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 	})
 
 	t.Run("write aspect_ids only", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken, deviceType("dt_aspectids", models.ContentVariable{
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, deviceType("dt_aspectids", models.ContentVariable{
 			Id:         "dt_aspectids_cv1",
 			Name:       "temperature",
 			Type:       models.String,
@@ -189,7 +189,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 	})
 
 	t.Run("write both with unlisted aspect_id", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken, deviceType("dt_both", models.ContentVariable{
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, deviceType("dt_both", models.ContentVariable{
 			Id:         "dt_both_cv1",
 			Name:       "temperature",
 			Type:       models.String,
@@ -211,7 +211,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 	})
 
 	t.Run("write both with listed aspect_id", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken, deviceType("dt_both_known", models.ContentVariable{
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, deviceType("dt_both_known", models.ContentVariable{
 			Id:         "dt_both_known_cv1",
 			Name:       "temperature",
 			Type:       models.String,
@@ -230,7 +230,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 	})
 
 	t.Run("sub content variables", func(t *testing.T) {
-		_, err, _ := c.SetDeviceType(client.InternalAdminToken, deviceType("dt_sub", models.ContentVariable{
+		_, err, _ := c.SetDeviceType(context.Background(), client.InternalAdminToken, deviceType("dt_sub", models.ContentVariable{
 			Id:   "dt_sub_cv1",
 			Name: "temperatures",
 			Type: models.Structure,
@@ -266,7 +266,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 	})
 
 	t.Run("unknown aspect in aspect_ids is rejected", func(t *testing.T) {
-		err, code := c.ValidateDeviceType(deviceType("dt_invalid", models.ContentVariable{
+		err, code := c.ValidateDeviceType(context.Background(), deviceType("dt_invalid", models.ContentVariable{
 			Id:         "dt_invalid_cv1",
 			Name:       "temperature",
 			Type:       models.String,
@@ -284,7 +284,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 
 	t.Run("every aspect of aspect_ids is selectable", func(t *testing.T) {
 		for _, aspectId := range []string{waterAspect, airAspect} {
-			selectables, err, _ := c.GetDeviceTypeSelectablesV2([]model.FilterCriteria{{
+			selectables, err, _ := c.GetDeviceTypeSelectablesV2(context.Background(), []model.FilterCriteria{{
 				FunctionId: measuringFunction,
 				AspectId:   aspectId,
 			}}, "", false, false)
@@ -302,7 +302,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 	})
 
 	t.Run("every aspect of aspect_ids is used-in", func(t *testing.T) {
-		result, err, _ := c.GetUsedInDeviceType(model.UsedInDeviceTypeQuery{
+		result, err, _ := c.GetUsedInDeviceType(context.Background(), model.UsedInDeviceTypeQuery{
 			Resource: "aspects",
 			Ids:      []string{waterAspect, airAspect},
 		})
@@ -353,7 +353,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 		})
 
 		t.Run("generated device-group keeps the aspect", func(t *testing.T) {
-			device, err, _ := c.CreateDevice(client.InternalAdminToken, models.Device{
+			device, err, _ := c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 				LocalId:      "d_legacy",
 				Name:         "d_legacy",
 				DeviceTypeId: "dt_legacy",
@@ -362,7 +362,7 @@ func TestContentVariableAspectIds(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			group, err, _ := c.ReadDeviceGroup(model.DeviceIdToGeneratedDeviceGroupId(device.Id), client.InternalAdminToken, false)
+			group, err, _ := c.ReadDeviceGroup(context.Background(), model.DeviceIdToGeneratedDeviceGroupId(device.Id), client.InternalAdminToken, false)
 			if err != nil {
 				t.Error(err)
 				return

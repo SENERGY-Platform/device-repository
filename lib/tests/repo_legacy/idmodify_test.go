@@ -18,12 +18,13 @@ package repo_legacy
 
 import (
 	"context"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/idmodifier"
 	"github.com/SENERGY-Platform/models/go/models"
-	"sync"
-	"testing"
 )
 
 func TestModifiedDevice(t *testing.T) {
@@ -41,7 +42,7 @@ func TestModifiedDevice(t *testing.T) {
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 
-	_, err, _ = c.SetDeviceType(AdminToken, models.DeviceType{
+	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{
 		Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
 			{
 				Key:         sgKey,
@@ -87,7 +88,7 @@ func TestModifiedDevice(t *testing.T) {
 		OwnerId:      userid,
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d1, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d1, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -107,7 +108,7 @@ func TestModifiedDevice(t *testing.T) {
 		OwnerId:      userid,
 	}
 
-	_, err, _ = c.SetDevice(userjwt, d2, client.DeviceUpdateOptions{})
+	_, err, _ = c.SetDevice(context.Background(), userjwt, d2, client.DeviceUpdateOptions{})
 	if err != nil {
 		t.Error(err)
 		return
@@ -227,7 +228,7 @@ func TestModifiedDevice(t *testing.T) {
 	})
 
 	t.Run("extended modified device 1", func(t *testing.T) {
-		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ReadExtendedDevice(d1Modified.Id, userjwt, client.READ, true)
+		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ReadExtendedDevice(context.Background(), d1Modified.Id, userjwt, client.READ, true)
 		if err != nil {
 			t.Error(err)
 			return
@@ -267,7 +268,7 @@ func TestModifiedDevice(t *testing.T) {
 	})
 
 	t.Run("extended modified device 2", func(t *testing.T) {
-		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ReadExtendedDevice(d2Modified.Id, userjwt, client.READ, true)
+		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ReadExtendedDevice(context.Background(), d2Modified.Id, userjwt, client.READ, true)
 		if err != nil {
 			t.Error(err)
 			return

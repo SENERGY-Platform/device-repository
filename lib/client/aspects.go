@@ -18,25 +18,27 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetAspect(token string, aspect models.Aspect) (result models.Aspect, err error, code int) {
+func (c *Client) SetAspect(ctx context.Context, token string, aspect models.Aspect) (result models.Aspect, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(aspect)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if aspect.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/aspects", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/aspects", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/aspects/"+url.PathEscape(aspect.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/aspects/"+url.PathEscape(aspect.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -45,8 +47,8 @@ func (c *Client) SetAspect(token string, aspect models.Aspect) (result models.As
 	return do[models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteAspect(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/aspects/"+url.PathEscape(id), nil)
+func (c *Client) DeleteAspect(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/aspects/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -54,7 +56,7 @@ func (c *Client) DeleteAspect(token string, id string) (err error, code int) {
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListAspects(options model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int) {
+func (c *Client) ListAspects(ctx context.Context, options model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -78,48 +80,48 @@ func (c *Client) ListAspects(options model.AspectListOptions) (result []models.A
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v2/aspects"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/v2/aspects"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspects() ([]models.Aspect, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspects", nil)
+func (c *Client) GetAspects(ctx context.Context) ([]models.Aspect, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspects", nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
 }
-func (c *Client) GetAspectsWithMeasuringFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspects?function=measuring-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
-	if err != nil {
-		return nil, err, http.StatusInternalServerError
-	}
-	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
-}
-
-func (c *Client) GetAspectsWithControllingFunction(ancestors bool, descendants bool) ([]models.Aspect, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspects?function=controlling-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+func (c *Client) GetAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspects?function=measuring-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspect(id string) (models.Aspect, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspects/"+id, nil)
+func (c *Client) GetAspectsWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspects?function=controlling-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
+	}
+	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+}
+
+func (c *Client) GetAspect(ctx context.Context, id string) (models.Aspect, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspects/"+id, nil)
 	if err != nil {
 		return models.Aspect{}, err, http.StatusInternalServerError
 	}
 	return do[models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateAspect(aspect models.Aspect) (err error, code int) {
-	return c.validate("/aspects", aspect)
+func (c *Client) ValidateAspect(ctx context.Context, aspect models.Aspect) (err error, code int) {
+	return c.validate(ctx, "/aspects", aspect)
 }
 
-func (c *Client) ValidateAspectDelete(id string) (err error, code int) {
-	return c.validateDelete("/aspects/" + id)
+func (c *Client) ValidateAspectDelete(ctx context.Context, id string) (err error, code int) {
+	return c.validateDelete(ctx, "/aspects/"+id)
 }

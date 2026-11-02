@@ -20,14 +20,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/models/go/models"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestLocations(t *testing.T) {
@@ -131,7 +132,7 @@ func TestLocations(t *testing.T) {
 			return
 		}
 		for _, expected := range locations {
-			actual, err, _ := c.GetLocation(expected.Id, AdminToken)
+			actual, err, _ := c.GetLocation(context.Background(), expected.Id, AdminToken)
 			if err != nil {
 				t.Error(err)
 				return
@@ -145,7 +146,7 @@ func TestLocations(t *testing.T) {
 
 	t.Run("check locations as Userjwt", func(t *testing.T) {
 		for _, expected := range userLocations {
-			actual, err, _ := c.GetLocation(expected.Id, Userjwt)
+			actual, err, _ := c.GetLocation(context.Background(), expected.Id, Userjwt)
 			if err != nil {
 				t.Error(expected.Name, ":", err)
 				return
@@ -156,7 +157,7 @@ func TestLocations(t *testing.T) {
 			}
 		}
 		for _, location := range secondOwnerLocations {
-			_, err, _ := c.GetLocation(location.Id, Userjwt)
+			_, err, _ := c.GetLocation(context.Background(), location.Id, Userjwt)
 			if err == nil {
 				t.Error("expected error")
 				return
@@ -166,7 +167,7 @@ func TestLocations(t *testing.T) {
 
 	t.Run("check locations as secondOwner", func(t *testing.T) {
 		for _, expected := range secondOwnerLocations {
-			actual, err, _ := c.GetLocation(expected.Id, SecondOwnerToken)
+			actual, err, _ := c.GetLocation(context.Background(), expected.Id, SecondOwnerToken)
 			if err != nil {
 				t.Error(err)
 				return
@@ -177,7 +178,7 @@ func TestLocations(t *testing.T) {
 			}
 		}
 		for _, location := range userLocations {
-			_, err, _ := c.GetLocation(location.Id, SecondOwnerToken)
+			_, err, _ := c.GetLocation(context.Background(), location.Id, SecondOwnerToken)
 			if err == nil {
 				t.Error("expected error")
 				return
@@ -186,7 +187,7 @@ func TestLocations(t *testing.T) {
 	})
 
 	t.Run("list locations as admin", func(t *testing.T) {
-		actual, total, err, _ := c.ListLocations(AdminToken, client.LocationListOptions{})
+		actual, total, err, _ := c.ListLocations(context.Background(), AdminToken, client.LocationListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -200,7 +201,7 @@ func TestLocations(t *testing.T) {
 	})
 
 	t.Run("list locations as user", func(t *testing.T) {
-		actual, total, err, _ := c.ListLocations(Userjwt, client.LocationListOptions{})
+		actual, total, err, _ := c.ListLocations(context.Background(), Userjwt, client.LocationListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -214,7 +215,7 @@ func TestLocations(t *testing.T) {
 	})
 
 	t.Run("search 2 as user", func(t *testing.T) {
-		actual, total, err, _ := c.ListLocations(Userjwt, client.LocationListOptions{Search: "2"})
+		actual, total, err, _ := c.ListLocations(context.Background(), Userjwt, client.LocationListOptions{Search: "2"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -234,7 +235,7 @@ func TestLocations(t *testing.T) {
 	})
 
 	t.Run("limit offset", func(t *testing.T) {
-		actual, total, err, _ := c.ListLocations(Userjwt, client.LocationListOptions{Limit: 3, Offset: 2})
+		actual, total, err, _ := c.ListLocations(context.Background(), Userjwt, client.LocationListOptions{Limit: 3, Offset: 2})
 		if err != nil {
 			t.Error(err)
 			return
@@ -300,7 +301,7 @@ func TestLocations(t *testing.T) {
 
 	t.Run("try read of deleted location", func(t *testing.T) {
 		location := userLocations[0]
-		_, err, _ := c.GetLocation(location.Id, Userjwt)
+		_, err, _ := c.GetLocation(context.Background(), location.Id, Userjwt)
 		if err == nil {
 			t.Error("expected error")
 			return

@@ -15,6 +15,7 @@
     "location_topic": "locations",
     "graph_topic": "graphs",
     "permissions_v2_url": "",
+    "otel_endpoint": "",
     "mongo_url": "mongodb://localhost:27017",
     "mongo_user": "",
     "mongo_password": "",

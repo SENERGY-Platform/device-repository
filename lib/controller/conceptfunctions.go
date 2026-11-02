@@ -17,6 +17,8 @@
 package controller
 
 import (
+	"context"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 )
@@ -35,17 +37,17 @@ const conceptFunctionListLimit = 1000
 // one. Deliberately not a repair: a concept whose function was deleted does not get it back
 // on the next write, because that would undo the deletion rather than honour it. The
 // existing stock is handled once by runConceptFunctionsMigration.
-func (this *Controller) ensureConceptFunctions(old models.Concept, existed bool, concept models.Concept) error {
+func (this *Controller) ensureConceptFunctions(ctx context.Context, old models.Concept, existed bool, concept models.Concept) error {
 	if !existed {
-		return this.createConceptFunctions(concept)
+		return this.createConceptFunctions(ctx, concept)
 	}
 	if old.Name == concept.Name {
 		return nil
 	}
-	return this.renameConceptFunctions(old, concept)
+	return this.renameConceptFunctions(ctx, old, concept)
 }
 
-func (this *Controller) createConceptFunctions(concept models.Concept) error {
+func (this *Controller) createConceptFunctions(ctx context.Context, concept models.Concept) error {
 	for _, rdfType := range model.ConceptFunctionRdfTypes {
 		function := models.Function{
 			Name:        model.ConceptFunctionName(rdfType, concept.Name),
@@ -54,7 +56,7 @@ func (this *Controller) createConceptFunctions(concept models.Concept) error {
 			RdfType:     rdfType,
 		}
 		function.GenerateId()
-		err := this.setFunction(function)
+		err := this.setFunction(ctx, function)
 		if err != nil {
 			return err
 		}
@@ -62,8 +64,8 @@ func (this *Controller) createConceptFunctions(concept models.Concept) error {
 	return nil
 }
 
-func (this *Controller) renameConceptFunctions(old models.Concept, concept models.Concept) error {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) renameConceptFunctions(ctx context.Context, old models.Concept, concept models.Concept) error {
+	ctx, _ = getTimeoutContext(ctx)
 	for _, rdfType := range model.ConceptFunctionRdfTypes {
 		functions, _, err := this.db.ListFunctions(ctx, model.FunctionListOptions{
 			ConceptIds: []string{concept.Id},
@@ -87,7 +89,7 @@ func (this *Controller) renameConceptFunctions(old models.Concept, concept model
 				function.DisplayName = newName
 			}
 			function.Name = newName
-			err = this.setFunction(function)
+			err = this.setFunction(ctx, function)
 			if err != nil {
 				return err
 			}
@@ -100,6 +102,6 @@ func (this *Controller) renameConceptFunctions(old models.Concept, concept model
 // which creates functions for concepts and cannot reach the publisher from
 // lib/database/mongo. Unlike the migrations that convert a stored shape, that one produces
 // resources consumers have never seen, so it has to publish them.
-func (this *Controller) PublishFunction(function models.Function) error {
-	return this.setFunctionSyncHandler(function)
+func (this *Controller) PublishFunction(ctx context.Context, function models.Function) error {
+	return this.setFunctionSyncHandler(ctx, function)
 }

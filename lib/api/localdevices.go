@@ -163,7 +163,7 @@ func (this *LocalDevicesEndpoints) List(config configuration.Config, router *htt
 			deviceListOptions.DeviceAttributeBlacklist = blacklist
 		}
 
-		result, err, errCode := control.ListDevices(util.GetAuthToken(request), deviceListOptions)
+		result, err, errCode := control.ListDevices(request.Context(), util.GetAuthToken(request), deviceListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -205,7 +205,7 @@ func (this *LocalDevicesEndpoints) Get(config configuration.Config, router *http
 		if ownerId == "" {
 			ownerId = token.GetUserId()
 		}
-		result, err, errCode := control.ReadDeviceByLocalId(ownerId, id, token.Jwt(), model.READ)
+		result, err, errCode := control.ReadDeviceByLocalId(request.Context(), ownerId, id, token.Jwt(), model.READ)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -249,7 +249,7 @@ func (this *LocalDevicesEndpoints) Create(config configuration.Config, router *h
 			return
 		}
 
-		result, err, errCode := control.CreateDevice(token, device)
+		result, err, errCode := control.CreateDevice(request.Context(), token, device)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -288,7 +288,7 @@ func (this *LocalDevicesEndpoints) Set(config configuration.Config, router *http
 			return
 		}
 		ownerId := token.GetUserId()
-		old, err, errCode := control.ReadDeviceByLocalId(ownerId, id, token.Jwt(), model.WRITE)
+		old, err, errCode := control.ReadDeviceByLocalId(request.Context(), ownerId, id, token.Jwt(), model.WRITE)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -314,7 +314,7 @@ func (this *LocalDevicesEndpoints) Set(config configuration.Config, router *http
 			options.UpdateOnlySameOriginAttributes = strings.Split(temp, ",")
 		}
 
-		result, err, errCode := control.SetDevice(token.Jwt(), device, options)
+		result, err, errCode := control.SetDevice(request.Context(), token.Jwt(), device, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -355,14 +355,14 @@ func (this *LocalDevicesEndpoints) Delete(config configuration.Config, router *h
 		if ownerId == "" {
 			ownerId = token.GetUserId()
 		}
-		old, err, errCode := control.ReadDeviceByLocalId(ownerId, id, token.Jwt(), model.ADMINISTRATE)
+		old, err, errCode := control.ReadDeviceByLocalId(request.Context(), ownerId, id, token.Jwt(), model.ADMINISTRATE)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
 		}
 		id = old.Id
 
-		err, errCode = control.DeleteDevice(token.Jwt(), id)
+		err, errCode = control.DeleteDevice(request.Context(), token.Jwt(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

@@ -18,6 +18,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -28,12 +29,12 @@ import (
 	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetHubConnectionState(token string, id string, connected bool) (error, int) {
+func (c *Client) SetHubConnectionState(ctx context.Context, token string, id string, connected bool) (error, int) {
 	b, err := json.Marshal(connected)
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(id)+"/connection-state", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(id)+"/connection-state", bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -41,12 +42,12 @@ func (c *Client) SetHubConnectionState(token string, id string, connected bool) 
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) SetHubConnectionStates(token string, states map[string]bool) (error, int) {
+func (c *Client) SetHubConnectionStates(ctx context.Context, token string, states map[string]bool) (error, int) {
 	b, err := json.Marshal(states)
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/hubs-batch/connection-state", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/hubs-batch/connection-state", bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -56,7 +57,7 @@ func (c *Client) SetHubConnectionStates(token string, states map[string]bool) (e
 
 type HubUpdateOptions = model.HubUpdateOptions
 
-func (c *Client) SetHub(token string, hub models.Hub, options HubUpdateOptions) (result models.Hub, err error, code int) {
+func (c *Client) SetHub(ctx context.Context, token string, hub models.Hub, options HubUpdateOptions) (result models.Hub, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(hub)
 	if err != nil {
@@ -67,9 +68,9 @@ func (c *Client) SetHub(token string, hub models.Hub, options HubUpdateOptions) 
 		query.Set("update-only-same-origin-attributes", strings.Join(options.UpdateOnlySameOriginAttributes, ","))
 	}
 	if hub.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/hubs?"+query.Encode(), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/hubs?"+query.Encode(), bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(hub.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/hubs/"+url.PathEscape(hub.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -78,8 +79,8 @@ func (c *Client) SetHub(token string, hub models.Hub, options HubUpdateOptions) 
 	return do[models.Hub](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteHub(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/hubs/"+url.PathEscape(id), nil)
+func (c *Client) DeleteHub(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/hubs/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -87,7 +88,7 @@ func (c *Client) DeleteHub(token string, id string) (err error, code int) {
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadHub(id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
+func (c *Client) ReadHub(ctx context.Context, id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -96,7 +97,7 @@ func (c *Client) ReadHub(id string, token string, action model.AuthAction) (resu
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/hubs/"+id+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/hubs/"+id+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -104,7 +105,7 @@ func (c *Client) ReadHub(id string, token string, action model.AuthAction) (resu
 	return do[models.Hub](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListHubs(token string, options model.HubListOptions) (result []models.Hub, err error, errCode int) {
+func (c *Client) ListHubs(ctx context.Context, token string, options model.HubListOptions) (result []models.Hub, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
@@ -137,7 +138,7 @@ func (c *Client) ListHubs(token string, options model.HubListOptions) (result []
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/hubs"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/hubs"+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -145,7 +146,7 @@ func (c *Client) ListHubs(token string, options model.HubListOptions) (result []
 	return do[[]models.Hub](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
+func (c *Client) ListHubDeviceIds(ctx context.Context, id string, token string, action model.AuthAction, asLocalId bool) (result []string, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -155,7 +156,7 @@ func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthActi
 	}
 	queryString := ""
 	url := c.baseUrl + "/hubs/" + id + queryString
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -163,6 +164,6 @@ func (c *Client) ListHubDeviceIds(id string, token string, action model.AuthActi
 	return do[[]string](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateHub(token string, hub models.Hub) (err error, code int) {
-	return c.validateWithToken(token, "/hubs", hub)
+func (c *Client) ValidateHub(ctx context.Context, token string, hub models.Hub) (err error, code int) {
+	return c.validateWithToken(ctx, token, "/hubs", hub)
 }

@@ -108,7 +108,7 @@ func (this *FunctionsEndpoints) ListFunctions(config configuration.Config, route
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListFunctions(listoptions)
+		result, total, err, errCode := control.ListFunctions(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -157,7 +157,7 @@ func (this *FunctionsEndpoints) QueryFunctions(config configuration.Config, rout
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListFunctions(listoptions)
+		result, total, err, errCode := control.ListFunctions(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -188,7 +188,7 @@ func (this *FunctionsEndpoints) QueryFunctions(config configuration.Config, rout
 // @Router       /controlling-functions [GET]
 func (this *FunctionsEndpoints) ListControllingFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
-		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_CONTROLLING_FUNCTION)
+		result, err, errCode := control.GetFunctionsByType(request.Context(), model.SES_ONTOLOGY_CONTROLLING_FUNCTION)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -217,7 +217,7 @@ func (this *FunctionsEndpoints) ListControllingFunctions(config configuration.Co
 // @Router       /measuring-functions [GET]
 func (this *FunctionsEndpoints) ListMeasuringFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /measuring-functions", func(writer http.ResponseWriter, request *http.Request) {
-		result, err, errCode := control.GetFunctionsByType(model.SES_ONTOLOGY_MEASURING_FUNCTION)
+		result, err, errCode := control.GetFunctionsByType(request.Context(), model.SES_ONTOLOGY_MEASURING_FUNCTION)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -248,7 +248,7 @@ func (this *FunctionsEndpoints) ListMeasuringFunctions(config configuration.Conf
 func (this *FunctionsEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /functions/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetFunction(id)
+		result, err, errCode := control.GetFunction(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -292,7 +292,7 @@ func (this *FunctionsEndpoints) Validate(config configuration.Config, router *ht
 			return
 		}
 		model.SetFunctionRdfType(&function)
-		err, code := control.ValidateFunction(function)
+		err, code := control.ValidateFunction(request.Context(), function)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -325,7 +325,7 @@ func (this *FunctionsEndpoints) Delete(config configuration.Config, router *http
 			}
 		}
 		if dryRun {
-			err, code := control.ValidateFunctionDelete(id)
+			err, code := control.ValidateFunctionDelete(request.Context(), id)
 			if err != nil {
 				http.Error(writer, err.Error(), code)
 				return
@@ -334,7 +334,7 @@ func (this *FunctionsEndpoints) Delete(config configuration.Config, router *http
 			return
 		}
 		token := util.GetAuthToken(request)
-		err, code := control.DeleteFunction(token, id)
+		err, code := control.DeleteFunction(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -367,7 +367,7 @@ func (this *FunctionsEndpoints) Create(config configuration.Config, router *http
 		}
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetFunction(token, function)
+		result, err, errCode := control.SetFunction(request.Context(), token, function)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -413,7 +413,7 @@ func (this *FunctionsEndpoints) Set(config configuration.Config, router *http.Se
 			return
 		}
 
-		result, err, errCode := control.SetFunction(token, function)
+		result, err, errCode := control.SetFunction(request.Context(), token, function)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

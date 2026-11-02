@@ -18,6 +18,11 @@ package repo_legacy
 
 import (
 	"context"
+	"log"
+	"reflect"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
@@ -26,10 +31,6 @@ import (
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
 	permclient "github.com/SENERGY-Platform/permissions-v2/pkg/client"
-	"log"
-	"reflect"
-	"sync"
-	"testing"
 )
 
 func testConceptList(t *testing.T, conf configuration.Config) {
@@ -110,7 +111,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("create characteristics", func(t *testing.T) {
 		for _, characteristic := range characteristics {
-			_, err, _ := c.SetCharacteristic(AdminToken, characteristic)
+			_, err, _ := c.SetCharacteristic(context.Background(), AdminToken, characteristic)
 			if err != nil {
 				t.Error(err)
 				return
@@ -119,7 +120,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 	})
 	t.Run("create concepts", func(t *testing.T) {
 		for _, concept := range concepts {
-			_, err, _ := c.SetConcept(AdminToken, concept)
+			_, err, _ := c.SetConcept(context.Background(), AdminToken, concept)
 			if err != nil {
 				t.Error(err)
 				return
@@ -127,7 +128,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list all concepts", func(t *testing.T) {
-		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{})
+		list, total, err, _ := c.ListConcepts(context.Background(), client.ConceptListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -142,7 +143,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list all concepts with characteristics", func(t *testing.T) {
-		list, total, err, _ := c.ListConceptsWithCharacteristics(client.ConceptListOptions{})
+		list, total, err, _ := c.ListConceptsWithCharacteristics(context.Background(), client.ConceptListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -158,7 +159,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("search co3 concepts", func(t *testing.T) {
-		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{Search: "co3"})
+		list, total, err, _ := c.ListConcepts(context.Background(), client.ConceptListOptions{Search: "co3"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -173,7 +174,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("search co3 concepts with characteristic", func(t *testing.T) {
-		list, total, err, _ := c.ListConceptsWithCharacteristics(client.ConceptListOptions{Search: "co3"})
+		list, total, err, _ := c.ListConceptsWithCharacteristics(context.Background(), client.ConceptListOptions{Search: "co3"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -189,7 +190,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("list co2,co4 concepts", func(t *testing.T) {
-		list, total, err, _ := c.ListConcepts(client.ConceptListOptions{Ids: []string{"co2", "co4"}})
+		list, total, err, _ := c.ListConcepts(context.Background(), client.ConceptListOptions{Ids: []string{"co2", "co4"}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -204,7 +205,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list co2,co4 concepts with characteristics", func(t *testing.T) {
-		list, total, err, _ := c.ListConceptsWithCharacteristics(client.ConceptListOptions{Ids: []string{"co2", "co4"}})
+		list, total, err, _ := c.ListConceptsWithCharacteristics(context.Background(), client.ConceptListOptions{Ids: []string{"co2", "co4"}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -273,7 +274,7 @@ func TestConceptValidation(t *testing.T) {
 		return
 	}
 
-	_, err, _ = ctrl.SetCharacteristic(AdminToken, models.Characteristic{
+	_, err, _ = ctrl.SetCharacteristic(context.Background(), AdminToken, models.Characteristic{
 		Id:   "c",
 		Name: "c",
 		Type: models.String,
@@ -321,7 +322,7 @@ func TestConceptValidation(t *testing.T) {
 
 func testValidateConcept(ctrl *controller.Controller, expectError bool, concept models.Concept) func(t *testing.T) {
 	return func(t *testing.T) {
-		err, _ := ctrl.ValidateConcept(concept)
+		err, _ := ctrl.ValidateConcept(context.Background(), concept)
 		if (err != nil) != expectError {
 			t.Error(expectError, err)
 		}

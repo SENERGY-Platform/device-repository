@@ -17,20 +17,22 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
-	"strings"
 )
 
-func (this *Controller) setConceptSyncHandler(c models.Concept) error {
+func (this *Controller) setConceptSyncHandler(ctx context.Context, c models.Concept) error {
 	return this.publisher.PublishConcept(c)
 }
 
-func (this *Controller) SetConcept(token string, concept models.Concept) (result models.Concept, err error, code int) {
+func (this *Controller) SetConcept(ctx context.Context, token string, concept models.Concept) (result models.Concept, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -42,40 +44,40 @@ func (this *Controller) SetConcept(token string, concept models.Concept) (result
 	//ensure ids
 	concept.GenerateId()
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateConcept(concept)
+		err, code = this.ValidateConcept(ctx, concept)
 		if err != nil {
 			return result, err, code
 		}
 	}
 	//read before the write, because whether the concept is new and what it was called
 	//decides whether its functions are created or renamed
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	old, existed, err := this.db.GetConceptWithoutCharacteristics(ctx, concept.Id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	err = this.setConcept(concept)
+	err = this.setConcept(ctx, concept)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	err = this.ensureConceptFunctions(old, existed, concept)
+	err = this.ensureConceptFunctions(ctx, old, existed, concept)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return concept, nil, http.StatusOK
 }
 
-func (this *Controller) setConcept(concept models.Concept) (err error) {
-	ctx, _ := getTimeoutContext()
-	err = this.db.SetConcept(ctx, concept, this.setConceptSyncHandler)
+func (this *Controller) setConcept(ctx context.Context, concept models.Concept) (err error) {
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.SetConcept(ctx, concept, withContext(ctx, this.setConceptSyncHandler))
 	return err
 }
 
-func (this *Controller) deleteConceptSyncHandler(c models.Concept) error {
+func (this *Controller) deleteConceptSyncHandler(ctx context.Context, c models.Concept) error {
 	return this.publisher.PublishConceptDelete(c.Id)
 }
 
-func (this *Controller) DeleteConcept(token string, id string) (error, int) {
+func (this *Controller) DeleteConcept(ctx context.Context, token string, id string) (error, int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -83,19 +85,19 @@ func (this *Controller) DeleteConcept(token string, id string) (error, int) {
 	if !jwtToken.IsAdmin() {
 		return errors.New("token is not an admin"), http.StatusUnauthorized
 	}
-	err, code := this.ValidateConceptDelete(id)
+	err, code := this.ValidateConceptDelete(ctx, id)
 	if err != nil {
 		return err, code
 	}
-	ctx, _ := getTimeoutContext()
-	err = this.db.RemoveConcept(ctx, id, this.deleteConceptSyncHandler)
+	ctx, _ = getTimeoutContext(ctx)
+	err = this.db.RemoveConcept(ctx, id, withContext(ctx, this.deleteConceptSyncHandler))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateConcept(concept models.Concept) (err error, code int) {
+func (this *Controller) ValidateConcept(ctx context.Context, concept models.Concept) (err error, code int) {
 	if concept.Id == "" {
 		return errors.New("missing concept id"), http.StatusBadRequest
 	}
@@ -109,7 +111,7 @@ func (this *Controller) ValidateConcept(concept models.Concept) (err error, code
 		return errors.New("concept base characteristic not in characteristic ids list"), http.StatusBadRequest
 	}
 	newCharacteristicIds := map[string]bool{}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	for _, charId := range concept.CharacteristicIds {
 		if charId == "" {
 			return errors.New("missing char id"), http.StatusBadRequest
@@ -144,8 +146,8 @@ func (this *Controller) ValidateConcept(concept models.Concept) (err error, code
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ListConceptsWithCharacteristics(listOptions model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListConceptsWithCharacteristics(ctx context.Context, listOptions model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListConceptsWithCharacteristics(ctx, listOptions)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -153,8 +155,8 @@ func (this *Controller) ListConceptsWithCharacteristics(listOptions model.Concep
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) ListConcepts(listOptions model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListConcepts(ctx context.Context, listOptions model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListConcepts(ctx, listOptions)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -162,8 +164,8 @@ func (this *Controller) ListConcepts(listOptions model.ConceptListOptions) (resu
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) GetConceptWithCharacteristics(id string) (result models.ConceptWithCharacteristics, err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetConceptWithCharacteristics(ctx context.Context, id string) (result models.ConceptWithCharacteristics, err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetConceptWithCharacteristics(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -174,8 +176,8 @@ func (this *Controller) GetConceptWithCharacteristics(id string) (result models.
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) GetConceptWithoutCharacteristics(id string) (result models.Concept, err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetConceptWithoutCharacteristics(ctx context.Context, id string) (result models.Concept, err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetConceptWithoutCharacteristics(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -186,8 +188,8 @@ func (this *Controller) GetConceptWithoutCharacteristics(id string) (result mode
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateConceptDelete(id string) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateConceptDelete(ctx context.Context, id string) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	isUsed, where, err := this.db.ConceptIsUsed(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError

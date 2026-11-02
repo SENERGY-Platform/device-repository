@@ -18,25 +18,27 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetCharacteristic(token string, characteristic models.Characteristic) (result models.Characteristic, err error, code int) {
+func (c *Client) SetCharacteristic(ctx context.Context, token string, characteristic models.Characteristic) (result models.Characteristic, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(characteristic)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if characteristic.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/characteristics", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/characteristics", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/characteristics/"+url.PathEscape(characteristic.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/characteristics/"+url.PathEscape(characteristic.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -45,8 +47,8 @@ func (c *Client) SetCharacteristic(token string, characteristic models.Character
 	return do[models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteCharacteristic(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/characteristics/"+url.PathEscape(id), nil)
+func (c *Client) DeleteCharacteristic(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/characteristics/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -54,7 +56,7 @@ func (c *Client) DeleteCharacteristic(token string, id string) (err error, code 
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListCharacteristics(options model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int) {
+func (c *Client) ListCharacteristics(ctx context.Context, options model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -75,33 +77,33 @@ func (c *Client) ListCharacteristics(options model.CharacteristicListOptions) (r
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v2/characteristics"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/v2/characteristics"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetCharacteristics(leafsOnly bool) (result []models.Characteristic, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/characteristics?leafsOnly="+strconv.FormatBool(leafsOnly), nil)
+func (c *Client) GetCharacteristics(ctx context.Context, leafsOnly bool) (result []models.Characteristic, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/characteristics?leafsOnly="+strconv.FormatBool(leafsOnly), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetCharacteristic(id string) (result models.Characteristic, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/characteristics/"+id, nil)
+func (c *Client) GetCharacteristic(ctx context.Context, id string) (result models.Characteristic, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/characteristics/"+id, nil)
 	if err != nil {
 		return models.Characteristic{}, err, http.StatusInternalServerError
 	}
 	return do[models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateCharacteristics(characteristic models.Characteristic) (err error, code int) {
-	return c.validate("/characteristics", characteristic)
+func (c *Client) ValidateCharacteristics(ctx context.Context, characteristic models.Characteristic) (err error, code int) {
+	return c.validate(ctx, "/characteristics", characteristic)
 }
 
-func (c *Client) ValidateCharacteristicDelete(id string) (err error, code int) {
-	return c.validateDelete("/characteristics/" + id)
+func (c *Client) ValidateCharacteristicDelete(ctx context.Context, id string) (err error, code int) {
+	return c.validateDelete(ctx, "/characteristics/"+id)
 }

@@ -18,13 +18,14 @@ package semantic_legacy
 
 import (
 	"context"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
-	"sync"
-	"testing"
 )
 
 func TestCharacteristics(t *testing.T) {
@@ -101,7 +102,7 @@ func testProduceValidCharacteristic1(conf configuration.Config) func(t *testing.
 					SubCharacteristics: nil}},
 		}}
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
+		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -116,7 +117,7 @@ func testProduceValidCharacteristic2(conf configuration.Config) func(t *testing.
 		characteristic.DisplayUnit = "°F"
 		characteristic.Type = models.Boolean
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
+		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -130,7 +131,7 @@ func testProduceValidCharacteristic3(conf configuration.Config) func(t *testing.
 		characteristic.Name = "µg/m³"
 		characteristic.Type = models.Boolean
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetCharacteristic(testenv.AdminToken, characteristic)
+		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -139,7 +140,7 @@ func testProduceValidCharacteristic3(conf configuration.Config) func(t *testing.
 
 func testReadCharacteristic1(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristic, err, _ := con.GetCharacteristic("urn:ses:infai:characteristic:1d1e1f")
+		characteristic, err, _ := con.GetCharacteristic(context.Background(), "urn:ses:infai:characteristic:1d1e1f")
 		if err == nil {
 			if characteristic.Id != "urn:ses:infai:characteristic:1d1e1f" {
 				t.Fatal("wrong id", characteristic.Id)
@@ -231,7 +232,7 @@ func testReadCharacteristic1(con *controller.Controller) func(t *testing.T) {
 
 func testReadCharacteristic3(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristic, err, _ := con.GetCharacteristic("urn:ses:infai:characteristic:1111111-30.03.2021")
+		characteristic, err, _ := con.GetCharacteristic(context.Background(), "urn:ses:infai:characteristic:1111111-30.03.2021")
 		if err == nil {
 			if characteristic.Id != "urn:ses:infai:characteristic:1111111-30.03.2021" {
 				t.Fatal("wrong id", characteristic.Id)
@@ -247,7 +248,7 @@ func testReadCharacteristic3(con *controller.Controller) func(t *testing.T) {
 
 func testReadAllCharacteristic(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		characteristics, err, _ := con.GetCharacteristics(true)
+		characteristics, err, _ := con.GetCharacteristics(context.Background(), true)
 
 		if err == nil {
 			if len(characteristics) != 3 {
@@ -264,7 +265,7 @@ func testReadAllCharacteristic(con *controller.Controller) func(t *testing.T) {
 func testDeleteCharacteristic1(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		err, _ := c.DeleteCharacteristic(testenv.AdminToken, "urn:ses:infai:characteristic:1d1e1f")
+		err, _ := c.DeleteCharacteristic(context.Background(), testenv.AdminToken, "urn:ses:infai:characteristic:1d1e1f")
 		if err != nil {
 			t.Fatal(err)
 		}

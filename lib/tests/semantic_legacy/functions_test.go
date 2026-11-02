@@ -21,14 +21,15 @@ package semantic_legacy
 
 import (
 	"context"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
-	"sync"
-	"testing"
 )
 
 func TestFunction(t *testing.T) {
@@ -52,7 +53,7 @@ func TestFunction(t *testing.T) {
 	t.Run("testReadMeasuringFunction", testReadMeasuringFunction(ctrl))
 	t.Run("list functions", func(t *testing.T) {
 		t.Run("list all", func(t *testing.T) {
-			_, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{})
+			_, total, err, _ := ctrl.ListFunctions(context.Background(), model.FunctionListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -63,7 +64,7 @@ func TestFunction(t *testing.T) {
 			}
 		})
 		t.Run("find humidity", func(t *testing.T) {
-			list, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{Search: "humidity"})
+			list, total, err, _ := ctrl.ListFunctions(context.Background(), model.FunctionListOptions{Search: "humidity"})
 			if err != nil {
 				t.Error(err)
 				return
@@ -78,7 +79,7 @@ func TestFunction(t *testing.T) {
 			}
 		})
 		t.Run("list controlling", func(t *testing.T) {
-			list, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
+			list, total, err, _ := ctrl.ListFunctions(context.Background(), model.FunctionListOptions{RdfType: model.SES_ONTOLOGY_CONTROLLING_FUNCTION})
 			if err != nil {
 				t.Error(err)
 				return
@@ -95,7 +96,7 @@ func TestFunction(t *testing.T) {
 			}
 		})
 		t.Run("list measuring", func(t *testing.T) {
-			list, total, err, _ := ctrl.ListFunctions(model.FunctionListOptions{RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
+			list, total, err, _ := ctrl.ListFunctions(context.Background(), model.FunctionListOptions{RdfType: model.SES_ONTOLOGY_MEASURING_FUNCTION})
 			if err != nil {
 				t.Error(err)
 				return
@@ -124,7 +125,7 @@ func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 		confunction1.Description = "Turn the device on"
 
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetFunction(testenv.AdminToken, confunction1)
+		_, err, _ := c.SetFunction(context.Background(), testenv.AdminToken, confunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -135,7 +136,7 @@ func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 		confunction2.DisplayName = "off-function"
 		confunction2.ConceptId = ""
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, confunction2)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, confunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -146,7 +147,7 @@ func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 		confunction3.DisplayName = "ctrl display name"
 		confunction3.ConceptId = "urn:infai:ses:concept:efffsdfd-01a1-4434-9dcc-064b3955000f"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, confunction3)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, confunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -156,7 +157,7 @@ func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 		measfunction1.Name = "getOnOffFunction"
 		measfunction1.DisplayName = "bar"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction1)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, measfunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -167,7 +168,7 @@ func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 		measfunction2.ConceptId = "urn:infai:ses:concept:efffsdfd-aaaa-bbbb-ccc-0000"
 		measfunction2.DisplayName = "batz"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction2)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, measfunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -177,7 +178,7 @@ func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 		measfunction3.Name = "getHumidityFunction"
 		measfunction3.DisplayName = "hum_display"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction3)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, measfunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -193,7 +194,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 		confunction1.Description = "Turn the device on"
 
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetFunction(testenv.AdminToken, confunction1)
+		_, err, _ := c.SetFunction(context.Background(), testenv.AdminToken, confunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,7 +205,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 		confunction2.DisplayName = "off-function 2"
 		confunction2.ConceptId = "2"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, confunction2)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, confunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -215,7 +216,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 		confunction3.DisplayName = "ctrl display name 2"
 		confunction3.ConceptId = "urn:infai:ses:concept:efffsdfd-01a1-4434-9dcc-064b3955000f"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, confunction3)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, confunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -225,7 +226,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 		measfunction1.Name = "getOnOffFunction"
 		measfunction1.DisplayName = "bar 2"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction1)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, measfunction1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -236,7 +237,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 		measfunction2.ConceptId = "urn:infai:ses:concept:efffsdfd-aaaa-bbbb-ccc-0000"
 		measfunction2.DisplayName = "batz 2"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction2)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, measfunction2)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -246,7 +247,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 		measfunction3.Name = "getHumidityFunction"
 		measfunction3.DisplayName = "hum_display 2"
 
-		_, err, _ = c.SetFunction(testenv.AdminToken, measfunction3)
+		_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, measfunction3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -255,7 +256,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 
 func testReadControllingFunction(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetFunctionsByType(model.SES_ONTOLOGY_CONTROLLING_FUNCTION)
+		res, err, code := con.GetFunctionsByType(context.Background(), model.SES_ONTOLOGY_CONTROLLING_FUNCTION)
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {
@@ -308,7 +309,7 @@ func testReadControllingFunction(con *controller.Controller) func(t *testing.T) 
 
 func testReadMeasuringFunction(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetFunctionsByType(model.SES_ONTOLOGY_MEASURING_FUNCTION)
+		res, err, code := con.GetFunctionsByType(context.Background(), model.SES_ONTOLOGY_MEASURING_FUNCTION)
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {
@@ -366,7 +367,7 @@ func testFunctionDelete(conf configuration.Config) func(t *testing.T) {
 
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		for _, funcid := range funcids {
-			err, _ := c.DeleteFunction(testenv.AdminToken, funcid)
+			err, _ := c.DeleteFunction(context.Background(), testenv.AdminToken, funcid)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -70,14 +70,14 @@ func TestAspectClassIdRequired(t *testing.T) {
 	const aspectClass = models.URN_PREFIX + "aspect-class:required"
 
 	t.Run("create aspect-class", func(t *testing.T) {
-		_, err, _ := c.SetAspectClass(client.InternalAdminToken, models.AspectClass{Id: aspectClass, Name: "required"})
+		_, err, _ := c.SetAspectClass(context.Background(), client.InternalAdminToken, models.AspectClass{Id: aspectClass, Name: "required"})
 		if err != nil {
 			t.Error(err)
 		}
 	})
 
 	t.Run("aspect without a class is rejected", func(t *testing.T) {
-		_, err, code := c.SetAspect(client.InternalAdminToken, models.Aspect{
+		_, err, code := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id:   models.URN_PREFIX + "aspect:without_class",
 			Name: "without_class",
 		})
@@ -91,7 +91,7 @@ func TestAspectClassIdRequired(t *testing.T) {
 	})
 
 	t.Run("aspect with a class is accepted", func(t *testing.T) {
-		result, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{
+		result, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id:            models.URN_PREFIX + "aspect:with_class",
 			Name:          "with_class",
 			AspectClassId: aspectClass,
@@ -110,7 +110,7 @@ func TestAspectClassIdRequired(t *testing.T) {
 	})
 
 	t.Run("validation endpoint agrees", func(t *testing.T) {
-		err, code := c.ValidateAspect(models.Aspect{
+		err, code := c.ValidateAspect(context.Background(), models.Aspect{
 			Id:   models.URN_PREFIX + "aspect:validate_without_class",
 			Name: "validate_without_class",
 		})

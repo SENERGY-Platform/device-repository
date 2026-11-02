@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
@@ -28,8 +29,8 @@ func (c *Controller) GetPermissionsClient() client.Client {
 	return c.permissionsV2Client
 }
 
-func (this *Controller) EnsureInitialRights(topic string, resourceId string, owner string) error {
-	_, err, code := this.permissionsV2Client.GetResource(client.InternalAdminToken, topic, resourceId)
+func (this *Controller) EnsureInitialRights(ctx context.Context, topic string, resourceId string, owner string) error {
+	_, err, code := this.permissionsV2Client.GetResourceContext(ctx, client.InternalAdminToken, topic, resourceId)
 	if err == nil {
 		return nil
 	} else if code != http.StatusNotFound {
@@ -37,15 +38,15 @@ func (this *Controller) EnsureInitialRights(topic string, resourceId string, own
 	}
 
 	initialPermissions := this.getDefaultEntryPermissions(topic, owner)
-	_, err, _ = this.permissionsV2Client.SetPermission(client.InternalAdminToken, topic, resourceId, initialPermissions.ToPermV2Permissions())
+	_, err, _ = this.permissionsV2Client.SetPermissionContext(ctx, client.InternalAdminToken, topic, resourceId, initialPermissions.ToPermV2Permissions())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (this *Controller) RemoveRights(topic string, id string) error {
-	err, _ := this.permissionsV2Client.RemoveResource(client.InternalAdminToken, topic, id)
+func (this *Controller) RemoveRights(ctx context.Context, topic string, id string) error {
+	err, _ := this.permissionsV2Client.RemoveResourceContext(ctx, client.InternalAdminToken, topic, id)
 	if err != nil {
 		return err
 	}

@@ -62,7 +62,7 @@ func (this *HubEndpoints) Get(config configuration.Config, router *http.ServeMux
 		if permission == models.UnsetPermissionFlag {
 			permission = model.READ
 		}
-		result, err, errCode := control.ReadHub(id, util.GetAuthToken(request), permission)
+		result, err, errCode := control.ReadHub(request.Context(), id, util.GetAuthToken(request), permission)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -157,7 +157,7 @@ func (this *HubEndpoints) List(config configuration.Config, router *http.ServeMu
 			hubListOptions.Permission = model.READ
 		}
 
-		result, err, errCode := control.ListHubs(util.GetAuthToken(request), hubListOptions)
+		result, err, errCode := control.ListHubs(request.Context(), util.GetAuthToken(request), hubListOptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -215,7 +215,7 @@ func (this *HubEndpoints) GetDevices(config configuration.Config, router *http.S
 			http.Error(writer, "expect 'id', 'localId' or 'local_id' as value for 'as' query-parameter if it is used", http.StatusBadRequest)
 			return
 		}
-		result, err, errCode := control.ListHubDeviceIds(id, util.GetAuthToken(request), permission, asLocalId)
+		result, err, errCode := control.ListHubDeviceIds(request.Context(), id, util.GetAuthToken(request), permission, asLocalId)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -254,7 +254,7 @@ func (this *HubEndpoints) Head(config configuration.Config, router *http.ServeMu
 			permission = model.READ
 		}
 		id := request.PathValue("id")
-		_, _, errCode := control.ReadHub(id, util.GetAuthToken(request), permission)
+		_, _, errCode := control.ReadHub(request.Context(), id, util.GetAuthToken(request), permission)
 		writer.WriteHeader(errCode)
 		return
 	})
@@ -289,7 +289,7 @@ func (this *HubEndpoints) Validate(config configuration.Config, router *http.Ser
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateHub(util.GetAuthToken(request), hub)
+		err, code := control.ValidateHub(request.Context(), util.GetAuthToken(request), hub)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -327,7 +327,7 @@ func (this *HubEndpoints) Create(config configuration.Config, router *http.Serve
 			return
 		}
 
-		result, err, errCode := control.SetHub(token, hub, model.HubUpdateOptions{})
+		result, err, errCode := control.SetHub(request.Context(), token, hub, model.HubUpdateOptions{})
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -394,7 +394,7 @@ func (this *HubEndpoints) Set(config configuration.Config, router *http.ServeMux
 			hub.OwnerId = userId
 		}
 
-		result, err, errCode := control.SetHub(token, hub, options)
+		result, err, errCode := control.SetHub(request.Context(), token, hub, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -433,14 +433,14 @@ func (this *HubEndpoints) SetName(config configuration.Config, router *http.Serv
 			return
 		}
 		token := util.GetAuthToken(request)
-		hub, err, code := control.ReadHub(id, token, model.WRITE)
+		hub, err, code := control.ReadHub(request.Context(), id, token, model.WRITE)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
 		}
 		hub.Name = name
 
-		result, err, errCode := control.SetHub(token, hub, model.HubUpdateOptions{})
+		result, err, errCode := control.SetHub(request.Context(), token, hub, model.HubUpdateOptions{})
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -472,7 +472,7 @@ func (this *HubEndpoints) Delete(config configuration.Config, router *http.Serve
 	router.HandleFunc("DELETE /hubs/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
-		err, errCode := control.DeleteHub(token, id)
+		err, errCode := control.DeleteHub(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -514,7 +514,7 @@ func (this *HubEndpoints) SetConnectionState(config configuration.Config, router
 		}
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.SetHubConnectionState(token, id, connected)
+		err, errCode := control.SetHubConnectionState(request.Context(), token, id, connected)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -551,7 +551,7 @@ func (this *HubEndpoints) SetConnectionStates(config configuration.Config, route
 		}
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.SetHubConnectionStates(token, states)
+		err, errCode := control.SetHubConnectionStates(request.Context(), token, states)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

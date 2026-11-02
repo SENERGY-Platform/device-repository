@@ -18,6 +18,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -30,12 +31,12 @@ import (
 
 type DeviceUpdateOptions = model.DeviceUpdateOptions
 
-func (c *Client) SetDeviceConnectionState(token string, id string, connected bool) (error, int) {
+func (c *Client) SetDeviceConnectionState(ctx context.Context, token string, id string, connected bool) (error, int) {
 	b, err := json.Marshal(connected)
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/devices/"+url.PathEscape(id)+"/connection-state", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/devices/"+url.PathEscape(id)+"/connection-state", bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -43,12 +44,12 @@ func (c *Client) SetDeviceConnectionState(token string, id string, connected boo
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) SetDeviceConnectionStates(token string, states map[string]bool) (error, int) {
+func (c *Client) SetDeviceConnectionStates(ctx context.Context, token string, states map[string]bool) (error, int) {
 	b, err := json.Marshal(states)
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/devices-batch/connection-state", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/devices-batch/connection-state", bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -56,7 +57,7 @@ func (c *Client) SetDeviceConnectionStates(token string, states map[string]bool)
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) SetDevice(token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int) {
+func (c *Client) SetDevice(ctx context.Context, token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int) {
 	b, err := json.Marshal(device)
 	if err != nil {
 		return result, err, http.StatusBadRequest
@@ -65,7 +66,7 @@ func (c *Client) SetDevice(token string, device models.Device, options model.Dev
 	if options.UpdateOnlySameOriginAttributes != nil {
 		query.Set("update-only-same-origin-attributes", strings.Join(options.UpdateOnlySameOriginAttributes, ","))
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/devices/"+url.PathEscape(device.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/devices/"+url.PathEscape(device.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -73,12 +74,12 @@ func (c *Client) SetDevice(token string, device models.Device, options model.Dev
 	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) CreateDevice(token string, device models.Device) (result models.Device, err error, code int) {
+func (c *Client) CreateDevice(ctx context.Context, token string, device models.Device) (result models.Device, err error, code int) {
 	b, err := json.Marshal(device)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/devices", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/devices", bytes.NewBuffer(b))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -86,8 +87,8 @@ func (c *Client) CreateDevice(token string, device models.Device) (result models
 	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteDevice(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/devices/"+url.PathEscape(id), nil)
+func (c *Client) DeleteDevice(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/devices/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -95,7 +96,7 @@ func (c *Client) DeleteDevice(token string, id string) (err error, code int) {
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListDevices(token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {
+func (c *Client) ListDevices(ctx context.Context, token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
@@ -144,7 +145,7 @@ func (c *Client) ListDevices(token string, options DeviceListOptions) (result []
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/devices"+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -152,7 +153,7 @@ func (c *Client) ListDevices(token string, options DeviceListOptions) (result []
 	return do[[]models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+func (c *Client) ReadDevice(ctx context.Context, id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -161,7 +162,7 @@ func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (r
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+url.PathEscape(id)+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/devices/"+url.PathEscape(id)+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -169,14 +170,14 @@ func (c *Client) ReadDevice(id string, token string, action model.AuthAction) (r
 	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
+func (c *Client) ReadDeviceByLocalId(ctx context.Context, ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
 	}
 	query.Set("as", "local_id")
 	query.Set("owner_id", ownerId)
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/devices/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/devices/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -184,6 +185,6 @@ func (c *Client) ReadDeviceByLocalId(ownerId string, localId string, token strin
 	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateDevice(token string, device models.Device) (err error, code int) {
-	return c.validateWithToken(token, "/devices", device)
+func (c *Client) ValidateDevice(ctx context.Context, token string, device models.Device) (err error, code int) {
+	return c.validateWithToken(ctx, token, "/devices", device)
 }

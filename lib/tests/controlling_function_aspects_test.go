@@ -75,7 +75,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 	)
 
 	t.Run("create resources", func(t *testing.T) {
-		_, err, _ := c.SetAspect(client.InternalAdminToken, models.Aspect{
+		_, err, _ := c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Id:         airAspect,
 			Name:       "air",
 			SubAspects: []models.Aspect{{Id: insideAir, Name: "inside_air"}},
@@ -84,7 +84,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetAspect(client.InternalAdminToken, models.Aspect{Id: waterAspect, Name: "water"})
+		_, err, _ = c.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{Id: waterAspect, Name: "water"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -94,18 +94,18 @@ func TestControllingFunctionAspects(t *testing.T) {
 			{Id: setOn, Name: "setOn", DisplayName: "setOn", RdfType: models.SES_ONTOLOGY_CONTROLLING_FUNCTION},
 			{Id: getTemperature, Name: "getTemperature", DisplayName: "getTemperature", RdfType: models.SES_ONTOLOGY_MEASURING_FUNCTION},
 		} {
-			_, err, _ = c.SetFunction(client.InternalAdminToken, f)
+			_, err, _ = c.SetFunction(context.Background(), client.InternalAdminToken, f)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
-		_, err, _ = c.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "thermostat"})
+		_, err, _ = c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{Id: deviceClass, Name: "thermostat"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetProtocol(client.InternalAdminToken, models.Protocol{
+		_, err, _ = c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:               "p1",
 			Name:             "p1",
 			Handler:          "p1",
@@ -129,7 +129,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 				},
 			}}
 		}
-		_, err, _ = c.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		_, err, _ = c.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Id:            "dt1",
 			Name:          "dt1",
 			DeviceClassId: deviceClass,
@@ -182,7 +182,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 	}
 
 	t.Run("aspect-nodes with controlling function", func(t *testing.T) {
-		nodes, err, _ := c.GetAspectNodesWithControllingFunction(false, false)
+		nodes, err, _ := c.GetAspectNodesWithControllingFunction(context.Background(), false, false)
 		if err != nil {
 			t.Error(err)
 			return
@@ -191,7 +191,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 			t.Error("unexpected aspect-nodes", got)
 		}
 		//descendants=true adds the nodes that have a used node among their descendants
-		nodes, err, _ = c.GetAspectNodesWithControllingFunction(false, true)
+		nodes, err, _ = c.GetAspectNodesWithControllingFunction(context.Background(), false, true)
 		if err != nil {
 			t.Error(err)
 			return
@@ -202,7 +202,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 	})
 
 	t.Run("aspect-nodes with measuring function are unchanged", func(t *testing.T) {
-		nodes, err, _ := c.GetAspectNodesWithMeasuringFunction(false, false)
+		nodes, err, _ := c.GetAspectNodesWithMeasuringFunction(context.Background(), false, false)
 		if err != nil {
 			t.Error(err)
 			return
@@ -213,7 +213,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 	})
 
 	t.Run("aspects with controlling function", func(t *testing.T) {
-		aspects, err, _ := c.GetAspectsWithControllingFunction(false, true)
+		aspects, err, _ := c.GetAspectsWithControllingFunction(context.Background(), false, true)
 		if err != nil {
 			t.Error(err)
 			return
@@ -224,7 +224,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 	})
 
 	t.Run("controlling functions of an aspect-node", func(t *testing.T) {
-		functions, err, _ := c.GetAspectNodesControllingFunctions(insideAir, false, false)
+		functions, err, _ := c.GetAspectNodesControllingFunctions(context.Background(), insideAir, false, false)
 		if err != nil {
 			t.Error(err)
 			return
@@ -232,7 +232,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 		if got := functionIds(functions); !slices.Equal(got, []string{setTemperature}) {
 			t.Error("unexpected functions", got)
 		}
-		functions, err, _ = c.GetAspectNodesControllingFunctions(airAspect, false, false)
+		functions, err, _ = c.GetAspectNodesControllingFunctions(context.Background(), airAspect, false, false)
 		if err != nil {
 			t.Error(err)
 			return
@@ -240,7 +240,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 		if got := functionIds(functions); len(got) != 0 {
 			t.Error("the parent alone should not find a function of its child", got)
 		}
-		functions, err, _ = c.GetAspectNodesControllingFunctions(airAspect, false, true)
+		functions, err, _ = c.GetAspectNodesControllingFunctions(context.Background(), airAspect, false, true)
 		if err != nil {
 			t.Error(err)
 			return
@@ -248,7 +248,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 		if got := functionIds(functions); !slices.Equal(got, []string{setTemperature}) {
 			t.Error("unexpected functions with descendants", got)
 		}
-		functions, err, _ = c.GetAspectNodesMeasuringFunctions(insideAir, false, true)
+		functions, err, _ = c.GetAspectNodesMeasuringFunctions(context.Background(), insideAir, false, true)
 		if err != nil {
 			t.Error(err)
 			return
@@ -259,7 +259,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 	})
 
 	t.Run("generated device-group criteria", func(t *testing.T) {
-		device, err, _ := c.CreateDevice(client.InternalAdminToken, models.Device{
+		device, err, _ := c.CreateDevice(context.Background(), client.InternalAdminToken, models.Device{
 			LocalId:      "d1",
 			Name:         "d1",
 			DeviceTypeId: "dt1",
@@ -268,7 +268,7 @@ func TestControllingFunctionAspects(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		group, err, _ := c.ReadDeviceGroup(model.DeviceIdToGeneratedDeviceGroupId(device.Id), client.InternalAdminToken, false)
+		group, err, _ := c.ReadDeviceGroup(context.Background(), model.DeviceIdToGeneratedDeviceGroupId(device.Id), client.InternalAdminToken, false)
 		if err != nil {
 			t.Error(err)
 			return

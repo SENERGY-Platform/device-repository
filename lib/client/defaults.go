@@ -18,13 +18,15 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
+
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) GetDefaultDeviceAttributes(token string) (attributes []models.Attribute, err error, code int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/defaults/devices/attributes", nil)
+func (c *Client) GetDefaultDeviceAttributes(ctx context.Context, token string) (attributes []models.Attribute, err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/defaults/devices/attributes", nil)
 	if err != nil {
 		return attributes, err, http.StatusInternalServerError
 	}
@@ -32,12 +34,12 @@ func (c *Client) GetDefaultDeviceAttributes(token string) (attributes []models.A
 	return do[[]models.Attribute](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) SetDefaultDeviceAttributes(token string, attributes []models.Attribute) (err error, code int) {
+func (c *Client) SetDefaultDeviceAttributes(ctx context.Context, token string, attributes []models.Attribute) (err error, code int) {
 	b, err := json.Marshal(attributes)
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+"/defaults/devices/attributes", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/defaults/devices/attributes", bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

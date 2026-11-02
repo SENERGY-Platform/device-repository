@@ -18,6 +18,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -30,7 +31,7 @@ import (
 
 type AspectClassListOptions = model.AspectClassListOptions
 
-func (c *Client) ListAspectClasses(options model.AspectClassListOptions) (result []models.AspectClass, total int64, err error, errCode int) {
+func (c *Client) ListAspectClasses(ctx context.Context, options model.AspectClassListOptions) (result []models.AspectClass, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -51,31 +52,31 @@ func (c *Client) ListAspectClasses(options model.AspectClassListOptions) (result
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-classes"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-classes"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.AspectClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetAspectClass(id string) (result models.AspectClass, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/aspect-classes/"+url.PathEscape(id), nil)
+func (c *Client) GetAspectClass(ctx context.Context, id string) (result models.AspectClass, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspect-classes/"+url.PathEscape(id), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return do[models.AspectClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) SetAspectClass(token string, aspectClass models.AspectClass) (result models.AspectClass, err error, code int) {
+func (c *Client) SetAspectClass(ctx context.Context, token string, aspectClass models.AspectClass) (result models.AspectClass, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(aspectClass)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if aspectClass.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/aspect-classes", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/aspect-classes", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/aspect-classes/"+url.PathEscape(aspectClass.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/aspect-classes/"+url.PathEscape(aspectClass.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -84,8 +85,8 @@ func (c *Client) SetAspectClass(token string, aspectClass models.AspectClass) (r
 	return do[models.AspectClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteAspectClass(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/aspect-classes/"+url.PathEscape(id), nil)
+func (c *Client) DeleteAspectClass(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/aspect-classes/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -93,10 +94,10 @@ func (c *Client) DeleteAspectClass(token string, id string) (err error, code int
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateAspectClass(aspectClass models.AspectClass) (err error, code int) {
-	return c.validate("/aspect-classes", aspectClass)
+func (c *Client) ValidateAspectClass(ctx context.Context, aspectClass models.AspectClass) (err error, code int) {
+	return c.validate(ctx, "/aspect-classes", aspectClass)
 }
 
-func (c *Client) ValidateAspectClassDelete(id string) (err error, code int) {
-	return c.validateDelete("/aspect-classes/" + id)
+func (c *Client) ValidateAspectClassDelete(ctx context.Context, id string) (err error, code int) {
+	return c.validateDelete(ctx, "/aspect-classes/"+id)
 }

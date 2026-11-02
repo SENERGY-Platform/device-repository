@@ -18,19 +18,21 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 )
 
-func (c *Client) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int) {
+func (c *Client) GetDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int) {
 	body, err := json.Marshal(query)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/query/device-type-selectables?path-prefix="+pathPrefix+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/query/device-type-selectables?path-prefix="+pathPrefix+
 		"&interactions-filter="+strings.Join(interactionsFilter, ",")+"&include_id_modified="+strconv.FormatBool(includeModified), bytes.NewBuffer(body))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -38,12 +40,12 @@ func (c *Client) GetDeviceTypeSelectables(query []model.FilterCriteria, pathPref
 	return do[[]model.DeviceTypeSelectable](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetDeviceTypeSelectablesV2(query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int) {
+func (c *Client) GetDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int) {
 	body, err := json.Marshal(query)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/v2/query/device-type-selectables?path-prefix="+pathPrefix+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/v2/query/device-type-selectables?path-prefix="+pathPrefix+
 		"&include_id_modified="+strconv.FormatBool(includeModified)+"&services_must_match_all_criteria="+strconv.FormatBool(servicesMustMatchAllCriteria), bytes.NewBuffer(body))
 	if err != nil {
 		return result, err, http.StatusInternalServerError

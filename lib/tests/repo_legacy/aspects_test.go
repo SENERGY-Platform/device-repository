@@ -17,13 +17,15 @@
 package repo_legacy
 
 import (
-	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/models/go/models"
+	"context"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func testAspectList(t *testing.T, conf configuration.Config) {
@@ -97,7 +99,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 	t.Run("create aspects", func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 		for _, aspect := range aspects {
-			_, err, _ := c.SetAspect(AdminToken, aspect)
+			_, err, _ := c.SetAspect(context.Background(), AdminToken, aspect)
 			if err != nil {
 				t.Error(err)
 				return
@@ -106,7 +108,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 	})
 	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
 	t.Run("list all aspects", func(t *testing.T) {
-		list, total, err, _ := c.ListAspects(client.AspectListOptions{})
+		list, total, err, _ := c.ListAspects(context.Background(), client.AspectListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -121,7 +123,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list b aspects", func(t *testing.T) {
-		list, total, err, _ := c.ListAspects(client.AspectListOptions{Search: "b"})
+		list, total, err, _ := c.ListAspects(context.Background(), client.AspectListOptions{Search: "b"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -136,7 +138,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list a1,b3 aspects", func(t *testing.T) {
-		list, total, err, _ := c.ListAspects(client.AspectListOptions{Ids: []string{"a1", "b3"}})
+		list, total, err, _ := c.ListAspects(context.Background(), client.AspectListOptions{Ids: []string{"a1", "b3"}})
 		if err != nil {
 			t.Error(err)
 			return
@@ -152,7 +154,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("list all aspect-nodes", func(t *testing.T) {
-		list, total, err, _ := c.ListAspectNodes(client.AspectListOptions{SortBy: "name.asc"})
+		list, total, err, _ := c.ListAspectNodes(context.Background(), client.AspectListOptions{SortBy: "name.asc"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -168,7 +170,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("list b aspects-nodes", func(t *testing.T) {
-		list, total, err, _ := c.ListAspectNodes(client.AspectListOptions{Search: "b"})
+		list, total, err, _ := c.ListAspectNodes(context.Background(), client.AspectListOptions{Search: "b"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -183,7 +185,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 		}
 	})
 	t.Run("list a1,a2.2.1,b3, aspects-nodes", func(t *testing.T) {
-		list, total, err, _ := c.ListAspectNodes(client.AspectListOptions{Ids: []string{"a1", "a2.2.1", "b3"}})
+		list, total, err, _ := c.ListAspectNodes(context.Background(), client.AspectListOptions{Ids: []string{"a1", "a2.2.1", "b3"}})
 		if err != nil {
 			t.Error(err)
 			return

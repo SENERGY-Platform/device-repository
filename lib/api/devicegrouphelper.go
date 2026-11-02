@@ -100,7 +100,7 @@ func (this *DeviceGroupHelperEndpoints) Helper(config configuration.Config, rout
 			options.FunctionBlockList = strings.Split(functionBlockList, ",")
 		}
 
-		result, err, errCode := control.DeviceGroupHelper(util.GetAuthToken(request), deviceIds, options)
+		result, err, errCode := control.DeviceGroupHelper(request.Context(), util.GetAuthToken(request), deviceIds, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

@@ -28,6 +28,7 @@ import (
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/gin-middleware/otelx"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/accesslog"
 )
@@ -91,11 +92,26 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 	config.GetLogger().Info("add cors")
 	corsHandler := util.NewCors(permForward)
 	config.GetLogger().Info("add logging")
-	logger := accesslog.New(corsHandler)
+	var result http.Handler = accesslog.New(corsHandler)
 	if config.AsMgwMirror {
-		return util.NewMirrorMiddleware(logger, config, control)
+		result = util.NewMirrorMiddleware(result, config, control)
 	}
-	return logger
+	config.GetLogger().Info("add tracing")
+	result = withoutCancel(result)
+	traced, err := otelx.HTTPOpenTelemetry(context.Background(), config.OtelEndpoint, "device-repository", result)
+	if err != nil {
+		config.GetLogger().Warn("unable to add tracing", "error", err)
+		return result
+	}
+	return traced
+}
+
+// withoutCancel keeps the trace of a request but not its cancellation:
+// a client that disconnects must not abort a write halfway between database, permissions and kafka.
+func withoutCancel(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		handler.ServeHTTP(writer, request.WithContext(context.WithoutCancel(request.Context())))
+	})
 }
 
 func GetRouterWithoutMiddleware(config configuration.Config, command Controller) http.Handler {

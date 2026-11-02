@@ -18,6 +18,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -30,7 +31,7 @@ import (
 
 type DeviceTypeUpdateOptions = model.DeviceTypeUpdateOptions
 
-func (c *Client) SetDeviceType(token string, deviceType models.DeviceType, options model.DeviceTypeUpdateOptions) (result models.DeviceType, err error, code int) {
+func (c *Client) SetDeviceType(ctx context.Context, token string, deviceType models.DeviceType, options model.DeviceTypeUpdateOptions) (result models.DeviceType, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(deviceType)
 	if err != nil {
@@ -41,9 +42,9 @@ func (c *Client) SetDeviceType(token string, deviceType models.DeviceType, optio
 		query.Set("distinct_attributes", strings.Join(options.DistinctAttributes, ","))
 	}
 	if deviceType.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/device-types?"+query.Encode(), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/device-types?"+query.Encode(), bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/device-types/"+url.PathEscape(deviceType.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/device-types/"+url.PathEscape(deviceType.Id)+"?"+query.Encode(), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -52,8 +53,8 @@ func (c *Client) SetDeviceType(token string, deviceType models.DeviceType, optio
 	return do[models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteDeviceType(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/device-types/"+url.PathEscape(id), nil)
+func (c *Client) DeleteDeviceType(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/device-types/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -61,8 +62,8 @@ func (c *Client) DeleteDeviceType(token string, id string) (err error, code int)
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadDeviceType(id string, token string) (result models.DeviceType, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types/"+id, nil)
+func (c *Client) ReadDeviceType(ctx context.Context, id string, token string) (result models.DeviceType, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-types/"+id, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -73,7 +74,7 @@ func (c *Client) ReadDeviceType(id string, token string) (result models.DeviceTy
 	return do[models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListDeviceTypes(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
+func (c *Client) ListDeviceTypes(ctx context.Context, token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
 	options := url.Values{
 		"limit":                 {strconv.FormatInt(limit, 10)},
 		"offset":                {strconv.FormatInt(offset, 10)},
@@ -89,7 +90,7 @@ func (c *Client) ListDeviceTypes(token string, limit int64, offset int64, sort s
 		}
 		options.Add("filter", string(filterStr))
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types?"+options.Encode(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-types?"+options.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -97,7 +98,7 @@ func (c *Client) ListDeviceTypes(token string, limit int64, offset int64, sort s
 	return do[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
+func (c *Client) ListDeviceTypesV2(ctx context.Context, token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
 	options := url.Values{
 		"limit":                 {strconv.FormatInt(limit, 10)},
 		"offset":                {strconv.FormatInt(offset, 10)},
@@ -112,7 +113,7 @@ func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort
 		}
 		options.Add("filter", string(filterStr))
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-types?"+options.Encode(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-types?"+options.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -120,7 +121,7 @@ func (c *Client) ListDeviceTypesV2(token string, limit int64, offset int64, sort
 	return do[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
+func (c *Client) ListDeviceTypesV3(ctx context.Context, token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -163,7 +164,7 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v3/device-types"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/v3/device-types"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
@@ -171,7 +172,7 @@ func (c *Client) ListDeviceTypesV3(token string, options model.DeviceTypeListOpt
 	return doWithTotalInResult[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListDeviceTypesUsedByUser(token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
+func (c *Client) ListDeviceTypesUsedByUser(ctx context.Context, token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -214,7 +215,7 @@ func (c *Client) ListDeviceTypesUsedByUser(token string, options model.DeviceTyp
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/user-device-types"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/user-device-types"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
@@ -224,16 +225,16 @@ func (c *Client) ListDeviceTypesUsedByUser(token string, options model.DeviceTyp
 
 type DeviceTypeValidationOptions = model.ValidationOptions
 
-func (c *Client) ValidateDeviceType(deviceType models.DeviceType, options model.ValidationOptions) (err error, code int) {
-	return c.validateWithOptions("/device-types", deviceType, options.AsUrlValues())
+func (c *Client) ValidateDeviceType(ctx context.Context, deviceType models.DeviceType, options model.ValidationOptions) (err error, code int) {
+	return c.validateWithOptions(ctx, "/device-types", deviceType, options.AsUrlValues())
 }
 
-func (c *Client) GetUsedInDeviceType(query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int) {
+func (c *Client) GetUsedInDeviceType(ctx context.Context, query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int) {
 	body, err := json.Marshal(query)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/query/used-in-device-type", bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/query/used-in-device-type", bytes.NewBuffer(body))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

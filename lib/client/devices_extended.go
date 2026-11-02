@@ -17,6 +17,7 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -29,7 +30,7 @@ import (
 
 const extendedDevicePath = "extended-devices"
 
-func (c *Client) ListExtendedDevices(token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
+func (c *Client) ListExtendedDevices(ctx context.Context, token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int) {
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
 		query.Set("p", string(options.Permission))
@@ -81,7 +82,7 @@ func (c *Client) ListExtendedDevices(token string, options model.ExtendedDeviceL
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/"+extendedDevicePath+queryString, nil)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
@@ -89,7 +90,7 @@ func (c *Client) ListExtendedDevices(token string, options model.ExtendedDeviceL
 	return doWithTotalInResult[[]models.ExtendedDevice](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
+func (c *Client) ReadExtendedDevice(ctx context.Context, id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -101,7 +102,7 @@ func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAc
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+"/"+id+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/"+extendedDevicePath+"/"+id+queryString, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -109,7 +110,7 @@ func (c *Client) ReadExtendedDevice(id string, token string, action model.AuthAc
 	return do[models.ExtendedDevice](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadExtendedDeviceByLocalId(ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
+func (c *Client) ReadExtendedDeviceByLocalId(ctx context.Context, ownerId string, localId string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {
 		query.Set("p", string(action))
@@ -119,7 +120,7 @@ func (c *Client) ReadExtendedDeviceByLocalId(ownerId string, localId string, tok
 	if fullDt {
 		query.Set("fulldt", "true")
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/"+extendedDevicePath+"/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/"+extendedDevicePath+"/"+url.PathEscape(localId)+"?"+query.Encode(), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

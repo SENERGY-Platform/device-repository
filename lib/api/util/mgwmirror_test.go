@@ -17,6 +17,7 @@
 package util
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -30,7 +31,7 @@ import (
 
 type pullFunc func() error
 
-func (f pullFunc) MirrorUpdate(uncheckedCollections ...string) error {
+func (f pullFunc) MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error {
 	return f()
 }
 
@@ -38,7 +39,7 @@ type recordingPull struct {
 	calls [][]string
 }
 
-func (this *recordingPull) MirrorUpdate(uncheckedCollections ...string) error {
+func (this *recordingPull) MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error {
 	this.calls = append(this.calls, uncheckedCollections)
 	return nil
 }

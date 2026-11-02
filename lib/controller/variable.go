@@ -20,15 +20,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (this *Controller) ValidateVariable(variable models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
+func (this *Controller) ValidateVariable(ctx context.Context, variable models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
 	if variable.Id == "" {
 		return errors.New("missing content variable id"), http.StatusBadRequest
 	}
@@ -77,12 +78,12 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 				return errors.New("booleans can not have sub content variables for " + variable.Name), http.StatusBadRequest
 			}
 		case models.List:
-			err, code = this.ValidateListSubVariables(variable.SubContentVariables, serialization, options)
+			err, code = this.ValidateListSubVariables(ctx, variable.SubContentVariables, serialization, options)
 			if err != nil {
 				return err, code
 			}
 		case models.Structure:
-			err, code = this.ValidateStructureSubVariables(variable.SubContentVariables, serialization, options)
+			err, code = this.ValidateStructureSubVariables(ctx, variable.SubContentVariables, serialization, options)
 			if err != nil {
 				return err, code
 			}
@@ -91,7 +92,7 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 		}
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, _ = context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
 	if this != nil {
 		//a content variable carries at most one aspect per aspect-class
 		aspectIdByAspectClassId := map[string]string{}
@@ -120,7 +121,7 @@ func (this *Controller) ValidateVariable(variable models.ContentVariable, serial
 		}
 	}
 
-	ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, _ = context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
 	if variable.FunctionId != "" && this != nil {
 		function, exists, err := this.db.GetFunction(ctx, variable.FunctionId)
 		if err != nil {
@@ -167,7 +168,7 @@ func ValidateVariableName(name string) (err error, code int) {
 	return ValidateName(name)
 }
 
-func (this *Controller) ValidateListSubVariables(variables []models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
+func (this *Controller) ValidateListSubVariables(ctx context.Context, variables []models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("lists expect sub content variables"), http.StatusBadRequest
 	}
@@ -175,7 +176,7 @@ func (this *Controller) ValidateListSubVariables(variables []models.ContentVaria
 		if len(variables) != 1 {
 			return errors.New("lists with name placeholder '*' have a variable length -> only one sub variable may be defined"), http.StatusBadRequest
 		}
-		return this.ValidateVariable(variables[0], serialization, options)
+		return this.ValidateVariable(ctx, variables[0], serialization, options)
 	}
 	nameIndex := map[string]bool{}
 	for _, variable := range variables {
@@ -184,7 +185,7 @@ func (this *Controller) ValidateListSubVariables(variables []models.ContentVaria
 			return errors.New("name of list variable should be a number (if list is variable in length is may be defined with one element and the placeholder '*' as name)"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
-		err, code = this.ValidateVariable(variable, serialization, options)
+		err, code = this.ValidateVariable(ctx, variable, serialization, options)
 		if err != nil {
 			return err, code
 		}
@@ -197,7 +198,7 @@ func (this *Controller) ValidateListSubVariables(variables []models.ContentVaria
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateStructureSubVariables(variables []models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
+func (this *Controller) ValidateStructureSubVariables(ctx context.Context, variables []models.ContentVariable, serialization models.Serialization, options model.ValidationOptions) (err error, code int) {
 	if len(variables) == 0 {
 		return errors.New("structures expect sub content variables"), http.StatusBadRequest
 	}
@@ -212,7 +213,7 @@ func (this *Controller) ValidateStructureSubVariables(variables []models.Content
 			return errors.New("structure sub content variable reuses name '" + variable.Name + "'"), http.StatusBadRequest
 		}
 		nameIndex[variable.Name] = true
-		err, code = this.ValidateVariable(variable, serialization, options)
+		err, code = this.ValidateVariable(ctx, variable, serialization, options)
 		if err != nil {
 			return err, code
 		}

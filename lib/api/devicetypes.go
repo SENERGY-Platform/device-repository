@@ -51,7 +51,7 @@ type DeviceTypeEndpoints struct{}
 func (this *DeviceTypeEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-types/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.ReadDeviceType(id, util.GetAuthToken(request))
+		result, err, errCode := control.ReadDeviceType(request.Context(), id, util.GetAuthToken(request))
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -185,7 +185,7 @@ func (this *DeviceTypeEndpoints) ListV3(config configuration.Config, router *htt
 			options.Criteria = criteriaList
 		}
 
-		result, total, err, code := control.ListDeviceTypesV3(util.GetAuthToken(request), options)
+		result, total, err, code := control.ListDeviceTypesV3(request.Context(), util.GetAuthToken(request), options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -321,7 +321,7 @@ func (this *DeviceTypeEndpoints) ListDeviceTypesUsedByUser(config configuration.
 			options.Criteria = criteriaList
 		}
 
-		result, total, err, code := control.ListDeviceTypesUsedByUser(util.GetAuthToken(request), options)
+		result, total, err, code := control.ListDeviceTypesUsedByUser(request.Context(), util.GetAuthToken(request), options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -421,9 +421,9 @@ func (this *DeviceTypeEndpoints) List(config configuration.Config, router *http.
 			for _, interaction := range strings.Split(interactionsFilterStr, ",") {
 				interactionsFilter = append(interactionsFilter, strings.TrimSpace(interaction))
 			}
-			result, err, errCode = control.ListDeviceTypes(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, interactionsFilter, includeModified, includeUnmodified)
+			result, err, errCode = control.ListDeviceTypes(request.Context(), util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, interactionsFilter, includeModified, includeUnmodified)
 		} else {
-			result, err, errCode = control.ListDeviceTypesV2(util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, includeModified, includeUnmodified)
+			result, err, errCode = control.ListDeviceTypesV2(request.Context(), util.GetAuthToken(request), limit, offset, sort, deviceTypesFilter, includeModified, includeUnmodified)
 		}
 
 		if err != nil {
@@ -473,7 +473,7 @@ func (this *DeviceTypeEndpoints) Validate(config configuration.Config, router *h
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDeviceType(dt, options)
+		err, code := control.ValidateDeviceType(request.Context(), dt, options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -513,7 +513,7 @@ func (this *DeviceTypeEndpoints) Create(config configuration.Config, router *htt
 			options.DistinctAttributes = strings.Split(distinctAttr, ",")
 		}
 
-		result, err, errCode := control.SetDeviceType(token, devicetype, options)
+		result, err, errCode := control.SetDeviceType(request.Context(), token, devicetype, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -566,7 +566,7 @@ func (this *DeviceTypeEndpoints) Set(config configuration.Config, router *http.S
 			options.DistinctAttributes = strings.Split(distinctAttr, ",")
 		}
 
-		result, err, errCode := control.SetDeviceType(token, devicetype, options)
+		result, err, errCode := control.SetDeviceType(request.Context(), token, devicetype, options)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -599,7 +599,7 @@ func (this *DeviceTypeEndpoints) Delete(config configuration.Config, router *htt
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
 
-		err, errCode := control.DeleteDeviceType(token, id)
+		err, errCode := control.DeleteDeviceType(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

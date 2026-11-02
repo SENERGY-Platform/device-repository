@@ -18,13 +18,14 @@ package semantic_legacy
 
 import (
 	"context"
+	"sync"
+	"testing"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
 	"github.com/SENERGY-Platform/models/go/models"
-	"sync"
-	"testing"
 )
 
 func TestDeviceClass(t *testing.T) {
@@ -50,12 +51,12 @@ func TestDeviceClass(t *testing.T) {
 func testProduceDeviceType(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		_, err, _ := c.SetDeviceClass(testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef", Name: "Lamp", Image: "https://i.imgur.com/YHc7cbe.png"})
+		_, err, _ := c.SetDeviceClass(context.Background(), testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef", Name: "Lamp", Image: "https://i.imgur.com/YHc7cbe.png"})
 		if err != nil {
 			t.Error(err)
 			return
 		}
-		_, err, _ = c.SetDeviceClass(testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456", Name: "Lamp2"})
+		_, err, _ = c.SetDeviceClass(context.Background(), testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456", Name: "Lamp2"})
 		if err != nil {
 			t.Error(err)
 			return
@@ -65,7 +66,7 @@ func testProduceDeviceType(conf configuration.Config) func(t *testing.T) {
 
 func testDeviceClassRead(con *controller.Controller) func(t *testing.T) {
 	return func(t *testing.T) {
-		res, err, code := con.GetDeviceClasses()
+		res, err, code := con.GetDeviceClasses(context.Background())
 		if err != nil {
 			t.Fatal(res, err, code)
 		} else {
@@ -95,12 +96,12 @@ func testDeviceClassRead(con *controller.Controller) func(t *testing.T) {
 func testDeviceClassDelete(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
-		err, _ := c.DeleteDeviceClass(testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef")
+		err, _ := c.DeleteDeviceClass(context.Background(), testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		err, _ = c.DeleteDeviceClass(testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456")
+		err, _ = c.DeleteDeviceClass(context.Background(), testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-123456")
 		if err != nil {
 			t.Fatal(err)
 		}

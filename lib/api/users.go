@@ -18,9 +18,10 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"net/http"
 )
 
 func init() {
@@ -43,7 +44,7 @@ func (this *AspectEndpoints) UserDelete(config configuration.Config, router *htt
 	router.HandleFunc("DELETE /users/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
 		token := util.GetAuthToken(request)
-		err, errCode := control.DeleteUser(token, id)
+		err, errCode := control.DeleteUser(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

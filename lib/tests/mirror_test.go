@@ -143,7 +143,7 @@ func TestMirror(t *testing.T) {
 	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, nil)
 
 	t.Run("create initial source state", func(t *testing.T) {
-		p1, err, _ := sourceClient.SetProtocol(client.InternalAdminToken, models.Protocol{
+		p1, err, _ := sourceClient.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:      "p1",
 			Name:    "p1",
 			Handler: "p1",
@@ -155,7 +155,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		a1, err, _ := sourceClient.SetAspect(client.InternalAdminToken, models.Aspect{
+		a1, err, _ := sourceClient.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Name:       "a1",
 			SubAspects: []models.Aspect{{Name: "a1.1"}},
 		})
@@ -163,7 +163,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		c1, err, _ := sourceClient.SetCharacteristic(client.InternalAdminToken, models.Characteristic{
+		c1, err, _ := sourceClient.SetCharacteristic(context.Background(), client.InternalAdminToken, models.Characteristic{
 			Name: "c1",
 			Type: models.String,
 		})
@@ -171,7 +171,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		co1, err, _ := sourceClient.SetConcept(client.InternalAdminToken, models.Concept{
+		co1, err, _ := sourceClient.SetConcept(context.Background(), client.InternalAdminToken, models.Concept{
 			Name:                 "co1",
 			BaseCharacteristicId: c1.Id,
 			CharacteristicIds:    []string{c1.Id},
@@ -180,7 +180,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		f1, err, _ := sourceClient.SetFunction(client.InternalAdminToken, models.Function{
+		f1, err, _ := sourceClient.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Name:        "f1",
 			DisplayName: "f1",
 			ConceptId:   co1.Id,
@@ -191,11 +191,11 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		dc1, err, _ := sourceClient.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{
+		dc1, err, _ := sourceClient.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{
 			Name: "dc1",
 		})
 
-		dt1, err, _ := sourceClient.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		dt1, err, _ := sourceClient.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Name: "dt1",
 			Services: []models.Service{
 				{
@@ -225,7 +225,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.CreateDevice(testenv.SecondOwnerToken, models.Device{
+		_, err, _ = sourceClient.CreateDevice(context.Background(), testenv.SecondOwnerToken, models.Device{
 			LocalId:      "d1",
 			Name:         "d1",
 			DeviceTypeId: dt1.Id,
@@ -236,7 +236,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.CreateDevice(testenv.TestToken, models.Device{
+		_, err, _ = sourceClient.CreateDevice(context.Background(), testenv.TestToken, models.Device{
 			LocalId:      "shouldNotBeFound",
 			Name:         "shouldNotBeFound",
 			DeviceTypeId: dt1.Id,
@@ -247,7 +247,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.SetHub(testenv.SecondOwnerToken, models.Hub{
+		_, err, _ = sourceClient.SetHub(context.Background(), testenv.SecondOwnerToken, models.Hub{
 			Id:      "h1",
 			Name:    "h1",
 			OwnerId: testenv.SecendOwnerTokenUser,
@@ -256,7 +256,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = sourceClient.SetHub(testenv.TestToken, models.Hub{
+		_, err, _ = sourceClient.SetHub(context.Background(), testenv.TestToken, models.Hub{
 			Id:      "shouldNotBeFound2",
 			Name:    "shouldNotBeFound2",
 			OwnerId: testenv.TestTokenUser,
@@ -266,7 +266,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.SetDeviceGroup(testenv.SecondOwnerToken, models.DeviceGroup{
+		_, err, _ = sourceClient.SetDeviceGroup(context.Background(), testenv.SecondOwnerToken, models.DeviceGroup{
 			Name: "dg1",
 		})
 		if err != nil {
@@ -274,7 +274,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.SetDeviceGroup(testenv.TestToken, models.DeviceGroup{
+		_, err, _ = sourceClient.SetDeviceGroup(context.Background(), testenv.TestToken, models.DeviceGroup{
 			Name: "shouldNotBeFound3",
 		})
 		if err != nil {
@@ -294,7 +294,7 @@ func TestMirror(t *testing.T) {
 	t.Run("check initial mirror state", func(t *testing.T) {
 		time.Sleep(2 * time.Second)
 		t.Run("protocols", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListProtocols("", 100, 0, "")
+			result, err, _ := mirrorClient.ListProtocols(context.Background(), "", 100, 0, "")
 			if err != nil {
 				t.Error(err)
 				return
@@ -305,7 +305,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("aspects", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListAspects(client.AspectListOptions{})
+			result, total, err, _ := mirrorClient.ListAspects(context.Background(), client.AspectListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -319,7 +319,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("aspect-nodes", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListAspectNodes(client.AspectListOptions{})
+			result, total, err, _ := mirrorClient.ListAspectNodes(context.Background(), client.AspectListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -334,7 +334,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("devices", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+			result, err, _ := mirrorClient.ListDevices(context.Background(), "", client.DeviceListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -347,7 +347,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("device-groups", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListDeviceGroups("", client.DeviceGroupListOptions{})
+			result, total, err, _ := mirrorClient.ListDeviceGroups(context.Background(), "", client.DeviceGroupListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -363,7 +363,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("hubs", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListHubs("", client.HubListOptions{})
+			result, err, _ := mirrorClient.ListHubs(context.Background(), "", client.HubListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -374,7 +374,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("concepts", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListConcepts(client.ConceptListOptions{})
+			result, total, err, _ := mirrorClient.ListConcepts(context.Background(), client.ConceptListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -388,7 +388,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("functions", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListFunctions(client.FunctionListOptions{})
+			result, total, err, _ := mirrorClient.ListFunctions(context.Background(), client.FunctionListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -404,7 +404,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("characteristics", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListCharacteristics(client.CharacteristicListOptions{})
+			result, total, err, _ := mirrorClient.ListCharacteristics(context.Background(), client.CharacteristicListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -417,7 +417,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("device-types", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+			result, total, err, _ := mirrorClient.ListDeviceTypesV3(context.Background(), "", client.DeviceTypeListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -435,7 +435,7 @@ func TestMirror(t *testing.T) {
 	})
 
 	t.Run("update source state", func(t *testing.T) {
-		p2, err, _ := sourceClient.SetProtocol(client.InternalAdminToken, models.Protocol{
+		p2, err, _ := sourceClient.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{
 			Id:      "p2",
 			Name:    "p2",
 			Handler: "p2",
@@ -447,7 +447,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		a2, err, _ := sourceClient.SetAspect(client.InternalAdminToken, models.Aspect{
+		a2, err, _ := sourceClient.SetAspect(context.Background(), client.InternalAdminToken, models.Aspect{
 			Name:       "a2",
 			SubAspects: []models.Aspect{{Name: "a2.2"}},
 		})
@@ -455,7 +455,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		c2, err, _ := sourceClient.SetCharacteristic(client.InternalAdminToken, models.Characteristic{
+		c2, err, _ := sourceClient.SetCharacteristic(context.Background(), client.InternalAdminToken, models.Characteristic{
 			Name: "c2",
 			Type: models.String,
 		})
@@ -463,7 +463,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		co2, err, _ := sourceClient.SetConcept(client.InternalAdminToken, models.Concept{
+		co2, err, _ := sourceClient.SetConcept(context.Background(), client.InternalAdminToken, models.Concept{
 			Name:                 "co2",
 			BaseCharacteristicId: c2.Id,
 			CharacteristicIds:    []string{c2.Id},
@@ -472,7 +472,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		f2, err, _ := sourceClient.SetFunction(client.InternalAdminToken, models.Function{
+		f2, err, _ := sourceClient.SetFunction(context.Background(), client.InternalAdminToken, models.Function{
 			Name:        "f2",
 			DisplayName: "f2",
 			ConceptId:   co2.Id,
@@ -483,11 +483,11 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		dc2, err, _ := sourceClient.SetDeviceClass(client.InternalAdminToken, models.DeviceClass{
+		dc2, err, _ := sourceClient.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{
 			Name: "dc2",
 		})
 
-		dt2, err, _ := sourceClient.SetDeviceType(client.InternalAdminToken, models.DeviceType{
+		dt2, err, _ := sourceClient.SetDeviceType(context.Background(), client.InternalAdminToken, models.DeviceType{
 			Name: "dt2",
 			Services: []models.Service{
 				{
@@ -517,7 +517,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		device, err, _ := sourceClient.CreateDevice(testenv.SecondOwnerToken, models.Device{
+		device, err, _ := sourceClient.CreateDevice(context.Background(), testenv.SecondOwnerToken, models.Device{
 			LocalId:      "d2",
 			Name:         "d2",
 			DeviceTypeId: dt2.Id,
@@ -529,7 +529,7 @@ func TestMirror(t *testing.T) {
 		}
 		t.Logf("device: %#v", device)
 
-		_, err, _ = sourceClient.CreateDevice(testenv.TestToken, models.Device{
+		_, err, _ = sourceClient.CreateDevice(context.Background(), testenv.TestToken, models.Device{
 			LocalId:      "shouldNotBeFound_2",
 			Name:         "shouldNotBeFound_2",
 			DeviceTypeId: dt2.Id,
@@ -540,7 +540,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.SetHub(testenv.SecondOwnerToken, models.Hub{
+		_, err, _ = sourceClient.SetHub(context.Background(), testenv.SecondOwnerToken, models.Hub{
 			Id:      "h2",
 			Name:    "h2",
 			OwnerId: testenv.SecendOwnerTokenUser,
@@ -549,7 +549,7 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		_, err, _ = sourceClient.SetHub(testenv.TestToken, models.Hub{
+		_, err, _ = sourceClient.SetHub(context.Background(), testenv.TestToken, models.Hub{
 			Id:      "shouldNotBeFound2_2",
 			Name:    "shouldNotBeFound2_2",
 			OwnerId: testenv.TestTokenUser,
@@ -559,7 +559,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.SetDeviceGroup(testenv.SecondOwnerToken, models.DeviceGroup{
+		_, err, _ = sourceClient.SetDeviceGroup(context.Background(), testenv.SecondOwnerToken, models.DeviceGroup{
 			Name: "dg2",
 		})
 		if err != nil {
@@ -567,7 +567,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 
-		_, err, _ = sourceClient.SetDeviceGroup(testenv.TestToken, models.DeviceGroup{
+		_, err, _ = sourceClient.SetDeviceGroup(context.Background(), testenv.TestToken, models.DeviceGroup{
 			Name: "shouldNotBeFound3_2",
 		})
 		if err != nil {
@@ -579,7 +579,7 @@ func TestMirror(t *testing.T) {
 	t.Run("check updated mirror", func(t *testing.T) {
 		time.Sleep(15 * time.Second)
 		t.Run("protocols", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListProtocols("", 100, 0, "")
+			result, err, _ := mirrorClient.ListProtocols(context.Background(), "", 100, 0, "")
 			if err != nil {
 				t.Error(err)
 				return
@@ -590,7 +590,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("aspects", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListAspects(client.AspectListOptions{})
+			result, total, err, _ := mirrorClient.ListAspects(context.Background(), client.AspectListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -604,7 +604,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("aspect-nodes", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListAspectNodes(client.AspectListOptions{})
+			result, total, err, _ := mirrorClient.ListAspectNodes(context.Background(), client.AspectListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -619,7 +619,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("devices", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+			result, err, _ := mirrorClient.ListDevices(context.Background(), "", client.DeviceListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -630,7 +630,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("device-groups", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListDeviceGroups("", client.DeviceGroupListOptions{})
+			result, total, err, _ := mirrorClient.ListDeviceGroups(context.Background(), "", client.DeviceGroupListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -644,7 +644,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("hubs", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListHubs("", client.HubListOptions{})
+			result, err, _ := mirrorClient.ListHubs(context.Background(), "", client.HubListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -655,7 +655,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("concepts", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListConcepts(client.ConceptListOptions{})
+			result, total, err, _ := mirrorClient.ListConcepts(context.Background(), client.ConceptListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -669,7 +669,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("functions", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListFunctions(client.FunctionListOptions{})
+			result, total, err, _ := mirrorClient.ListFunctions(context.Background(), client.FunctionListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -685,7 +685,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("characteristics", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListCharacteristics(client.CharacteristicListOptions{})
+			result, total, err, _ := mirrorClient.ListCharacteristics(context.Background(), client.CharacteristicListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -698,7 +698,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("device-types", func(t *testing.T) {
-			result, total, err, _ := mirrorClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+			result, total, err, _ := mirrorClient.ListDeviceTypesV3(context.Background(), "", client.DeviceTypeListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -718,7 +718,7 @@ func TestMirror(t *testing.T) {
 	t.Run("check limited proxy requests without changes", func(t *testing.T) {
 		proxyReqCount.Store(0)
 		t.Run("update other user", func(t *testing.T) {
-			dts, _, err, _ := sourceClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+			dts, _, err, _ := sourceClient.ListDeviceTypesV3(context.Background(), "", client.DeviceTypeListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -727,7 +727,7 @@ func TestMirror(t *testing.T) {
 				t.Error("missing device types")
 				return
 			}
-			_, err, _ = sourceClient.CreateDevice(testenv.TestToken, models.Device{
+			_, err, _ = sourceClient.CreateDevice(context.Background(), testenv.TestToken, models.Device{
 				LocalId:      "shouldNotBeFound_3",
 				Name:         "shouldNotBeFound_3",
 				DeviceTypeId: dts[0].Id,
@@ -738,7 +738,7 @@ func TestMirror(t *testing.T) {
 				return
 			}
 
-			_, err, _ = sourceClient.SetHub(testenv.TestToken, models.Hub{
+			_, err, _ = sourceClient.SetHub(context.Background(), testenv.TestToken, models.Hub{
 				Id:      "shouldNotBeFound_32",
 				Name:    "shouldNotBeFound_32",
 				OwnerId: testenv.TestTokenUser,
@@ -748,7 +748,7 @@ func TestMirror(t *testing.T) {
 				return
 			}
 
-			_, err, _ = sourceClient.SetDeviceGroup(testenv.TestToken, models.DeviceGroup{
+			_, err, _ = sourceClient.SetDeviceGroup(context.Background(), testenv.TestToken, models.DeviceGroup{
 				Name: "shouldNotBeFound_33",
 			})
 			if err != nil {
@@ -768,7 +768,7 @@ func TestMirror(t *testing.T) {
 
 	t.Run("forward updates", func(t *testing.T) {
 		t.Run("create resources via mirror", func(t *testing.T) {
-			protocols, err, _ := mirrorClient.ListProtocols("", 100, 0, "")
+			protocols, err, _ := mirrorClient.ListProtocols(context.Background(), "", 100, 0, "")
 			if err != nil {
 				t.Error(err)
 				return
@@ -779,7 +779,7 @@ func TestMirror(t *testing.T) {
 			}
 			p3 := protocols[0]
 
-			dt3, err, _ := mirrorClient.SetDeviceType("", models.DeviceType{
+			dt3, err, _ := mirrorClient.SetDeviceType(context.Background(), "", models.DeviceType{
 				Name: "dt3",
 				Services: []models.Service{
 					{
@@ -806,7 +806,7 @@ func TestMirror(t *testing.T) {
 			}
 
 			t.Run("create device", func(t *testing.T) {
-				_, err, _ = mirrorClient.CreateDevice("", models.Device{
+				_, err, _ = mirrorClient.CreateDevice(context.Background(), "", models.Device{
 					LocalId:      "d3",
 					Name:         "d3",
 					DeviceTypeId: dt3.Id,
@@ -818,7 +818,7 @@ func TestMirror(t *testing.T) {
 			})
 
 			t.Run("create hub", func(t *testing.T) {
-				_, err, _ = mirrorClient.SetHub("", models.Hub{
+				_, err, _ = mirrorClient.SetHub(context.Background(), "", models.Hub{
 					Id:   "h3",
 					Name: "h3",
 				}, client.HubUpdateOptions{})
@@ -829,7 +829,7 @@ func TestMirror(t *testing.T) {
 			})
 
 			t.Run("create device-group", func(t *testing.T) {
-				_, err, _ = mirrorClient.SetDeviceGroup("", models.DeviceGroup{
+				_, err, _ = mirrorClient.SetDeviceGroup(context.Background(), "", models.DeviceGroup{
 					Name: "dg3",
 				})
 				if err != nil {
@@ -842,7 +842,7 @@ func TestMirror(t *testing.T) {
 
 		t.Run("check mirror", func(t *testing.T) {
 			t.Run("devices", func(t *testing.T) {
-				result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+				result, err, _ := mirrorClient.ListDevices(context.Background(), "", client.DeviceListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -853,7 +853,7 @@ func TestMirror(t *testing.T) {
 				}
 			})
 			t.Run("device-groups", func(t *testing.T) {
-				result, total, err, _ := mirrorClient.ListDeviceGroups("", client.DeviceGroupListOptions{})
+				result, total, err, _ := mirrorClient.ListDeviceGroups(context.Background(), "", client.DeviceGroupListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -867,7 +867,7 @@ func TestMirror(t *testing.T) {
 				}
 			})
 			t.Run("hubs", func(t *testing.T) {
-				result, err, _ := mirrorClient.ListHubs("", client.HubListOptions{})
+				result, err, _ := mirrorClient.ListHubs(context.Background(), "", client.HubListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -878,7 +878,7 @@ func TestMirror(t *testing.T) {
 				}
 			})
 			t.Run("device-types", func(t *testing.T) {
-				result, total, err, _ := mirrorClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+				result, total, err, _ := mirrorClient.ListDeviceTypesV3(context.Background(), "", client.DeviceTypeListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -895,7 +895,7 @@ func TestMirror(t *testing.T) {
 		})
 		t.Run("check source", func(t *testing.T) {
 			t.Run("devices", func(t *testing.T) {
-				result, err, _ := sourceClient.ListDevices(testenv.SecondOwnerToken, client.DeviceListOptions{})
+				result, err, _ := sourceClient.ListDevices(context.Background(), testenv.SecondOwnerToken, client.DeviceListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -906,7 +906,7 @@ func TestMirror(t *testing.T) {
 				}
 			})
 			t.Run("device-groups", func(t *testing.T) {
-				result, total, err, _ := sourceClient.ListDeviceGroups(testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
+				result, total, err, _ := sourceClient.ListDeviceGroups(context.Background(), testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -920,7 +920,7 @@ func TestMirror(t *testing.T) {
 				}
 			})
 			t.Run("hubs", func(t *testing.T) {
-				result, err, _ := sourceClient.ListHubs(testenv.SecondOwnerToken, client.HubListOptions{})
+				result, err, _ := sourceClient.ListHubs(context.Background(), testenv.SecondOwnerToken, client.HubListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -931,7 +931,7 @@ func TestMirror(t *testing.T) {
 				}
 			})
 			t.Run("device-types", func(t *testing.T) {
-				result, total, err, _ := sourceClient.ListDeviceTypesV3(testenv.SecondOwnerToken, client.DeviceTypeListOptions{})
+				result, total, err, _ := sourceClient.ListDeviceTypesV3(context.Background(), testenv.SecondOwnerToken, client.DeviceTypeListOptions{})
 				if err != nil {
 					t.Error(err)
 					return
@@ -952,7 +952,7 @@ func TestMirror(t *testing.T) {
 	sharedDeviceId := ""
 
 	t.Run("share device with mirror user", func(t *testing.T) {
-		dts, _, err, _ := sourceClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+		dts, _, err, _ := sourceClient.ListDeviceTypesV3(context.Background(), "", client.DeviceTypeListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -961,7 +961,7 @@ func TestMirror(t *testing.T) {
 			t.Error("missing device types")
 			return
 		}
-		shared, err, _ := sourceClient.CreateDevice(testenv.TestToken, models.Device{
+		shared, err, _ := sourceClient.CreateDevice(context.Background(), testenv.TestToken, models.Device{
 			LocalId:      "shared",
 			Name:         "shared",
 			DeviceTypeId: dts[0].Id,
@@ -984,7 +984,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 		//a share changes no last-update timestamp of the mirror user; a device of the mirror user triggers the pull
-		_, err, _ = sourceClient.CreateDevice(testenv.SecondOwnerToken, models.Device{
+		_, err, _ = sourceClient.CreateDevice(context.Background(), testenv.SecondOwnerToken, models.Device{
 			LocalId:      "d4",
 			Name:         "d4",
 			DeviceTypeId: dts[0].Id,
@@ -995,7 +995,7 @@ func TestMirror(t *testing.T) {
 			return
 		}
 		time.Sleep(15 * time.Second)
-		result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+		result, err, _ := mirrorClient.ListDevices(context.Background(), "", client.DeviceListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -1019,14 +1019,14 @@ func TestMirror(t *testing.T) {
 		}
 
 		for _, token := range []string{testenv.SecondOwnerToken, testenv.TestToken} {
-			devices, err, _ := sourceClient.ListDevices(token, client.DeviceListOptions{})
+			devices, err, _ := sourceClient.ListDevices(context.Background(), token, client.DeviceListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 			for _, device := range devices {
 				if slices.Contains([]string{"d2", "d4", "shouldNotBeFound_2"}, device.Name) {
-					err, _ = sourceClient.DeleteDevice(token, device.Id)
+					err, _ = sourceClient.DeleteDevice(context.Background(), token, device.Id)
 					if err != nil {
 						t.Error(err)
 						return
@@ -1035,14 +1035,14 @@ func TestMirror(t *testing.T) {
 			}
 		}
 
-		dts, _, err, _ := sourceClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+		dts, _, err, _ := sourceClient.ListDeviceTypesV3(context.Background(), "", client.DeviceTypeListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 		for _, dt := range dts {
 			if dt.Name == "dt2" {
-				err, _ = sourceClient.DeleteDeviceType(client.InternalAdminToken, dt.Id)
+				err, _ = sourceClient.DeleteDeviceType(context.Background(), client.InternalAdminToken, dt.Id)
 				if err != nil {
 					t.Error(err)
 					return
@@ -1050,7 +1050,7 @@ func TestMirror(t *testing.T) {
 			}
 		}
 
-		concepts, _, err, _ := sourceClient.ListConcepts(client.ConceptListOptions{})
+		concepts, _, err, _ := sourceClient.ListConcepts(context.Background(), client.ConceptListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -1060,33 +1060,33 @@ func TestMirror(t *testing.T) {
 				continue
 			}
 			//f2 and the generated Get-co2 and Set-co2 reference the concept and block its removal
-			functions, _, err, _ := sourceClient.ListFunctions(client.FunctionListOptions{ConceptIds: []string{co.Id}})
+			functions, _, err, _ := sourceClient.ListFunctions(context.Background(), client.FunctionListOptions{ConceptIds: []string{co.Id}})
 			if err != nil {
 				t.Error(err)
 				return
 			}
 			for _, f := range functions {
-				err, _ = sourceClient.DeleteFunction(client.InternalAdminToken, f.Id)
+				err, _ = sourceClient.DeleteFunction(context.Background(), client.InternalAdminToken, f.Id)
 				if err != nil {
 					t.Error(err)
 					return
 				}
 			}
-			err, _ = sourceClient.DeleteConcept(client.InternalAdminToken, co.Id)
+			err, _ = sourceClient.DeleteConcept(context.Background(), client.InternalAdminToken, co.Id)
 			if err != nil {
 				t.Error(err)
 				return
 			}
 		}
 
-		characteristics, _, err, _ := sourceClient.ListCharacteristics(client.CharacteristicListOptions{})
+		characteristics, _, err, _ := sourceClient.ListCharacteristics(context.Background(), client.CharacteristicListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 		for _, c := range characteristics {
 			if c.Name == "c2" {
-				err, _ = sourceClient.DeleteCharacteristic(client.InternalAdminToken, c.Id)
+				err, _ = sourceClient.DeleteCharacteristic(context.Background(), client.InternalAdminToken, c.Id)
 				if err != nil {
 					t.Error(err)
 					return
@@ -1094,14 +1094,14 @@ func TestMirror(t *testing.T) {
 			}
 		}
 
-		deviceClasses, _, err, _ := sourceClient.ListDeviceClasses(client.DeviceClassListOptions{})
+		deviceClasses, _, err, _ := sourceClient.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 		for _, dc := range deviceClasses {
 			if dc.Name == "dc2" {
-				err, _ = sourceClient.DeleteDeviceClass(client.InternalAdminToken, dc.Id)
+				err, _ = sourceClient.DeleteDeviceClass(context.Background(), client.InternalAdminToken, dc.Id)
 				if err != nil {
 					t.Error(err)
 					return
@@ -1109,7 +1109,7 @@ func TestMirror(t *testing.T) {
 			}
 		}
 
-		aspects, _, err, _ := sourceClient.ListAspects(client.AspectListOptions{})
+		aspects, _, err, _ := sourceClient.ListAspects(context.Background(), client.AspectListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -1119,9 +1119,9 @@ func TestMirror(t *testing.T) {
 			case "a1":
 				//removing a sub-aspect leaves its aspect-node without a counterpart in the source
 				a.SubAspects = nil
-				_, err, _ = sourceClient.SetAspect(client.InternalAdminToken, a)
+				_, err, _ = sourceClient.SetAspect(context.Background(), client.InternalAdminToken, a)
 			case "a2":
-				err, _ = sourceClient.DeleteAspect(client.InternalAdminToken, a.Id)
+				err, _ = sourceClient.DeleteAspect(context.Background(), client.InternalAdminToken, a.Id)
 			}
 			if err != nil {
 				t.Error(err)
@@ -1129,26 +1129,26 @@ func TestMirror(t *testing.T) {
 			}
 		}
 
-		err, _ = sourceClient.DeleteProtocol(client.InternalAdminToken, "p2")
+		err, _ = sourceClient.DeleteProtocol(context.Background(), client.InternalAdminToken, "p2")
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
-		err, _ = sourceClient.DeleteHub(testenv.SecondOwnerToken, "h2")
+		err, _ = sourceClient.DeleteHub(context.Background(), testenv.SecondOwnerToken, "h2")
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
-		groups, _, err, _ := sourceClient.ListDeviceGroups(testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
+		groups, _, err, _ := sourceClient.ListDeviceGroups(context.Background(), testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
 		}
 		for _, dg := range groups {
 			if dg.Name == "dg2" {
-				err, _ = sourceClient.DeleteDeviceGroup(testenv.SecondOwnerToken, dg.Id)
+				err, _ = sourceClient.DeleteDeviceGroup(context.Background(), testenv.SecondOwnerToken, dg.Id)
 				if err != nil {
 					t.Error(err)
 					return
@@ -1160,7 +1160,7 @@ func TestMirror(t *testing.T) {
 	t.Run("check mirror after removal", func(t *testing.T) {
 		time.Sleep(15 * time.Second)
 		t.Run("protocols", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListProtocols("", 100, 0, "")
+			result, err, _ := mirrorClient.ListProtocols(context.Background(), "", 100, 0, "")
 			if err != nil {
 				t.Error(err)
 				return
@@ -1170,7 +1170,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("aspects", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListAspects(client.AspectListOptions{})
+			result, _, err, _ := mirrorClient.ListAspects(context.Background(), client.AspectListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1180,7 +1180,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("aspect-nodes", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListAspectNodes(client.AspectListOptions{})
+			result, _, err, _ := mirrorClient.ListAspectNodes(context.Background(), client.AspectListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1190,7 +1190,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("characteristics", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListCharacteristics(client.CharacteristicListOptions{})
+			result, _, err, _ := mirrorClient.ListCharacteristics(context.Background(), client.CharacteristicListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1200,7 +1200,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("concepts", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListConcepts(client.ConceptListOptions{})
+			result, _, err, _ := mirrorClient.ListConcepts(context.Background(), client.ConceptListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1210,7 +1210,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("functions", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListFunctions(client.FunctionListOptions{})
+			result, _, err, _ := mirrorClient.ListFunctions(context.Background(), client.FunctionListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1225,7 +1225,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("device-classes", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListDeviceClasses(client.DeviceClassListOptions{})
+			result, _, err, _ := mirrorClient.ListDeviceClasses(context.Background(), client.DeviceClassListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1235,7 +1235,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("device-types", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListDeviceTypesV3("", client.DeviceTypeListOptions{})
+			result, _, err, _ := mirrorClient.ListDeviceTypesV3(context.Background(), "", client.DeviceTypeListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1250,7 +1250,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("devices", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListDevices("", client.DeviceListOptions{})
+			result, err, _ := mirrorClient.ListDevices(context.Background(), "", client.DeviceListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1260,7 +1260,7 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("hubs", func(t *testing.T) {
-			result, err, _ := mirrorClient.ListHubs("", client.HubListOptions{})
+			result, err, _ := mirrorClient.ListHubs(context.Background(), "", client.HubListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
@@ -1275,12 +1275,12 @@ func TestMirror(t *testing.T) {
 			}
 		})
 		t.Run("device-groups", func(t *testing.T) {
-			result, _, err, _ := mirrorClient.ListDeviceGroups("", client.DeviceGroupListOptions{})
+			result, _, err, _ := mirrorClient.ListDeviceGroups(context.Background(), "", client.DeviceGroupListOptions{})
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			source, _, err, _ := sourceClient.ListDeviceGroups(testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
+			source, _, err, _ := sourceClient.ListDeviceGroups(context.Background(), testenv.SecondOwnerToken, client.DeviceGroupListOptions{})
 			if err != nil {
 				t.Error(err)
 				return

@@ -148,7 +148,7 @@ func (this unusedMigrationMethods) DeviceIdToGeneratedDeviceGroupId(string) stri
 	return ""
 }
 
-func (this unusedMigrationMethods) EnsureGeneratedDeviceGroup(models.Device, models.Device) error {
+func (this unusedMigrationMethods) EnsureGeneratedDeviceGroup(context.Context, models.Device, models.Device) error {
 	this.t.Error("unexpected call of EnsureGeneratedDeviceGroup")
 	return nil
 }
@@ -157,12 +157,12 @@ func (this unusedMigrationMethods) SetContentVariableAspectIdsOnWrite(*models.De
 	this.t.Error("unexpected call of SetContentVariableAspectIdsOnWrite")
 }
 
-func (this unusedMigrationMethods) GetDeviceGroupCriteria([]string) ([]models.DeviceGroupFilterCriteria, error, int) {
+func (this unusedMigrationMethods) GetDeviceGroupCriteria(context.Context, []string) ([]models.DeviceGroupFilterCriteria, error, int) {
 	this.t.Error("unexpected call of GetDeviceGroupCriteria")
 	return nil, nil, 200
 }
 
-func (this unusedMigrationMethods) PublishFunction(models.Function) error {
+func (this unusedMigrationMethods) PublishFunction(context.Context, models.Function) error {
 	this.t.Error("unexpected call of PublishFunction")
 	return nil
 }

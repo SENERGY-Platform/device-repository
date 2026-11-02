@@ -19,14 +19,15 @@ package controller
 import (
 	"context"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (this *Controller) ValidateService(service models.Service, protocolCache *map[string]models.Protocol, options model.ValidationOptions) (error, int) {
+func (this *Controller) ValidateService(ctx context.Context, service models.Service, protocolCache *map[string]models.Protocol, options model.ValidationOptions) (error, int) {
 	if service.Id == "" {
 		return errors.New("missing service id"), http.StatusBadRequest
 	}
@@ -44,7 +45,7 @@ func (this *Controller) ValidateService(service models.Service, protocolCache *m
 	var ok bool
 	var err error
 	if protocol, ok = (*protocolCache)[service.ProtocolId]; !ok {
-		ctx, _ := getTimeoutContext()
+		ctx, _ := getTimeoutContext(ctx)
 		protocol, ok, err = this.db.GetProtocol(ctx, service.ProtocolId)
 		if err != nil {
 			return err, http.StatusBadRequest
@@ -79,7 +80,7 @@ func (this *Controller) ValidateService(service models.Service, protocolCache *m
 	}
 
 	for _, content := range service.Inputs {
-		err, code := this.ValidateContent(content, protocol, options)
+		err, code := this.ValidateContent(ctx, content, protocol, options)
 		if err != nil {
 			return err, code
 		}
@@ -89,7 +90,7 @@ func (this *Controller) ValidateService(service models.Service, protocolCache *m
 		}
 	}
 	for _, content := range service.Outputs {
-		err, code := this.ValidateContent(content, protocol, options)
+		err, code := this.ValidateContent(ctx, content, protocol, options)
 		if err != nil {
 			return err, code
 		}
@@ -122,8 +123,8 @@ func isControllingFunction(functionId string) bool {
 	return false
 }
 
-func (this *Controller) GetService(id string) (result models.Service, err error, code int) {
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+func (this *Controller) GetService(ctx context.Context, id string) (result models.Service, err error, code int) {
+	ctx, _ = context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
 	dts, err := this.db.GetDeviceTypesByServiceId(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError

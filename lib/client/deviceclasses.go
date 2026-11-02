@@ -18,25 +18,27 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetDeviceClass(token string, deviceClass models.DeviceClass) (result models.DeviceClass, err error, code int) {
+func (c *Client) SetDeviceClass(ctx context.Context, token string, deviceClass models.DeviceClass) (result models.DeviceClass, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(deviceClass)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if deviceClass.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/device-classes", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/device-classes", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/device-classes/"+url.PathEscape(deviceClass.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/device-classes/"+url.PathEscape(deviceClass.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -45,8 +47,8 @@ func (c *Client) SetDeviceClass(token string, deviceClass models.DeviceClass) (r
 	return do[models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteDeviceClass(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/device-classes/"+url.PathEscape(id), nil)
+func (c *Client) DeleteDeviceClass(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/device-classes/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -54,7 +56,7 @@ func (c *Client) DeleteDeviceClass(token string, id string) (err error, code int
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListDeviceClasses(options model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int) {
+func (c *Client) ListDeviceClasses(ctx context.Context, options model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Search != "" {
@@ -78,57 +80,57 @@ func (c *Client) ListDeviceClasses(options model.DeviceClassListOptions) (result
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/v2/device-classes"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/v2/device-classes"+queryString, nil)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetDeviceClasses() ([]models.DeviceClass, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-classes", nil)
+func (c *Client) GetDeviceClasses(ctx context.Context) ([]models.DeviceClass, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-classes", nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetDeviceClassesWithControllingFunctions() ([]models.DeviceClass, error, int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-classes?function=controlling-function", nil)
+func (c *Client) GetDeviceClassesWithControllingFunctions(ctx context.Context) ([]models.DeviceClass, error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-classes?function=controlling-function", nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetDeviceClassesFunctions(id string) (result []models.Function, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-classes/"+id+"/functions", nil)
+func (c *Client) GetDeviceClassesFunctions(ctx context.Context, id string) (result []models.Function, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-classes/"+id+"/functions", nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetDeviceClassesControllingFunctions(id string) (result []models.Function, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-classes/"+id+"/controlling-functions", nil)
+func (c *Client) GetDeviceClassesControllingFunctions(ctx context.Context, id string) (result []models.Function, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-classes/"+id+"/controlling-functions", nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetDeviceClass(id string) (result models.DeviceClass, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/device-classes/"+id, nil)
+func (c *Client) GetDeviceClass(ctx context.Context, id string) (result models.DeviceClass, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-classes/"+id, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return do[models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateDeviceClass(deviceclass models.DeviceClass) (err error, code int) {
-	return c.validate("/device-classes", deviceclass)
+func (c *Client) ValidateDeviceClass(ctx context.Context, deviceclass models.DeviceClass) (err error, code int) {
+	return c.validate(ctx, "/device-classes", deviceclass)
 }
 
-func (c *Client) ValidateDeviceClassDelete(id string) (err error, code int) {
-	return c.validateDelete("/device-classes/" + id)
+func (c *Client) ValidateDeviceClassDelete(ctx context.Context, id string) (err error, code int) {
+	return c.validateDelete(ctx, "/device-classes/"+id)
 }

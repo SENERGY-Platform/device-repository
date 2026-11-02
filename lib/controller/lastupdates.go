@@ -17,6 +17,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -24,7 +25,7 @@ import (
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
 
-func (this *Controller) GetLastUpdateTimestamps(token string, userId string) (result []model.LastUpdateTimestamp, err error, code int) {
+func (this *Controller) GetLastUpdateTimestamps(ctx context.Context, token string, userId string) (result []model.LastUpdateTimestamp, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusBadRequest
@@ -35,7 +36,7 @@ func (this *Controller) GetLastUpdateTimestamps(token string, userId string) (re
 	if userId == "" {
 		userId = jwtToken.GetUserId()
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.GetLastUpdateTimestampsForUser(ctx, userId)
 	if err != nil {
 		return result, err, http.StatusInternalServerError

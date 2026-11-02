@@ -18,11 +18,12 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"net/http"
-	"strings"
 )
 
 func init() {
@@ -62,7 +63,7 @@ func (this *ImportExportEndpoints) Export(config configuration.Config, router *h
 			options.FilterIds = strings.Split(request.URL.Query().Get("filter_ids"), ",")
 		}
 
-		result, err, code := control.Export(token, options)
+		result, err, code := control.Export(request.Context(), token, options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -110,7 +111,7 @@ func (this *ImportExportEndpoints) Import(config configuration.Config, router *h
 			options.FilterIds = strings.Split(request.URL.Query().Get("filter_ids"), ",")
 		}
 
-		err, code := control.Import(token, importModel, options)
+		err, code := control.Import(request.Context(), token, importModel, options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -148,7 +149,7 @@ func (this *ImportExportEndpoints) ImportFrom(config configuration.Config, route
 			includeOwnedInformation = true
 		}
 
-		err, code := control.ImportFrom(token, includeOwnedInformation, options)
+		err, code := control.ImportFrom(request.Context(), token, includeOwnedInformation, options)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return

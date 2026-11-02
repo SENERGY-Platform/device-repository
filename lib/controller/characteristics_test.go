@@ -18,8 +18,9 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/SENERGY-Platform/models/go/models"
 	"testing"
+
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
 func TestValidateCharacteristicIdReuse(t *testing.T) {

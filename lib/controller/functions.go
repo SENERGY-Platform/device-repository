@@ -17,15 +17,17 @@
 package controller
 
 import (
+	"context"
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
-	"strings"
 )
 
-func (this *Controller) SetFunction(token string, function models.Function) (result models.Function, err error, code int) {
+func (this *Controller) SetFunction(ctx context.Context, token string, function models.Function) (result models.Function, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -38,20 +40,20 @@ func (this *Controller) SetFunction(token string, function models.Function) (res
 	//ensure ids
 	function.GenerateId()
 	if !this.config.DisableStrictValidationForTesting {
-		err, code = this.ValidateFunction(function)
+		err, code = this.ValidateFunction(ctx, function)
 		if err != nil {
 			return result, err, code
 		}
 	}
 
-	err = this.setFunction(function)
+	err = this.setFunction(ctx, function)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return function, nil, http.StatusOK
 }
 
-func (this *Controller) DeleteFunction(token string, id string) (error, int) {
+func (this *Controller) DeleteFunction(ctx context.Context, token string, id string) (error, int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -59,37 +61,37 @@ func (this *Controller) DeleteFunction(token string, id string) (error, int) {
 	if !jwtToken.IsAdmin() {
 		return errors.New("token is not an admin"), http.StatusUnauthorized
 	}
-	err, code := this.ValidateFunctionDelete(id)
+	err, code := this.ValidateFunctionDelete(ctx, id)
 	if err != nil {
 		return err, code
 	}
-	err = this.deleteFunction(id)
+	err = this.deleteFunction(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
 
-func (this *Controller) setFunctionSyncHandler(f models.Function) (err error) {
+func (this *Controller) setFunctionSyncHandler(ctx context.Context, f models.Function) (err error) {
 	return this.publisher.PublishFunction(f)
 }
 
-func (this *Controller) setFunction(function models.Function) error {
-	ctx, _ := getTimeoutContext()
-	return this.db.SetFunction(ctx, function, this.setFunctionSyncHandler)
+func (this *Controller) setFunction(ctx context.Context, function models.Function) error {
+	ctx, _ = getTimeoutContext(ctx)
+	return this.db.SetFunction(ctx, function, withContext(ctx, this.setFunctionSyncHandler))
 }
 
-func (this *Controller) deleteFunctionSyncHandler(f models.Function) (err error) {
+func (this *Controller) deleteFunctionSyncHandler(ctx context.Context, f models.Function) (err error) {
 	return this.publisher.PublishFunctionDelete(f.Id)
 }
 
-func (this *Controller) deleteFunction(id string) error {
-	ctx, _ := getTimeoutContext()
-	return this.db.RemoveFunction(ctx, id, this.deleteFunctionSyncHandler)
+func (this *Controller) deleteFunction(ctx context.Context, id string) error {
+	ctx, _ = getTimeoutContext(ctx)
+	return this.db.RemoveFunction(ctx, id, withContext(ctx, this.deleteFunctionSyncHandler))
 }
 
-func (this *Controller) ListFunctions(options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, total, err = this.db.ListFunctions(ctx, options)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
@@ -97,9 +99,9 @@ func (this *Controller) ListFunctions(options model.FunctionListOptions) (result
 	return result, total, nil, http.StatusOK
 }
 
-func (this *Controller) GetFunctionsByType(rdfType string) (result []models.Function, err error, code int) {
+func (this *Controller) GetFunctionsByType(ctx context.Context, rdfType string) (result []models.Function, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllFunctionsByType(ctx, rdfType)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -108,9 +110,9 @@ func (this *Controller) GetFunctionsByType(rdfType string) (result []models.Func
 }
 
 // returns all measuring functions used in combination with given aspect (and optional its descendants and ancestors)
-func (this *Controller) GetAspectNodesMeasuringFunctions(aspect string, ancestors bool, descendants bool) (result []models.Function, err error, code int) {
+func (this *Controller) GetAspectNodesMeasuringFunctions(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []models.Function, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllMeasuringFunctionsByAspect(ctx, aspect, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -119,9 +121,9 @@ func (this *Controller) GetAspectNodesMeasuringFunctions(aspect string, ancestor
 }
 
 // returns all controlling functions used in combination with given aspect (and optional its descendants and ancestors)
-func (this *Controller) GetAspectNodesControllingFunctions(aspect string, ancestors bool, descendants bool) (result []models.Function, err error, code int) {
+func (this *Controller) GetAspectNodesControllingFunctions(ctx context.Context, aspect string, ancestors bool, descendants bool) (result []models.Function, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllControllingFunctionsByAspect(ctx, aspect, ancestors, descendants)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -129,9 +131,9 @@ func (this *Controller) GetAspectNodesControllingFunctions(aspect string, ancest
 	return
 }
 
-func (this *Controller) GetDeviceClassesFunctions(deviceClass string) (result []models.Function, err error, code int) {
+func (this *Controller) GetDeviceClassesFunctions(ctx context.Context, deviceClass string) (result []models.Function, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllFunctionsByDeviceClass(ctx, deviceClass)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -139,9 +141,9 @@ func (this *Controller) GetDeviceClassesFunctions(deviceClass string) (result []
 	return
 }
 
-func (this *Controller) GetDeviceClassesControllingFunctions(deviceClass string) (result []models.Function, err error, code int) {
+func (this *Controller) GetDeviceClassesControllingFunctions(ctx context.Context, deviceClass string) (result []models.Function, err error, code int) {
 	code = http.StatusOK
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	result, err = this.db.ListAllControllingFunctionsByDeviceClass(ctx, deviceClass)
 	if err != nil {
 		code = http.StatusInternalServerError
@@ -149,8 +151,8 @@ func (this *Controller) GetDeviceClassesControllingFunctions(deviceClass string)
 	return
 }
 
-func (this *Controller) GetFunction(id string) (result models.Function, err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) GetFunction(ctx context.Context, id string) (result models.Function, err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	result, exists, err := this.db.GetFunction(ctx, id)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -161,7 +163,7 @@ func (this *Controller) GetFunction(id string) (result models.Function, err erro
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) ValidateFunction(function models.Function) (err error, code int) {
+func (this *Controller) ValidateFunction(ctx context.Context, function models.Function) (err error, code int) {
 	if function.Id == "" {
 		return errors.New("missing function id"), http.StatusBadRequest
 	}
@@ -177,8 +179,8 @@ func (this *Controller) ValidateFunction(function models.Function) (err error, c
 	return nil, http.StatusOK
 }
 
-func (this *Controller) ValidateFunctionDelete(id string) (err error, code int) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) ValidateFunctionDelete(ctx context.Context, id string) (err error, code int) {
+	ctx, _ = getTimeoutContext(ctx)
 	isUsed, where, err := this.db.FunctionIsUsed(ctx, id)
 	if err != nil {
 		return err, http.StatusInternalServerError

@@ -18,24 +18,26 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
-	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"net/url"
+
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
+	"github.com/SENERGY-Platform/models/go/models"
 )
 
-func (c *Client) SetFunction(token string, function models.Function) (result models.Function, err error, code int) {
+func (c *Client) SetFunction(ctx context.Context, token string, function models.Function) (result models.Function, err error, code int) {
 	var req *http.Request
 	b, err := json.Marshal(function)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	if function.Id == "" {
-		req, err = http.NewRequest(http.MethodPost, c.baseUrl+"/functions", bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/functions", bytes.NewBuffer(b))
 	} else {
-		req, err = http.NewRequest(http.MethodPut, c.baseUrl+"/functions/"+url.PathEscape(function.Id), bytes.NewBuffer(b))
+		req, err = http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+"/functions/"+url.PathEscape(function.Id), bytes.NewBuffer(b))
 	}
 	if err != nil {
 		return result, err, http.StatusInternalServerError
@@ -44,8 +46,8 @@ func (c *Client) SetFunction(token string, function models.Function) (result mod
 	return do[models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteFunction(token string, id string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/functions/"+url.PathEscape(id), nil)
+func (c *Client) DeleteFunction(ctx context.Context, token string, id string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/functions/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -53,20 +55,20 @@ func (c *Client) DeleteFunction(token string, id string) (err error, code int) {
 	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ListFunctions(options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {
+func (c *Client) ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {
 	buf := bytes.NewBuffer([]byte{})
 	err = json.NewEncoder(buf).Encode(options)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	req, err := http.NewRequest(http.MethodPost, c.baseUrl+"/query/functions", buf)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/query/functions", buf)
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
 	return doWithTotalInResult[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetFunctionsByType(rdfType string) (result []models.Function, err error, errCode int) {
+func (c *Client) GetFunctionsByType(ctx context.Context, rdfType string) (result []models.Function, err error, errCode int) {
 	var path string
 	switch rdfType {
 	case model.SES_ONTOLOGY_CONTROLLING_FUNCTION:
@@ -76,25 +78,25 @@ func (c *Client) GetFunctionsByType(rdfType string) (result []models.Function, e
 	default:
 		return result, errors.New("unknown rdfType"), http.StatusBadRequest
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+path, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+path, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) GetFunction(id string) (result models.Function, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/functions/"+id, nil)
+func (c *Client) GetFunction(ctx context.Context, id string) (result models.Function, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/functions/"+id, nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
 	return do[models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ValidateFunction(function models.Function) (err error, code int) {
-	return c.validate("/functions", function)
+func (c *Client) ValidateFunction(ctx context.Context, function models.Function) (err error, code int) {
+	return c.validate(ctx, "/functions", function)
 }
 
-func (c *Client) ValidateFunctionDelete(id string) (err error, code int) {
-	return c.validateDelete("/functions/" + id)
+func (c *Client) ValidateFunctionDelete(ctx context.Context, id string) (err error, code int) {
+	return c.validateDelete(ctx, "/functions/"+id)
 }

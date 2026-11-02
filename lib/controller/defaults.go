@@ -17,20 +17,22 @@
 package controller
 
 import (
+	"context"
 	"errors"
+	"net/http"
+	"slices"
+
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
-	"net/http"
-	"slices"
 )
 
-func (this *Controller) GetDefaultDeviceAttributes(token string) (attributes []models.Attribute, err error, code int) {
+func (this *Controller) GetDefaultDeviceAttributes(ctx context.Context, token string) (attributes []models.Attribute, err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return attributes, err, http.StatusInternalServerError
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	attributes, err = this.db.GetDefaultDeviceAttributes(ctx, jwtToken.GetUserId())
 	if err != nil {
 		return attributes, err, http.StatusInternalServerError
@@ -38,7 +40,7 @@ func (this *Controller) GetDefaultDeviceAttributes(token string) (attributes []m
 	return attributes, nil, http.StatusOK
 }
 
-func (this *Controller) SetDefaultDeviceAttributes(token string, attributes []models.Attribute) (err error, code int) {
+func (this *Controller) SetDefaultDeviceAttributes(ctx context.Context, token string, attributes []models.Attribute) (err error, code int) {
 	jwtToken, err := jwt.Parse(token)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -49,7 +51,7 @@ func (this *Controller) SetDefaultDeviceAttributes(token string, attributes []mo
 		}
 		attributes[i].Origin = "default"
 	}
-	ctx, _ := getTimeoutContext()
+	ctx, _ = getTimeoutContext(ctx)
 	err = this.db.SetDefaultDeviceAttributes(ctx, jwtToken.GetUserId(), attributes)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -57,8 +59,8 @@ func (this *Controller) SetDefaultDeviceAttributes(token string, attributes []mo
 	return nil, http.StatusOK
 }
 
-func (this *Controller) applyDefaultDeviceAttributes(device model.DeviceWithConnectionState) (result model.DeviceWithConnectionState, err error) {
-	ctx, _ := getTimeoutContext()
+func (this *Controller) applyDefaultDeviceAttributes(ctx context.Context, device model.DeviceWithConnectionState) (result model.DeviceWithConnectionState, err error) {
+	ctx, _ = getTimeoutContext(ctx)
 	defaultAttributes, err := this.db.GetDefaultDeviceAttributes(ctx, device.OwnerId)
 	if err != nil {
 		return result, err
@@ -72,13 +74,13 @@ func (this *Controller) applyDefaultDeviceAttributes(device model.DeviceWithConn
 	return device, nil
 }
 
-func (this *Controller) applyDefaultDeviceAttributesToList(devices []model.DeviceWithConnectionState) (result []model.DeviceWithConnectionState, err error) {
+func (this *Controller) applyDefaultDeviceAttributesToList(ctx context.Context, devices []model.DeviceWithConnectionState) (result []model.DeviceWithConnectionState, err error) {
 	cache := map[string][]models.Attribute{}
 	getDefaultAttr := func(userId string) ([]models.Attribute, error) {
 		if attributes, ok := cache[userId]; ok {
 			return attributes, nil
 		}
-		ctx, _ := getTimeoutContext()
+		ctx, _ := getTimeoutContext(ctx)
 		attributes, err := this.db.GetDefaultDeviceAttributes(ctx, userId)
 		if err != nil {
 			return attributes, err

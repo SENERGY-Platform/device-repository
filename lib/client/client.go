@@ -18,6 +18,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +28,8 @@ import (
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api"
 	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type Interface interface {
@@ -51,8 +54,15 @@ func NewClient(baseUrl string, optionalAuthTokenForApiGatewayRequest func() (tok
 	return &Client{baseUrl: baseUrl, optionalAuthTokenForApiGatewayRequest: optionalAuthTokenForApiGatewayRequest}
 }
 
-func (c *Client) MirrorUpdate(uncheckedCollections ...string) error {
+func (c *Client) MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error {
 	return nil
+}
+
+// send adds the trace context of req to its headers, so the called service continues the trace of the caller.
+// Without an OpenTelemetry setup in the calling service the global propagator is a no-op.
+func send(req *http.Request) (*http.Response, error) {
+	otel.GetTextMapPropagator().Inject(req.Context(), propagation.HeaderCarrier(req.Header))
+	return http.DefaultClient.Do(req)
 }
 
 func do[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (result T, err error, code int) {
@@ -63,7 +73,7 @@ func do[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (
 		}
 		req.Header.Set("Authorization", token)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := send(req)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -88,7 +98,7 @@ func doVoid(req *http.Request, optionalAuthTokenForApiGatewayRequest func() (tok
 		}
 		req.Header.Set("Authorization", token)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -108,7 +118,7 @@ func doWithTotalInResult[T any](req *http.Request, optionalAuthTokenForApiGatewa
 		}
 		req.Header.Set("Authorization", token)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := send(req)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
@@ -133,11 +143,11 @@ func (c *Client) GetPermissionsClient() permissions.Client {
 	return permissions.New(c.baseUrl + "/permissions")
 }
 
-func (c *Client) validateWithToken(token string, path string, e interface{}) (err error, code int) {
-	return c.validateWithTokenAndOptions(token, path, e, nil)
+func (c *Client) validateWithToken(ctx context.Context, token string, path string, e interface{}) (err error, code int) {
+	return c.validateWithTokenAndOptions(ctx, token, path, e, nil)
 }
 
-func (c *Client) validateWithTokenAndOptions(token string, path string, e interface{}, options url.Values) (err error, code int) {
+func (c *Client) validateWithTokenAndOptions(ctx context.Context, token string, path string, e interface{}, options url.Values) (err error, code int) {
 	b, err := json.Marshal(e)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -146,12 +156,12 @@ func (c *Client) validateWithTokenAndOptions(token string, path string, e interf
 	if optQuery != "" {
 		optQuery = "&" + optQuery
 	}
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+path+"?dry-run=true", bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+path+"?dry-run=true", bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -162,11 +172,11 @@ func (c *Client) validateWithTokenAndOptions(token string, path string, e interf
 	return nil, resp.StatusCode
 }
 
-func (c *Client) validate(path string, e interface{}) (err error, code int) {
-	return c.validateWithOptions(path, e, nil)
+func (c *Client) validate(ctx context.Context, path string, e interface{}) (err error, code int) {
+	return c.validateWithOptions(ctx, path, e, nil)
 }
 
-func (c *Client) validateWithOptions(path string, e interface{}, options url.Values) (err error, code int) {
+func (c *Client) validateWithOptions(ctx context.Context, path string, e interface{}, options url.Values) (err error, code int) {
 	if options == nil {
 		//validate() passes nil; Set() on a nil url.Values panics
 		options = url.Values{}
@@ -176,18 +186,18 @@ func (c *Client) validateWithOptions(path string, e interface{}, options url.Val
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
-		return c.validateWithTokenAndOptions(token, path, e, options)
+		return c.validateWithTokenAndOptions(ctx, token, path, e, options)
 	}
 	b, err := json.Marshal(e)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	options.Set("dry-run", "true")
-	req, err := http.NewRequest(http.MethodPut, c.baseUrl+path+"?"+options.Encode(), bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseUrl+path+"?"+options.Encode(), bytes.NewBuffer(b))
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -199,19 +209,19 @@ func (c *Client) validateWithOptions(path string, e interface{}, options url.Val
 	return nil, resp.StatusCode
 }
 
-func (c *Client) validateDelete(path string) (err error, code int) {
+func (c *Client) validateDelete(ctx context.Context, path string) (err error, code int) {
 	if c.optionalAuthTokenForApiGatewayRequest != nil {
 		token, err := c.optionalAuthTokenForApiGatewayRequest()
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
-		return c.validateDeleteWithToken(token, path)
+		return c.validateDeleteWithToken(ctx, token, path)
 	}
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+path+"?dry-run=true", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+path+"?dry-run=true", nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -223,13 +233,13 @@ func (c *Client) validateDelete(path string) (err error, code int) {
 	return nil, resp.StatusCode
 }
 
-func (c *Client) validateDeleteWithToken(token string, path string) (err error, code int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+path+"?dry-run=true", nil)
+func (c *Client) validateDeleteWithToken(ctx context.Context, token string, path string) (err error, code int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+path+"?dry-run=true", nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

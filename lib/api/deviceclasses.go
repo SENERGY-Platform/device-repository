@@ -104,7 +104,7 @@ func (this *DeviceClassEndpoints) ListDeviceClasses(config configuration.Config,
 		if listoptions.SortBy == "" {
 			listoptions.SortBy = "name.asc"
 		}
-		result, total, err, errCode := control.ListDeviceClasses(listoptions)
+		result, total, err, errCode := control.ListDeviceClasses(request.Context(), listoptions)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -144,14 +144,14 @@ func (this *DeviceClassEndpoints) List(config configuration.Config, router *http
 		function := request.URL.Query().Get("function")
 
 		if function == "" {
-			result, err, errCode = control.GetDeviceClasses()
+			result, err, errCode = control.GetDeviceClasses(request.Context())
 			if err != nil {
 				http.Error(writer, err.Error(), errCode)
 				return
 			}
 		} else {
 			if function == "controlling-function" {
-				result, err, errCode = control.GetDeviceClassesWithControllingFunctions()
+				result, err, errCode = control.GetDeviceClassesWithControllingFunctions(request.Context())
 				if err != nil {
 					http.Error(writer, err.Error(), errCode)
 					return
@@ -185,7 +185,7 @@ func (this *DeviceClassEndpoints) List(config configuration.Config, router *http
 func (this *DeviceClassEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetDeviceClass(id)
+		result, err, errCode := control.GetDeviceClass(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -216,7 +216,7 @@ func (this *DeviceClassEndpoints) Get(config configuration.Config, router *http.
 func (this *DeviceClassEndpoints) GetFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}/functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetDeviceClassesFunctions(id)
+		result, err, errCode := control.GetDeviceClassesFunctions(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -247,7 +247,7 @@ func (this *DeviceClassEndpoints) GetFunctions(config configuration.Config, rout
 func (this *DeviceClassEndpoints) GetControllingFunctions(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /device-classes/{id}/controlling-functions", func(writer http.ResponseWriter, request *http.Request) {
 		id := request.PathValue("id")
-		result, err, errCode := control.GetDeviceClassesControllingFunctions(id)
+		result, err, errCode := control.GetDeviceClassesControllingFunctions(request.Context(), id)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -290,7 +290,7 @@ func (this *DeviceClassEndpoints) Validate(config configuration.Config, router *
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err, code := control.ValidateDeviceClass(deviceclass)
+		err, code := control.ValidateDeviceClass(request.Context(), deviceclass)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -323,7 +323,7 @@ func (this *DeviceClassEndpoints) Delete(config configuration.Config, router *ht
 			}
 		}
 		if dryRun {
-			err, code := control.ValidateDeviceClassDelete(id)
+			err, code := control.ValidateDeviceClassDelete(request.Context(), id)
 			if err != nil {
 				http.Error(writer, err.Error(), code)
 				return
@@ -332,7 +332,7 @@ func (this *DeviceClassEndpoints) Delete(config configuration.Config, router *ht
 			return
 		}
 		token := util.GetAuthToken(request)
-		err, code := control.DeleteDeviceClass(token, id)
+		err, code := control.DeleteDeviceClass(request.Context(), token, id)
 		if err != nil {
 			http.Error(writer, err.Error(), code)
 			return
@@ -365,7 +365,7 @@ func (this *DeviceClassEndpoints) Create(config configuration.Config, router *ht
 		}
 		token := util.GetAuthToken(request)
 
-		result, err, errCode := control.SetDeviceClass(token, deviceClass)
+		result, err, errCode := control.SetDeviceClass(request.Context(), token, deviceClass)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
@@ -411,7 +411,7 @@ func (this *DeviceClassEndpoints) Set(config configuration.Config, router *http.
 			return
 		}
 
-		result, err, errCode := control.SetDeviceClass(token, deviceClass)
+		result, err, errCode := control.SetDeviceClass(request.Context(), token, deviceClass)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return

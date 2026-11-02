@@ -18,6 +18,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -38,7 +39,7 @@ const GraphEdgeAttrSystemChanged = models.GraphEdgeAttrSystemChanged
 
 type GraphListOptions = model.GraphListOptions
 
-func (c *Client) ListGraphs(token string, options model.GraphListOptions) (result []models.Graph, total int64, err error, errCode int) {
+func (c *Client) ListGraphs(ctx context.Context, token string, options model.GraphListOptions) (result []models.Graph, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}
 	if options.Permission != models.UnsetPermissionFlag {
@@ -93,7 +94,7 @@ func (c *Client) ListGraphs(token string, options model.GraphListOptions) (resul
 	if len(query) > 0 {
 		queryString = "?" + query.Encode()
 	}
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/graphs"+queryString, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/graphs"+queryString, nil)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
@@ -101,8 +102,8 @@ func (c *Client) ListGraphs(token string, options model.GraphListOptions) (resul
 	return doWithTotalInResult[[]models.Graph](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) ReadGraph(token string, id string) (result models.Graph, err error, errCode int) {
-	req, err := http.NewRequest(http.MethodGet, c.baseUrl+"/graphs/"+url.PathEscape(id), nil)
+func (c *Client) ReadGraph(ctx context.Context, token string, id string) (result models.Graph, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/graphs/"+url.PathEscape(id), nil)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -110,7 +111,7 @@ func (c *Client) ReadGraph(token string, id string) (result models.Graph, err er
 	return do[models.Graph](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) SetGraph(token string, graph models.Graph) (result models.Graph, err error, code int) {
+func (c *Client) SetGraph(ctx context.Context, token string, graph models.Graph) (result models.Graph, err error, code int) {
 	method := http.MethodPost
 	endpoint := c.baseUrl + "/graphs"
 	if graph.Id != "" {
@@ -121,7 +122,7 @@ func (c *Client) SetGraph(token string, graph models.Graph) (result models.Graph
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
-	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(b))
+	req, err := http.NewRequestWithContext(ctx, method, endpoint, bytes.NewBuffer(b))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -129,8 +130,8 @@ func (c *Client) SetGraph(token string, graph models.Graph) (result models.Graph
 	return do[models.Graph](req, c.optionalAuthTokenForApiGatewayRequest)
 }
 
-func (c *Client) DeleteGraph(token string, id string) (error, int) {
-	req, err := http.NewRequest(http.MethodDelete, c.baseUrl+"/graphs/"+url.PathEscape(id), nil)
+func (c *Client) DeleteGraph(ctx context.Context, token string, id string) (error, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+"/graphs/"+url.PathEscape(id), nil)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

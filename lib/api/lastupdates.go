@@ -46,7 +46,7 @@ type LastUpdateTimestampsEndpoints struct{}
 func (this *LastUpdateTimestampsEndpoints) Get(config configuration.Config, router *http.ServeMux, control Controller) {
 	router.HandleFunc("GET /last-update-timestamps", func(writer http.ResponseWriter, request *http.Request) {
 		userId := request.URL.Query().Get("user_id")
-		result, err, errCode := control.GetLastUpdateTimestamps(util.GetAuthToken(request), userId)
+		result, err, errCode := control.GetLastUpdateTimestamps(request.Context(), util.GetAuthToken(request), userId)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
