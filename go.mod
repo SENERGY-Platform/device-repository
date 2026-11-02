@@ -9,7 +9,7 @@ require (
 
 require (
 	github.com/SENERGY-Platform/api-docs-provider/lib/client v0.0.3
-	github.com/SENERGY-Platform/gin-middleware v0.14.1
+	github.com/SENERGY-Platform/gin-middleware v0.14.3
 	github.com/SENERGY-Platform/go-service-base/struct-logger v0.8.0
 	github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4
 	github.com/SENERGY-Platform/models/go v0.0.0-20260910124809-95949e15e3d4
