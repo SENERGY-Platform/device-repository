@@ -106,9 +106,10 @@ func (c *Client) fetchCached(req *http.Request) (resp cachedResponse, err error,
 	if resp, hit := c.cache.get(key, c.cacheTtl); hit {
 		return resp, nil, 0
 	}
+	generation := c.cache.currentGeneration()
 	resp, err, code = fetch(req)
 	if err == nil {
-		c.cache.set(key, resp, c.cacheTtl)
+		c.cache.set(key, newCacheTarget(c.basePath, req.URL), resp, c.cacheTtl, generation)
 	}
 	return resp, err, code
 }
@@ -166,10 +167,13 @@ type cacheStore struct {
 	entries     map[string]cacheEntry
 	lastCleanup time.Time
 	now         func() time.Time
+	//counts invalidations, so that a response requested before one is not stored after it
+	generation uint64
 }
 
 type cacheEntry struct {
 	response cachedResponse
+	target   cacheTarget
 	stored   time.Time
 	expires  time.Time
 }
@@ -192,11 +196,21 @@ func (this *cacheStore) get(key string, ttl time.Duration) (response cachedRespo
 	return entry.response, true
 }
 
-func (this *cacheStore) set(key string, response cachedResponse, ttl time.Duration) {
+func (this *cacheStore) currentGeneration() uint64 {
 	this.mux.Lock()
 	defer this.mux.Unlock()
+	return this.generation
+}
+
+// set stores the response unless the cache was invalidated since generation was read before the request
+func (this *cacheStore) set(key string, target cacheTarget, response cachedResponse, ttl time.Duration, generation uint64) {
+	this.mux.Lock()
+	defer this.mux.Unlock()
+	if generation != this.generation {
+		return
+	}
 	now := this.now()
-	this.entries[key] = cacheEntry{response: response, stored: now, expires: now.Add(ttl)}
+	this.entries[key] = cacheEntry{response: response, target: target, stored: now, expires: now.Add(ttl)}
 	if now.Sub(this.lastCleanup) >= cacheCleanupInterval {
 		this.lastCleanup = now
 		for k, entry := range this.entries {

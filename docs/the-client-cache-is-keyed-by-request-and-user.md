@@ -54,6 +54,45 @@ than another one stored passes a shorter ttl and gets a refresh; a longer ttl
 does not extend an entry beyond the ttl it was stored with. Expired entries are
 removed on a write, at most once a minute. There is no size limit.
 
+## Invalidation
+
+`client.InvalidateCache(c, resource, id)` removes what a change of one
+resource may have made stale, for every user and every copy of the client:
+
+- the single reads of that resource, e.g. `/devices/{id}` and
+  `/extended-devices/{id}`,
+- reads by local id (`?as=local_id`) of the same kind, whatever the id, because
+  they name another id than the one invalidated,
+- every list and query — `/devices`, `/query/...`, `/v2/...` — because any of
+  them may contain the resource,
+- the single reads of other resources derived from it, whatever their id: the
+  services, extended devices and function lists of device classes and aspect
+  nodes for a device type, the concepts for a characteristic, all aspect nodes
+  for an aspect, because a node carries its whole hierarchy.
+
+The table of derivations is `cacheDependencies` in `lib/client/cache_invalidation.go`.
+A path no entry names counts as a list and goes with every invalidation, so an
+endpoint added later is invalidated too often rather than not at all. What the
+table can get wrong is a missing derivation: a new single read that embeds
+another resource has to be added there, or it stays stale until its ttl.
+
+An empty id removes every single read of the kind. `client.ResetCache(c)`
+removes everything. Both do nothing for implementations other than the one from
+`NewClient`.
+
+A response requested before an invalidation is not stored when it arrives after
+it, because it may predate the change. The cache counts invalidations and
+compares the count from before the request with the one after.
+
+`client.InvalidateOnSignals(c, broker)` connects this to the cache invalidation
+signals of `service-commons` on a broker, `signal.DefaultBroker` if nil:
+`CacheInvalidationAll` resets the cache, every other known signal invalidates its
+resource with the signal's value as id; `GenericCacheInvalidation` carries no
+resource and is ignored. The signals come from the kafka consumers of
+`service-commons/pkg/cache/invalidator`. The client does not start them itself:
+a service usually runs them already for its other caches, and a second set would
+read the same topics twice. The returned function unsubscribes.
+
 ## Rejected alternatives
 
 - **A wrapper type implementing every read method.** 61 methods duplicated from
