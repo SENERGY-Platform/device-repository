@@ -96,12 +96,21 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 	if config.AsMgwMirror {
 		result = util.NewMirrorMiddleware(result, config, control)
 	}
+	return withTracing(config, withoutCancel(result))
+}
+
+// withTracing starts a span per request and exports it to config.OtelEndpoint; with
+// configuration.OtelEndpointOff no exporter is started and the handler stays as it is
+func withTracing(config configuration.Config, handler http.Handler) http.Handler {
+	if config.OtelEndpoint == configuration.OtelEndpointOff {
+		config.GetLogger().Info("tracing off")
+		return handler
+	}
 	config.GetLogger().Info("add tracing")
-	result = withoutCancel(result)
-	traced, err := otelx.HTTPOpenTelemetry(context.Background(), config.OtelEndpoint, "device-repository", result)
+	traced, err := otelx.HTTPOpenTelemetry(context.Background(), config.OtelEndpoint, "device-repository", handler)
 	if err != nil {
 		config.GetLogger().Warn("unable to add tracing", "error", err)
-		return result
+		return handler
 	}
 	return traced
 }

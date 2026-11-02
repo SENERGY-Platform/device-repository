@@ -35,6 +35,9 @@ import (
 	"github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib/client"
 )
 
+// OtelEndpointOff as otel_endpoint switches tracing off, e.g. on a gateway without a collector
+const OtelEndpointOff = "off"
+
 type Config struct {
 	ServerPort                             string `json:"server_port"`
 	EnableSwaggerUi                        bool   `json:"enable_swagger_ui"`
@@ -53,7 +56,7 @@ type Config struct {
 	LocationTopic                          string `json:"location_topic"`
 	GraphTopic                             string `json:"graph_topic"`
 	PermissionsV2Url                       string `json:"permissions_v2_url"`
-	OtelEndpoint                           string `json:"otel_endpoint"` //OTLP gRPC collector for traces; empty: default of gin-middleware/otelx
+	OtelEndpoint                           string `json:"otel_endpoint"` //OTLP gRPC collector for traces; empty: default of gin-middleware/otelx; OtelEndpointOff: no tracing
 	MongoUrl                               string `json:"mongo_url"`     //full connection string with scheme; credentials belong in MongoUser/MongoPassword
 	MongoUser                              string `json:"mongo_user"`    //empty: no authentication
 	MongoPassword                          string `json:"mongo_password" config:"secret"`
