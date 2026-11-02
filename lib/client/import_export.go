@@ -41,7 +41,7 @@ func (c *Client) Export(ctx context.Context, token string, options model.ImportE
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[model.ImportExport](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[model.ImportExport](c, req)
 }
 
 func (c *Client) Import(ctx context.Context, token string, importModel model.ImportExport, options model.ImportExportOptions) (err error, code int) {
@@ -62,7 +62,7 @@ func (c *Client) Import(ctx context.Context, token string, importModel model.Imp
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ImportFrom(ctx context.Context, token string, includeOwnedInformation bool, options model.ImportFromOptions) (err error, code int) {
@@ -83,5 +83,5 @@ func (c *Client) ImportFrom(ctx context.Context, token string, includeOwnedInfor
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }

@@ -43,7 +43,7 @@ func TestLocation(t *testing.T) {
 
 func testProduceLocation(conf configuration.Config, location models.Location) func(t *testing.T) {
 	return func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetLocation(context.Background(), testenv.AdminToken, location)
 		if err != nil {
 			t.Error(err)
@@ -85,7 +85,7 @@ func testLocationRead(con *controller.Controller, id string, expectedLocation *m
 
 func testLocationDelete(conf configuration.Config, id string) func(t *testing.T) {
 	return func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		err, _ := c.DeleteLocation(context.Background(), testenv.AdminToken, id)
 		if err != nil {
 			t.Error(err)

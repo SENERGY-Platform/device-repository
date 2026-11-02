@@ -60,7 +60,7 @@ func TestAspectClassOnContentVariable(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	const (
 		airClass   = models.URN_PREFIX + "aspect-class:air"

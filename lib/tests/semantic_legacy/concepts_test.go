@@ -60,7 +60,7 @@ func testProduceValidConcept1withCharIdAndBaseCharId(conf configuration.Config) 
 		concept.Name = "color1"
 		concept.BaseCharacteristicId = "urn:ses:infai:characteristic:544433333"
 		concept.CharacteristicIds = []string{"urn:ses:infai:characteristic:544433333"}
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetConcept(context.Background(), testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
@@ -74,7 +74,7 @@ func testProduceValidConcept1withNoCharId(conf configuration.Config) func(t *tes
 		concept.Id = "urn:ses:infai:concept:1a1a1a"
 		concept.Name = "color1"
 		concept.CharacteristicIds = nil
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetConcept(context.Background(), testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
@@ -89,7 +89,7 @@ func testProduceValidConcept1withCharId(conf configuration.Config) func(t *testi
 		concept.Name = "color1"
 		concept.CharacteristicIds = []string{"urn:ses:infai:characteristic:544433333"}
 		concept.BaseCharacteristicId = "urn:ses:infai:characteristic:544433333"
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetConcept(context.Background(), testenv.AdminToken, concept)
 		if err != nil {
 			t.Fatal(err)
@@ -112,7 +112,7 @@ func testProduceValidCharacteristicDependencie(conf configuration.Config) func(t
 			Name:               "charFloat",
 			SubCharacteristics: nil,
 		}}
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
@@ -175,7 +175,7 @@ func testReadConcept1WithSubClass(con *controller.Controller) func(t *testing.T)
 func testDeleteConcept1(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
 		const conceptId = "urn:ses:infai:concept:1a1a1a"
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 		err, code := c.DeleteConcept(context.Background(), testenv.AdminToken, conceptId)
 		if err == nil {

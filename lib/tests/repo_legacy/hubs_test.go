@@ -48,7 +48,7 @@ func TestHubs(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {

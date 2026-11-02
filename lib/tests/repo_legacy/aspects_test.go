@@ -97,7 +97,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 	})
 
 	t.Run("create aspects", func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		for _, aspect := range aspects {
 			_, err, _ := c.SetAspect(context.Background(), AdminToken, aspect)
 			if err != nil {
@@ -106,7 +106,7 @@ func testAspectList(t *testing.T, conf configuration.Config) {
 			}
 		}
 	})
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 	t.Run("list all aspects", func(t *testing.T) {
 		list, total, err, _ := c.ListAspects(context.Background(), client.AspectListOptions{})
 		if err != nil {

@@ -839,7 +839,7 @@ func testDeviceTypeSelectablesWithoutConfigurablesV2IncludeModified(config confi
 
 func clientTestDeviceTypeSelectables(config configuration.Config, criteria []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool, expectedResult []model.DeviceTypeSelectable) func(t *testing.T) {
 	return func(t *testing.T) {
-		result, err, _ := client.NewClient("http://localhost:"+config.ServerPort, nil).GetDeviceTypeSelectablesV2(context.Background(), criteria, pathPrefix, includeModified, servicesMustMatchAllCriteria)
+		result, err, _ := client.NewClient("http://localhost:"+config.ServerPort, client.Options{}).GetDeviceTypeSelectablesV2(context.Background(), criteria, pathPrefix, includeModified, servicesMustMatchAllCriteria)
 		if err != nil {
 			t.Error(err)
 			return

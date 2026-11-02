@@ -44,7 +44,7 @@ func (c *Client) SetAspect(ctx context.Context, token string, aspect models.Aspe
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Aspect](c, req)
 }
 
 func (c *Client) DeleteAspect(ctx context.Context, token string, id string) (err error, code int) {
@@ -53,7 +53,7 @@ func (c *Client) DeleteAspect(ctx context.Context, token string, id string) (err
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ListAspects(ctx context.Context, options model.AspectListOptions) (result []models.Aspect, total int64, err error, errCode int) {

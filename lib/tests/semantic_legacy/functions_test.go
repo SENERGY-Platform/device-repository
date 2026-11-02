@@ -124,7 +124,7 @@ func testProduceFunctions(conf configuration.Config) func(t *testing.T) {
 		confunction1.DisplayName = "foo"
 		confunction1.Description = "Turn the device on"
 
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetFunction(context.Background(), testenv.AdminToken, confunction1)
 		if err != nil {
 			t.Fatal(err)
@@ -193,7 +193,7 @@ func testUpdateFunctionsDisplayName(conf configuration.Config) func(t *testing.T
 		confunction1.DisplayName = "foo 2"
 		confunction1.Description = "Turn the device on"
 
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetFunction(context.Background(), testenv.AdminToken, confunction1)
 		if err != nil {
 			t.Fatal(err)
@@ -365,7 +365,7 @@ func testFunctionDelete(conf configuration.Config) func(t *testing.T) {
 			"urn:infai:ses:measuring-function:321",
 			"urn:infai:ses:measuring-function:467"}
 
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		for _, funcid := range funcids {
 			err, _ := c.DeleteFunction(context.Background(), testenv.AdminToken, funcid)
 			if err != nil {

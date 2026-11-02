@@ -101,7 +101,7 @@ func testProduceValidCharacteristic1(conf configuration.Config) func(t *testing.
 					Name:               "charBoolean",
 					SubCharacteristics: nil}},
 		}}
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
@@ -116,7 +116,7 @@ func testProduceValidCharacteristic2(conf configuration.Config) func(t *testing.
 		characteristic.Name = "bool"
 		characteristic.DisplayUnit = "°F"
 		characteristic.Type = models.Boolean
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
@@ -130,7 +130,7 @@ func testProduceValidCharacteristic3(conf configuration.Config) func(t *testing.
 		characteristic.Id = "urn:ses:infai:characteristic:1111111-30.03.2021"
 		characteristic.Name = "µg/m³"
 		characteristic.Type = models.Boolean
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetCharacteristic(context.Background(), testenv.AdminToken, characteristic)
 		if err != nil {
 			t.Fatal(err)
@@ -264,7 +264,7 @@ func testReadAllCharacteristic(con *controller.Controller) func(t *testing.T) {
 
 func testDeleteCharacteristic1(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		err, _ := c.DeleteCharacteristic(context.Background(), testenv.AdminToken, "urn:ses:infai:characteristic:1d1e1f")
 		if err != nil {
 			t.Fatal(err)

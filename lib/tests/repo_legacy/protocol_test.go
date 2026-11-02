@@ -49,7 +49,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	protocolIds := []string{protocol1id, protocol2id, "foobarprotocol"}
 	t.Run("create protocols", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestDeviceTypeProtocolFilter(t *testing.T) {
 	})
 
 	t.Run("find device-types by protocolIds", func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		t.Run("0", func(t *testing.T) {
 			list, _, err, _ := c.ListDeviceTypesV3(context.Background(), userjwt, client.DeviceTypeListOptions{
 				ProtocolIds: []string{protocolIds[0]},
@@ -224,7 +224,7 @@ func TestProtocolQuery(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetProtocol(context.Background(), AdminToken, models.Protocol{Id: protocol1id, Name: protocol1name})
 	if err != nil {

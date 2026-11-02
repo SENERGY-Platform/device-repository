@@ -72,7 +72,7 @@ func TestGraphKafkaPublish(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	t.Run("topic is registered with kafka publishing", func(t *testing.T) {
 		pc := permclient.New(config.PermissionsV2Url)

@@ -2677,7 +2677,7 @@ func createTestMetadata(config configuration.Config, interaction models.Interact
 			},
 		}
 
-		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 		for _, aspect := range aspects {
 			_, err, _ := c.SetAspect(context.Background(), testenv.AdminToken, aspect)
@@ -2729,7 +2729,7 @@ func createTestMetadataFromString(config configuration.Config, deviceTypesStr st
 			return
 		}
 
-		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 		for _, aspect := range aspects {
 			_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, aspect)

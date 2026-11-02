@@ -77,7 +77,7 @@ func newCacheTestClient(t *testing.T) (Interface, *countingRepo, *testClock) {
 	repo := &countingRepo{}
 	server := httptest.NewServer(repo)
 	t.Cleanup(server.Close)
-	c := NewClient(server.URL, nil)
+	c := NewClient(server.URL, Options{})
 	clock := &testClock{now: time.Now()}
 	c.(*Client).cache.now = clock.Now
 	return c, repo, clock
@@ -275,7 +275,7 @@ func TestWithCacheCoversReadMethods(t *testing.T) {
 	repo := &nullRepo{}
 	server := httptest.NewServer(repo)
 	defer server.Close()
-	c := NewClient(server.URL, nil)
+	c := NewClient(server.URL, Options{})
 	cached := reflect.ValueOf(WithCache(c, time.Minute))
 	uncached := reflect.ValueOf(c)
 

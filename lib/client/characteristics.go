@@ -44,7 +44,7 @@ func (c *Client) SetCharacteristic(ctx context.Context, token string, characteri
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Characteristic](c, req)
 }
 
 func (c *Client) DeleteCharacteristic(ctx context.Context, token string, id string) (err error, code int) {
@@ -53,7 +53,7 @@ func (c *Client) DeleteCharacteristic(ctx context.Context, token string, id stri
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ListCharacteristics(ctx context.Context, options model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int) {

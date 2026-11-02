@@ -42,7 +42,7 @@ func (c *Client) SetProtocol(ctx context.Context, token string, protocol models.
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Protocol](c, req)
 }
 
 func (c *Client) DeleteProtocol(ctx context.Context, token string, id string) (err error, code int) {
@@ -51,7 +51,7 @@ func (c *Client) DeleteProtocol(ctx context.Context, token string, id string) (e
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ReadProtocol(ctx context.Context, id string, token string) (result models.Protocol, err error, errCode int) {

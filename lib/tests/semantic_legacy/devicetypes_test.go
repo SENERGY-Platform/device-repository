@@ -80,7 +80,7 @@ func testProduceValidDeviceTypes(conf configuration.Config) func(t *testing.T) {
 			},
 		})
 
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetDeviceType(context.Background(), testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
 			t.Fatal(err)

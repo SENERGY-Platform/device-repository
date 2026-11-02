@@ -85,7 +85,7 @@ func refetched(t *testing.T, basePath string, invalidate func(c Interface)) []st
 	repo := &nullRepo{}
 	server := httptest.NewServer(repo)
 	defer server.Close()
-	c := NewClient(server.URL+basePath, nil)
+	c := NewClient(server.URL+basePath, Options{})
 	requests := func() int {
 		repo.mux.Lock()
 		defer repo.mux.Unlock()
@@ -174,7 +174,7 @@ func TestInvalidationDuringARequest(t *testing.T) {
 		w.Write([]byte(`{"id":"f"}`))
 	}))
 	defer server.Close()
-	c := NewClient(server.URL, nil)
+	c := NewClient(server.URL, Options{})
 	ctx := context.Background()
 
 	done := make(chan struct{})

@@ -44,7 +44,7 @@ func (c *Client) SetDeviceGroup(ctx context.Context, token string, deviceGroup m
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.DeviceGroup](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.DeviceGroup](c, req)
 }
 
 func (c *Client) DeleteDeviceGroup(ctx context.Context, token string, id string) (err error, code int) {
@@ -53,7 +53,7 @@ func (c *Client) DeleteDeviceGroup(ctx context.Context, token string, id string)
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ListDeviceGroups(ctx context.Context, token string, options model.DeviceGroupListOptions) (result []models.DeviceGroup, total int64, err error, errCode int) {
@@ -137,7 +137,7 @@ func (c *Client) RecomputeDeviceGroupCriteria(ctx context.Context, token string,
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ValidateDeviceGroupDelete(ctx context.Context, token string, id string) (err error, code int) {

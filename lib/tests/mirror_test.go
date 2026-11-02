@@ -139,8 +139,8 @@ func TestMirror(t *testing.T) {
 	config.AsMgwMirror = true
 	config.MgwMirrorUpdateInterval = "10s"
 
-	sourceClient := client.NewClient("http://"+repoIp+":8080", nil)
-	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	sourceClient := client.NewClient("http://"+repoIp+":8080", client.Options{})
+	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	t.Run("create initial source state", func(t *testing.T) {
 		p1, err, _ := sourceClient.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{

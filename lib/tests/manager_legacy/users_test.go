@@ -91,7 +91,7 @@ func TestUserDelete(t *testing.T) {
 
 	cache := &map[string]client.ResourcePermissions{}
 
-	c := devicerepo.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := devicerepo.NewClient("http://localhost:"+conf.ServerPort, devicerepo.Options{})
 
 	dt := models.DeviceType{}
 	t.Run("create device-type", func(t *testing.T) {
@@ -238,7 +238,7 @@ func TestUserDelete(t *testing.T) {
 
 func checkUserDevices(conf configuration.Config, token auth.Token, expectedDeviceIdsAsInt []int) func(t *testing.T) {
 	return func(t *testing.T) {
-		devices, err, _ := devicerepo.NewClient("http://localhost:"+conf.ServerPort, nil).ListDevices(context.Background(), token.Jwt(), devicerepo.DeviceListOptions{Limit: 100})
+		devices, err, _ := devicerepo.NewClient("http://localhost:"+conf.ServerPort, devicerepo.Options{}).ListDevices(context.Background(), token.Jwt(), devicerepo.DeviceListOptions{Limit: 100})
 		if err != nil {
 			t.Error(err)
 			return

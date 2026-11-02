@@ -50,7 +50,7 @@ func testListDeviceClasses(t *testing.T, conf configuration.Config) {
 		},
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	t.Run("create device-classes", func(t *testing.T) {
 		for _, dc := range deviceClasses {

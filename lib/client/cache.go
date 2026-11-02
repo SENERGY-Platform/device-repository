@@ -97,25 +97,25 @@ func (c *Client) fetchCached(req *http.Request) (resp cachedResponse, err error,
 		req.Header.Set("Authorization", token)
 	}
 	if c.cacheTtl <= 0 || c.cache == nil {
-		return fetch(req)
+		return c.fetch(req)
 	}
 	key, ok := requestCacheKey(req)
 	if !ok {
-		return fetch(req)
+		return c.fetch(req)
 	}
 	if resp, hit := c.cache.get(key, c.cacheTtl); hit {
 		return resp, nil, 0
 	}
 	generation := c.cache.currentGeneration()
-	resp, err, code = fetch(req)
+	resp, err, code = c.fetch(req)
 	if err == nil {
 		c.cache.set(key, newCacheTarget(c.basePath, req.URL), resp, c.cacheTtl, generation)
 	}
 	return resp, err, code
 }
 
-func fetch(req *http.Request) (result cachedResponse, err error, code int) {
-	resp, err := send(req)
+func (c *Client) fetch(req *http.Request) (result cachedResponse, err error, code int) {
+	resp, err := c.send(req)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

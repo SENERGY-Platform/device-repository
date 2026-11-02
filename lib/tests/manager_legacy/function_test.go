@@ -78,7 +78,7 @@ func testFunction(port string) func(t *testing.T) {
 			t.Fatal(result)
 		}
 
-		resultList, _, err, _ := client.NewClient("http://localhost:"+port, nil).ListFunctions(context.Background(), client.FunctionListOptions{
+		resultList, _, err, _ := client.NewClient("http://localhost:"+port, client.Options{}).ListFunctions(context.Background(), client.FunctionListOptions{
 			Ids: []string{function.Id},
 		})
 		if err != nil {

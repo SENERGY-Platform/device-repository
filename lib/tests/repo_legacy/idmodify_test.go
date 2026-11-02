@@ -40,7 +40,7 @@ func TestModifiedDevice(t *testing.T) {
 
 	sgKey := "a8ee3b1c-4cda-4f0d-9f55-4ef4882ce0af"
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{
 		Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
@@ -228,7 +228,7 @@ func TestModifiedDevice(t *testing.T) {
 	})
 
 	t.Run("extended modified device 1", func(t *testing.T) {
-		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ReadExtendedDevice(context.Background(), d1Modified.Id, userjwt, client.READ, true)
+		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{}).ReadExtendedDevice(context.Background(), d1Modified.Id, userjwt, client.READ, true)
 		if err != nil {
 			t.Error(err)
 			return
@@ -268,7 +268,7 @@ func TestModifiedDevice(t *testing.T) {
 	})
 
 	t.Run("extended modified device 2", func(t *testing.T) {
-		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ReadExtendedDevice(context.Background(), d2Modified.Id, userjwt, client.READ, true)
+		actual, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{}).ReadExtendedDevice(context.Background(), d2Modified.Id, userjwt, client.READ, true)
 		if err != nil {
 			t.Error(err)
 			return

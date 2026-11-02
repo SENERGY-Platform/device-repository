@@ -127,7 +127,7 @@ func (c *Client) SetGraph(ctx context.Context, token string, graph models.Graph)
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Graph](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Graph](c, req)
 }
 
 func (c *Client) DeleteGraph(ctx context.Context, token string, id string) (error, int) {
@@ -136,5 +136,5 @@ func (c *Client) DeleteGraph(ctx context.Context, token string, id string) (erro
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }

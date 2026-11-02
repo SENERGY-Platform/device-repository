@@ -123,8 +123,8 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 	config.MgwMirrorUpdateInterval = "1h"
 	config.MgwMirrorMissPullBackoff = "5s"
 
-	sourceClient := client.NewClient("http://"+repoIp+":8080", nil)
-	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	sourceClient := client.NewClient("http://"+repoIp+":8080", client.Options{})
+	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	t.Run("start mirror", func(t *testing.T) {
 		err = lib.Start(ctx, wg, config)

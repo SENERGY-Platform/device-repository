@@ -41,7 +41,7 @@ func (c *Client) SetDeviceConnectionState(ctx context.Context, token string, id 
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) SetDeviceConnectionStates(ctx context.Context, token string, states map[string]bool) (error, int) {
@@ -54,7 +54,7 @@ func (c *Client) SetDeviceConnectionStates(ctx context.Context, token string, st
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) SetDevice(ctx context.Context, token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int) {
@@ -71,7 +71,7 @@ func (c *Client) SetDevice(ctx context.Context, token string, device models.Devi
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Device](c, req)
 }
 
 func (c *Client) CreateDevice(ctx context.Context, token string, device models.Device) (result models.Device, err error, code int) {
@@ -84,7 +84,7 @@ func (c *Client) CreateDevice(ctx context.Context, token string, device models.D
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Device](c, req)
 }
 
 func (c *Client) DeleteDevice(ctx context.Context, token string, id string) (err error, code int) {
@@ -93,7 +93,7 @@ func (c *Client) DeleteDevice(ctx context.Context, token string, id string) (err
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ListDevices(ctx context.Context, token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {

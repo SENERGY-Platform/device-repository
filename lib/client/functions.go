@@ -43,7 +43,7 @@ func (c *Client) SetFunction(ctx context.Context, token string, function models.
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Function](c, req)
 }
 
 func (c *Client) DeleteFunction(ctx context.Context, token string, id string) (err error, code int) {
@@ -52,7 +52,7 @@ func (c *Client) DeleteFunction(ctx context.Context, token string, id string) (e
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {

@@ -82,7 +82,7 @@ func (c *Client) SetAspectClass(ctx context.Context, token string, aspectClass m
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.AspectClass](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.AspectClass](c, req)
 }
 
 func (c *Client) DeleteAspectClass(ctx context.Context, token string, id string) (err error, code int) {
@@ -91,7 +91,7 @@ func (c *Client) DeleteAspectClass(ctx context.Context, token string, id string)
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ValidateAspectClass(ctx context.Context, aspectClass models.AspectClass) (err error, code int) {

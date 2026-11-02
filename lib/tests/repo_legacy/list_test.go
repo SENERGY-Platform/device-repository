@@ -58,7 +58,7 @@ func TestResourceList(t *testing.T) {
 	})
 
 	t.Run("EOF /aspect-nodes/", func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, _, code := c.GetAspectNode(context.Background(), "")
 		if code != http.StatusNotFound {
 			t.Error(err, code)

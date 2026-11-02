@@ -43,7 +43,7 @@ func TestProtocolConstraintInValidation(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetProtocol(context.Background(), AdminToken, models.Protocol{
 		Id:      "p1",
@@ -192,7 +192,7 @@ func TestDeleteValidations(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceClass(context.Background(), AdminToken, models.DeviceClass{
 		Id:   "used_device_class",

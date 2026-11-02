@@ -61,7 +61,7 @@ func TestDeviceGroupCriteriaUpdateOnDeviceTypeUpdate(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	// Create base elements
 	t.Run("create base elements", func(t *testing.T) {

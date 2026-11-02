@@ -50,7 +50,7 @@ func TestDeviceClass(t *testing.T) {
 
 func testProduceDeviceType(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		_, err, _ := c.SetDeviceClass(context.Background(), testenv.AdminToken, models.DeviceClass{Id: "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef", Name: "Lamp", Image: "https://i.imgur.com/YHc7cbe.png"})
 		if err != nil {
 			t.Error(err)
@@ -95,7 +95,7 @@ func testDeviceClassRead(con *controller.Controller) func(t *testing.T) {
 
 func testDeviceClassDelete(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		err, _ := c.DeleteDeviceClass(context.Background(), testenv.AdminToken, "urn:infai:ses:device-class:eb4a3337-01a1-4434-9dcc-064b3955eeef")
 		if err != nil {
 			t.Fatal(err)

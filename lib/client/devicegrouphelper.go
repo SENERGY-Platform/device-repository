@@ -61,5 +61,5 @@ func (c *Client) DeviceGroupHelper(ctx context.Context, token string, deviceIds 
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[model.DeviceGroupHelperResult](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[model.DeviceGroupHelperResult](c, req)
 }

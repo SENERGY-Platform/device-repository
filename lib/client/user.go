@@ -28,5 +28,5 @@ func (c *Client) DeleteUser(ctx context.Context, adminToken string, userId strin
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", adminToken)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }

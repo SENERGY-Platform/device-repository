@@ -44,5 +44,5 @@ func (c *Client) SetDefaultDeviceAttributes(ctx context.Context, token string, a
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }

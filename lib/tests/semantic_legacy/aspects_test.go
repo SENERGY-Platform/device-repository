@@ -75,7 +75,7 @@ func testProduceAspect(conf configuration.Config) func(t *testing.T) {
 		aspect := models.Aspect{}
 		aspect.Id = "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf"
 		aspect.Name = "Air"
-		_, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).SetAspect(context.Background(), testenv.AdminToken, aspect)
+		_, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{}).SetAspect(context.Background(), testenv.AdminToken, aspect)
 		if err != nil {
 			t.Error(err)
 			return
@@ -102,7 +102,7 @@ func testAspectRead(con *controller.Controller) func(t *testing.T) {
 
 func testAspectDelete(conf configuration.Config) func(t *testing.T) {
 	return func(t *testing.T) {
-		err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).DeleteAspect(context.Background(), testenv.AdminToken, "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf")
+		err, _ := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{}).DeleteAspect(context.Background(), testenv.AdminToken, "urn:infai:ses:aspect:eb4a4449-01a1-4434-9dcc-064b3955abcf")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -166,7 +166,7 @@ func testProduceDeviceTypeForAspectTest(conf configuration.Config) func(t *testi
 			},
 		})
 
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 		_, err, _ := c.SetDeviceType(context.Background(), testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {
@@ -291,7 +291,7 @@ func test_2_ProduceDeviceTypeforAspectTest(conf configuration.Config) func(t *te
 			},
 		})
 
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 		_, err, _ := c.SetDeviceType(context.Background(), testenv.AdminToken, devicetype, client.DeviceTypeUpdateOptions{})
 		if err != nil {

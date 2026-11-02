@@ -39,7 +39,7 @@ func (c *Client) SetHubConnectionState(ctx context.Context, token string, id str
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) SetHubConnectionStates(ctx context.Context, token string, states map[string]bool) (error, int) {
@@ -52,7 +52,7 @@ func (c *Client) SetHubConnectionStates(ctx context.Context, token string, state
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 type HubUpdateOptions = model.HubUpdateOptions
@@ -76,7 +76,7 @@ func (c *Client) SetHub(ctx context.Context, token string, hub models.Hub, optio
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Hub](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Hub](c, req)
 }
 
 func (c *Client) DeleteHub(ctx context.Context, token string, id string) (err error, code int) {
@@ -85,7 +85,7 @@ func (c *Client) DeleteHub(ctx context.Context, token string, id string) (err er
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ReadHub(ctx context.Context, id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {

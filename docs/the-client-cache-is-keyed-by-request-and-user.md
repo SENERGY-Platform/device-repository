@@ -5,7 +5,7 @@ from a cache shared by all copies of the same client. A call on the client
 itself, without `WithCache`, never reads the cache.
 
 ```go
-c := client.NewClient(url, nil)
+c := client.NewClient(url, client.Options{})
 f, err, _ := client.WithCache(c, time.Minute).GetFunction(ctx, id) // asks the server, stores the response
 f, err, _ = client.WithCache(c, time.Minute).GetFunction(ctx, id)  // answered from the cache
 f, err, _ = c.GetFunction(ctx, id)                                 // asks the server

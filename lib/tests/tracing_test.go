@@ -161,7 +161,7 @@ func TestUsernameOutsideTheBaggageFormatIsServed(t *testing.T) {
 			"realm_access":       map[string][]string{"roles": {"user"}},
 		})
 		before := permissions.calls()
-		_, err, code := client.NewClient(server.URL, nil).ListDevices(ctx, token, client.DeviceListOptions{Limit: 10})
+		_, err, code := client.NewClient(server.URL, client.Options{}).ListDevices(ctx, token, client.DeviceListOptions{Limit: 10})
 		if err != nil {
 			t.Errorf("username %q: %v (code %v)", username, err, code)
 			continue
@@ -193,7 +193,7 @@ func TestTracePropagation(t *testing.T) {
 	provider, recorder := recordSpans(t)
 
 	callerCtx, span := provider.Tracer("test").Start(ctx, "caller")
-	_, err, _ := client.NewClient(server.URL, nil).ListDevices(callerCtx, userToken, client.DeviceListOptions{Limit: 10})
+	_, err, _ := client.NewClient(server.URL, client.Options{}).ListDevices(callerCtx, userToken, client.DeviceListOptions{Limit: 10})
 	span.End()
 	if err != nil {
 		t.Fatal(err)

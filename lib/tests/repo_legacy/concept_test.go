@@ -108,7 +108,7 @@ func testConceptList(t *testing.T, conf configuration.Config) {
 		},
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 	t.Run("create characteristics", func(t *testing.T) {
 		for _, characteristic := range characteristics {
 			_, err, _ := c.SetCharacteristic(context.Background(), AdminToken, characteristic)

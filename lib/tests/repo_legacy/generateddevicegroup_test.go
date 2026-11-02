@@ -38,7 +38,7 @@ func TestGeneratedDeviceGroups(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	//fid counts as a controlling function, which is combined with its aspect in the generated
 	//criteria, and validating those criteria needs the aspect to exist

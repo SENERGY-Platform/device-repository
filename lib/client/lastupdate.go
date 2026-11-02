@@ -38,5 +38,5 @@ func (c *Client) GetLastUpdateTimestamps(ctx context.Context, token string, user
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]model.LastUpdateTimestamp](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[[]model.LastUpdateTimestamp](c, req)
 }

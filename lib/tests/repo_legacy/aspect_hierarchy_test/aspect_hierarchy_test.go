@@ -307,7 +307,7 @@ func TestSubAspectMovePartial(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "a1",
@@ -508,7 +508,7 @@ func TestSubAspectMoveRoot(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "a1",
@@ -715,7 +715,7 @@ func TestAspectFunctions(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetFunction(context.Background(), testenv.AdminToken, models.Function{
 		Id:        "fid",
@@ -1001,7 +1001,7 @@ func TestDeviceTypeFilterCriteria(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "parent",

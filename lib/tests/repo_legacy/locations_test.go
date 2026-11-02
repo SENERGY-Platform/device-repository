@@ -42,7 +42,7 @@ func TestLocations(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 	deviceManagerUrl := "http://localhost:" + conf.ServerPort //manager has been replaced/integrated into device-repository
 
 	locations := []models.Location{}

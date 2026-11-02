@@ -84,7 +84,7 @@ func TestExport(t *testing.T) {
 
 		time.Sleep(time.Second)
 
-		return client.NewClient("http://localhost:"+config.ServerPort, nil), config
+		return client.NewClient("http://localhost:"+config.ServerPort, client.Options{}), config
 	}
 
 	c, config := initRepo()

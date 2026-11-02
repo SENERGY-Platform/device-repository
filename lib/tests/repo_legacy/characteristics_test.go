@@ -68,7 +68,7 @@ func testCharacteristicList(t *testing.T, conf configuration.Config) {
 	}
 
 	t.Run("create characteristics", func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		for _, characteristic := range characteristics {
 			_, err, _ := c.SetCharacteristic(context.Background(), AdminToken, characteristic)
 			if err != nil {
@@ -77,7 +77,7 @@ func testCharacteristicList(t *testing.T, conf configuration.Config) {
 			}
 		}
 	})
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 	t.Run("list all characteristics", func(t *testing.T) {
 		list, total, err, _ := c.ListCharacteristics(context.Background(), client.CharacteristicListOptions{})
 		if err != nil {

@@ -62,7 +62,7 @@ func TestListControllingDeviceClasses(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	t.Run("create device-classes", func(t *testing.T) {
 		_, err, _ := c.SetDeviceClass(context.Background(), client.InternalAdminToken, models.DeviceClass{

@@ -44,7 +44,7 @@ func (c *Client) SetLocation(ctx context.Context, token string, location models.
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.Location](c, req)
 }
 
 func (c *Client) DeleteLocation(ctx context.Context, token string, id string) (err error, code int) {
@@ -53,7 +53,7 @@ func (c *Client) DeleteLocation(ctx context.Context, token string, id string) (e
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) GetLocation(ctx context.Context, id string, token string) (location models.Location, err error, errCode int) {

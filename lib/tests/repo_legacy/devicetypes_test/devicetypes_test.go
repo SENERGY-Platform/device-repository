@@ -54,7 +54,7 @@ func TestDeviceTypeSubAspectValidation(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetAspect(context.Background(), testenv.AdminToken, models.Aspect{
 		Id:   "parent_2",
@@ -164,7 +164,7 @@ func TestServiceQuery(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name, Services: []models.Service{{Id: "service_42", Name: "foo"}}}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
@@ -188,7 +188,7 @@ func TestSubContentVarUpdate(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	dt := models.DeviceType{
 		Id:   devicetype1id,
@@ -293,7 +293,7 @@ func TestDeviceTypeQuery(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceType(context.Background(), testenv.AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
@@ -349,7 +349,7 @@ func TestDeviceTypeWithServiceGroups(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, ServiceGroups: []models.ServiceGroup{
 		{
@@ -458,7 +458,7 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}}
 
@@ -485,7 +485,7 @@ func TestServiceWithAttribute(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}, Services: []models.Service{
 		{

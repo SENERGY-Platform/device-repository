@@ -42,6 +42,9 @@ type Interface interface {
 type Client struct {
 	baseUrl string
 
+	//sends every request; Options.Timeout is set on it
+	httpClient *http.Client
+
 	// optionalAuthTokenForApiGatewayRequest:
 	//   - may be nil if used internally, without kong routing
 	//   - is used for requests that internally don`t need an auth token but are forced to send one if the request is routed over the SENERGY-Platform api-gateway
@@ -54,16 +57,39 @@ type Client struct {
 	basePath string
 }
 
+// Options configure a client from NewClient. The zero value sends with http.DefaultClient, without a
+// timeout of its own and without a token for the api gateway.
+type Options struct {
+	// Timeout bounds every request including reading its answer; 0 leaves the bound to the context
+	// of the call and to HttpClient
+	Timeout time.Duration
+
+	// HttpClient sends the requests; nil means http.DefaultClient. Timeout is set on a copy, the
+	// given client stays unchanged.
+	HttpClient *http.Client
+
+	// OptionalAuthTokenForApiGatewayRequest:
+	//   - may be nil if used internally, without kong routing
+	//   - is used for requests that internally don`t need an auth token but are forced to send one if the request is routed over the SENERGY-Platform api-gateway
+	OptionalAuthTokenForApiGatewayRequest func() (token string, err error)
+}
+
 // NewClient creates a new client
-// optionalAuthTokenForApiGatewayRequest:
-//   - may be nil if used internally, without kong routing
-//   - is used for requests that internally don`t need an auth token but are forced to send one if the request is routed over the SENERGY-Platform api-gateway
-func NewClient(baseUrl string, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) Interface {
+func NewClient(baseUrl string, options Options) Interface {
 	basePath := ""
 	if parsed, err := url.Parse(baseUrl); err == nil {
 		basePath = strings.TrimSuffix(parsed.Path, "/")
 	}
-	return &Client{baseUrl: baseUrl, optionalAuthTokenForApiGatewayRequest: optionalAuthTokenForApiGatewayRequest, cache: newCacheStore(), basePath: basePath}
+	httpClient := options.HttpClient
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+	if options.Timeout > 0 {
+		bounded := *httpClient
+		bounded.Timeout = options.Timeout
+		httpClient = &bounded
+	}
+	return &Client{baseUrl: baseUrl, httpClient: httpClient, optionalAuthTokenForApiGatewayRequest: options.OptionalAuthTokenForApiGatewayRequest, cache: newCacheStore(), basePath: basePath}
 }
 
 func (c *Client) MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error {
@@ -72,20 +98,20 @@ func (c *Client) MirrorUpdate(ctx context.Context, uncheckedCollections ...strin
 
 // send adds the trace context of req to its headers, so the called service continues the trace of the caller.
 // Without an OpenTelemetry setup in the calling service the global propagator is a no-op.
-func send(req *http.Request) (*http.Response, error) {
+func (c *Client) send(req *http.Request) (*http.Response, error) {
 	otel.GetTextMapPropagator().Inject(req.Context(), propagation.HeaderCarrier(req.Header))
-	return http.DefaultClient.Do(req)
+	return c.httpClient.Do(req)
 }
 
-func do[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (result T, err error, code int) {
-	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
-		token, err := optionalAuthTokenForApiGatewayRequest()
+func do[T any](c *Client, req *http.Request) (result T, err error, code int) {
+	if c.optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
+		token, err := c.optionalAuthTokenForApiGatewayRequest()
 		if err != nil {
 			return result, err, http.StatusInternalServerError
 		}
 		req.Header.Set("Authorization", token)
 	}
-	resp, err := send(req)
+	resp, err := c.send(req)
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
@@ -102,15 +128,15 @@ func do[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (
 	return
 }
 
-func doVoid(req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (err error, code int) {
-	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
-		token, err := optionalAuthTokenForApiGatewayRequest()
+func doVoid(c *Client, req *http.Request) (err error, code int) {
+	if c.optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
+		token, err := c.optionalAuthTokenForApiGatewayRequest()
 		if err != nil {
 			return err, http.StatusInternalServerError
 		}
 		req.Header.Set("Authorization", token)
 	}
-	resp, err := send(req)
+	resp, err := c.send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -122,15 +148,15 @@ func doVoid(req *http.Request, optionalAuthTokenForApiGatewayRequest func() (tok
 	return
 }
 
-func doWithTotalInResult[T any](req *http.Request, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) (result T, total int64, err error, code int) {
-	if optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
-		token, err := optionalAuthTokenForApiGatewayRequest()
+func doWithTotalInResult[T any](c *Client, req *http.Request) (result T, total int64, err error, code int) {
+	if c.optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
+		token, err := c.optionalAuthTokenForApiGatewayRequest()
 		if err != nil {
 			return result, total, err, http.StatusInternalServerError
 		}
 		req.Header.Set("Authorization", token)
 	}
-	resp, err := send(req)
+	resp, err := c.send(req)
 	if err != nil {
 		return result, total, err, http.StatusInternalServerError
 	}
@@ -173,7 +199,7 @@ func (c *Client) validateWithTokenAndOptions(ctx context.Context, token string, 
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	resp, err := send(req)
+	resp, err := c.send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -209,7 +235,7 @@ func (c *Client) validateWithOptions(ctx context.Context, path string, e interfa
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	resp, err := send(req)
+	resp, err := c.send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -233,7 +259,7 @@ func (c *Client) validateDelete(ctx context.Context, path string) (err error, co
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	resp, err := send(req)
+	resp, err := c.send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -251,7 +277,7 @@ func (c *Client) validateDeleteWithToken(ctx context.Context, token string, path
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	resp, err := send(req)
+	resp, err := c.send(req)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

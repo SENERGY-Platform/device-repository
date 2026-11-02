@@ -56,7 +56,7 @@ func TestListDeviceGroups(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 	for _, dg := range resources.DeviceGroupExamples {
 		_, err, _ := c.SetDeviceGroup(context.Background(), Userjwt, dg)
 		if err != nil {
@@ -98,7 +98,7 @@ func TestListDeviceGroups(t *testing.T) {
 	f := func(options model.DeviceGroupListOptions, expectedTotal int64, expectedGroups []models.DeviceGroup) func(t *testing.T) {
 		return func(t *testing.T) {
 			t.Helper()
-			actualGroups, actualTotal, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(context.Background(), Userjwt, options)
+			actualGroups, actualTotal, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{}).ListDeviceGroups(context.Background(), Userjwt, options)
 			if err != nil {
 				t.Error(err)
 				return
@@ -120,7 +120,7 @@ func TestListDeviceGroups(t *testing.T) {
 	}, 3, expectedResultOfDeviceFilter))
 
 	t.Run("other user may not access", func(t *testing.T) {
-		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, nil).ListDeviceGroups(context.Background(), SecondOwnerToken, client.DeviceGroupListOptions{})
+		actual, total, err, _ := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{}).ListDeviceGroups(context.Background(), SecondOwnerToken, client.DeviceGroupListOptions{})
 		if err != nil {
 			t.Error(err)
 			return
@@ -920,7 +920,7 @@ func TestDeviceGroupsIntegration(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{
 		Id:            devicetype1id,
@@ -1013,7 +1013,7 @@ func TestDeviceGroupsAttributes(t *testing.T) {
 		},
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceGroup(context.Background(), userjwt, dg1)
 	if err != nil {

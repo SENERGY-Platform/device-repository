@@ -50,7 +50,7 @@ func (c *Client) SetDeviceType(ctx context.Context, token string, deviceType mod
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+	return do[models.DeviceType](c, req)
 }
 
 func (c *Client) DeleteDeviceType(ctx context.Context, token string, id string) (err error, code int) {
@@ -59,7 +59,7 @@ func (c *Client) DeleteDeviceType(ctx context.Context, token string, id string) 
 		return err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doVoid(req, c.optionalAuthTokenForApiGatewayRequest)
+	return doVoid(c, req)
 }
 
 func (c *Client) ReadDeviceType(ctx context.Context, id string, token string) (result models.DeviceType, err error, errCode int) {

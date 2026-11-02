@@ -69,7 +69,7 @@ func TestConceptFunctions(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	conceptFunctions := func(t *testing.T, conceptId string, rdfType string) []models.Function {
 		t.Helper()

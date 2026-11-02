@@ -85,7 +85,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 	defer config.GetLogger().Info("finished mgw mirror pull")
 	//a pull is shared by all requests that triggered it, so it belongs to none of their traces
 	ctx := context.Background()
-	c := client.NewClient(config.MgwMirrorSourceUrl, nil)
+	c := client.NewClient(config.MgwMirrorSourceUrl, client.Options{})
 	token := ""
 
 	userId, err := config.GetMgwMirrorUserId()

@@ -62,7 +62,7 @@ func TestHubResetOnDeviceDelete(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	t.Run("create protocols", func(t *testing.T) {
 		_, err, _ := c.SetProtocol(context.Background(), client.InternalAdminToken, models.Protocol{

@@ -170,7 +170,7 @@ func testConcepts(t *testing.T, conf configuration.Config) {
 
 func deleteConceptFunctions(t *testing.T, conf configuration.Config, conceptId string) {
 	t.Helper()
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 	functions, _, err, _ := c.ListFunctions(context.Background(), client.FunctionListOptions{Limit: 1000})
 	if err != nil {
 		t.Fatal(err)

@@ -65,7 +65,7 @@ func TestDeviceGroupCriteriaRecompute(t *testing.T) {
 	}
 	time.Sleep(1 * time.Second)
 
-	c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
 	const (
 		measuringFunction = models.URN_PREFIX + "measuring-function:getTemperature"

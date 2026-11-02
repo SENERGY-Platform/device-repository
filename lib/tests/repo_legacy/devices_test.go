@@ -86,7 +86,7 @@ func TestDeviceDeviceTypeFilter(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
@@ -304,7 +304,7 @@ func TestDeviceQuery(t *testing.T) {
 		return
 	}
 
-	c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	_, err, _ = c.SetDeviceType(context.Background(), AdminToken, models.DeviceType{Id: devicetype1id, Name: devicetype1name}, client.DeviceTypeUpdateOptions{})
 	if err != nil {
@@ -415,7 +415,7 @@ func TestDeviceQuery(t *testing.T) {
 	}
 
 	t.Run("check fulldt query param", func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		t.Run("ReadExtendedDevice", func(t *testing.T) {
 			result, err, _ := c.ReadExtendedDevice(context.Background(), d1.Id, userjwt, models.Read, true)
 			if err != nil {
@@ -472,7 +472,7 @@ func TestDeviceQuery(t *testing.T) {
 	})
 
 	t.Run("test list devices", func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		t.Run("list none", func(t *testing.T) {
 			result, err, _ := c.ListDevices(context.Background(), userjwt, client.DeviceListOptions{Ids: []string{}})
 			if err != nil {
@@ -690,7 +690,7 @@ func TestDeviceQuery(t *testing.T) {
 	})
 
 	t.Run("test list extended-devices", func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 		t.Run("list none", func(t *testing.T) {
 			result, _, err, _ := c.ListExtendedDevices(context.Background(), userjwt, client.ExtendedDeviceListOptions{Ids: []string{}})
 			if err != nil {
@@ -1066,7 +1066,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 		}
 		time.Sleep(1 * time.Second)
 
-		c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 		conf.DisableStrictValidationForTesting = true
 
@@ -1136,7 +1136,7 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 
 		conf.DisableStrictValidationForTesting = false
 		t.Run("validates", func(t *testing.T) {
-			c := client.NewClient("http://localhost:"+conf.ServerPort, nil)
+			c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 			t.Run("user may add new device with new local-id", func(t *testing.T) {
 				err, _ = c.ValidateDevice(context.Background(), testenv.TestToken, models.Device{
 					Id:           testenv.TestTokenUser + "/20",

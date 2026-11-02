@@ -995,7 +995,7 @@ func createTestConfigurableMetadata(config configuration.Config) func(t *testing
 
 func createTestConfigurableMetadataBase(config configuration.Config, aspects []models.Aspect, functions []models.Function, devicetypes []models.DeviceType) func(t *testing.T) {
 	return func(t *testing.T) {
-		c := client.NewClient("http://localhost:"+config.ServerPort, nil)
+		c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 		for _, aspect := range aspects {
 			_, err, _ := c.SetAspect(context.Background(), AdminToken, aspect)
 			if err != nil {
