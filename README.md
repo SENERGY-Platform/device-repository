@@ -97,6 +97,12 @@ Working in this repository:
 - [Not every controller method checks permissions](docs/an-internal-controller-method-skips-permissions.md) —
   a method without a token reads straight from the database, so exposing one
   through an endpoint means adding the check
+- [A request context carries the trace, not the cancellation](docs/a-request-context-carries-the-trace-not-the-cancellation.md) —
+  why a client that hangs up does not abort a write, how sync handlers and
+  background paths get their context, and the signatures that were rejected
+- [The client cache is keyed by request and user](docs/the-client-cache-is-keyed-by-request-and-user.md) —
+  what `WithCache` caches and for how long, why a new read method has to use
+  `doCached`, and what an unvalidated token in the key gives away
 
 - [Writing a startup migration](docs/writing-a-startup-migration.md) — whether it
   converts or creates decides the marker, the publishing and the startup cost,
@@ -113,4 +119,5 @@ Working in this repository:
   `generated_permissions.go` comes back reordered and has to be reverted before
   committing
 - [The test suite needs -p 1](docs/tests-collide-on-port-8080.md) — packages run
-  in parallel and collide on port 8080, which looks like a flaky failure
+  in parallel and collide on port 8080, which looks like a flaky failure; and
+  what to do when another process holds the port

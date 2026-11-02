@@ -10,6 +10,10 @@ minutes earlier.
 `--- FAIL` line for any test at all — the package is marked FAIL and the only
 clue is a log line. A real failure names the test.
 
+The same log line also appears with `-p 1` when a process outside the test run
+holds the port — see "Another process holds the port" below. The cause is the
+same, the remedy is not: serialising the packages does nothing against it.
+
 ## The symptom
 
 ```
@@ -45,6 +49,29 @@ start one, rather than trying to read the two logs.
 
 Testcontainers' ryuk reaper cleans up the containers of a killed run on its own,
 so there is nothing to tidy by hand.
+
+## Another process holds the port
+
+A sequential run can still fail this way when something else on the machine
+listens on 8080, for instance a container of another project published on
+`127.0.0.1:8080`. Only the packages whose tests start the api on the configured
+port fail; the rest of the suite stays green, which makes it look like a flaky
+subset rather than a blocked port. Observed once, on 2026-11-02, with
+`lib/tests` and `lib/tests/repo_legacy` failing and everything else passing.
+
+Check before rerunning:
+
+```
+ss -ltnp | grep ':8080\b'
+```
+
+If the port is taken and the other process has to keep running, move the test
+api instead. Every field of the configuration can be overridden by an
+environment variable named after it, `ServerPort` becoming `SERVER_PORT`:
+
+```
+SERVER_PORT=18080 go test -count=1 -p 1 ./lib/tests/ ./lib/tests/repo_legacy/
+```
 
 ## The real fix, not done
 
