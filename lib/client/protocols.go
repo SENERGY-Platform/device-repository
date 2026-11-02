@@ -60,7 +60,7 @@ func (c *Client) ReadProtocol(ctx context.Context, id string, token string) (res
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Protocol](c, req)
 }
 
 func (c *Client) ListProtocols(ctx context.Context, token string, limit int64, offset int64, sort string) (result []models.Protocol, err error, errCode int) {
@@ -70,7 +70,7 @@ func (c *Client) ListProtocols(ctx context.Context, token string, limit int64, o
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]models.Protocol](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Protocol](c, req)
 }
 
 func (c *Client) ValidateProtocol(ctx context.Context, protocol models.Protocol) (err error, code int) {

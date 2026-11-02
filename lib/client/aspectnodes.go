@@ -57,7 +57,7 @@ func (c *Client) ListAspectNodes(ctx context.Context, options model.AspectListOp
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.AspectNode](c, req)
 }
 
 func (c *Client) GetAspectNode(ctx context.Context, id string) (models.AspectNode, error, int) {
@@ -65,7 +65,7 @@ func (c *Client) GetAspectNode(ctx context.Context, id string) (models.AspectNod
 	if err != nil {
 		return models.AspectNode{}, err, http.StatusInternalServerError
 	}
-	return do[models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.AspectNode](c, req)
 }
 
 func (c *Client) GetAspectNodes(ctx context.Context) ([]models.AspectNode, error, int) {
@@ -73,7 +73,7 @@ func (c *Client) GetAspectNodes(ctx context.Context) ([]models.AspectNode, error
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.AspectNode](c, req)
 }
 
 func (c *Client) GetAspectNodesWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
@@ -81,7 +81,7 @@ func (c *Client) GetAspectNodesWithMeasuringFunction(ctx context.Context, ancest
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.AspectNode](c, req)
 }
 
 func (c *Client) GetAspectNodesMeasuringFunctions(ctx context.Context, id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
@@ -90,7 +90,7 @@ func (c *Client) GetAspectNodesMeasuringFunctions(ctx context.Context, id string
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Function](c, req)
 }
 
 func (c *Client) GetAspectNodesWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
@@ -98,7 +98,7 @@ func (c *Client) GetAspectNodesWithControllingFunction(ctx context.Context, ance
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.AspectNode](c, req)
 }
 
 func (c *Client) GetAspectNodesControllingFunctions(ctx context.Context, id string, ancestors bool, descendants bool) (result []models.Function, err error, errCode int) {
@@ -107,7 +107,7 @@ func (c *Client) GetAspectNodesControllingFunctions(ctx context.Context, id stri
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Function](c, req)
 }
 
 func (c *Client) GetAspectNodesWithFunction(ctx context.Context, function string, ancestors bool, descendants bool) ([]models.AspectNode, error, int) {
@@ -115,7 +115,7 @@ func (c *Client) GetAspectNodesWithFunction(ctx context.Context, function string
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.AspectNode](c, req)
 }
 
 func (c *Client) GetAspectNodesByIdList(ctx context.Context, ids []string) (result []models.AspectNode, err error, code int) {
@@ -127,5 +127,5 @@ func (c *Client) GetAspectNodesByIdList(ctx context.Context, ids []string) (resu
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.AspectNode](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.AspectNode](c, req)
 }

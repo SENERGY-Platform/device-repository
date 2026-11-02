@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api"
 	permissions "github.com/SENERGY-Platform/permissions-v2/pkg/client"
@@ -44,6 +45,10 @@ type Client struct {
 	//   - may be nil if used internally, without kong routing
 	//   - is used for requests that internally don`t need an auth token but are forced to send one if the request is routed over the SENERGY-Platform api-gateway
 	optionalAuthTokenForApiGatewayRequest func() (token string, err error)
+
+	//shared by all copies from WithCache; read methods use it only if cacheTtl > 0
+	cache    *cacheStore
+	cacheTtl time.Duration
 }
 
 // NewClient creates a new client
@@ -51,7 +56,7 @@ type Client struct {
 //   - may be nil if used internally, without kong routing
 //   - is used for requests that internally don`t need an auth token but are forced to send one if the request is routed over the SENERGY-Platform api-gateway
 func NewClient(baseUrl string, optionalAuthTokenForApiGatewayRequest func() (token string, err error)) Interface {
-	return &Client{baseUrl: baseUrl, optionalAuthTokenForApiGatewayRequest: optionalAuthTokenForApiGatewayRequest}
+	return &Client{baseUrl: baseUrl, optionalAuthTokenForApiGatewayRequest: optionalAuthTokenForApiGatewayRequest, cache: newCacheStore()}
 }
 
 func (c *Client) MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error {

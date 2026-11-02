@@ -81,7 +81,7 @@ func (c *Client) ListConcepts(ctx context.Context, options model.ConceptListOpti
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.Concept](c, req)
 }
 
 func (c *Client) ListConceptsWithCharacteristics(ctx context.Context, options model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int) {
@@ -109,7 +109,7 @@ func (c *Client) ListConceptsWithCharacteristics(ctx context.Context, options mo
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.ConceptWithCharacteristics](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.ConceptWithCharacteristics](c, req)
 }
 
 func (c *Client) GetConceptWithCharacteristics(ctx context.Context, id string) (models.ConceptWithCharacteristics, error, int) {
@@ -117,7 +117,7 @@ func (c *Client) GetConceptWithCharacteristics(ctx context.Context, id string) (
 	if err != nil {
 		return models.ConceptWithCharacteristics{}, err, http.StatusInternalServerError
 	}
-	return do[models.ConceptWithCharacteristics](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.ConceptWithCharacteristics](c, req)
 }
 
 func (c *Client) GetConceptWithoutCharacteristics(ctx context.Context, id string) (models.Concept, error, int) {
@@ -125,7 +125,7 @@ func (c *Client) GetConceptWithoutCharacteristics(ctx context.Context, id string
 	if err != nil {
 		return models.Concept{}, err, http.StatusInternalServerError
 	}
-	return do[models.Concept](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Concept](c, req)
 }
 
 func (c *Client) ValidateConcept(ctx context.Context, concept models.Concept) (err error, code int) {

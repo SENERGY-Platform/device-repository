@@ -37,7 +37,7 @@ func (c *Client) GetDeviceTypeSelectables(ctx context.Context, query []model.Fil
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]model.DeviceTypeSelectable](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]model.DeviceTypeSelectable](c, req)
 }
 
 func (c *Client) GetDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int) {
@@ -50,5 +50,5 @@ func (c *Client) GetDeviceTypeSelectablesV2(ctx context.Context, query []model.F
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]model.DeviceTypeSelectable](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]model.DeviceTypeSelectable](c, req)
 }

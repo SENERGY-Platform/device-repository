@@ -81,7 +81,7 @@ func (c *Client) ListCharacteristics(ctx context.Context, options model.Characte
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.Characteristic](c, req)
 }
 
 func (c *Client) GetCharacteristics(ctx context.Context, leafsOnly bool) (result []models.Characteristic, err error, errCode int) {
@@ -89,7 +89,7 @@ func (c *Client) GetCharacteristics(ctx context.Context, leafsOnly bool) (result
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Characteristic](c, req)
 }
 
 func (c *Client) GetCharacteristic(ctx context.Context, id string) (result models.Characteristic, err error, errCode int) {
@@ -97,7 +97,7 @@ func (c *Client) GetCharacteristic(ctx context.Context, id string) (result model
 	if err != nil {
 		return models.Characteristic{}, err, http.StatusInternalServerError
 	}
-	return do[models.Characteristic](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Characteristic](c, req)
 }
 
 func (c *Client) ValidateCharacteristics(ctx context.Context, characteristic models.Characteristic) (err error, code int) {

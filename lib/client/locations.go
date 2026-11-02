@@ -62,7 +62,7 @@ func (c *Client) GetLocation(ctx context.Context, id string, token string) (loca
 		return location, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Location](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Location](c, req)
 }
 
 func (c *Client) ValidateLocation(ctx context.Context, location models.Location) (err error, code int) {
@@ -106,5 +106,5 @@ func listLocations[T any](ctx context.Context, c *Client, token string, options 
 		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]T](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]T](c, req)
 }

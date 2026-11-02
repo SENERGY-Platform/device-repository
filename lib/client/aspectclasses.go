@@ -56,7 +56,7 @@ func (c *Client) ListAspectClasses(ctx context.Context, options model.AspectClas
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.AspectClass](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.AspectClass](c, req)
 }
 
 func (c *Client) GetAspectClass(ctx context.Context, id string) (result models.AspectClass, err error, errCode int) {
@@ -64,7 +64,7 @@ func (c *Client) GetAspectClass(ctx context.Context, id string) (result models.A
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.AspectClass](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.AspectClass](c, req)
 }
 
 func (c *Client) SetAspectClass(ctx context.Context, token string, aspectClass models.AspectClass) (result models.AspectClass, err error, code int) {

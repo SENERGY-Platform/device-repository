@@ -150,7 +150,7 @@ func (c *Client) ListDevices(ctx context.Context, token string, options DeviceLi
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Device](c, req)
 }
 
 func (c *Client) ReadDevice(ctx context.Context, id string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
@@ -167,7 +167,7 @@ func (c *Client) ReadDevice(ctx context.Context, id string, token string, action
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Device](c, req)
 }
 
 func (c *Client) ReadDeviceByLocalId(ctx context.Context, ownerId string, localId string, token string, action model.AuthAction) (result models.Device, err error, errCode int) {
@@ -182,7 +182,7 @@ func (c *Client) ReadDeviceByLocalId(ctx context.Context, ownerId string, localI
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Device](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Device](c, req)
 }
 
 func (c *Client) ValidateDevice(ctx context.Context, token string, device models.Device) (err error, code int) {

@@ -67,7 +67,7 @@ func (c *Client) ListExtendedHubs(ctx context.Context, token string, options mod
 		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.ExtendedHub](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.ExtendedHub](c, req)
 }
 
 func (c *Client) ReadExtendedHub(ctx context.Context, id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int) {
@@ -84,5 +84,5 @@ func (c *Client) ReadExtendedHub(ctx context.Context, id string, token string, a
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.ExtendedHub](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.ExtendedHub](c, req)
 }

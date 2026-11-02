@@ -84,7 +84,7 @@ func (c *Client) ListDeviceClasses(ctx context.Context, options model.DeviceClas
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.DeviceClass](c, req)
 }
 
 func (c *Client) GetDeviceClasses(ctx context.Context) ([]models.DeviceClass, error, int) {
@@ -92,7 +92,7 @@ func (c *Client) GetDeviceClasses(ctx context.Context) ([]models.DeviceClass, er
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.DeviceClass](c, req)
 }
 
 func (c *Client) GetDeviceClassesWithControllingFunctions(ctx context.Context) ([]models.DeviceClass, error, int) {
@@ -100,7 +100,7 @@ func (c *Client) GetDeviceClassesWithControllingFunctions(ctx context.Context) (
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.DeviceClass](c, req)
 }
 
 func (c *Client) GetDeviceClassesFunctions(ctx context.Context, id string) (result []models.Function, err error, errCode int) {
@@ -108,7 +108,7 @@ func (c *Client) GetDeviceClassesFunctions(ctx context.Context, id string) (resu
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Function](c, req)
 }
 
 func (c *Client) GetDeviceClassesControllingFunctions(ctx context.Context, id string) (result []models.Function, err error, errCode int) {
@@ -116,7 +116,7 @@ func (c *Client) GetDeviceClassesControllingFunctions(ctx context.Context, id st
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[[]models.Function](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Function](c, req)
 }
 
 func (c *Client) GetDeviceClass(ctx context.Context, id string) (result models.DeviceClass, err error, errCode int) {
@@ -124,7 +124,7 @@ func (c *Client) GetDeviceClass(ctx context.Context, id string) (result models.D
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.DeviceClass](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.DeviceClass](c, req)
 }
 
 func (c *Client) ValidateDeviceClass(ctx context.Context, deviceclass models.DeviceClass) (err error, code int) {

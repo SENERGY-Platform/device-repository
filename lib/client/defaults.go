@@ -31,7 +31,7 @@ func (c *Client) GetDefaultDeviceAttributes(ctx context.Context, token string) (
 		return attributes, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.Attribute](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Attribute](c, req)
 }
 
 func (c *Client) SetDefaultDeviceAttributes(ctx context.Context, token string, attributes []models.Attribute) (err error, code int) {

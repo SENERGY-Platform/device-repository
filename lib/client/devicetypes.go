@@ -71,7 +71,7 @@ func (c *Client) ReadDeviceType(ctx context.Context, id string, token string) (r
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.DeviceType](c, req)
 }
 
 func (c *Client) ListDeviceTypes(ctx context.Context, token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, interactionsFilter []string, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
@@ -95,7 +95,7 @@ func (c *Client) ListDeviceTypes(ctx context.Context, token string, limit int64,
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.DeviceType](c, req)
 }
 
 func (c *Client) ListDeviceTypesV2(ctx context.Context, token string, limit int64, offset int64, sort string, filter []model.FilterCriteria, includeModified bool, includeUnmodified bool) (result []models.DeviceType, err error, errCode int) {
@@ -118,7 +118,7 @@ func (c *Client) ListDeviceTypesV2(ctx context.Context, token string, limit int6
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.DeviceType](c, req)
 }
 
 func (c *Client) ListDeviceTypesV3(ctx context.Context, token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
@@ -169,7 +169,7 @@ func (c *Client) ListDeviceTypesV3(ctx context.Context, token string, options mo
 		return result, 0, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.DeviceType](c, req)
 }
 
 func (c *Client) ListDeviceTypesUsedByUser(ctx context.Context, token string, options model.DeviceTypeListOptions) (result []models.DeviceType, total int64, err error, errCode int) {
@@ -220,7 +220,7 @@ func (c *Client) ListDeviceTypesUsedByUser(ctx context.Context, token string, op
 		return result, 0, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.DeviceType](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.DeviceType](c, req)
 }
 
 type DeviceTypeValidationOptions = model.ValidationOptions
@@ -238,5 +238,5 @@ func (c *Client) GetUsedInDeviceType(ctx context.Context, query model.UsedInDevi
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[model.UsedInDeviceTypeResponse](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[model.UsedInDeviceTypeResponse](c, req)
 }

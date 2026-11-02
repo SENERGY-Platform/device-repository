@@ -84,7 +84,7 @@ func (c *Client) ListAspects(ctx context.Context, options model.AspectListOption
 	if err != nil {
 		return result, 0, err, http.StatusInternalServerError
 	}
-	return doWithTotalInResult[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.Aspect](c, req)
 }
 
 func (c *Client) GetAspects(ctx context.Context) ([]models.Aspect, error, int) {
@@ -92,14 +92,14 @@ func (c *Client) GetAspects(ctx context.Context) ([]models.Aspect, error, int) {
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Aspect](c, req)
 }
 func (c *Client) GetAspectsWithMeasuringFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error, int) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/aspects?function=measuring-function&ancestors="+strconv.FormatBool(ancestors)+"&descendants="+strconv.FormatBool(descendants), nil)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Aspect](c, req)
 }
 
 func (c *Client) GetAspectsWithControllingFunction(ctx context.Context, ancestors bool, descendants bool) ([]models.Aspect, error, int) {
@@ -107,7 +107,7 @@ func (c *Client) GetAspectsWithControllingFunction(ctx context.Context, ancestor
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
-	return do[[]models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[[]models.Aspect](c, req)
 }
 
 func (c *Client) GetAspect(ctx context.Context, id string) (models.Aspect, error, int) {
@@ -115,7 +115,7 @@ func (c *Client) GetAspect(ctx context.Context, id string) (models.Aspect, error
 	if err != nil {
 		return models.Aspect{}, err, http.StatusInternalServerError
 	}
-	return do[models.Aspect](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Aspect](c, req)
 }
 
 func (c *Client) ValidateAspect(ctx context.Context, aspect models.Aspect) (err error, code int) {

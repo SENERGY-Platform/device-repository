@@ -99,7 +99,7 @@ func (c *Client) ListGraphs(ctx context.Context, token string, options model.Gra
 		return result, total, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return doWithTotalInResult[[]models.Graph](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCachedWithTotal[[]models.Graph](c, req)
 }
 
 func (c *Client) ReadGraph(ctx context.Context, token string, id string) (result models.Graph, err error, errCode int) {
@@ -108,7 +108,7 @@ func (c *Client) ReadGraph(ctx context.Context, token string, id string) (result
 		return result, err, http.StatusInternalServerError
 	}
 	req.Header.Set("Authorization", token)
-	return do[models.Graph](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Graph](c, req)
 }
 
 func (c *Client) SetGraph(ctx context.Context, token string, graph models.Graph) (result models.Graph, err error, code int) {

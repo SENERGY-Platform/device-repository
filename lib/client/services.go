@@ -28,5 +28,5 @@ func (c *Client) GetService(ctx context.Context, id string) (result models.Servi
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return do[models.Service](req, c.optionalAuthTokenForApiGatewayRequest)
+	return doCached[models.Service](c, req)
 }
