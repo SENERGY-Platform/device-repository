@@ -85,16 +85,42 @@ type HubWithSyncInfo struct {
 func (this *Mongo) SetHub(ctx context.Context, hub model.HubWithConnectionState, syncHandler func(model.HubWithConnectionState) error) (err error) {
 	timestamp := time.Now().Unix()
 	collection := this.hubCollection()
-	_, err = this.hubCollection().ReplaceOne(ctx, bson.M{HubBson.Id: hub.Id}, HubWithSyncInfo{
-		HubWithConnectionState: hub,
-		SyncInfo: SyncInfo{
-			SyncTodo:          true,
-			SyncDelete:        false,
-			SyncUnixTimestamp: timestamp,
-		},
-	}, options.Replace().SetUpsert(true))
-	if err != nil {
-		return err
+	// the connection state is owned by SetHubConnectionState(s): an existing document is replaced only while
+	// its stored state is still the one written back, so a concurrent state change is never overwritten.
+	requestedState := hub.ConnectionState
+	written := false
+	for attempt := 0; attempt < connectionStateWriteAttempts && !written; attempt++ {
+		old, exists, err := this.GetHub(ctx, hub.Id)
+		if err != nil {
+			return err
+		}
+		filter := bson.M{HubBson.Id: hub.Id}
+		opt := options.Replace().SetUpsert(true)
+		if exists {
+			hub.ConnectionState = old.ConnectionState
+			filter[NotDeletedFilterKey] = NotDeletedFilterValue
+			filter[HubBson.ConnectionState] = connectionStateFilter(old.ConnectionState)
+			// no upsert: a mismatch must lead to a retry, never to an insert
+			opt = options.Replace()
+		} else {
+			hub.ConnectionState = requestedState
+		}
+		beforeConnectionStateReplace(hub.Id)
+		result, err := collection.ReplaceOne(ctx, filter, HubWithSyncInfo{
+			HubWithConnectionState: hub,
+			SyncInfo: SyncInfo{
+				SyncTodo:          true,
+				SyncDelete:        false,
+				SyncUnixTimestamp: timestamp,
+			},
+		}, opt)
+		if err != nil {
+			return err
+		}
+		written = result.MatchedCount > 0 || result.UpsertedCount > 0
+	}
+	if !written {
+		return fmt.Errorf("unable to set hub %v: connection state changed concurrently in %v attempts", hub.Id, connectionStateWriteAttempts)
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoHubCollection, hub.OwnerId)
 	if err != nil {

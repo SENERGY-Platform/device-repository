@@ -120,31 +120,69 @@ type DeviceWithSyncInfo struct {
 	SyncInfo                        `bson:",inline"`
 }
 
+// connectionStateWriteAttempts bounds how often SetDevice and SetHub re-read a document whose connection state
+// changed between their read and their replace.
+const connectionStateWriteAttempts = 5
+
+// beforeConnectionStateReplace runs between the read and the replace of SetDevice and SetHub; tests use it to
+// place a concurrent write exactly there.
+var beforeConnectionStateReplace = func(id string) {}
+
+// connectionStateFilter matches a stored connection state; the unknown state also matches documents that lack
+// the field, because those decode to the unknown state.
+func connectionStateFilter(state models.ConnectionState) interface{} {
+	if state == models.ConnectionStateUnknown {
+		return bson.M{"$in": bson.A{models.ConnectionStateUnknown, nil}}
+	}
+	return state
+}
+
 func (this *Mongo) SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(old model.DeviceWithConnectionState, new model.DeviceWithConnectionState) error) error {
 	device.DisplayName = getDisplayName(device)
 	timestamp := time.Now().Unix()
 	collection := this.deviceCollection()
 
-	oldDevice, exists, err := this.GetDevice(ctx, device.Id)
-	if err != nil {
-		return err
+	// connection_state is owned by SetDeviceConnectionState(s): an existing document is replaced only while
+	// its stored state is still the one written back, so a concurrent state change is never overwritten.
+	requestedState := device.ConnectionState
+	var oldDevice model.DeviceWithConnectionState
+	written := false
+	for attempt := 0; attempt < connectionStateWriteAttempts && !written; attempt++ {
+		old, exists, err := this.GetDevice(ctx, device.Id)
+		if err != nil {
+			return err
+		}
+		filter := bson.M{DeviceBson.Id: device.Id}
+		opt := options.Replace().SetUpsert(true)
+		if exists {
+			oldDevice = old
+			device.ConnectionState = old.ConnectionState
+			filter[NotDeletedFilterKey] = NotDeletedFilterValue
+			filter[DeviceBson.ConnectionState] = connectionStateFilter(old.ConnectionState)
+			// no upsert: a mismatch must lead to a retry, never to an insert
+			opt = options.Replace()
+		} else {
+			oldDevice = model.DeviceWithConnectionState{}
+			device.ConnectionState = requestedState
+		}
+		beforeConnectionStateReplace(device.Id)
+		result, err := collection.ReplaceOne(ctx, filter, DeviceWithSyncInfo{
+			DeviceWithConnectionState: device,
+			SyncInfo: SyncInfo{
+				SyncTodo:          true,
+				SyncDelete:        false,
+				SyncUnixTimestamp: timestamp,
+			},
+		}, opt)
+		if err != nil {
+			return err
+		}
+		written = result.MatchedCount > 0 || result.UpsertedCount > 0
 	}
-	if !exists {
-		oldDevice = model.DeviceWithConnectionState{}
+	if !written {
+		return fmt.Errorf("unable to set device %v: connection_state changed concurrently in %v attempts", device.Id, connectionStateWriteAttempts)
 	}
-
-	_, err = collection.ReplaceOne(ctx, bson.M{DeviceBson.Id: device.Id}, DeviceWithSyncInfo{
-		DeviceWithConnectionState: device,
-		SyncInfo: SyncInfo{
-			SyncTodo:          true,
-			SyncDelete:        false,
-			SyncUnixTimestamp: timestamp,
-		},
-	}, options.Replace().SetUpsert(true))
-	if err != nil {
-		return err
-	}
-	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceCollection, device.OwnerId)
+	err := this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceCollection, device.OwnerId)
 	if err != nil {
 		err = nil
 	}
