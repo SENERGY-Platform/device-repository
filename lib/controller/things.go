@@ -85,6 +85,10 @@ func (this *Controller) ListThings(ctx context.Context, token string, options mo
 		}
 		return result, total, err, http.StatusInternalServerError
 	}
+	if result == nil {
+		//an empty list is answered as [] instead of null
+		result = []models.Thing{}
+	}
 	return result, total, nil, http.StatusOK
 }
 

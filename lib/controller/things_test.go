@@ -611,3 +611,16 @@ func TestThingDeviceDeleteEndsFutureLink(t *testing.T) {
 		t.Errorf("unexpected until of future link: %#v", read.DeviceLinks[0])
 	}
 }
+
+func TestThingListEmptyIsNotNull(t *testing.T) {
+	ctrl, _, _ := newThingTestController(t)
+	result, _, err, code := ctrl.ListThings(context.Background(), graphTestUserJwt, model.ThingListOptions{})
+	expectCode(t, err, code, http.StatusOK)
+	encoded, err := json.Marshal(result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(encoded) != "[]" {
+		t.Errorf("expected [], got %v", string(encoded))
+	}
+}
