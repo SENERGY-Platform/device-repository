@@ -325,8 +325,15 @@ func TestThings(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		//the permissions go with the thing, so the former owner gets 403 like for a deleted graph
 		_, err, code := c.ReadThing(bg, userjwt, thing.Id)
-		expectCode(t, err, code, http.StatusNotFound)
+		expectCode(t, err, code, http.StatusForbidden)
+		//an admin lists without a permission filter, so an empty answer shows the document is gone
+		remaining, _, err, code := c.ListThings(bg, client.InternalAdminToken, client.ThingListOptions{Search: thing.Id, Limit: 10})
+		expectCode(t, err, code, http.StatusOK)
+		if len(remaining) != 0 {
+			t.Fatalf("thing still stored: %#v", remaining)
+		}
 
 		//the graph is updated by the sync handler
 		deadline := time.Now().Add(30 * time.Second)
