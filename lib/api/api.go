@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"reflect"
 	"runtime/debug"
@@ -46,9 +47,15 @@ func Start(ctx context.Context, config configuration.Config, control Controller)
 	}()
 	router := GetRouter(config, control)
 	server := &http.Server{Addr: ":" + config.ServerPort, Handler: router}
+	// bind synchronously: once Start returns, connections are accepted
+	listener, err := net.Listen("tcp", server.Addr)
+	if err != nil {
+		config.GetLogger().Error("fatal error while starting api", "error", err)
+		return err
+	}
 	go func() {
 		config.GetLogger().Info("listening on " + server.Addr)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			debug.PrintStack()
 			config.GetLogger().Error("fatal error while starting api", "error", err)
 			log.Fatal("FATAL:", err)
