@@ -1,14 +1,15 @@
 name: Tests
 on:
+  # master runs the tests as the first job of the prod workflow, which only tags and builds when they pass
+  workflow_call:
   push:
     branches:
-      - master
       - main
       - dev
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v3
 
@@ -21,10 +22,4 @@ jobs:
         run: go build -v ./...
 
       - name: Test
-        timeout-minutes: 240
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          retry_on: error
-          timeout_minutes: 240
-          command: go test -p 1 -short -timeout 99999s ./...
+        run: go test -p 3 -short -timeout 30m ./...
