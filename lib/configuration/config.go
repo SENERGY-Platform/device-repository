@@ -55,6 +55,7 @@ type Config struct {
 	DeviceClassTopic                       string `json:"device_class_topic"`
 	LocationTopic                          string `json:"location_topic"`
 	GraphTopic                             string `json:"graph_topic"`
+	ThingTopic                             string `json:"thing_topic"`
 	PermissionsV2Url                       string `json:"permissions_v2_url"`
 	OtelEndpoint                           string `json:"otel_endpoint"` //OTLP gRPC collector for traces; empty: default of gin-middleware/otelx; OtelEndpointOff: no tracing
 	MongoUrl                               string `json:"mongo_url"`     //full connection string with scheme; credentials belong in MongoUser/MongoPassword
@@ -80,6 +81,7 @@ type Config struct {
 	MongoMigrationStateCollection          string `json:"mongo_migration_state_collection"`
 	MongoMigrationLockCollection           string `json:"mongo_migration_lock_collection"`
 	MongoGraphCollection                   string `json:"mongo_graph_collection"`
+	MongoThingCollection                   string `json:"mongo_thing_collection"`
 	Debug                                  bool   `json:"debug"`
 	HttpClientTimeout                      string `json:"http_client_timeout"`
 

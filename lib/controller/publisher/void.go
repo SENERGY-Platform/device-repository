@@ -127,3 +127,11 @@ func (this Void) PublishGraph(graph models.Graph) (err error) {
 func (this Void) PublishGraphDelete(id string) error {
 	return VoidPublisherError
 }
+
+func (this Void) PublishThing(thing models.Thing) (err error) {
+	return VoidPublisherError
+}
+
+func (this Void) PublishThingDelete(id string) error {
+	return VoidPublisherError
+}

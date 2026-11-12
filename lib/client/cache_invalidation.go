@@ -42,6 +42,7 @@ const (
 	CacheAspectClasses   CacheResource = "aspect-classes"
 	CacheDeviceClasses   CacheResource = "device-classes"
 	CacheGraphs          CacheResource = "graphs"
+	CacheThings          CacheResource = "things"
 )
 
 // cacheDependencies says, per resource, under which paths a single read returns it, and which
@@ -66,6 +67,7 @@ var cacheDependencies = map[CacheResource]struct {
 	CacheAspectClasses: {own: []string{"aspect-classes"}, derived: []string{"aspects", "aspect-nodes"}},
 	CacheDeviceClasses: {own: []string{"device-classes"}},
 	CacheGraphs:        {own: []string{"graphs"}},
+	CacheThings:        {own: []string{"things"}},
 }
 
 // singleReadCollections are the first path segments under which a path with a further segment

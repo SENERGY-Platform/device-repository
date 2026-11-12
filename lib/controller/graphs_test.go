@@ -56,6 +56,7 @@ func newGraphTestController(t *testing.T) (ctrl *Controller, permClient client.C
 		HubTopic:              "hubs",
 		LocationTopic:         "locations",
 		GraphTopic:            "graphs",
+		ThingTopic:            "things",
 		InitPermissionsTopics: true,
 	}
 	permClient, err := client.NewTestClient(context.Background())

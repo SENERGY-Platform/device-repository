@@ -186,10 +186,21 @@ type HubUpdateOptions struct {
 type GraphListOptions struct {
 	Ids        []string //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
 	DeviceIds  []string //filter; ignored if DeviceTypeIds == nil; DeviceTypeIds == []string{} will return an empty list;
+	ThingIds   []string //filter; graphs with a thing node for any of the ids; ignored if ThingIds == nil; ThingIds == []string{} adds no condition; combined with DeviceIds both conditions must hold
 	Search     string
 	Limit      int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
 	Offset     int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
 	SortBy     string                //default name.asc
 	Permission models.PermissionFlag //defaults to read
 	Attributes []models.Attribute
+}
+
+type ThingListOptions struct {
+	Ids        []string              //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
+	DeviceIds  []string              //filter; things with any device link (open or ended) to one of the devices; ignored if DeviceIds == nil; DeviceIds == []string{} adds no condition
+	Search     string                //matches id and name, case insensitive
+	Limit      int64                 //default 100, will be ignored if 'ids' is set (Ids != nil)
+	Offset     int64                 //default 0, will be ignored if 'ids' is set (Ids != nil)
+	SortBy     string                //default id.asc; supported: id, name
+	Permission models.PermissionFlag //defaults to read
 }

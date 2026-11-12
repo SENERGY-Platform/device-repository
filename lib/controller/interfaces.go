@@ -56,4 +56,6 @@ type Publisher interface {
 
 	PublishGraph(graph models.Graph) (err error)
 	PublishGraphDelete(id string) error
+	PublishThing(thing models.Thing) (err error)
+	PublishThingDelete(id string) error
 }

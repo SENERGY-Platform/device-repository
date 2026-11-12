@@ -106,6 +106,14 @@
                     "$ref": "#/components/messages/PublisherProtocolCommand"
                 }
             }
+        },
+        "things": {
+            "address": "things",
+            "messages": {
+                "subscribe.message": {
+                    "$ref": "#/components/messages/PublisherThingCommand"
+                }
+            }
         }
     },
     "operations": {
@@ -240,12 +248,26 @@
                     "$ref": "#/channels/protocols/messages/subscribe.message"
                 }
             ]
+        },
+        "things.subscribe": {
+            "action": "send",
+            "channel": {
+                "$ref": "#/channels/things"
+            },
+            "messages": [
+                {
+                    "$ref": "#/channels/things/messages/subscribe.message"
+                }
+            ]
         }
     },
     "components": {
         "schemas": {
             "ModelsAspect": {
                 "properties": {
+                    "aspect_class_id": {
+                        "type": "string"
+                    },
                     "id": {
                         "type": "string"
                     },
@@ -367,6 +389,12 @@
                 "properties": {
                     "aspect_id": {
                         "type": "string"
+                    },
+                    "aspect_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
                     },
                     "characteristic_id": {
                         "type": "string"
@@ -531,6 +559,12 @@
                 "properties": {
                     "aspect_id": {
                         "type": "string"
+                    },
+                    "aspect_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
                     },
                     "device_class_id": {
                         "type": "string"
@@ -893,6 +927,69 @@
                 },
                 "type": "object"
             },
+            "ModelsThing": {
+                "properties": {
+                    "attributes": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsAttribute"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "content_variables": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsContentVariable"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "device_links": {
+                        "items": {
+                            "$ref": "#/components/schemas/ModelsThingDeviceLink"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "owner_id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ModelsThingDeviceLink": {
+                "properties": {
+                    "device_id": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "until": {
+                        "format": "date-time",
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
             "ModelsType": {
                 "type": "string"
             },
@@ -1063,6 +1160,20 @@
                     }
                 },
                 "type": "object"
+            },
+            "PublisherThingCommand": {
+                "properties": {
+                    "command": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "thing": {
+                        "$ref": "#/components/schemas/ModelsThing"
+                    }
+                },
+                "type": "object"
             }
         },
         "messages": {
@@ -1149,6 +1260,13 @@
                 },
                 "name": "ProtocolCommand",
                 "title": "ProtocolCommand"
+            },
+            "PublisherThingCommand": {
+                "payload": {
+                    "$ref": "#/components/schemas/PublisherThingCommand"
+                },
+                "name": "ThingCommand",
+                "title": "ThingCommand"
             }
         }
     }

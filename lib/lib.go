@@ -242,5 +242,22 @@ func SyncPermResources(ctx context.Context, config configuration.Config, permCli
 	if err != nil {
 		return err
 	}
+
+	thingsKnownInPermissions := []string{}
+	err = deleteUnknownPermissions(ctx, config, permClient, config.ThingTopic, func(id string) (bool, error) {
+		_, exists, err := db.GetThing(ctx, id)
+		if err != nil {
+			return false, err
+		}
+		thingsKnownInPermissions = append(thingsKnownInPermissions, id)
+		return exists, nil
+	})
+	if err != nil {
+		return err
+	}
+	err = db.DesyncUnknownThings(ctx, thingsKnownInPermissions)
+	if err != nil {
+		return err
+	}
 	return nil
 }

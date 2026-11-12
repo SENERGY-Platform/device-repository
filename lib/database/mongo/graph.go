@@ -108,6 +108,20 @@ func (this *Mongo) ListGraphs(ctx context.Context, listOptions model.GraphListOp
 		}
 	}
 
+	if listOptions.ThingIds != nil {
+		orFilter := []interface{}{}
+		for _, thingId := range listOptions.ThingIds {
+			nodeFilter := bson.M{
+				GraphNodeBson.ResourceType: models.GraphResourceTypeThing,
+				GraphNodeBson.ResourceId:   thingId,
+			}
+			orFilter = append(orFilter, bson.M{"nodes": bson.M{"$elemMatch": nodeFilter}})
+		}
+		if len(orFilter) > 0 {
+			andFilter = append(andFilter, bson.M{"$or": orFilter})
+		}
+	}
+
 	search := strings.TrimSpace(listOptions.Search)
 	if search != "" {
 		escapedSearch := regexp.QuoteMeta(search)

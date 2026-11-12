@@ -174,9 +174,16 @@ type Database interface {
 	ListGraphs(ctx context.Context, listOptions model.GraphListOptions) (result []models.Graph, total int64, err error)
 	RetryGraphSync(lockduration time.Duration, syncDeleteHandler func(models.Graph) error, syncHandler func(models.Graph) error) error
 
+	SetThing(ctx context.Context, thing models.Thing, syncHandler func(models.Thing) error) error
+	RemoveThing(ctx context.Context, id string, syncDeleteHandler func(models.Thing) error) error
+	GetThing(ctx context.Context, id string) (thing models.Thing, exists bool, err error)
+	ListThings(ctx context.Context, listOptions model.ThingListOptions) (result []models.Thing, total int64, err error)
+	RetryThingSync(lockduration time.Duration, syncDeleteHandler func(models.Thing) error, syncHandler func(models.Thing) error) error
+
 	DesyncUnknownLocations(ctx context.Context, knownLocations []string) (err error)
 	DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error)
 	DesyncUnknownDeviceGroups(ctx context.Context, knownDeviceGroups []string) (err error)
 	DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error)
 	DesyncUnknownGraphs(ctx context.Context, knownGraphs []string) (err error)
+	DesyncUnknownThings(ctx context.Context, knownThings []string) (err error)
 }

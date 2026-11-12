@@ -44,6 +44,7 @@ type DB struct {
 	functions               map[string]models.Function
 	locations               map[string]models.Location
 	graphs                  map[string]models.Graph
+	things                  map[string]models.Thing
 	permissions             []Resource
 	mux                     sync.Mutex
 }
@@ -72,6 +73,7 @@ func NewTestDB(config configuration.Config) database.Database {
 		functions:               make(map[string]models.Function),
 		locations:               make(map[string]models.Location),
 		graphs:                  make(map[string]models.Graph),
+		things:                  make(map[string]models.Thing),
 	}
 }
 

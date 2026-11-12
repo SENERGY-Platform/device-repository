@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"slices"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -92,26 +93,43 @@ func (this *Controller) ReadGraph(ctx context.Context, token string, id string) 
 	return result, nil, http.StatusOK
 }
 
-func (this *Controller) removeDeviceFromGraphs(ctx context.Context, deviceId string) error {
+// removeResourceFromGraphs deletes every node of the given resource from all graphs containing it.
+// It is internal and neither checks permissions nor the thing/device rule of SetGraph.
+// ListGraphs is called with Limit 0: mongo returns all matches, testdb ignores the options and returns all graphs.
+func (this *Controller) removeResourceFromGraphs(ctx context.Context, resourceType models.GraphResourceType, resourceId string) error {
+	options := model.GraphListOptions{}
+	switch resourceType {
+	case models.GraphResourceTypeDevice:
+		options.DeviceIds = []string{resourceId}
+	case models.GraphResourceTypeThing:
+		options.ThingIds = []string{resourceId}
+	default:
+		return fmt.Errorf("unsupported graph resource type %q", resourceType)
+	}
 	ctx, _ = getTimeoutContext(ctx)
-	graphs, _, err := this.db.ListGraphs(ctx, model.GraphListOptions{DeviceIds: []string{deviceId}})
+	graphs, _, err := this.db.ListGraphs(ctx, options)
 	if err != nil {
 		return err
 	}
 	for _, graph := range graphs {
-		for _, node := range graph.Nodes {
-			if node.ResourceType == models.GraphResourceTypeDevice && node.ResourceId == deviceId {
+		removed := false
+		for _, node := range slices.Clone(graph.Nodes) {
+			if node.ResourceType == resourceType && node.ResourceId == resourceId {
 				graph.DeleteNode(node.Id)
+				removed = true
 			}
+		}
+		if !removed {
+			continue
 		}
 		err = graph.Valid()
 		if err != nil {
-			this.config.GetLogger().Error("graph.DeleteNode created invalid graph", "graphId", graph.Id, "deviceId", deviceId, "error", err)
+			this.config.GetLogger().Error("graph.DeleteNode created invalid graph", "graphId", graph.Id, "resourceType", resourceType, "resourceId", resourceId, "error", err)
 			return err
 		}
 		err = this.setGraph(ctx, graph)
 		if err != nil {
-			this.config.GetLogger().Error("unable to update graph to remove device", "graphId", graph.Id, "deviceId", deviceId, "error", err)
+			this.config.GetLogger().Error("unable to update graph to remove resource", "graphId", graph.Id, "resourceType", resourceType, "resourceId", resourceId, "error", err)
 			return err
 		}
 	}
@@ -153,33 +171,20 @@ func (this *Controller) SetGraph(ctx context.Context, token string, graph models
 	}
 
 	if exists && original.Owner != graph.Owner && original.Owner != "" {
-		if !jwtToken.IsAdmin() {
-			ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, this.config.GraphTopic, graph.Id, client.Administrate)
-			if err != nil {
-				return graph, err, code
-			}
-			if !ok {
-				return graph, fmt.Errorf("only admins may set new owner: %w", err), http.StatusBadRequest
-			}
-		}
-
-		rights, err, code := this.permissionsV2Client.GetResourceContext(ctx, client.InternalAdminToken, this.config.GraphTopic, graph.Id)
-		if err != nil && code != http.StatusNotFound {
-			this.config.GetLogger().Error("unable to get permission resource", "error", err)
-			debug.PrintStack()
+		err, code = this.checkOwnerChange(ctx, token, jwtToken, this.config.GraphTopic, graph.Id, original.Owner, graph.Owner)
+		if err != nil {
 			return graph, err, code
 		}
-
-		//new graph owner-id must be existing admin user (ignore for new graphs or graphs with unchanged owner)
-		if code != http.StatusNotFound && graph.Owner != original.Owner && !rights.UserPermissions[graph.Owner].Administrate {
-			return graph, errors.New("new owner must have existing user admin rights"), http.StatusBadRequest
-		}
-
 	}
 
 	err = graph.Valid()
 	if err != nil {
 		return graph, fmt.Errorf("invalid graph: %w", err), http.StatusBadRequest
+	}
+
+	err, code = this.checkGraphThingRule(ctx, graph)
+	if err != nil {
+		return graph, err, code
 	}
 
 	err = this.setGraph(ctx, graph)
@@ -188,6 +193,65 @@ func (this *Controller) SetGraph(ctx context.Context, token string, graph models
 	}
 
 	return graph, nil, http.StatusOK
+}
+
+// checkOwnerChange checks a change of the owner of an existing resource: only users with administrate rights may do it,
+// and the new owner must already have administrate rights on the resource.
+// Callers only use it for existing resources with a previous owner.
+func (this *Controller) checkOwnerChange(ctx context.Context, token string, jwtToken jwt.Token, topic string, id string, originalOwner string, newOwner string) (err error, code int) {
+	if !jwtToken.IsAdmin() {
+		ok, err, code := this.permissionsV2Client.CheckPermissionContext(ctx, token, topic, id, client.Administrate)
+		if err != nil {
+			return err, code
+		}
+		if !ok {
+			return errors.New("only admins may set new owner"), http.StatusBadRequest
+		}
+	}
+
+	rights, err, code := this.permissionsV2Client.GetResourceContext(ctx, client.InternalAdminToken, topic, id)
+	if err != nil && code != http.StatusNotFound {
+		this.config.GetLogger().Error("unable to get permission resource", "error", err)
+		debug.PrintStack()
+		return err, code
+	}
+
+	//new owner-id must be existing admin user (ignore for resources without permission entry or with unchanged owner)
+	if code != http.StatusNotFound && newOwner != originalOwner && !rights.UserPermissions[newOwner].Administrate {
+		return errors.New("new owner must have existing user admin rights"), http.StatusBadRequest
+	}
+	return nil, http.StatusOK
+}
+
+// checkGraphThingRule rejects graphs that contain a thing and a device that is (or was) linked to this thing.
+// The things of the nodes must exist. Links are evaluated here and not by a database filter,
+// so the result is the same for mongo and testdb.
+func (this *Controller) checkGraphThingRule(ctx context.Context, graph models.Graph) (err error, code int) {
+	deviceNodes := map[string]bool{}
+	for _, node := range graph.Nodes {
+		if node.ResourceType == models.GraphResourceTypeDevice {
+			deviceNodes[node.ResourceId] = true
+		}
+	}
+	ctx, _ = getTimeoutContext(ctx)
+	for _, node := range graph.Nodes {
+		if node.ResourceType != models.GraphResourceTypeThing {
+			continue
+		}
+		thing, exists, err := this.db.GetThing(ctx, node.ResourceId)
+		if err != nil {
+			return err, http.StatusInternalServerError
+		}
+		if !exists {
+			return fmt.Errorf("graph node %v references unknown thing %v", node.Id, node.ResourceId), http.StatusBadRequest
+		}
+		for _, link := range thing.DeviceLinks {
+			if deviceNodes[link.DeviceId] {
+				return fmt.Errorf("graph contains thing %v and device %v, which is linked to this thing", thing.Id, link.DeviceId), http.StatusBadRequest
+			}
+		}
+	}
+	return nil, http.StatusOK
 }
 
 func (this *Controller) setGraph(ctx context.Context, graph models.Graph) (err error) {

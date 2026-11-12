@@ -36,6 +36,7 @@ func TestSyncPermResourcesGraphs(t *testing.T) {
 		HubTopic:         "hubs",
 		LocationTopic:    "locations",
 		GraphTopic:       "graphs",
+		ThingTopic:       "things",
 	}
 
 	permClient, err := client.NewTestClient(ctx)
@@ -82,5 +83,63 @@ func TestSyncPermResourcesGraphs(t *testing.T) {
 	}
 	if !slices.Equal(ids, []string{"g1"}) {
 		t.Errorf("unexpected graph permission resources: %#v", ids)
+	}
+}
+
+// TestSyncPermResourcesThings checks that thing permissions without a thing in the local db are removed
+func TestSyncPermResourcesThings(t *testing.T) {
+	ctx := context.Background()
+	config := configuration.Config{
+		DeviceTopic:      "devices",
+		DeviceGroupTopic: "device-groups",
+		HubTopic:         "hubs",
+		LocationTopic:    "locations",
+		GraphTopic:       "graphs",
+		ThingTopic:       "things",
+	}
+
+	permClient, err := client.NewTestClient(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, topic := range []string{config.DeviceTopic, config.DeviceGroupTopic, config.HubTopic, config.LocationTopic, config.GraphTopic, config.ThingTopic} {
+		if _, err, _ = permClient.SetTopic(client.InternalAdminToken, client.Topic{Id: topic}); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	db := testdb.NewTestDB(config)
+	err = db.SetThing(ctx, models.Thing{
+		Id:      "t1",
+		Name:    "oven",
+		OwnerId: "u1",
+	}, func(thing models.Thing) error { return nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//t2 exists in permissions-v2 but not in the local db
+	permissions := client.ResourcePermissions{
+		UserPermissions: map[string]client.PermissionsMap{
+			"u1": {Read: true, Write: true, Execute: true, Administrate: true},
+		},
+	}
+	for _, id := range []string{"t1", "t2"} {
+		if _, err, _ = permClient.SetPermission(client.InternalAdminToken, config.ThingTopic, id, permissions); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err = SyncPermResources(ctx, config, permClient, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ids, err, _ := permClient.AdminListResourceIds(client.InternalAdminToken, config.ThingTopic, client.ListOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(ids, []string{"t1"}) {
+		t.Errorf("unexpected thing permission resources: %#v", ids)
 	}
 }

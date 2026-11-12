@@ -5,8 +5,10 @@
 # device-repository
 
 The platform's registry for devices and their meaning: devices, device types,
-hubs, graphs and their attributes. It owns this data — every other service reads
-it from here rather than keeping its own copy.
+hubs, graphs, things and their attributes. A thing is a consumer without
+measurements of its own; a device can be linked to it for a period of time.
+It owns this data — every other service reads it from here rather than keeping
+its own copy.
 
 A **device type** is what carries the semantics of a measuring point:
 `function_ids`, `aspect_ids` and a `characteristic_id` per content variable give

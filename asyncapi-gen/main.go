@@ -156,6 +156,17 @@ func main() {
 	}))
 
 	mustNotFail(reflector.AddChannel(asyncapi.ChannelInfo{
+		Name: conf.ThingTopic,
+		Subscribe: &asyncapi.MessageSample{
+			MessageEntity: spec.MessageEntity{
+				Name:  "ThingCommand",
+				Title: "ThingCommand",
+			},
+			MessageSample: new(publisher.ThingCommand),
+		},
+	}))
+
+	mustNotFail(reflector.AddChannel(asyncapi.ChannelInfo{
 		Name: conf.DeviceTypeTopic,
 		Subscribe: &asyncapi.MessageSample{
 			MessageEntity: spec.MessageEntity{

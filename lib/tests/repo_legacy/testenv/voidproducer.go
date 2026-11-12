@@ -128,6 +128,14 @@ func (v VoidProducerMock) PublishGraphDelete(id string) error {
 	return nil
 }
 
+func (v VoidProducerMock) PublishThing(thing models.Thing) (err error) {
+	return nil
+}
+
+func (v VoidProducerMock) PublishThingDelete(id string) error {
+	return nil
+}
+
 func (v VoidProducerMock) PublishDeviceRights(deviceId string, userId string, rights model.ResourceRights) (err error) {
 	panic("implement me")
 }

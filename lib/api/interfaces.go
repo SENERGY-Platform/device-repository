@@ -165,6 +165,13 @@ type Controller interface {
 	SetGraph(ctx context.Context, token string, graph models.Graph) (result models.Graph, err error, code int)
 	DeleteGraph(ctx context.Context, token string, id string) (error, int)
 
+	ListThings(ctx context.Context, token string, options model.ThingListOptions) (result []models.Thing, total int64, err error, errCode int)
+	ReadThing(ctx context.Context, token string, id string) (result models.Thing, err error, errCode int)
+	SetThing(ctx context.Context, token string, thing models.Thing) (result models.Thing, err error, code int)
+	DeleteThing(ctx context.Context, token string, id string) (error, int)
+	AddThingDeviceLink(ctx context.Context, token string, thingId string, link model.ThingDeviceLinkCreate) (result models.Thing, err error, code int)
+	EndThingDeviceLink(ctx context.Context, token string, thingId string, linkId string, end model.ThingDeviceLinkEnd) (result models.Thing, err error, code int)
+
 	GetLastUpdateTimestamps(ctx context.Context, token string, userId string) (result []model.LastUpdateTimestamp, err error, code int)
 
 	MirrorUpdate(ctx context.Context, uncheckedCollections ...string) error

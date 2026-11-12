@@ -77,6 +77,13 @@ func New(config configuration.Config, db database.Database, p Publisher, permCli
 		if err != nil {
 			return nil, err
 		}
+		_, err, _ = ctrl.permissionsV2Client.SetTopicContext(context.Background(), client.InternalAdminToken, client.Topic{
+			Id:                  config.ThingTopic,
+			PublishToKafkaTopic: config.ThingTopic,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	return
 }

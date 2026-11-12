@@ -769,7 +769,11 @@ func (this *Controller) DeleteDevice(ctx context.Context, token string, id strin
 }
 
 func (this *Controller) deleteDeviceSyncHandler(ctx context.Context, old model.DeviceWithConnectionState) (err error) {
-	err = this.removeDeviceFromGraphs(ctx, old.Id)
+	err = this.removeResourceFromGraphs(ctx, models.GraphResourceTypeDevice, old.Id)
+	if err != nil {
+		return err
+	}
+	err = this.endOpenThingLinksOfDevice(ctx, old.Id)
 	if err != nil {
 		return err
 	}

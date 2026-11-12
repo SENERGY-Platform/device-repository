@@ -295,6 +295,23 @@ definitions:
           $ref: '#/definitions/model.VariableReference'
         type: array
     type: object
+  model.ThingDeviceLinkCreate:
+    properties:
+      device_id:
+        type: string
+      from:
+        description: nil = now
+        type: string
+      until:
+        description: nil = open
+        type: string
+    type: object
+  model.ThingDeviceLinkEnd:
+    properties:
+      until:
+        description: nil = now
+        type: string
+    type: object
   model.UsedInDeviceTypeQuery:
     properties:
       count_by:
@@ -747,9 +764,11 @@ definitions:
   models.GraphResourceType:
     enum:
     - device
+    - thing
     type: string
     x-enum-varnames:
     - GraphResourceTypeDevice
+    - GraphResourceTypeThing
   models.Hub:
     properties:
       attributes:
@@ -930,6 +949,38 @@ definitions:
       type:
         $ref: '#/definitions/models.Type'
       value: {}
+    type: object
+  models.Thing:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/models.Attribute'
+        type: array
+      content_variables:
+        items:
+          $ref: '#/definitions/models.ContentVariable'
+        type: array
+      device_links:
+        items:
+          $ref: '#/definitions/models.ThingDeviceLink'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+    type: object
+  models.ThingDeviceLink:
+    properties:
+      device_id:
+        type: string
+      from:
+        type: string
+      id:
+        type: string
+      until:
+        type: string
     type: object
   models.Type:
     enum:
@@ -6341,6 +6392,281 @@ paths:
       summary: get service
       tags:
       - services
+  /things:
+    get:
+      description: list things
+      parameters:
+      - description: default 100, will be ignored if 'ids' is set
+        in: query
+        name: limit
+        type: integer
+      - description: default 0, will be ignored if 'ids' is set
+        in: query
+        name: offset
+        type: integer
+      - description: filter; matches id and name
+        in: query
+        name: search
+        type: string
+      - description: 'default id.asc; supported: id, name'
+        in: query
+        name: sort
+        type: string
+      - description: filter; ignores limit/offset; comma-separated list
+        in: query
+        name: ids
+        type: string
+      - description: default 'r'; used to check permissions on request; valid values
+          are 'r', 'w', 'x', 'a' for read, write, execute, administrate
+        in: query
+        name: p
+        type: string
+      - description: filter; comma-separated list of device ids; lists things with
+          a device link, open or ended, to one of the devices
+        in: query
+        name: device_ids
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: count of all matching elements; used for pagination
+              type: integer
+          schema:
+            items:
+              $ref: '#/definitions/models.Thing'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list things
+      tags:
+      - things
+    post:
+      description: create thing; the id is assigned by the server, device_links in
+        the body are ignored, use the device-links endpoints
+      parameters:
+      - description: thing
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Thing'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Thing'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: create thing
+      tags:
+      - things
+  /things/{id}:
+    delete:
+      description: delete thing; the thing is also removed from all graphs
+      parameters:
+      - description: Thing Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete thing
+      tags:
+      - things
+    get:
+      description: get thing
+      parameters:
+      - description: Thing Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Thing'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get thing
+      tags:
+      - things
+    put:
+      description: set thing; device_links in the body are ignored, the stored links
+        are kept
+      parameters:
+      - description: Thing Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: element
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/models.Thing'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Thing'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set thing
+      tags:
+      - things
+  /things/{id}/device-links:
+    post:
+      consumes:
+      - application/json
+      description: link a device to a thing for the half-open period [from, until);
+        from defaults to now, until to open; periods of one device may not overlap,
+        not even across things
+      parameters:
+      - description: Thing Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: device link
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.ThingDeviceLinkCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Thing'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: link device to thing
+      tags:
+      - things
+  /things/{id}/device-links/{link_id}/end:
+    post:
+      consumes:
+      - application/json
+      description: sets until of the device link; an empty body or a missing until
+        ends the link now
+      parameters:
+      - description: Thing Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Device Link Id
+        in: path
+        name: link_id
+        required: true
+        type: string
+      - description: end of the link
+        in: body
+        name: message
+        schema:
+          $ref: '#/definitions/model.ThingDeviceLinkEnd'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Thing'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: end device link of thing
+      tags:
+      - things
   /user-device-types:
     get:
       description: list device-types used by the requesting user

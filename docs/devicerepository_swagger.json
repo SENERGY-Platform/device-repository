@@ -8273,6 +8273,425 @@
                 ]
             }
         },
+        "/things": {
+            "get": {
+                "description": "list things",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "things"
+                ],
+                "summary": "list things",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default 100, will be ignored if 'ids' is set",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default 0, will be ignored if 'ids' is set",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; matches id and name",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default id.asc; supported: id, name",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; ignores limit/offset; comma-separated list",
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "default 'r'; used to check permissions on request; valid values are 'r', 'w', 'x', 'a' for read, write, execute, administrate",
+                        "name": "p",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter; comma-separated list of device ids; lists things with a device link, open or ended, to one of the devices",
+                        "name": "device_ids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Thing"
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "integer",
+                                "description": "count of all matching elements; used for pagination"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "create thing; the id is assigned by the server, device_links in the body are ignored, use the device-links endpoints",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "things"
+                ],
+                "summary": "create thing",
+                "parameters": [
+                    {
+                        "description": "thing",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Thing"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Thing"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/things/{id}": {
+            "get": {
+                "description": "get thing",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "things"
+                ],
+                "summary": "get thing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Thing"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "description": "set thing; device_links in the body are ignored, the stored links are kept",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "things"
+                ],
+                "summary": "set thing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "element",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Thing"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Thing"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "delete thing; the thing is also removed from all graphs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "things"
+                ],
+                "summary": "delete thing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/things/{id}/device-links": {
+            "post": {
+                "description": "link a device to a thing for the half-open period [from, until); from defaults to now, until to open; periods of one device may not overlap, not even across things",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "things"
+                ],
+                "summary": "link device to thing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "device link",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ThingDeviceLinkCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Thing"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/things/{id}/device-links/{link_id}/end": {
+            "post": {
+                "description": "sets until of the device link; an empty body or a missing until ends the link now",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "things"
+                ],
+                "summary": "end device link of thing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Thing Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Device Link Id",
+                        "name": "link_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "end of the link",
+                        "name": "message",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/model.ThingDeviceLinkEnd"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Thing"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/user-device-types": {
             "get": {
                 "description": "list device-types used by the requesting user",
@@ -9550,6 +9969,31 @@
                 }
             }
         },
+        "model.ThingDeviceLinkCreate": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                },
+                "from": {
+                    "description": "nil = now",
+                    "type": "string"
+                },
+                "until": {
+                    "description": "nil = open",
+                    "type": "string"
+                }
+            }
+        },
+        "model.ThingDeviceLinkEnd": {
+            "type": "object",
+            "properties": {
+                "until": {
+                    "description": "nil = now",
+                    "type": "string"
+                }
+            }
+        },
         "model.UsedInDeviceTypeQuery": {
             "type": "object",
             "properties": {
@@ -10237,10 +10681,12 @@
         "models.GraphResourceType": {
             "type": "string",
             "enum": [
-                "device"
+                "device",
+                "thing"
             ],
             "x-enum-varnames": [
-                "GraphResourceTypeDevice"
+                "GraphResourceTypeDevice",
+                "GraphResourceTypeThing"
             ]
         },
         "models.Hub": {
@@ -10513,6 +10959,55 @@
                     "$ref": "#/definitions/models.Type"
                 },
                 "value": {}
+            }
+        },
+        "models.Thing": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attribute"
+                    }
+                },
+                "content_variables": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ContentVariable"
+                    }
+                },
+                "device_links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ThingDeviceLink"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ThingDeviceLink": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "until": {
+                    "type": "string"
+                }
             }
         },
         "models.Type": {
