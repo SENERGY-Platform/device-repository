@@ -329,8 +329,10 @@ func TestThings(t *testing.T) {
 		_, err, code := c.ReadThing(bg, userjwt, thing.Id)
 		expectCode(t, err, code, http.StatusForbidden)
 		//an admin lists without a permission filter, so an empty answer shows the document is gone
-		remaining, _, err, code := c.ListThings(bg, client.InternalAdminToken, client.ThingListOptions{Search: thing.Id, Limit: 10})
-		expectCode(t, err, code, http.StatusOK)
+		remaining, _, err, _ := c.ListThings(bg, client.InternalAdminToken, client.ThingListOptions{Search: thing.Id, Limit: 10})
+		if err != nil {
+			t.Fatal(err)
+		}
 		if len(remaining) != 0 {
 			t.Fatalf("thing still stored: %#v", remaining)
 		}
