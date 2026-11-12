@@ -66,7 +66,11 @@ instance:
   two producers, one ordering guarantee, and two traps when adding a topic
 - [Writing graphs](docs/writing-graphs.md) — a new graph's id can only come
   from the server (a self-invented id fails as 403, not 404), and edge weights
-  are validated: 0 is refused, outgoing weights sum to 0 or 100
+  are validated: 0 is refused, outgoing weights sum to 0 or 100; the rules for
+  thing nodes
+- [Things and device links](docs/things-and-device-links.md) — why links have
+  their own endpoints, how periods are cut, and why a graph may not hold a thing
+  together with a device ever linked to it
 - [asyncapi.json is only half generated](docs/asyncapi-is-half-generated.md) —
   the generator lives in its own module, emits an older spec version, and the
   committed file is a hand-made conversion

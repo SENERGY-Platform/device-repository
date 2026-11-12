@@ -46,6 +46,15 @@ go.mod:6:2: require github.com/SENERGY-Platform/device-repository/v2: version
 
 The next major bump has to come here too.
 
+The same holds for every other dependency the generator reaches through the main
+module: `asyncapi-gen/go.mod` resolves them from its own `require` lines and does
+not see a `replace` in the root `go.mod`. A main module built against a local
+checkout of `SENERGY-Platform/models` therefore fails here with, for example,
+`undefined: models.Thing`. Either bump the dependency in `asyncapi-gen/go.mod` to
+the pushed version, or, before it is pushed, run the generator with a copy of its
+`go.mod` that carries the same `replace` (`go run -modfile=<copy> main.go`),
+leaving the committed `go.mod` alone. Seen on 2026-11-12.
+
 ## The generator emits 2.4.0, the committed file is 3.0.0
 
 The generator writes `asyncapi-gen/asyncapi.json` (gitignored) in AsyncAPI 2.4.0.

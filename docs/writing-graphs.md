@@ -35,3 +35,20 @@ semantically correct one (a node passes its whole flow to its one parent).
 Duplicate node ids and duplicate device `resource_id`s are rejected as well,
 so a writer whose sources can point two entities at one device has to
 deduplicate before sending.
+
+## Thing nodes
+
+Since v3.10.0 a node can reference a thing (`resource_type: "thing"`). Three
+rules apply, all answered with 400:
+
+- **A thing may not be the end node**, the single node without an outgoing edge,
+  just as a device may not. A thing as a leaf below a room or a meter is fine.
+- **The thing must exist.** `SetGraph` loads every thing of the graph; device
+  nodes, in contrast, are still not checked for existence.
+- **A device that was ever linked to a thing may not be in the same graph as
+  that thing**, ended links included. The rule is checked on `PUT /graphs` and
+  again when a link is created, so neither order of writing gets around it.
+
+Deleting a thing removes its node from every graph, the same way deleting a
+device does. Why the rules are cut this way is in
+[things-and-device-links.md](things-and-device-links.md).
