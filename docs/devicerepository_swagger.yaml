@@ -4993,6 +4993,42 @@ paths:
       summary: list accessible resource ids
       tags:
       - permissions-devices
+  /permissions/accessible/graphs:
+    get:
+      description: list accessible resource ids
+      parameters:
+      - description: checked permissions in the form of 'rwxa', defaults to 'r'
+        in: query
+        name: permissions
+        type: string
+      - description: limits size of result; 0 means unlimited
+        in: query
+        name: limit
+        type: integer
+      - description: offset to be used in combination with limit
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list accessible resource ids
+      tags:
+      - permissions-graphs
   /permissions/accessible/hubs:
     get:
       description: list accessible resource ids
@@ -5065,6 +5101,42 @@ paths:
       summary: list accessible resource ids
       tags:
       - permissions-locations
+  /permissions/accessible/things:
+    get:
+      description: list accessible resource ids
+      parameters:
+      - description: checked permissions in the form of 'rwxa', defaults to 'r'
+        in: query
+        name: permissions
+        type: string
+      - description: limits size of result; 0 means unlimited
+        in: query
+        name: limit
+        type: integer
+      - description: offset to be used in combination with limit
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list accessible resource ids
+      tags:
+      - permissions-things
   /permissions/check/device-groups:
     get:
       description: check multiple permissions
@@ -5193,6 +5265,70 @@ paths:
       summary: check permission
       tags:
       - permissions-devices
+  /permissions/check/graphs:
+    get:
+      description: check multiple permissions
+      parameters:
+      - description: Resource Ids, comma seperated
+        in: query
+        name: ids
+        required: true
+        type: string
+      - description: checked permissions in the form of 'rwxa', defaults to 'r'
+        in: query
+        name: permissions
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: check multiple permissions
+      tags:
+      - permissions-graphs
+  /permissions/check/graphs/{id}:
+    get:
+      description: check permission
+      parameters:
+      - description: Resource Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: checked permissions in the form of 'rwxa', defaults to 'r'
+        in: query
+        name: permissions
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: check permission
+      tags:
+      - permissions-graphs
   /permissions/check/hubs:
     get:
       description: check multiple permissions
@@ -5321,6 +5457,70 @@ paths:
       summary: check permission
       tags:
       - permissions-locations
+  /permissions/check/things:
+    get:
+      description: check multiple permissions
+      parameters:
+      - description: Resource Ids, comma seperated
+        in: query
+        name: ids
+        required: true
+        type: string
+      - description: checked permissions in the form of 'rwxa', defaults to 'r'
+        in: query
+        name: permissions
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: check multiple permissions
+      tags:
+      - permissions-things
+  /permissions/check/things/{id}:
+    get:
+      description: check permission
+      parameters:
+      - description: Resource Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: checked permissions in the form of 'rwxa', defaults to 'r'
+        in: query
+        name: permissions
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: check permission
+      tags:
+      - permissions-things
   /permissions/manage/device-groups:
     get:
       description: lists resources the user has admin rights to
@@ -5532,6 +5732,111 @@ paths:
       summary: set resource rights
       tags:
       - permissions-devices
+  /permissions/manage/graphs:
+    get:
+      description: lists resources the user has admin rights to
+      parameters:
+      - description: limits size of result; 0 means unlimited
+        in: query
+        name: limit
+        type: integer
+      - description: offset to be used in combination with limit
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Resource'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: lists resources the user has admin rights to
+      tags:
+      - permissions-graphs
+  /permissions/manage/graphs/{id}:
+    get:
+      description: get resource, requesting user must have admin right  on the resource
+      parameters:
+      - description: Resource Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Resource'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get resource
+      tags:
+      - permissions-graphs
+    put:
+      consumes:
+      - application/json
+      description: get resource rights, requesting user must have admin right on resource
+        to update, requesting user must have admin rights on topic (graphs) to create
+      parameters:
+      - description: Resource Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: if set to true, the response will be sent after the corresponding
+          kafka done signal has been received
+        in: query
+        name: wait
+        type: boolean
+      - description: Topic
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.ResourcePermissions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ResourcePermissions'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set resource rights
+      tags:
+      - permissions-graphs
   /permissions/manage/hubs:
     get:
       description: lists resources the user has admin rights to
@@ -5743,6 +6048,111 @@ paths:
       summary: set resource rights
       tags:
       - permissions-locations
+  /permissions/manage/things:
+    get:
+      description: lists resources the user has admin rights to
+      parameters:
+      - description: limits size of result; 0 means unlimited
+        in: query
+        name: limit
+        type: integer
+      - description: offset to be used in combination with limit
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Resource'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: lists resources the user has admin rights to
+      tags:
+      - permissions-things
+  /permissions/manage/things/{id}:
+    get:
+      description: get resource, requesting user must have admin right  on the resource
+      parameters:
+      - description: Resource Id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Resource'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get resource
+      tags:
+      - permissions-things
+    put:
+      consumes:
+      - application/json
+      description: get resource rights, requesting user must have admin right on resource
+        to update, requesting user must have admin rights on topic (things) to create
+      parameters:
+      - description: Resource Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: if set to true, the response will be sent after the corresponding
+          kafka done signal has been received
+        in: query
+        name: wait
+        type: boolean
+      - description: Topic
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.ResourcePermissions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ResourcePermissions'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: set resource rights
+      tags:
+      - permissions-things
   /permissions/permissions/device-groups:
     get:
       description: list the computed permissions to resources of the given topic (device-groups)
@@ -5807,6 +6217,38 @@ paths:
         and ids
       tags:
       - permissions-devices
+  /permissions/permissions/graphs:
+    get:
+      description: list the computed permissions to resources of the given topic (graphs)
+        and ids, group and user permissions are merged, unknown ids will get entries
+        in the result
+      parameters:
+      - description: Resource Ids, comma seperated
+        in: query
+        name: ids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ComputedPermissions'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list the computed permissions to resources of the given topic (graphs)
+        and ids
+      tags:
+      - permissions-graphs
   /permissions/permissions/hubs:
     get:
       description: list the computed permissions to resources of the given topic (hubs)
@@ -5871,6 +6313,38 @@ paths:
         and ids
       tags:
       - permissions-locations
+  /permissions/permissions/things:
+    get:
+      description: list the computed permissions to resources of the given topic (things)
+        and ids, group and user permissions are merged, unknown ids will get entries
+        in the result
+      parameters:
+      - description: Resource Ids, comma seperated
+        in: query
+        name: ids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ComputedPermissions'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list the computed permissions to resources of the given topic (things)
+        and ids
+      tags:
+      - permissions-things
   /permissions/query/permissions/device-groups:
     post:
       description: list the computed permissions to resources of the given topic (device-groups)
@@ -5941,6 +6415,41 @@ paths:
         and ids
       tags:
       - permissions-devices
+  /permissions/query/permissions/graphs:
+    post:
+      description: list the computed permissions to resources of the given topic (graphs)
+        and ids, group and user permissions are merged, unknown ids will get entries
+        in the result
+      parameters:
+      - description: Resource Ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ComputedPermissions'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list the computed permissions to resources of the given topic (graphs)
+        and ids
+      tags:
+      - permissions-graphs
   /permissions/query/permissions/hubs:
     post:
       description: list the computed permissions to resources of the given topic (hubs)
@@ -6011,6 +6520,41 @@ paths:
         and ids
       tags:
       - permissions-locations
+  /permissions/query/permissions/things:
+    post:
+      description: list the computed permissions to resources of the given topic (things)
+        and ids, group and user permissions are merged, unknown ids will get entries
+        in the result
+      parameters:
+      - description: Resource Ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ComputedPermissions'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: list the computed permissions to resources of the given topic (things)
+        and ids
+      tags:
+      - permissions-things
   /protocols:
     get:
       description: get protocol

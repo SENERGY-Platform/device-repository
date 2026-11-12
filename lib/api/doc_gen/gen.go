@@ -37,6 +37,8 @@ func main() {
 			"device-groups",
 			"hubs",
 			"locations",
+			"graphs",
+			"things",
 		},
 		func(method string, path string) bool {
 			if method == http.MethodDelete {
