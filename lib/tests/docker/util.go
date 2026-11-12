@@ -18,16 +18,13 @@ package docker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/controller/publisher"
 	"github.com/testcontainers/testcontainers-go"
 )
 
@@ -45,26 +42,6 @@ func GetFreePort() (int, error) {
 	return listener.Addr().(*net.TCPAddr).Port, nil
 }
 
-func retry(timeout time.Duration, f func() error) (err error) {
-	err = errors.New("initial")
-	start := time.Now()
-	for i := int64(1); err != nil && time.Since(start) < timeout; i++ {
-		err = f()
-		if err != nil {
-			log.Println("ERROR: :", err)
-			wait := time.Duration(i) * time.Second
-			if time.Since(start)+wait < timeout {
-				log.Println("ERROR: retry after:", wait.String())
-				time.Sleep(wait)
-			} else {
-				time.Sleep(time.Since(start) + wait - timeout)
-				return f()
-			}
-		}
-	}
-	return err
-}
-
 func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configuration.Config) (config configuration.Config, err error) {
 	config = startConfig
 	ctx, cancel := context.WithCancel(baseCtx)
@@ -75,13 +52,6 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configurati
 	}()
 
 	config.InitPermissionsTopics = true
-
-	whPort, err := GetFreePort()
-	if err != nil {
-		log.Println("unable to find free port", err)
-		return config, err
-	}
-	config.ServerPort = strconv.Itoa(whPort)
 
 	_, ip, err := MongoDB(ctx, wg)
 	if err != nil {
@@ -94,7 +64,7 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configurati
 		return config, err
 	}
 
-	err = publisher.InitTopic(config.KafkaUrl,
+	err = InitTopics(config.KafkaUrl,
 		"concepts",
 		"device-groups",
 		"aspects",
@@ -123,7 +93,14 @@ func NewEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configurati
 	}
 	config.PermissionsV2Url = "http://" + permV2Ip + ":8080"
 
-	time.Sleep(5 * time.Second)
+	//chosen last: GetFreePort releases the port at once, and the api binds it only in lib.Start,
+	//so a port picked before the container starts could meanwhile be taken by another package
+	whPort, err := GetFreePort()
+	if err != nil {
+		log.Println("unable to find free port", err)
+		return config, err
+	}
+	config.ServerPort = strconv.Itoa(whPort)
 
 	return
 }

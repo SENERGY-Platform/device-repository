@@ -18,6 +18,7 @@ package tests
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"sync"
 	"testing"
@@ -52,14 +53,12 @@ func TestDeviceGroupCriteriaUpdateOnDeviceTypeUpdate(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 
 	err = lib.Start(ctx, wg, config)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 
 	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
@@ -374,8 +373,25 @@ func TestDeviceGroupCriteriaUpdateOnDeviceTypeUpdate(t *testing.T) {
 			return
 		}
 
-		// Wait for updates to propagate
-		time.Sleep(2 * time.Second)
+		// Wait for updates to propagate: the sync handler rewrites the criteria of both affected groups,
+		// each in one write, so the first criterion having lost its AspectId means the write is in
+		docker.WaitFor(t, 30*time.Second, func() error {
+			tempGroup, err, _ := c.ReadDeviceGroup(context.Background(), deviceGroups[0].Id, client.InternalAdminToken, false)
+			if err != nil {
+				return err
+			}
+			humidityGroup, err, _ := c.ReadDeviceGroup(context.Background(), deviceGroups[1].Id, client.InternalAdminToken, false)
+			if err != nil {
+				return err
+			}
+			if len(tempGroup.Criteria) == 0 || len(humidityGroup.Criteria) == 0 {
+				return errors.New("criteria missing")
+			}
+			if tempGroup.Criteria[0].AspectId != "" || humidityGroup.Criteria[0].AspectId != "" {
+				return errors.New("criteria not updated yet")
+			}
+			return nil
+		})
 
 		// Check groups that should be affected
 		tempGroup, err, _ := c.ReadDeviceGroup(context.Background(), deviceGroups[0].Id, client.InternalAdminToken, false)

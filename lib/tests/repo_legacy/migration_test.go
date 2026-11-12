@@ -20,13 +20,13 @@ import (
 	"context"
 	"log"
 	"reflect"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	docker2 "github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
@@ -61,7 +61,7 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 		return
 	}
 
-	err = publisher.InitTopic(conf.KafkaUrl,
+	err = docker2.InitTopics(conf.KafkaUrl,
 		"concepts",
 		"device-groups",
 		"aspects",
@@ -213,6 +213,12 @@ func TestGeneratedDeviceGroupMigration(t *testing.T) {
 
 	t.Run("migrate", func(t *testing.T) {
 		conf.PermissionsV2Url = "http://" + permV2Ip + ":8080"
+		whPort, err := docker2.GetFreePort()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		conf.ServerPort = strconv.Itoa(whPort)
 		err = lib.Start(ctx, wg, conf)
 		if err != nil {
 			t.Error(err)

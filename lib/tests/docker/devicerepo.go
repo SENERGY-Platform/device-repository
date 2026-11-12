@@ -28,7 +28,7 @@ import (
 
 func DeviceRepo(ctx context.Context, wg *sync.WaitGroup, relativePathToRoot string, kafkaUrl string, mongoUrl string, permv2Url string) (hostPort string, ipAddress string, err error) {
 	log.Println("start device-repository")
-	c, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	c, err := startContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			FromDockerfile: testcontainers.FromDockerfile{
 				Context:        relativePathToRoot,
@@ -43,8 +43,9 @@ func DeviceRepo(ctx context.Context, wg *sync.WaitGroup, relativePathToRoot stri
 				"PERMISSIONS_V2_URL": permv2Url,
 				"MONGO_URL":          mongoUrl,
 			},
-			ExposedPorts:    []string{"8080/tcp"},
-			WaitingFor:      wait.ForListeningPort("8080/tcp"),
+			ExposedPorts: []string{"8080/tcp"},
+			// no health endpoint: any http answer means the server is serving
+			WaitingFor:      wait.ForHTTP("/").WithPort("8080/tcp").WithStatusCodeMatcher(func(int) bool { return true }),
 			AlwaysPullImage: true,
 			LogConsumerCfg:  &testcontainers.LogConsumerConfig{Consumers: []testcontainers.LogConsumer{LogConsumer{Prefix: "DEVICE-REPOSITORY: "}}},
 		},

@@ -93,13 +93,11 @@ func createTestEnv(ctx context.Context, wg *sync.WaitGroup, t *testing.T) (conf 
 		log.Println("ERROR: unable to create docker env", err)
 		return conf, err
 	}
-	time.Sleep(1 * time.Second)
 	err = lib.Start(ctx, wg, conf)
 	if err != nil {
 		log.Println("ERROR: unable to connect to database", err)
 		return conf, err
 	}
-	time.Sleep(1 * time.Second)
 	return conf, err
 }
 

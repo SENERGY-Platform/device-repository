@@ -25,7 +25,6 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
@@ -48,8 +47,6 @@ func testConcepts(t *testing.T, conf configuration.Config) {
 		b, _ := io.ReadAll(resp.Body)
 		t.Fatal(resp.Status, resp.StatusCode, string(b))
 	}
-
-	time.Sleep(10 * time.Second)
 
 	createConcept := models.Concept{
 		Name:                 "c1",
@@ -99,8 +96,6 @@ func testConcepts(t *testing.T, conf configuration.Config) {
 		b, _ := io.ReadAll(resp.Body)
 		t.Fatal(resp.Status, resp.StatusCode, string(b))
 	}
-
-	time.Sleep(10 * time.Second)
 
 	updateConcept := models.Concept{
 		Id:                   concept.Id,

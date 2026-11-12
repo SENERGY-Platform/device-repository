@@ -60,7 +60,6 @@ func TestGraphKafkaPublish(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 
 	//consume from the start, before the repository produces anything
 	graphCommands, rightsCommands := listenToGraphTopic(t, ctx, wg, config)
@@ -70,7 +69,6 @@ func TestGraphKafkaPublish(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 
 	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 

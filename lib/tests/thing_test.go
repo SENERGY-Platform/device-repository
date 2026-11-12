@@ -52,13 +52,11 @@ func TestThings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	time.Sleep(1 * time.Second)
 
 	err = lib.Start(ctx, wg, config)
 	if err != nil {
 		t.Fatal(err)
 	}
-	time.Sleep(1 * time.Second)
 
 	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 	bg := context.Background()

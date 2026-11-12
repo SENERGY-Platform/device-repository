@@ -120,6 +120,6 @@ Working in this repository:
 - [Regenerating the REST docs rewrites a file you did not change](docs/regenerating-the-rest-docs.md) —
   `generated_permissions.go` comes back reordered and has to be reverted before
   committing
-- [The test suite needs -p 1](docs/tests-collide-on-port-8080.md) — packages run
-  in parallel and collide on port 8080, which looks like a flaky failure; and
-  what to do when another process holds the port
+- [Running the container tests](docs/running-the-container-tests.md) — how the
+  test environment signals readiness instead of sleeping, why packages can run in
+  parallel, and how to run the suite on a rootless-Docker WSL machine

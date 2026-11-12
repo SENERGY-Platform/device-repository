@@ -26,7 +26,6 @@ import (
 	"reflect"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
@@ -456,8 +455,6 @@ func TestDeviceTypeWithAttribute(t *testing.T) {
 		return
 	}
 
-	time.Sleep(1 * time.Second)
-
 	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 
 	dt := models.DeviceType{Id: devicetype1id, Name: devicetype1name, Attributes: []models.Attribute{{Key: "foo", Value: "bar"}}}
@@ -482,8 +479,6 @@ func TestServiceWithAttribute(t *testing.T) {
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(1 * time.Second)
 
 	c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 

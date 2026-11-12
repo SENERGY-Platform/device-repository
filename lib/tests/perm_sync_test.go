@@ -21,7 +21,6 @@ import (
 	"slices"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
@@ -56,7 +55,6 @@ func TestPermSync(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 
 	db, err := database.New(config)
 	if err != nil {
@@ -355,7 +353,8 @@ func TestPermSync(t *testing.T) {
 
 	})
 
-	time.Sleep(1 * time.Second)
+	//the sync jobs of the init state are fetched only if their timestamp (unix seconds) is older than the second of the fetch
+	docker.WaitForNextSecond()
 	t.Run("start lib to sync", func(t *testing.T) {
 		err = lib.Start(ctx, wg, config)
 		if err != nil {

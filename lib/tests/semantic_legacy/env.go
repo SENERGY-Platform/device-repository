@@ -29,7 +29,6 @@ import (
 	"strconv"
 	"sync"
 	"testing"
-	"time"
 )
 
 func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig configuration.Config, t *testing.T) (config configuration.Config, ctrl *controller.Controller, err error) {
@@ -75,8 +74,6 @@ func NewPartialMockEnv(baseCtx context.Context, wg *sync.WaitGroup, startConfig 
 		t.Error(err)
 		return
 	}
-
-	time.Sleep(time.Second)
 
 	return config, ctrl, err
 }

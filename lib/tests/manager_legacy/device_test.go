@@ -33,7 +33,6 @@ import (
 	"reflect"
 	"sort"
 	"testing"
-	"time"
 )
 
 func testDeviceOwner(t *testing.T, conf configuration.Config) {
@@ -362,7 +361,6 @@ func testDeviceOwner(t *testing.T, conf configuration.Config) {
 			t.Error(err)
 			return
 		}
-		time.Sleep(5 * time.Second)
 	})
 
 	t.Run("change owner to other admin user", func(t *testing.T) {
@@ -1007,7 +1005,6 @@ func testDevice(t *testing.T, port string) {
 		if device.Id == "" {
 			t.Fatal(device)
 		}
-		time.Sleep(time.Second)
 	})
 
 	t.Run("get", func(t *testing.T) {
@@ -1064,7 +1061,6 @@ func testDevice(t *testing.T, port string) {
 	})
 
 	t.Run("read after update", func(t *testing.T) {
-		time.Sleep(time.Second)
 		resp, err = helper.Jwtget(userjwt, "http://localhost:"+port+"/devices/"+url.PathEscape(device.Id))
 		if err != nil {
 			t.Fatal(err)

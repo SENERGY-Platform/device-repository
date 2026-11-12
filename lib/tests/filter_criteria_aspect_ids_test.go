@@ -62,14 +62,12 @@ func TestFilterCriteriaAspectIds(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 
 	err = lib.Start(ctx, wg, config)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 
 	c := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 

@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -123,6 +124,13 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 	config.MgwMirrorUpdateInterval = "1h"
 	config.MgwMirrorMissPullBackoff = "5s"
 
+	freePort, err := docker.GetFreePort()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	config.ServerPort = strconv.Itoa(freePort)
+
 	sourceClient := client.NewClient("http://"+repoIp+":8080", client.Options{})
 	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
 
@@ -132,7 +140,8 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		//let the initial pull of the empty source finish
+		//the initial pull of the empty source runs asynchronously and has no observable end;
+		//a not found read during it would share that pull and shift the backoff the next subtests time
 		time.Sleep(2 * time.Second)
 	})
 
@@ -186,7 +195,8 @@ func TestMirrorPullsOnNotFound(t *testing.T) {
 			t.Error("expected 404 during the backoff, got", code, err)
 			return
 		}
-		time.Sleep(5 * time.Second)
+		//the backoff of 5 s counts from the not found read above; the margin keeps the read below after it
+		time.Sleep(6 * time.Second)
 		result, err, code := mirrorClient.ReadProtocol(context.Background(), "p2", "")
 		if err != nil {
 			t.Error(code, err)

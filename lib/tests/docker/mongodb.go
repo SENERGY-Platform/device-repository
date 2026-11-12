@@ -26,9 +26,10 @@ import (
 
 func MongoDB(ctx context.Context, wg *sync.WaitGroup) (hostport string, containerip string, err error) {
 	log.Println("start mongo")
-	c, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	c, err := startContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "mongo:8.0",
+			Cmd:          []string{"--wiredTigerCacheSizeGB", "0.25"},
 			ExposedPorts: []string{"27017/tcp"},
 			//MongoDB 8 refuses to start on Linux 6.19 to 7.0.13 (SERVER-121912), which the CI runners use since 2026-10
 			Env: map[string]string{"GLIBC_TUNABLES": "glibc.pthread.rseq=1"},

@@ -27,7 +27,6 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func testHubOwner(t *testing.T, conf configuration.Config) {
@@ -299,7 +298,6 @@ func testHubOwner(t *testing.T, conf configuration.Config) {
 			t.Error(err)
 			return
 		}
-		time.Sleep(5 * time.Second)
 	})
 
 	t.Run("change owner to other admin user", func(t *testing.T) {
@@ -481,7 +479,6 @@ func testHub(t *testing.T, port string) {
 			t.Error(device2)
 			return
 		}
-		time.Sleep(time.Second)
 	})
 
 	t.Run("invalid 1", func(t *testing.T) {

@@ -30,7 +30,7 @@ import (
 
 func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string, kafkaUrl string) (hostPort string, ipAddress string, err error) {
 	log.Println("start permissions-v2")
-	c, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	c, err := startContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image: "ghcr.io/senergy-platform/permissions-v2:dev",
 			Env: map[string]string{
@@ -39,7 +39,7 @@ func PermissionsV2(ctx context.Context, wg *sync.WaitGroup, mongoUrl string, kaf
 				"KAFKA_URL":        kafkaUrl,
 			},
 			ExposedPorts:    []string{"8080/tcp"},
-			WaitingFor:      wait.ForListeningPort("8080/tcp"),
+			WaitingFor:      wait.ForHTTP("/health").WithPort("8080/tcp").WithStatusCodeMatcher(func(status int) bool { return status == 200 }),
 			AlwaysPullImage: true,
 			LogConsumerCfg:  &testcontainers.LogConsumerConfig{Consumers: []testcontainers.LogConsumer{LogConsumer{Prefix: "PERMISSIONS: "}}},
 		},

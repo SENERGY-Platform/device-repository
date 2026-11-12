@@ -28,13 +28,11 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/client"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/controller"
-	"github.com/SENERGY-Platform/device-repository/v3/lib/controller/publisher"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	docker2 "github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/repo_legacy/testenv"
@@ -1010,7 +1008,7 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 	}
 	conf.PermissionsV2Url = "http://" + permIp + ":8080"
 
-	err = publisher.InitTopic(conf.KafkaUrl,
+	err = docker2.InitTopics(conf.KafkaUrl,
 		"concepts",
 		"device-groups",
 		"aspects",
@@ -1031,7 +1029,6 @@ func TestDeviceLocalIdOwnerConstraintLocalPermissions(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 	t.Run("test", testDeviceLocalIdOwnerConstraint(ctx, wg, conf))
 }
 
@@ -1053,7 +1050,6 @@ func TestDeviceLocalIdOwnerConstraintPermissionsSearch(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	time.Sleep(1 * time.Second)
 	t.Run("test", testDeviceLocalIdOwnerConstraint(ctx, wg, conf))
 }
 
@@ -1064,7 +1060,6 @@ func testDeviceLocalIdOwnerConstraint(ctx context.Context, wg *sync.WaitGroup, c
 			t.Error(err)
 			return
 		}
-		time.Sleep(1 * time.Second)
 
 		c := client.NewClient("http://localhost:"+conf.ServerPort, client.Options{})
 

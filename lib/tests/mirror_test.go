@@ -19,12 +19,14 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"slices"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -138,6 +140,13 @@ func TestMirror(t *testing.T) {
 	config.MgwCertManagerUrl = certManagerMockServer.URL
 	config.AsMgwMirror = true
 	config.MgwMirrorUpdateInterval = "10s"
+
+	freePort, err := docker.GetFreePort()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	config.ServerPort = strconv.Itoa(freePort)
 
 	sourceClient := client.NewClient("http://"+repoIp+":8080", client.Options{})
 	mirrorClient := client.NewClient("http://localhost:"+config.ServerPort, client.Options{})
@@ -292,7 +301,17 @@ func TestMirror(t *testing.T) {
 	})
 
 	t.Run("check initial mirror state", func(t *testing.T) {
-		time.Sleep(2 * time.Second)
+		//the pull writes the collections one after another and hubs come after devices, device-groups and device-types
+		docker.WaitFor(t, 30*time.Second, func() error {
+			hubs, err, _ := mirrorClient.ListHubs(context.Background(), "", client.HubListOptions{})
+			if err != nil {
+				return err
+			}
+			if len(hubs) != 1 {
+				return fmt.Errorf("hubs: %d", len(hubs))
+			}
+			return nil
+		})
 		t.Run("protocols", func(t *testing.T) {
 			result, err, _ := mirrorClient.ListProtocols(context.Background(), "", 100, 0, "")
 			if err != nil {
@@ -577,7 +596,17 @@ func TestMirror(t *testing.T) {
 	})
 
 	t.Run("check updated mirror", func(t *testing.T) {
-		time.Sleep(15 * time.Second)
+		//the pull writes the collections one after another and hubs come after devices, device-groups and device-types
+		docker.WaitFor(t, 30*time.Second, func() error {
+			hubs, err, _ := mirrorClient.ListHubs(context.Background(), "", client.HubListOptions{})
+			if err != nil {
+				return err
+			}
+			if len(hubs) != 2 {
+				return fmt.Errorf("hubs: %d", len(hubs))
+			}
+			return nil
+		})
 		t.Run("protocols", func(t *testing.T) {
 			result, err, _ := mirrorClient.ListProtocols(context.Background(), "", 100, 0, "")
 			if err != nil {
@@ -994,7 +1023,16 @@ func TestMirror(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		time.Sleep(15 * time.Second)
+		docker.WaitFor(t, 30*time.Second, func() error {
+			result, err, _ := mirrorClient.ListDevices(context.Background(), "", client.DeviceListOptions{})
+			if err != nil {
+				return err
+			}
+			if names := deviceNames(result); !slices.Equal(names, []string{"d1", "d2", "d3", "d4", "shared"}) {
+				return fmt.Errorf("devices: %v", names)
+			}
+			return nil
+		})
 		result, err, _ := mirrorClient.ListDevices(context.Background(), "", client.DeviceListOptions{})
 		if err != nil {
 			t.Error(err)
@@ -1158,7 +1196,22 @@ func TestMirror(t *testing.T) {
 	})
 
 	t.Run("check mirror after removal", func(t *testing.T) {
-		time.Sleep(15 * time.Second)
+		//hubs come after device-groups, so the final hubs mean the removals of the collections before are done
+		docker.WaitFor(t, 30*time.Second, func() error {
+			hubs, err, _ := mirrorClient.ListHubs(context.Background(), "", client.HubListOptions{})
+			if err != nil {
+				return err
+			}
+			names := []string{}
+			for _, h := range hubs {
+				names = append(names, h.Name)
+			}
+			slices.Sort(names)
+			if !slices.Equal(names, []string{"h1", "h3"}) {
+				return fmt.Errorf("hubs: %v", names)
+			}
+			return nil
+		})
 		t.Run("protocols", func(t *testing.T) {
 			result, err, _ := mirrorClient.ListProtocols(context.Background(), "", 100, 0, "")
 			if err != nil {

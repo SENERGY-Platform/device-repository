@@ -82,8 +82,6 @@ func TestExport(t *testing.T) {
 			return nil, config
 		}
 
-		time.Sleep(time.Second)
-
 		return client.NewClient("http://localhost:"+config.ServerPort, client.Options{}), config
 	}
 
