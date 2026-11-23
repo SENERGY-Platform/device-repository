@@ -101,12 +101,13 @@ func getLogger(config configuration.Config) *slog.Logger {
 }
 
 type Controller struct {
-	publisher           Publisher
-	db                  database.Database
-	config              configuration.Config
-	permissionsV2Client client.Client
-	logger              *slog.Logger
-	mirrorPullCallback  func(checkLastUpdate bool, uncheckedCollections ...string)
+	publisher            Publisher
+	db                   database.Database
+	config               configuration.Config
+	permissionsV2Client  client.Client
+	logger               *slog.Logger
+	mirrorPullCallback   func(checkLastUpdate bool, uncheckedCollections ...string)
+	mirrorHealthCallback func() (healthy bool, report string)
 
 	deviceGroupCriteriaRecomputeRunning atomic.Bool
 }

@@ -37,3 +37,15 @@ func (this *Controller) MirrorUpdate(ctx context.Context, uncheckedCollections .
 func (this *Controller) SetMirrorPullCallback(pull func(checkLastUpdate bool, uncheckedCollections ...string)) {
 	this.mirrorPullCallback = pull
 }
+
+func (this *Controller) SetMirrorHealthCallback(health func() (healthy bool, report string)) {
+	this.mirrorHealthCallback = health
+}
+
+// MirrorHealth is healthy as long as no health callback is set, which only happens outside a running mirror.
+func (this *Controller) MirrorHealth() (healthy bool, report string) {
+	if this.mirrorHealthCallback == nil {
+		return true, "ok"
+	}
+	return this.mirrorHealthCallback()
+}

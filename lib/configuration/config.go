@@ -128,6 +128,7 @@ type Config struct {
 	MgwMirrorMissPullTimeout    string `json:"mgw_mirror_miss_pull_timeout"`     //max wait for the pull a 404 on a mirror GET triggers, defaults to 10s
 	MgwMirrorMissPullBackoff    string `json:"mgw_mirror_miss_pull_backoff"`     //wait before the same GET may pull again after its pull found nothing, defaults to 10s
 	MgwMirrorMissPullMaxBackoff string `json:"mgw_mirror_miss_pull_max_backoff"` //the backoff doubles per miss up to this value, defaults to 5m
+	MgwMirrorHealthMaxAge       string `json:"mgw_mirror_health_max_age"`        //a collection not synced for longer makes /health fail, defaults to 30m but at least 3 update intervals
 }
 
 // loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)

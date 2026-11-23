@@ -103,7 +103,35 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 	if config.AsMgwMirror {
 		result = util.NewMirrorMiddleware(result, config, control)
 	}
-	return withTracing(config, withoutCancel(result))
+	return withHealth(config, control, withTracing(config, withoutCancel(result)))
+}
+
+// MirrorHealthReporter is implemented by the controller; it is not part of Controller because that
+// interface is also the client interface.
+type MirrorHealthReporter interface {
+	MirrorHealth() (healthy bool, report string)
+}
+
+// withHealth answers GET /health before access log, permissions and mirror middleware:
+// Docker calls it every few seconds and it needs no token. A platform instance is always healthy,
+// a mirror is not while a collection has not been synced for too long.
+func withHealth(config configuration.Config, control Controller, handler http.Handler) http.Handler {
+	mirror, _ := control.(MirrorHealthReporter)
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet || request.URL.Path != "/health" {
+			handler.ServeHTTP(writer, request)
+			return
+		}
+		healthy, report := true, "ok"
+		if config.AsMgwMirror && mirror != nil {
+			healthy, report = mirror.MirrorHealth()
+		}
+		writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		if !healthy {
+			writer.WriteHeader(http.StatusServiceUnavailable)
+		}
+		_, _ = writer.Write([]byte(report + "\n"))
+	})
 }
 
 // withTracing starts a span per request and exports it to config.OtelEndpoint; with

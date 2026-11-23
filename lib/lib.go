@@ -117,6 +117,7 @@ func Start(baseCtx context.Context, wg *sync.WaitGroup, conf configuration.Confi
 			return err
 		}
 		ctrl.SetMirrorPullCallback(puller.Pull)
+		ctrl.SetMirrorHealthCallback(puller.Health)
 	}
 
 	err = api.Start(ctx, conf, ctrl)

@@ -18,4 +18,6 @@ COPY --from=builder /go/src/app/version.txt .
 
 EXPOSE 8080
 
+HEALTHCHECK --interval=60s --timeout=10s --start-period=60s --retries=3 CMD wget -q -O - http://127.0.0.1:${SERVER_PORT:-8080}/health || exit 1
+
 ENTRYPOINT ["./app"]

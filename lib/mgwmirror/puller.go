@@ -18,6 +18,7 @@ package mgwmirror
 
 import (
 	"sync"
+	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/database"
@@ -33,6 +34,7 @@ import (
 type Puller struct {
 	config configuration.Config
 	db     database.Database
+	health *Health
 	pull   func(checkLastUpdate bool, uncheckedCollections map[string]bool)
 
 	runMux sync.Mutex //held while a pull runs
@@ -57,9 +59,9 @@ func (this *pendingPull) add(checkLastUpdate bool, uncheckedCollections []string
 }
 
 func NewPuller(config configuration.Config, db database.Database) *Puller {
-	result := &Puller{config: config, db: db}
+	result := &Puller{config: config, db: db, health: NewHealth(mirroredCollections(config), HealthMaxAge(config), time.Now)}
 	result.pull = func(checkLastUpdate bool, uncheckedCollections map[string]bool) {
-		pull(result.config, result.db, checkLastUpdate, uncheckedCollections)
+		pull(result.config, result.db, result.health, checkLastUpdate, uncheckedCollections)
 	}
 	return result
 }
@@ -92,4 +94,9 @@ func (this *Puller) Pull(checkLastUpdate bool, uncheckedCollections ...string) {
 	this.pendingMux.Unlock()
 
 	this.pull(checkLastUpdate, unchecked)
+}
+
+// Health reports whether the mirror synced every collection recently enough, see HealthMaxAge.
+func (this *Puller) Health() (healthy bool, report string) {
+	return this.health.Check()
 }

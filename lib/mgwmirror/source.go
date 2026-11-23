@@ -47,6 +47,7 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 		"mgw_mirror_miss_pull_timeout":     config.MgwMirrorMissPullTimeout,
 		"mgw_mirror_miss_pull_backoff":     config.MgwMirrorMissPullBackoff,
 		"mgw_mirror_miss_pull_max_backoff": config.MgwMirrorMissPullMaxBackoff,
+		"mgw_mirror_health_max_age":        config.MgwMirrorHealthMaxAge,
 	} {
 		if value != "" {
 			_, err = time.ParseDuration(value)
@@ -80,7 +81,7 @@ func StartSourcePullWorker(ctx context.Context, wg *sync.WaitGroup, config confi
 
 // pull may only run through Puller.Pull(): two pulls of the same mirror must not run at the same time.
 // uncheckedCollections are pulled without timestamp check, even if checkLastUpdate is set.
-func pull(config configuration.Config, db database.Database, checkLastUpdate bool, uncheckedCollections map[string]bool) {
+func pull(config configuration.Config, db database.Database, health *Health, checkLastUpdate bool, uncheckedCollections map[string]bool) {
 	config.GetLogger().Info("start mgw mirror pull")
 	defer config.GetLogger().Info("finished mgw mirror pull")
 	//a pull is shared by all requests that triggered it, so it belongs to none of their traces
@@ -91,6 +92,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 	userId, err := config.GetMgwMirrorUserId()
 	if err != nil {
 		config.GetLogger().Error("error while getting mgw mirror user id", "error", err)
+		health.FailAll(fmt.Errorf("getting mirror user id: %w", err))
 		return
 	}
 
@@ -103,6 +105,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		sourceLastUpdateTimestamps, err, _ := c.GetLastUpdateTimestamps(ctx, token, "")
 		if err != nil {
 			config.GetLogger().Error("error while getting source last update timestamps for mgw mirror pull", "error", err)
+			health.FailAll(fmt.Errorf("getting source last update timestamps: %w", err))
 			return
 		}
 		config.GetLogger().Debug("source last update timestamps", "source_last_update_timestamps", fmt.Sprintf("%#v", sourceLastUpdateTimestamps))
@@ -110,9 +113,10 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 		localLastUpdateTimestamps, err := db.GetLastUpdateTimestampsForUser(context.Background(), userId)
 		if err != nil {
 			config.GetLogger().Error("error while getting local last update timestamps for mgw mirror pull", "error", err)
+			health.FailAll(fmt.Errorf("getting local last update timestamps: %w", err))
 			return
 		}
-		checkLastUpdateF = func(collection string) (doUpdate bool) {
+		checkTimestamp := func(collection string) (doUpdate bool) {
 			defer func() {
 				if doUpdate {
 					config.GetLogger().Info("mgw mirror update", "collection", collection)
@@ -132,6 +136,14 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			}
 			return sourceIsNewer(config, localLastUpdateTimestamps, sourceLastUpdateTimestamps, collection)
 		}
+		//a collection the source has nothing newer for is as current as one that was just pulled
+		checkLastUpdateF = func(collection string) bool {
+			doUpdate := checkTimestamp(collection)
+			if !doUpdate {
+				health.Success(collection)
+			}
+			return doUpdate
+		}
 	}
 
 	if checkLastUpdateF(config.MongoProtocolCollection) {
@@ -144,17 +156,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing protocols for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoProtocolCollection, err)
 				break
 			}
 			err = db.SetProtocol(context.Background(), p, func(models.Protocol) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting protocol for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoProtocolCollection, err)
 				break
 			}
 			seen[p.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoProtocolCollection)
 			removeMissing(config, config.MongoProtocolCollection, seen,
 				func(limit int64, offset int64) ([]models.Protocol, error) {
 					return db.ListProtocols(context.Background(), limit, offset, "")
@@ -183,17 +198,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing aspect-classes for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoAspectClassCollection, err)
 				break
 			}
 			err = db.SetAspectClass(context.Background(), e, func(models.AspectClass) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting aspect-classes for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoAspectClassCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoAspectClassCollection)
 			removeMissing(config, config.MongoAspectClassCollection, seen,
 				func(limit int64, offset int64) (list []models.AspectClass, err error) {
 					list, _, err = db.ListAspectClasses(context.Background(), model.AspectClassListOptions{Limit: limit, Offset: offset})
@@ -223,6 +241,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing aspects for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoAspectCollection, err)
 				break
 			}
 			//an older source may not resolve the aspect-class down the hierarchy yet
@@ -230,12 +249,14 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if resolveErr != nil {
 				config.GetLogger().Error("error while resolving aspect classes for mgw mirror pull", "error", resolveErr)
 				complete = false
+				health.Failure(config.MongoAspectCollection, resolveErr)
 				break
 			}
 			err = db.SetAspect(context.Background(), e, func(models.Aspect) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting aspects for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoAspectCollection, err)
 				break
 			}
 			seen[e.Id] = true
@@ -269,16 +290,21 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing aspect-nodes for mgw mirror pull", "error", err)
 				completeNodes = false
+				health.Failure(config.MongoAspectCollection, err)
 				break
 			}
 			err = db.SetAspectNode(context.Background(), e)
 			if err != nil {
 				config.GetLogger().Error("error while setting aspect-nodes for mgw mirror pull", "error", err)
 				completeNodes = false
+				health.Failure(config.MongoAspectCollection, err)
 				break
 			}
 			seenNodes[e.Id] = true
 			sourceNodesByRoot[e.RootId] = append(sourceNodesByRoot[e.RootId], e)
+		}
+		if complete && completeNodes {
+			health.Success(config.MongoAspectCollection)
 		}
 		if completeNodes {
 			//the database can only remove aspect-nodes by their root; like the controller does on an aspect update,
@@ -331,17 +357,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing characteristics for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoCharacteristicCollection, err)
 				break
 			}
 			err = db.SetCharacteristic(context.Background(), e, func(models.Characteristic) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting characteristics for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoCharacteristicCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoCharacteristicCollection)
 			removeMissing(config, config.MongoCharacteristicCollection, seen,
 				func(limit int64, offset int64) (list []models.Characteristic, err error) {
 					list, _, err = db.ListCharacteristics(context.Background(), model.CharacteristicListOptions{Limit: limit, Offset: offset})
@@ -371,17 +400,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing concepts for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoConceptCollection, err)
 				break
 			}
 			err = db.SetConcept(context.Background(), e, func(models.Concept) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting concepts for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoConceptCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoConceptCollection)
 			removeMissing(config, config.MongoConceptCollection, seen,
 				func(limit int64, offset int64) (list []models.Concept, err error) {
 					list, _, err = db.ListConcepts(context.Background(), model.ConceptListOptions{Limit: limit, Offset: offset})
@@ -411,17 +443,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing device-class for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceClassCollection, err)
 				break
 			}
 			err = db.SetDeviceClass(context.Background(), e, func(models.DeviceClass) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting device-class for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceClassCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoDeviceClassCollection)
 			removeMissing(config, config.MongoDeviceClassCollection, seen,
 				func(limit int64, offset int64) (list []models.DeviceClass, err error) {
 					list, _, err = db.ListDeviceClasses(context.Background(), model.DeviceClassListOptions{Limit: limit, Offset: offset})
@@ -451,17 +486,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing functions for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoFunctionCollection, err)
 				break
 			}
 			err = db.SetFunction(context.Background(), e, func(models.Function) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting functions for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoFunctionCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoFunctionCollection)
 			removeMissing(config, config.MongoFunctionCollection, seen,
 				func(limit int64, offset int64) (list []models.Function, err error) {
 					list, _, err = db.ListFunctions(context.Background(), model.FunctionListOptions{Limit: limit, Offset: offset})
@@ -491,6 +529,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing device-type for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceTypeCollection, err)
 				break
 			}
 			//the source may still send only the deprecated ContentVariable.AspectId;
@@ -500,11 +539,13 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while setting device-type for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceTypeCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoDeviceTypeCollection)
 			removeMissing(config, config.MongoDeviceTypeCollection, seen,
 				func(limit int64, offset int64) (list []models.DeviceType, err error) {
 					list, _, err = db.ListDeviceTypesV3(context.Background(), model.DeviceTypeListOptions{Limit: limit, Offset: offset})
@@ -534,17 +575,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing devices for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceCollection, err)
 				break
 			}
 			err = db.SetDevice(context.Background(), client.DeviceWithConnectionState{Device: e}, func(client.DeviceWithConnectionState, client.DeviceWithConnectionState) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting devices for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoDeviceCollection)
 			removeMissing(config, config.MongoDeviceCollection, seen,
 				func(limit int64, offset int64) (list []model.DeviceWithConnectionState, err error) {
 					list, _, err = db.ListDevices(context.Background(), model.DeviceListOptions{Limit: limit, Offset: offset}, false)
@@ -574,6 +618,7 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing device-groups for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceGroupCollection, err)
 				break
 			}
 			//the source may still send only the deprecated DeviceGroupFilterCriteria.AspectId;
@@ -583,11 +628,13 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while setting device-groups for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoDeviceGroupCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoDeviceGroupCollection)
 			removeMissing(config, config.MongoDeviceGroupCollection, seen,
 				func(limit int64, offset int64) (list []models.DeviceGroup, err error) {
 					list, _, err = db.ListDeviceGroups(context.Background(), model.DeviceGroupListOptions{Limit: limit, Offset: offset})
@@ -617,17 +664,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing hubs for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoHubCollection, err)
 				break
 			}
 			err = db.SetHub(context.Background(), model.HubWithConnectionState{Hub: e}, func(model.HubWithConnectionState) error { return nil })
 			if err != nil {
 				config.GetLogger().Error("error while setting hubs for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoHubCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoHubCollection)
 			removeMissing(config, config.MongoHubCollection, seen,
 				func(limit int64, offset int64) (list []model.HubWithConnectionState, err error) {
 					list, _, err = db.ListHubs(context.Background(), model.HubListOptions{Limit: limit, Offset: offset}, false)
@@ -657,17 +707,20 @@ func pull(config configuration.Config, db database.Database, checkLastUpdate boo
 			if err != nil {
 				config.GetLogger().Error("error while listing locations for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoLocationCollection, err)
 				break
 			}
 			err = db.SetLocation(context.Background(), e, func(models.Location, string) error { return nil }, userId)
 			if err != nil {
 				config.GetLogger().Error("error while setting locations for mgw mirror pull", "error", err)
 				complete = false
+				health.Failure(config.MongoLocationCollection, err)
 				break
 			}
 			seen[e.Id] = true
 		}
 		if complete {
+			health.Success(config.MongoLocationCollection)
 			removeMissing(config, config.MongoLocationCollection, seen,
 				func(limit int64, offset int64) (list []models.Location, err error) {
 					list, _, err = db.ListLocations(context.Background(), model.LocationListOptions{Limit: limit, Offset: offset})
