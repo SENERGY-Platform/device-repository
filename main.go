@@ -35,7 +35,12 @@ import (
 
 func main() {
 	configLocation := flag.String("config", "config.json", "configuration file")
+	healthcheck := flag.Bool("healthcheck", false, "query the local /health endpoint, print the reason and exit")
 	flag.Parse()
+
+	if *healthcheck {
+		os.Exit(runHealthcheck(healthcheckUrl(), os.Stdout))
+	}
 
 	conf, err := configuration.Load(*configLocation)
 	if err != nil {
