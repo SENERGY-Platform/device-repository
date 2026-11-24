@@ -110,6 +110,10 @@ func (c *Client) DeleteThing(ctx context.Context, token string, id string) (erro
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteThings(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/things", ids)
+}
+
 func (c *Client) AddThingDeviceLink(ctx context.Context, token string, thingId string, link model.ThingDeviceLinkCreate) (result models.Thing, err error, code int) {
 	b, err := json.Marshal(link)
 	if err != nil {

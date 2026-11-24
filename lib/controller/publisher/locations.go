@@ -65,3 +65,12 @@ func (this *Publisher) PublishLocationCommand(cmd LocationCommand) error {
 	}
 	return err
 }
+
+// PublishLocationDeletes publishes the same messages as PublishLocationDelete would for each element, but with a single write.
+func (this *Publisher) PublishLocationDeletes(ids []string) error {
+	cmds := make([]LocationCommand, 0, len(ids))
+	for _, id := range ids {
+		cmds = append(cmds, LocationCommand{Command: "DELETE", Id: id})
+	}
+	return writeCommands(this.config.GetLogger(), this.locations, "location", cmds, func(cmd LocationCommand) string { return cmd.Id })
+}

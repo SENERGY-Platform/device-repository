@@ -65,3 +65,12 @@ func (this *Publisher) PublishHubCommand(cmd HubCommand) error {
 	}
 	return err
 }
+
+// PublishHubDeletes publishes the same messages as PublishHubDelete would for each element, but with a single write.
+func (this *Publisher) PublishHubDeletes(hubs []models.Hub) error {
+	cmds := make([]HubCommand, 0, len(hubs))
+	for _, e := range hubs {
+		cmds = append(cmds, HubCommand{Command: "DELETE", Id: e.Id, Hub: e})
+	}
+	return writeCommands(this.config.GetLogger(), this.hubs, "hub", cmds, func(cmd HubCommand) string { return cmd.Id })
+}

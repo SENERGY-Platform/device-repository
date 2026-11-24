@@ -94,6 +94,10 @@ func (c *Client) DeleteAspectClass(ctx context.Context, token string, id string)
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteAspectClasses(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/aspect-classes", ids)
+}
+
 func (c *Client) ValidateAspectClass(ctx context.Context, aspectClass models.AspectClass) (err error, code int) {
 	return c.validate(ctx, "/aspect-classes", aspectClass)
 }

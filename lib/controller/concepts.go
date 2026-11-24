@@ -199,3 +199,34 @@ func (this *Controller) ValidateConceptDelete(ctx context.Context, id string) (e
 	}
 	return nil, http.StatusOK
 }
+
+// DeleteConcepts is the batch variant of DeleteConcept: all ids are checked before the first one is deleted.
+func (this *Controller) DeleteConcepts(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.requireAdminForBatchDelete(token)
+	if err != nil {
+		return err, code
+	}
+	err, code = validateEachForBatchDelete(ctx, ids, this.ValidateConceptDelete)
+	if err != nil {
+		return err, code
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	err = this.db.RemoveConcepts(ctx, ids, withContext(ctx, this.deleteConceptsSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteConceptsSyncHandler(ctx context.Context, elements []models.Concept) error {
+	ids := make([]string, 0, len(elements))
+	for _, element := range elements {
+		ids = append(ids, element.Id)
+	}
+	return this.publisher.PublishConceptDeletes(ids)
+}

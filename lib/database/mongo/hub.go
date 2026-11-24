@@ -310,3 +310,17 @@ func (this *Mongo) SetHubConnectionStates(ctx context.Context, states map[string
 func (this *Mongo) DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error) {
 	return this.desyncUnknown(ctx, this.hubCollection(), HubBson.Id, knownHubs)
 }
+
+// RemoveHubs is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveHubs(ctx context.Context, ids []string, syncDeleteHandler func([]model.HubWithConnectionState) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveHubs", this.hubCollection(), HubBson.Id, ids,
+		func(elements []model.HubWithConnectionState, _ []string) error {
+			owners := make([]string, 0, len(elements))
+			for _, e := range elements {
+				owners = append(owners, e.OwnerId)
+			}
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoHubCollection, owners)
+			return nil
+		},
+		syncDeleteHandler)
+}

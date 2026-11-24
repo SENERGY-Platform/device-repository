@@ -147,3 +147,59 @@ func (v VoidProducerMock) SendDone(msg donewait.DoneMsg) error {
 func (v VoidProducerMock) PublishAspectUpdate(aspect models.Aspect, owner string) error {
 	panic("implement me")
 }
+
+func (v VoidProducerMock) PublishAspectClassDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishAspectDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishCharacteristicDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishConceptDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceClassDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceGroupDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceTypeDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishFunctionDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishGraphDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishLocationDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishProtocolDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishThingDeletes(ids []string) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishDeviceDeletes(devices []models.Device) error {
+	return nil
+}
+
+func (v VoidProducerMock) PublishHubDeletes(hubs []models.Hub) error {
+	return nil
+}

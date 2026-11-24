@@ -1007,6 +1007,39 @@ info:
   version: "0.1"
 paths:
   /aspect-classes:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple aspect-classes; rights and preconditions of all
+        ids are checked before the first one is deleted, unknown ids are ignored;
+        at most 10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple aspect-classes
+      tags:
+      - aspect-classes
     get:
       description: list aspect-classes
       parameters:
@@ -1373,6 +1406,39 @@ paths:
       tags:
       - aspect-nodes
   /aspects:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple aspects; rights and preconditions of all ids are
+        checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple aspects
+      tags:
+      - aspects
     get:
       deprecated: true
       description: deprecated list aspects; use GET /v2/aspects
@@ -1658,6 +1724,39 @@ paths:
       tags:
       - aspects
   /characteristics:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple characteristics; rights and preconditions of all
+        ids are checked before the first one is deleted, unknown ids are ignored;
+        at most 10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple characteristics
+      tags:
+      - characteristics
     get:
       description: list characteristics
       parameters:
@@ -1841,6 +1940,39 @@ paths:
       tags:
       - characteristics
   /concepts:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple concepts; rights and preconditions of all ids are
+        checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple concepts
+      tags:
+      - concepts
     post:
       description: create concept
       parameters:
@@ -2085,6 +2217,39 @@ paths:
       tags:
       - defaults
   /device-classes:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple device-classes; rights and preconditions of all
+        ids are checked before the first one is deleted, unknown ids are ignored;
+        at most 10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple device-classes
+      tags:
+      - device-classes
     get:
       deprecated: true
       description: deprecated list device-classes; use GET /v2/device-classes
@@ -2396,6 +2561,39 @@ paths:
       - device-groups
       - helper
   /device-groups:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple device-groups; rights and preconditions of all
+        ids are checked before the first one is deleted, unknown ids are ignored;
+        at most 10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple device-groups
+      tags:
+      - device-groups
     get:
       description: list device-group
       parameters:
@@ -2665,6 +2863,39 @@ paths:
       tags:
       - device-groups
   /device-types:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple device-types; rights and preconditions of all ids
+        are checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple device-types
+      tags:
+      - device-types
     post:
       description: create device-type
       parameters:
@@ -2831,7 +3062,10 @@ paths:
       - device-types
   /devices:
     delete:
-      description: delete multiple devices
+      consumes:
+      - application/json
+      description: delete multiple devices; rights of all ids are checked before the
+        first one is deleted, unknown ids are ignored; at most 10000 ids
       parameters:
       - description: ids to be deleted
         in: body
@@ -3600,6 +3834,39 @@ paths:
       tags:
       - locations
   /functions:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple functions; rights and preconditions of all ids
+        are checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple functions
+      tags:
+      - functions
     get:
       description: list functions
       parameters:
@@ -3812,6 +4079,39 @@ paths:
       tags:
       - functions
   /graphs:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple graphs; rights and preconditions of all ids are
+        checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple graphs
+      tags:
+      - graphs
     get:
       description: list graph
       parameters:
@@ -4040,6 +4340,38 @@ paths:
       tags:
       - helper
   /hubs:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple hubs; rights and preconditions of all ids are checked
+        before the first one is deleted, unknown ids are ignored; at most 10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple hubs
+      tags:
+      - hubs
     get:
       description: list hubs
       parameters:
@@ -4712,6 +5044,39 @@ paths:
       tags:
       - devices
   /locations:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple locations; rights and preconditions of all ids
+        are checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple locations
+      tags:
+      - locations
     get:
       description: list location
       parameters:
@@ -6556,6 +6921,39 @@ paths:
       tags:
       - permissions-things
   /protocols:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple protocols; rights and preconditions of all ids
+        are checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple protocols
+      tags:
+      - protocols
     get:
       description: get protocol
       parameters:
@@ -6937,6 +7335,39 @@ paths:
       tags:
       - services
   /things:
+    delete:
+      consumes:
+      - application/json
+      description: delete multiple things; rights and preconditions of all ids are
+        checked before the first one is deleted, unknown ids are ignored; at most
+        10000 ids
+      parameters:
+      - description: ids to be deleted
+        in: body
+        name: message
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: delete multiple things
+      tags:
+      - things
     get:
       description: list things
       parameters:

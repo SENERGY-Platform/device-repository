@@ -66,3 +66,7 @@ func (db *DB) GetDeviceClass(_ context.Context, id string) (result models.Device
 func (db *DB) DeviceClassIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	panic("implement me")
 }
+
+func (db *DB) RemoveDeviceClasses(_ context.Context, ids []string, syncDeleteHandler func([]models.DeviceClass) error) error {
+	return delMany(ids, db.deviceClasses, syncDeleteHandler)
+}

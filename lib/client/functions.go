@@ -55,6 +55,10 @@ func (c *Client) DeleteFunction(ctx context.Context, token string, id string) (e
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteFunctions(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/functions", ids)
+}
+
 func (c *Client) ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int) {
 	buf := bytes.NewBuffer([]byte{})
 	err = json.NewEncoder(buf).Encode(options)

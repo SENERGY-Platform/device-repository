@@ -374,3 +374,13 @@ func (this *Mongo) ConceptIsUsed(ctx context.Context, id string) (result bool, w
 	_ = temp.Decode(&function)
 	return true, []string{function.Id}, nil
 }
+
+// RemoveFunctions is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveFunctions(ctx context.Context, ids []string, syncDeleteHandler func([]models.Function) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveFunctions", this.functionCollection(), FunctionBson.Id, ids,
+		func([]models.Function, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoFunctionCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

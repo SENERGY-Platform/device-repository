@@ -768,7 +768,8 @@ func (this *Controller) DeleteDevice(ctx context.Context, token string, id strin
 	return nil, http.StatusOK
 }
 
-func (this *Controller) deleteDeviceSyncHandler(ctx context.Context, old model.DeviceWithConnectionState) (err error) {
+// deleteDeviceReferences removes everything that refers to the device, except its rights and its kafka message.
+func (this *Controller) deleteDeviceReferences(ctx context.Context, old model.DeviceWithConnectionState) (err error) {
 	err = this.removeResourceFromGraphs(ctx, models.GraphResourceTypeDevice, old.Id)
 	if err != nil {
 		return err
@@ -781,7 +782,11 @@ func (this *Controller) deleteDeviceSyncHandler(ctx context.Context, old model.D
 	if err != nil {
 		return err
 	}
-	err = this.RemoveGeneratedDeviceGroup(ctx, old.Id, old.OwnerId)
+	return this.RemoveGeneratedDeviceGroup(ctx, old.Id, old.OwnerId)
+}
+
+func (this *Controller) deleteDeviceSyncHandler(ctx context.Context, old model.DeviceWithConnectionState) (err error) {
+	err = this.deleteDeviceReferences(ctx, old)
 	if err != nil {
 		return err
 	}
@@ -944,4 +949,54 @@ func cloneDeviceWithConnectionState(src, dst *model.DeviceWithConnectionState) e
 		return err
 	}
 	return json.Unmarshal(bytes, dst)
+}
+
+// DeleteDevices is the batch variant of DeleteDevice: the rights of all existing ids are checked before the first one is deleted.
+// Unknown ids are ignored.
+func (this *Controller) DeleteDevices(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	list, _, err := this.db.ListDevices(ctx, model.DeviceListOptions{Ids: ids, Limit: int64(len(ids))}, false)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	existing := existingIds(list, ids, func(e model.DeviceWithConnectionState) string { return e.Id })
+	if len(existing) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.checkAdministrateForBatchDelete(ctx, token, this.config.DeviceTopic, existing)
+	if err != nil {
+		return err, code
+	}
+	err = this.db.RemoveDevices(ctx, existing, withContext(ctx, this.deleteDevicesSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteDevicesSyncHandler(ctx context.Context, olds []model.DeviceWithConnectionState) (err error) {
+	ids := make([]string, 0, len(olds))
+	for _, old := range olds {
+		ids = append(ids, old.Id)
+	}
+	for _, old := range olds {
+		err = this.deleteDeviceReferences(ctx, old)
+		if err != nil {
+			return err
+		}
+	}
+	err = this.RemoveRightsOfMany(ctx, this.config.DeviceTopic, ids)
+	if err != nil {
+		return err
+	}
+	devices := make([]models.Device, 0, len(olds))
+	for _, old := range olds {
+		devices = append(devices, old.Device)
+	}
+	return this.publisher.PublishDeviceDeletes(devices)
 }

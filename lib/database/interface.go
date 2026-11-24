@@ -38,6 +38,7 @@ type Database interface {
 
 	SetDevice(ctx context.Context, device model.DeviceWithConnectionState, syncHandler func(old model.DeviceWithConnectionState, new model.DeviceWithConnectionState) error) error
 	RemoveDevice(ctx context.Context, id string, syncDeleteHandler func(model.DeviceWithConnectionState) error) error
+	RemoveDevices(ctx context.Context, ids []string, syncDeleteHandler func([]model.DeviceWithConnectionState) error) error
 	RetryDeviceSync(lockduration time.Duration, syncDeleteHandler func(model.DeviceWithConnectionState) error, syncHandler func(model.DeviceWithConnectionState) error) error
 
 	GetHub(ctx context.Context, id string) (hub model.HubWithConnectionState, exists bool, err error)
@@ -48,6 +49,7 @@ type Database interface {
 
 	SetHub(ctx context.Context, hub model.HubWithConnectionState, syncHandler func(model.HubWithConnectionState) error) error
 	RemoveHub(ctx context.Context, id string, syncDeleteHandler func(model.HubWithConnectionState) error) error
+	RemoveHubs(ctx context.Context, ids []string, syncDeleteHandler func([]model.HubWithConnectionState) error) error
 	RetryHubSync(lockduration time.Duration, syncDeleteHandler func(model.HubWithConnectionState) error, syncHandler func(model.HubWithConnectionState) error) error
 
 	GetDeviceType(ctx context.Context, id string) (deviceType models.DeviceType, exists bool, err error)
@@ -58,6 +60,7 @@ type Database interface {
 
 	SetDeviceType(ctx context.Context, deviceType models.DeviceType, syncHandler func(models.DeviceType) error) error
 	RemoveDeviceType(ctx context.Context, id string, syncDeleteHandler func(models.DeviceType) error) error
+	RemoveDeviceTypes(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceType) error) error
 	RetryDeviceTypeSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceType) error, syncHandler func(models.DeviceType) error) error
 
 	GetDeviceTypeCriteriaByAspectIds(ctx context.Context, ids []string, includeModified bool) (result []model.DeviceTypeCriteria, err error)
@@ -76,6 +79,7 @@ type Database interface {
 	GetDeviceGroupSyncUser(ctx context.Context, deviceGroupId string) (syncUser string, exists bool, err error)
 	SetDeviceGroup(ctx context.Context, deviceGroup models.DeviceGroup, syncHandler func(dg models.DeviceGroup, user string) error, user string) error
 	RemoveDeviceGroup(ctx context.Context, id string, syncDeleteHandler func(models.DeviceGroup) error) error
+	RemoveDeviceGroups(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceGroup) error) error
 	RetryDeviceGroupSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceGroup) error, syncHandler func(dg models.DeviceGroup, user string) error) error
 
 	GetProtocol(ctx context.Context, id string) (result models.Protocol, exists bool, err error)
@@ -83,6 +87,7 @@ type Database interface {
 
 	SetProtocol(ctx context.Context, protocol models.Protocol, syncHandler func(models.Protocol) error) error
 	RemoveProtocol(ctx context.Context, id string, syncDeleteHandler func(models.Protocol) error) error
+	RemoveProtocols(ctx context.Context, ids []string, syncDeleteHandler func([]models.Protocol) error) error
 	RetryProtocolSync(lockduration time.Duration, syncDeleteHandler func(models.Protocol) error, syncHandler func(models.Protocol) error) error
 
 	ListAspects(ctx context.Context, listOptions model.AspectListOptions) (result []models.Aspect, total int64, err error)
@@ -93,6 +98,7 @@ type Database interface {
 
 	SetAspect(ctx context.Context, aspect models.Aspect, syncHandler func(models.Aspect) error) error
 	RemoveAspect(ctx context.Context, id string, syncDeleteHandler func(models.Aspect) error) error
+	RemoveAspects(ctx context.Context, ids []string, syncDeleteHandler func([]models.Aspect) error) error
 	RetryAspectSync(lockduration time.Duration, syncDeleteHandler func(models.Aspect) error, syncHandler func(models.Aspect) error) error
 
 	ListAspectNodes(ctx context.Context, listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error)
@@ -110,6 +116,7 @@ type Database interface {
 
 	SetCharacteristic(ctx context.Context, characteristic models.Characteristic, syncHandler func(models.Characteristic) error) error
 	RemoveCharacteristic(ctx context.Context, id string, syncDeleteHandler func(models.Characteristic) error) error
+	RemoveCharacteristics(ctx context.Context, ids []string, syncDeleteHandler func([]models.Characteristic) error) error
 	RetryCharacteristicSync(lockduration time.Duration, syncDeleteHandler func(models.Characteristic) error, syncHandler func(models.Characteristic) error) error
 
 	GetConceptWithCharacteristics(ctx context.Context, id string) (result models.ConceptWithCharacteristics, exists bool, err error)
@@ -119,6 +126,7 @@ type Database interface {
 
 	SetConcept(ctx context.Context, concept models.Concept, syncHandler func(models.Concept) error) error
 	RemoveConcept(ctx context.Context, id string, syncDeleteHandler func(models.Concept) error) error
+	RemoveConcepts(ctx context.Context, ids []string, syncDeleteHandler func([]models.Concept) error) error
 	RetryConceptSync(lockduration time.Duration, syncDeleteHandler func(models.Concept) error, syncHandler func(models.Concept) error) error
 
 	ListAspectClasses(ctx context.Context, options model.AspectClassListOptions) ([]models.AspectClass, int64, error)
@@ -126,6 +134,7 @@ type Database interface {
 
 	SetAspectClass(ctx context.Context, aspectClass models.AspectClass, syncHandler func(models.AspectClass) error) error
 	RemoveAspectClass(ctx context.Context, id string, syncDeleteHandler func(models.AspectClass) error) error
+	RemoveAspectClasses(ctx context.Context, ids []string, syncDeleteHandler func([]models.AspectClass) error) error
 	RetryAspectClassSync(lockduration time.Duration, syncDeleteHandler func(models.AspectClass) error, syncHandler func(models.AspectClass) error) error
 
 	ListDeviceClasses(ctx context.Context, options model.DeviceClassListOptions) ([]models.DeviceClass, int64, error)
@@ -135,6 +144,7 @@ type Database interface {
 
 	SetDeviceClass(ctx context.Context, class models.DeviceClass, syncHandler func(models.DeviceClass) error) error
 	RemoveDeviceClass(ctx context.Context, id string, syncDeleteHandler func(models.DeviceClass) error) error
+	RemoveDeviceClasses(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceClass) error) error
 	RetryDeviceClassSync(lockduration time.Duration, syncDeleteHandler func(models.DeviceClass) error, syncHandler func(models.DeviceClass) error) error
 
 	ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error)
@@ -147,6 +157,7 @@ type Database interface {
 
 	SetFunction(ctx context.Context, function models.Function, syncHandler func(models.Function) error) error
 	RemoveFunction(ctx context.Context, id string, syncDeleteHandler func(models.Function) error) error
+	RemoveFunctions(ctx context.Context, ids []string, syncDeleteHandler func([]models.Function) error) error
 	RetryFunctionSync(lockduration time.Duration, syncDeleteHandler func(models.Function) error, syncHandler func(models.Function) error) error
 
 	GetLocation(ctx context.Context, id string) (result models.Location, exists bool, err error)
@@ -154,6 +165,7 @@ type Database interface {
 
 	SetLocation(ctx context.Context, location models.Location, syncHandler func(l models.Location, user string) error, user string) error
 	RemoveLocation(ctx context.Context, id string, syncDeleteHandler func(models.Location) error) error
+	RemoveLocations(ctx context.Context, ids []string, syncDeleteHandler func([]models.Location) error) error
 	RetryLocationSync(lockduration time.Duration, syncDeleteHandler func(models.Location) error, syncHandler func(l models.Location, user string) error) error
 
 	AspectIsUsed(ctx context.Context, id string) (result bool, where []string, err error)
@@ -170,12 +182,14 @@ type Database interface {
 
 	SetGraph(ctx context.Context, graph models.Graph, syncHandler func(models.Graph) error) error
 	RemoveGraph(ctx context.Context, id string, syncDeleteHandler func(models.Graph) error) error
+	RemoveGraphs(ctx context.Context, ids []string, syncDeleteHandler func([]models.Graph) error) error
 	GetGraph(ctx context.Context, id string) (graph models.Graph, exists bool, err error)
 	ListGraphs(ctx context.Context, listOptions model.GraphListOptions) (result []models.Graph, total int64, err error)
 	RetryGraphSync(lockduration time.Duration, syncDeleteHandler func(models.Graph) error, syncHandler func(models.Graph) error) error
 
 	SetThing(ctx context.Context, thing models.Thing, syncHandler func(models.Thing) error) error
 	RemoveThing(ctx context.Context, id string, syncDeleteHandler func(models.Thing) error) error
+	RemoveThings(ctx context.Context, ids []string, syncDeleteHandler func([]models.Thing) error) error
 	GetThing(ctx context.Context, id string) (thing models.Thing, exists bool, err error)
 	ListThings(ctx context.Context, listOptions model.ThingListOptions) (result []models.Thing, total int64, err error)
 	RetryThingSync(lockduration time.Duration, syncDeleteHandler func(models.Thing) error, syncHandler func(models.Thing) error) error

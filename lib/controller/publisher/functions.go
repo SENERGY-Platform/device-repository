@@ -66,3 +66,12 @@ func (this *Publisher) PublishFunctionCommand(cmd FunctionCommand) error {
 	}
 	return err
 }
+
+// PublishFunctionDeletes publishes the same messages as PublishFunctionDelete would for each element, but with a single write.
+func (this *Publisher) PublishFunctionDeletes(ids []string) error {
+	cmds := make([]FunctionCommand, 0, len(ids))
+	for _, id := range ids {
+		cmds = append(cmds, FunctionCommand{Command: "DELETE", Id: id})
+	}
+	return writeCommands(this.config.GetLogger(), this.functions, "function", cmds, func(cmd FunctionCommand) string { return cmd.Id })
+}

@@ -167,6 +167,10 @@ func (this *MgwMirrorPerm) RemoveResource(token string, topicId string, id strin
 	return nil, 200
 }
 
+func (this *MgwMirrorPerm) RemoveResources(token string, topicId string, ids []string) (err error, code int) {
+	return nil, 200
+}
+
 func (this *MgwMirrorPerm) SetPermission(token string, topicId string, id string, permissions model2.ResourcePermissions) (result model2.ResourcePermissions, err error, code int) {
 	return permissions, nil, 200
 }
@@ -229,6 +233,10 @@ func (this *MgwMirrorPerm) GetResourceContext(ctx context.Context, token string,
 
 func (this *MgwMirrorPerm) RemoveResourceContext(ctx context.Context, token string, topicId string, id string) (err error, code int) {
 	return this.RemoveResource(token, topicId, id)
+}
+
+func (this *MgwMirrorPerm) RemoveResourcesContext(ctx context.Context, token string, topicId string, ids []string) (err error, code int) {
+	return this.RemoveResources(token, topicId, ids)
 }
 
 func (this *MgwMirrorPerm) SetPermissionContext(ctx context.Context, token string, topicId string, id string, permissions model2.ResourcePermissions) (result model2.ResourcePermissions, err error, code int) {

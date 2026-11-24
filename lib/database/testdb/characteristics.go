@@ -66,3 +66,7 @@ func (db *DB) CharacteristicIsUsed(ctx context.Context, id string) (result bool,
 func (db *DB) CharacteristicIsUsedWithConceptInDeviceType(ctx context.Context, characteristicId string, conceptId string) (result bool, where []string, err error) {
 	panic("implement me")
 }
+
+func (db *DB) RemoveCharacteristics(_ context.Context, ids []string, syncDeleteHandler func([]models.Characteristic) error) error {
+	return delMany(ids, db.characteristics, syncDeleteHandler)
+}

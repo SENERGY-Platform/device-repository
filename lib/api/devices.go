@@ -540,8 +540,9 @@ func (this *DeviceEndpoints) Delete(config configuration.Config, router *http.Se
 
 // DeleteMany godoc
 // @Summary      delete multiple devices
-// @Description  delete multiple devices
+// @Description  delete multiple devices; rights of all ids are checked before the first one is deleted, unknown ids are ignored; at most 10000 ids
 // @Tags         devices
+// @Accept       json
 // @Produce      json
 // @Security Bearer
 // @Param        message body []string true "ids to be deleted"
@@ -553,29 +554,7 @@ func (this *DeviceEndpoints) Delete(config configuration.Config, router *http.Se
 // @Failure      500
 // @Router       /devices [DELETE]
 func (this *DeviceEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
-	router.HandleFunc("DELETE /devices", func(writer http.ResponseWriter, request *http.Request) {
-		ids := []string{}
-		err := json.NewDecoder(request.Body).Decode(&ids)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-		token := util.GetAuthToken(request)
-
-		for _, id := range ids {
-			err, errCode := control.DeleteDevice(request.Context(), token, id)
-			if err != nil {
-				http.Error(writer, err.Error(), errCode)
-				return
-			}
-		}
-		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
-		err = json.NewEncoder(writer).Encode(true)
-		if err != nil {
-			config.GetLogger().Info("unable to encode response", "error", err.Error())
-		}
-		return
-	})
+	handleDeleteMany(config, router, "/devices", control, Controller.DeleteDevices)
 }
 
 // SetConnectionState godoc

@@ -88,6 +88,10 @@ func (c *Client) DeleteHub(ctx context.Context, token string, id string) (err er
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteHubs(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/hubs", ids)
+}
+
 func (c *Client) ReadHub(ctx context.Context, id string, token string, action model.AuthAction) (result models.Hub, err error, errCode int) {
 	query := url.Values{}
 	if action != models.UnsetPermissionFlag {

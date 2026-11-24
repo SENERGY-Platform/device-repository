@@ -84,3 +84,7 @@ func (db *DB) ListAllControllingFunctionsByDeviceClass(_ context.Context, class 
 func (db *DB) FunctionIsUsed(ctx context.Context, id string) (result bool, where []string, err error) {
 	panic("implement me")
 }
+
+func (db *DB) RemoveFunctions(_ context.Context, ids []string, syncDeleteHandler func([]models.Function) error) error {
+	return delMany(ids, db.functions, syncDeleteHandler)
+}

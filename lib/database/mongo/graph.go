@@ -269,3 +269,17 @@ func (this *Mongo) RetryGraphSync(lockduration time.Duration, syncDeleteHandler 
 func (this *Mongo) DesyncUnknownGraphs(ctx context.Context, knownGraphs []string) (err error) {
 	return this.desyncUnknown(ctx, this.graphCollection(), GraphBson.Id, knownGraphs)
 }
+
+// RemoveGraphs is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveGraphs(ctx context.Context, ids []string, syncDeleteHandler func([]models.Graph) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveGraphs", this.graphCollection(), GraphBson.Id, ids,
+		func(elements []models.Graph, _ []string) error {
+			owners := make([]string, 0, len(elements))
+			for _, e := range elements {
+				owners = append(owners, e.Owner)
+			}
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoGraphCollection, owners)
+			return nil
+		},
+		syncDeleteHandler)
+}

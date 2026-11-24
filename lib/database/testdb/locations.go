@@ -104,3 +104,7 @@ func (db *DB) ListLocations(ctx context.Context, options model.LocationListOptio
 func (db *DB) DesyncUnknownLocations(ctx context.Context, knownLocations []string) (err error) {
 	return nil
 }
+
+func (db *DB) RemoveLocations(_ context.Context, ids []string, syncDeleteHandler func([]models.Location) error) error {
+	return delMany(ids, db.locations, syncDeleteHandler)
+}

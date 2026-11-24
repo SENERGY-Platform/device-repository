@@ -184,3 +184,34 @@ func describeAspectClassOfRoot(rootClassId string, rootId string) string {
 	}
 	return "rooted in " + rootId + ", which assigns " + rootClassId
 }
+
+// DeleteAspectClasses is the batch variant of DeleteAspectClass: all ids are checked before the first one is deleted.
+func (this *Controller) DeleteAspectClasses(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.requireAdminForBatchDelete(token)
+	if err != nil {
+		return err, code
+	}
+	err, code = validateEachForBatchDelete(ctx, ids, this.ValidateAspectClassDelete)
+	if err != nil {
+		return err, code
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	err = this.db.RemoveAspectClasses(ctx, ids, withContext(ctx, this.deleteAspectClassesSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteAspectClassesSyncHandler(ctx context.Context, elements []models.AspectClass) error {
+	ids := make([]string, 0, len(elements))
+	for _, element := range elements {
+		ids = append(ids, element.Id)
+	}
+	return this.publisher.PublishAspectClassDeletes(ids)
+}

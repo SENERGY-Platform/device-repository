@@ -335,3 +335,21 @@ func writeThingJson(config configuration.Config, writer http.ResponseWriter, val
 		config.GetLogger().Info("unable to encode response", "error", err.Error())
 	}
 }
+
+// DeleteMany godoc
+// @Summary      delete multiple things
+// @Description  delete multiple things; rights and preconditions of all ids are checked before the first one is deleted, unknown ids are ignored; at most 10000 ids
+// @Tags         things
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []string true "ids to be deleted"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /things [DELETE]
+func (this *ThingEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
+	handleDeleteMany(config, router, "/things", control, Controller.DeleteThings)
+}

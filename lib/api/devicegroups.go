@@ -404,3 +404,21 @@ func (this *DeviceGroupEndpoints) RecomputeCriteria(config configuration.Config,
 		writer.WriteHeader(code)
 	})
 }
+
+// DeleteMany godoc
+// @Summary      delete multiple device-groups
+// @Description  delete multiple device-groups; rights and preconditions of all ids are checked before the first one is deleted, unknown ids are ignored; at most 10000 ids
+// @Tags         device-groups
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []string true "ids to be deleted"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /device-groups [DELETE]
+func (this *DeviceGroupEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
+	handleDeleteMany(config, router, "/device-groups", control, Controller.DeleteDeviceGroups)
+}

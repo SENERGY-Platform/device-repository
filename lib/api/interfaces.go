@@ -31,6 +31,7 @@ type Controller interface {
 	SetDevice(ctx context.Context, token string, device models.Device, options model.DeviceUpdateOptions) (result models.Device, err error, code int)
 	CreateDevice(ctx context.Context, token string, device models.Device) (result models.Device, err error, code int)
 	DeleteDevice(ctx context.Context, token string, id string) (err error, code int)
+	DeleteDevices(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListExtendedDevices(ctx context.Context, token string, options model.ExtendedDeviceListOptions) (result []models.ExtendedDevice, total int64, err error, errCode int)
 	ReadExtendedDevice(ctx context.Context, id string, token string, action model.AuthAction, fullDt bool) (result models.ExtendedDevice, err error, errCode int)
@@ -42,6 +43,7 @@ type Controller interface {
 	ValidateHub(ctx context.Context, token string, hub models.Hub) (err error, code int)
 	SetHub(ctx context.Context, token string, hub models.Hub, options model.HubUpdateOptions) (result models.Hub, err error, errCode int)
 	DeleteHub(ctx context.Context, token string, id string) (err error, code int)
+	DeleteHubs(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListExtendedHubs(ctx context.Context, token string, options model.HubListOptions) (result []models.ExtendedHub, total int64, err error, errCode int)
 	ReadExtendedHub(ctx context.Context, id string, token string, action model.AuthAction) (result models.ExtendedHub, err error, errCode int)
@@ -54,6 +56,7 @@ type Controller interface {
 	ValidateDeviceType(ctx context.Context, deviceType models.DeviceType, options model.ValidationOptions) (err error, code int)
 	SetDeviceType(ctx context.Context, token string, dt models.DeviceType, options model.DeviceTypeUpdateOptions) (result models.DeviceType, err error, errCode int)
 	DeleteDeviceType(ctx context.Context, token string, id string) (err error, code int)
+	DeleteDeviceTypes(ctx context.Context, token string, ids []string) (err error, code int)
 
 	GetDeviceTypeSelectables(ctx context.Context, query []model.FilterCriteria, pathPrefix string, interactionsFilter []string, includeModified bool) (result []model.DeviceTypeSelectable, err error, code int)
 	GetDeviceTypeSelectablesV2(ctx context.Context, query []model.FilterCriteria, pathPrefix string, includeModified bool, servicesMustMatchAllCriteria bool) (result []model.DeviceTypeSelectable, err error, code int)
@@ -64,6 +67,7 @@ type Controller interface {
 	ValidateDeviceGroupDelete(ctx context.Context, token string, id string) (err error, code int)
 	SetDeviceGroup(ctx context.Context, token string, dg models.DeviceGroup) (result models.DeviceGroup, err error, errCode int)
 	DeleteDeviceGroup(ctx context.Context, token string, id string) (err error, code int)
+	DeleteDeviceGroups(ctx context.Context, token string, ids []string) (err error, code int)
 	DeviceGroupHelper(ctx context.Context, token string, deviceIds []string, options model.DeviceGroupHelperOptions) (result model.DeviceGroupHelperResult, err error, code int)
 	RecomputeDeviceGroupCriteria(ctx context.Context, token string, ids []string) (err error, code int)
 
@@ -72,6 +76,7 @@ type Controller interface {
 	ValidateProtocol(ctx context.Context, protocol models.Protocol) (err error, code int)
 	SetProtocol(ctx context.Context, token string, p models.Protocol) (result models.Protocol, err error, errCode int)
 	DeleteProtocol(ctx context.Context, token string, id string) (err error, code int)
+	DeleteProtocols(ctx context.Context, token string, ids []string) (err error, code int)
 
 	GetService(ctx context.Context, id string) (result models.Service, err error, code int)
 
@@ -84,6 +89,7 @@ type Controller interface {
 	ValidateAspectDelete(ctx context.Context, id string) (err error, code int)
 	SetAspect(ctx context.Context, token string, aspect models.Aspect) (models.Aspect, error, int)
 	DeleteAspect(ctx context.Context, token string, id string) (err error, code int)
+	DeleteAspects(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListAspectNodes(ctx context.Context, listOptions model.AspectListOptions) (result []models.AspectNode, total int64, err error, errCode int)
 	GetAspectNode(ctx context.Context, id string) (models.AspectNode, error, int)
@@ -101,6 +107,7 @@ type Controller interface {
 	ValidateCharacteristicDelete(ctx context.Context, id string) (err error, code int)
 	SetCharacteristic(ctx context.Context, token string, characteristic models.Characteristic) (result models.Characteristic, err error, errCode int)
 	DeleteCharacteristic(ctx context.Context, token string, id string) (err error, code int)
+	DeleteCharacteristics(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListConceptsWithCharacteristics(ctx context.Context, listOptions model.ConceptListOptions) (result []models.ConceptWithCharacteristics, total int64, err error, errCode int)
 	ListConcepts(ctx context.Context, listOptions model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int)
@@ -110,6 +117,7 @@ type Controller interface {
 	ValidateConceptDelete(ctx context.Context, id string) (err error, code int)
 	SetConcept(ctx context.Context, token string, concept models.Concept) (result models.Concept, err error, errCode int)
 	DeleteConcept(ctx context.Context, token string, id string) (err error, code int)
+	DeleteConcepts(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListAspectClasses(ctx context.Context, listOptions model.AspectClassListOptions) (result []models.AspectClass, total int64, err error, errCode int)
 	GetAspectClass(ctx context.Context, id string) (result models.AspectClass, err error, errCode int)
@@ -117,6 +125,7 @@ type Controller interface {
 	ValidateAspectClassDelete(ctx context.Context, id string) (err error, code int)
 	SetAspectClass(ctx context.Context, token string, aspectClass models.AspectClass) (result models.AspectClass, err error, errCode int)
 	DeleteAspectClass(ctx context.Context, token string, id string) (err error, code int)
+	DeleteAspectClasses(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListDeviceClasses(ctx context.Context, listOptions model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int)
 	GetDeviceClasses(ctx context.Context) ([]models.DeviceClass, error, int)
@@ -128,6 +137,7 @@ type Controller interface {
 	ValidateDeviceClassDelete(ctx context.Context, id string) (err error, code int)
 	SetDeviceClass(ctx context.Context, token string, dc models.DeviceClass) (result models.DeviceClass, err error, errCode int)
 	DeleteDeviceClass(ctx context.Context, token string, id string) (err error, code int)
+	DeleteDeviceClasses(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListFunctions(ctx context.Context, options model.FunctionListOptions) (result []models.Function, total int64, err error, errCode int)
 	GetFunctionsByType(ctx context.Context, rdfType string) (result []models.Function, err error, errCode int)
@@ -136,6 +146,7 @@ type Controller interface {
 	ValidateFunctionDelete(ctx context.Context, id string) (err error, code int)
 	SetFunction(ctx context.Context, token string, f models.Function) (result models.Function, err error, errCode int)
 	DeleteFunction(ctx context.Context, token string, id string) (err error, code int)
+	DeleteFunctions(ctx context.Context, token string, ids []string) (err error, code int)
 
 	GetLocation(ctx context.Context, id string, token string) (location models.Location, err error, errCode int)
 	ValidateLocation(ctx context.Context, location models.Location) (err error, code int)
@@ -144,6 +155,7 @@ type Controller interface {
 	GetUsedInDeviceType(ctx context.Context, query model.UsedInDeviceTypeQuery) (result model.UsedInDeviceTypeResponse, err error, errCode int)
 	SetLocation(ctx context.Context, token string, location models.Location) (result models.Location, err error, errCode int)
 	DeleteLocation(ctx context.Context, token string, id string) (err error, code int)
+	DeleteLocations(ctx context.Context, token string, ids []string) (err error, code int)
 
 	DeleteUser(ctx context.Context, adminToken string, userId string) (err error, errCode int)
 
@@ -164,11 +176,13 @@ type Controller interface {
 	ReadGraph(ctx context.Context, token string, id string) (result models.Graph, err error, errCode int)
 	SetGraph(ctx context.Context, token string, graph models.Graph) (result models.Graph, err error, code int)
 	DeleteGraph(ctx context.Context, token string, id string) (error, int)
+	DeleteGraphs(ctx context.Context, token string, ids []string) (err error, code int)
 
 	ListThings(ctx context.Context, token string, options model.ThingListOptions) (result []models.Thing, total int64, err error, errCode int)
 	ReadThing(ctx context.Context, token string, id string) (result models.Thing, err error, errCode int)
 	SetThing(ctx context.Context, token string, thing models.Thing) (result models.Thing, err error, code int)
 	DeleteThing(ctx context.Context, token string, id string) (error, int)
+	DeleteThings(ctx context.Context, token string, ids []string) (err error, code int)
 	AddThingDeviceLink(ctx context.Context, token string, thingId string, link model.ThingDeviceLinkCreate) (result models.Thing, err error, code int)
 	EndThingDeviceLink(ctx context.Context, token string, thingId string, linkId string, end model.ThingDeviceLinkEnd) (result models.Thing, err error, code int)
 

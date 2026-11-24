@@ -455,3 +455,49 @@ func (this *Controller) endOpenThingLinksOfDevice(ctx context.Context, deviceId 
 	}
 	return nil
 }
+
+// DeleteThings is the batch variant of DeleteThing: the rights of all existing ids are checked before the first one is deleted.
+// Unknown ids are ignored.
+func (this *Controller) DeleteThings(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	list, _, err := this.db.ListThings(ctx, model.ThingListOptions{Ids: ids, Limit: int64(len(ids))})
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	existing := existingIds(list, ids, func(e models.Thing) string { return e.Id })
+	if len(existing) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.checkAdministrateForBatchDelete(ctx, token, this.config.ThingTopic, existing)
+	if err != nil {
+		return err, code
+	}
+	err = this.db.RemoveThings(ctx, existing, withContext(ctx, this.deleteThingsSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteThingsSyncHandler(ctx context.Context, olds []models.Thing) (err error) {
+	ids := make([]string, 0, len(olds))
+	for _, old := range olds {
+		ids = append(ids, old.Id)
+	}
+	for _, old := range olds {
+		err = this.removeResourceFromGraphs(ctx, models.GraphResourceTypeThing, old.Id)
+		if err != nil {
+			return err
+		}
+	}
+	err = this.RemoveRightsOfMany(ctx, this.config.ThingTopic, ids)
+	if err != nil {
+		return err
+	}
+	return this.publisher.PublishThingDeletes(ids)
+}

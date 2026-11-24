@@ -266,3 +266,49 @@ func (this *Controller) extendLocation(ctx context.Context, token string, locati
 		Permissions: permissions,
 	}, nil
 }
+
+// DeleteLocations is the batch variant of DeleteLocation: the rights of all existing ids are checked before the first one is deleted.
+// Unknown ids are ignored.
+func (this *Controller) DeleteLocations(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	for _, id := range ids {
+		err = preventIdModifier(id)
+		if err != nil {
+			return err, http.StatusBadRequest
+		}
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	list, _, err := this.db.ListLocations(ctx, model.LocationListOptions{Ids: ids, Limit: int64(len(ids))})
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	existing := existingIds(list, ids, func(e models.Location) string { return e.Id })
+	if len(existing) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.checkAdministrateForBatchDelete(ctx, token, this.config.LocationTopic, existing)
+	if err != nil {
+		return err, code
+	}
+	err = this.db.RemoveLocations(ctx, existing, withContext(ctx, this.deleteLocationsSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteLocationsSyncHandler(ctx context.Context, olds []models.Location) (err error) {
+	ids := make([]string, 0, len(olds))
+	for _, old := range olds {
+		ids = append(ids, old.Id)
+	}
+	err = this.RemoveRightsOfMany(ctx, this.config.LocationTopic, ids)
+	if err != nil {
+		return err
+	}
+	return this.publisher.PublishLocationDeletes(ids)
+}

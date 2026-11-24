@@ -271,3 +271,13 @@ func (this *Mongo) GetConceptWithoutCharacteristics(ctx context.Context, id stri
 	}
 	return concept, true, err
 }
+
+// RemoveConcepts is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveConcepts(ctx context.Context, ids []string, syncDeleteHandler func([]models.Concept) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveConcepts", this.conceptCollection(), ConceptBson.Id, ids,
+		func([]models.Concept, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoConceptCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

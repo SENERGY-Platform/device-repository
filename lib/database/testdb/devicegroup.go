@@ -55,3 +55,7 @@ func (db *DB) ListDeviceGroups(_ context.Context, options model.DeviceGroupListO
 func (db *DB) DesyncUnknownDeviceGroups(ctx context.Context, knownDeviceGroups []string) (err error) {
 	return nil
 }
+
+func (db *DB) RemoveDeviceGroups(_ context.Context, ids []string, syncDeleteHandler func([]models.DeviceGroup) error) error {
+	return delMany(ids, db.deviceGroups, syncDeleteHandler)
+}

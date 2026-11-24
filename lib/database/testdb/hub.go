@@ -129,3 +129,7 @@ func (db *DB) SetHubConnectionStates(ctx context.Context, states map[string]stri
 func (db *DB) DesyncUnknownHubs(ctx context.Context, knownHubs []string) (err error) {
 	return nil
 }
+
+func (db *DB) RemoveHubs(_ context.Context, ids []string, syncDeleteHandler func([]model.HubWithConnectionState) error) error {
+	return delMany(ids, db.hubs, syncDeleteHandler)
+}

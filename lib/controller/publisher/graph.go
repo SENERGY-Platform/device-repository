@@ -62,3 +62,12 @@ func (this *Publisher) PublishGraphCommand(cmd GraphCommand) error {
 	}
 	return err
 }
+
+// PublishGraphDeletes publishes the same messages as PublishGraphDelete would for each element, but with a single write.
+func (this *Publisher) PublishGraphDeletes(ids []string) error {
+	cmds := make([]GraphCommand, 0, len(ids))
+	for _, id := range ids {
+		cmds = append(cmds, GraphCommand{Command: "DELETE", Id: id})
+	}
+	return writeCommands(this.config.GetLogger(), this.graphs, "graph", cmds, func(cmd GraphCommand) string { return cmd.Id })
+}

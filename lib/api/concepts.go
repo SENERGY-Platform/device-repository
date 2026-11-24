@@ -399,3 +399,21 @@ func (this *ConceptEndpoints) Set(config configuration.Config, router *http.Serv
 		return
 	})
 }
+
+// DeleteMany godoc
+// @Summary      delete multiple concepts
+// @Description  delete multiple concepts; rights and preconditions of all ids are checked before the first one is deleted, unknown ids are ignored; at most 10000 ids
+// @Tags         concepts
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []string true "ids to be deleted"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /concepts [DELETE]
+func (this *ConceptEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
+	handleDeleteMany(config, router, "/concepts", control, Controller.DeleteConcepts)
+}

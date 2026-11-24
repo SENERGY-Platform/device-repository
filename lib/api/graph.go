@@ -314,3 +314,21 @@ func (this *GraphEndpoints) Delete(config configuration.Config, router *http.Ser
 		return
 	})
 }
+
+// DeleteMany godoc
+// @Summary      delete multiple graphs
+// @Description  delete multiple graphs; rights and preconditions of all ids are checked before the first one is deleted, unknown ids are ignored; at most 10000 ids
+// @Tags         graphs
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []string true "ids to be deleted"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /graphs [DELETE]
+func (this *GraphEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
+	handleDeleteMany(config, router, "/graphs", control, Controller.DeleteGraphs)
+}

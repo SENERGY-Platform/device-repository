@@ -280,3 +280,13 @@ func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.
 	err = cursor.Err()
 	return
 }
+
+// RemoveDeviceClasses is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveDeviceClasses(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceClass) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveDeviceClasses", this.deviceClassCollection(), DeviceClassBson.Id, ids,
+		func([]models.DeviceClass, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceClassCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

@@ -62,3 +62,12 @@ func (this *Publisher) PublishAspectClassCommand(cmd AspectClassCommand) error {
 	}
 	return err
 }
+
+// PublishAspectClassDeletes publishes the same messages as PublishAspectClassDelete would for each element, but with a single write.
+func (this *Publisher) PublishAspectClassDeletes(ids []string) error {
+	cmds := make([]AspectClassCommand, 0, len(ids))
+	for _, id := range ids {
+		cmds = append(cmds, AspectClassCommand{Command: "DELETE", Id: id})
+	}
+	return writeCommands(this.config.GetLogger(), this.aspectclasses, "aspect-class", cmds, func(cmd AspectClassCommand) string { return cmd.Id })
+}

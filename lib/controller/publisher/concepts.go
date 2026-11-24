@@ -66,3 +66,12 @@ func (this *Publisher) PublishConceptCommand(cmd ConceptCommand) error {
 	}
 	return err
 }
+
+// PublishConceptDeletes publishes the same messages as PublishConceptDelete would for each element, but with a single write.
+func (this *Publisher) PublishConceptDeletes(ids []string) error {
+	cmds := make([]ConceptCommand, 0, len(ids))
+	for _, id := range ids {
+		cmds = append(cmds, ConceptCommand{Command: "DELETE", Id: id})
+	}
+	return writeCommands(this.config.GetLogger(), this.concepts, "concept", cmds, func(cmd ConceptCommand) string { return cmd.Id })
+}

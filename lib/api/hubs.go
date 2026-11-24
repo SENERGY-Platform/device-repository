@@ -564,3 +564,21 @@ func (this *HubEndpoints) SetConnectionStates(config configuration.Config, route
 		return
 	})
 }
+
+// DeleteMany godoc
+// @Summary      delete multiple hubs
+// @Description  delete multiple hubs; rights and preconditions of all ids are checked before the first one is deleted, unknown ids are ignored; at most 10000 ids
+// @Tags         hubs
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []string true "ids to be deleted"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /hubs [DELETE]
+func (this *HubEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
+	handleDeleteMany(config, router, "/hubs", control, Controller.DeleteHubs)
+}

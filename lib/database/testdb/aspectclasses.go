@@ -56,3 +56,7 @@ func (db *DB) ListAspectClasses(ctx context.Context, options model.AspectClassLi
 func (db *DB) GetAspectClass(_ context.Context, id string) (result models.AspectClass, exists bool, err error) {
 	return get(id, db.aspectClasses)
 }
+
+func (db *DB) RemoveAspectClasses(_ context.Context, ids []string, syncDeleteHandler func([]models.AspectClass) error) error {
+	return delMany(ids, db.aspectClasses, syncDeleteHandler)
+}

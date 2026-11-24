@@ -206,3 +206,13 @@ func (this *Mongo) RetryProtocolSync(lockduration time.Duration, syncDeleteHandl
 	}
 	return nil
 }
+
+// RemoveProtocols is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveProtocols(ctx context.Context, ids []string, syncDeleteHandler func([]models.Protocol) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveProtocols", this.protocolCollection(), ProtocolBson.Id, ids,
+		func([]models.Protocol, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoProtocolCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

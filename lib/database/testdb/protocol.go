@@ -43,3 +43,7 @@ func (db *DB) GetProtocol(_ context.Context, id string) (result models.Protocol,
 func (db *DB) ListProtocols(_ context.Context, limit int64, offset int64, sort string) ([]models.Protocol, error) {
 	return iterToSlice(maps.Values(db.protocols)), nil
 }
+
+func (db *DB) RemoveProtocols(_ context.Context, ids []string, syncDeleteHandler func([]models.Protocol) error) error {
+	return delMany(ids, db.protocols, syncDeleteHandler)
+}

@@ -135,3 +135,59 @@ func (this Void) PublishThing(thing models.Thing) (err error) {
 func (this Void) PublishThingDelete(id string) error {
 	return VoidPublisherError
 }
+
+func (this Void) PublishAspectClassDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishAspectDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishCharacteristicDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishConceptDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishDeviceClassDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishDeviceGroupDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishDeviceTypeDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishFunctionDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishGraphDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishLocationDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishProtocolDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishThingDeletes(ids []string) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishDeviceDeletes(devices []models.Device) error {
+	return VoidPublisherError
+}
+
+func (this Void) PublishHubDeletes(hubs []models.Hub) error {
+	return VoidPublisherError
+}

@@ -64,3 +64,7 @@ func (db *DB) RetryThingSync(lockduration time.Duration, syncDeleteHandler func(
 func (db *DB) DesyncUnknownThings(ctx context.Context, knownThings []string) (err error) {
 	return nil
 }
+
+func (db *DB) RemoveThings(_ context.Context, ids []string, syncDeleteHandler func([]models.Thing) error) error {
+	return delMany(ids, db.things, syncDeleteHandler)
+}

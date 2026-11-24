@@ -54,6 +54,10 @@ func (c *Client) DeleteProtocol(ctx context.Context, token string, id string) (e
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteProtocols(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/protocols", ids)
+}
+
 func (c *Client) ReadProtocol(ctx context.Context, id string, token string) (result models.Protocol, err error, errCode int) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/protocols/"+id, nil)
 	req.Header.Set("Authorization", token)

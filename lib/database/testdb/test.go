@@ -115,6 +115,23 @@ func del[T any](id string, m map[string]T, syncDeleteHandler func(T) error) erro
 	return err
 }
 
+// delMany removes all known ids and calls the sync handler once with the removed elements, in the order of ids.
+func delMany[T any](ids []string, m map[string]T, syncDeleteHandler func([]T) error) error {
+	removed := []T{}
+	for _, id := range ids {
+		e, ok := m[id]
+		if !ok {
+			continue
+		}
+		delete(m, id)
+		removed = append(removed, e)
+	}
+	if len(removed) == 0 || syncDeleteHandler == nil {
+		return nil
+	}
+	return syncDeleteHandler(removed)
+}
+
 func min(a, b int) int {
 	if a < b {
 		return a

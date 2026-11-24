@@ -717,16 +717,25 @@ func (this *Controller) DeleteDeviceType(ctx context.Context, token string, id s
 		return errors.New("only admins may delete device-types"), http.StatusForbidden
 	}
 	ctx, _ = getTimeoutContext(ctx)
+	err, code = this.validateDeviceTypeDelete(ctx, id)
+	if err != nil {
+		return err, code
+	}
+	err = this.db.RemoveDeviceType(ctx, id, withContext(ctx, this.deleteDeviceTypeSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+// validateDeviceTypeDelete is the in-use check of DeleteDeviceType
+func (this *Controller) validateDeviceTypeDelete(ctx context.Context, id string) (error, int) {
 	_, total, err := this.db.ListDevices(ctx, model.DeviceListOptions{DeviceTypeIds: []string{id}, Limit: 1}, true)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
 	if total > 0 {
 		return errors.New("device-type is still in use"), http.StatusBadRequest
-	}
-	err = this.db.RemoveDeviceType(ctx, id, withContext(ctx, this.deleteDeviceTypeSyncHandler))
-	if err != nil {
-		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusOK
 }
@@ -785,4 +794,41 @@ func attributesMatch(a, b map[string]string, attributes []string) bool {
 		}
 	}
 	return true
+}
+
+// DeleteDeviceTypes is the batch variant of DeleteDeviceType: all ids are checked before the first one is deleted.
+func (this *Controller) DeleteDeviceTypes(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	jwtToken, err := jwt.Parse(token)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	if !jwtToken.IsAdmin() {
+		return errors.New("only admins may delete device-types"), http.StatusForbidden
+	}
+	err, code = validateEachForBatchDelete(ctx, ids, func(ctx context.Context, id string) (error, int) {
+		ctx, _ = getTimeoutContext(ctx)
+		return this.validateDeviceTypeDelete(ctx, id)
+	})
+	if err != nil {
+		return err, code
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	err = this.db.RemoveDeviceTypes(ctx, ids, withContext(ctx, this.deleteDeviceTypesSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteDeviceTypesSyncHandler(ctx context.Context, deviceTypes []models.DeviceType) error {
+	ids := make([]string, 0, len(deviceTypes))
+	for _, dt := range deviceTypes {
+		ids = append(ids, dt.Id)
+	}
+	return this.publisher.PublishDeviceTypeDeletes(ids)
 }

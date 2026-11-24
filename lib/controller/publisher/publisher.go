@@ -18,11 +18,14 @@ package publisher
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net"
+	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/segmentio/kafka-go"
@@ -101,6 +104,34 @@ func New(conf configuration.Config, ctx context.Context) (*Publisher, error) {
 		graphs:          graph,
 		things:          thing,
 	}, nil
+}
+
+// writeCommands writes one message per command with a single WriteMessages call.
+// Key and value of every message are the same as in the single publish methods of the resource.
+func writeCommands[C any](logger *slog.Logger, writer *kafka.Writer, name string, cmds []C, id func(C) string) error {
+	if len(cmds) == 0 {
+		return nil
+	}
+	logger.Debug("publish commands", "resource", name, "count", len(cmds))
+	messages := make([]kafka.Message, 0, len(cmds))
+	now := time.Now()
+	for _, cmd := range cmds {
+		message, err := json.Marshal(cmd)
+		if err != nil {
+			debug.PrintStack()
+			return err
+		}
+		messages = append(messages, kafka.Message{
+			Key:   []byte(id(cmd)),
+			Value: message,
+			Time:  now,
+		})
+	}
+	err := writer.WriteMessages(context.Background(), messages...)
+	if err != nil {
+		debug.PrintStack()
+	}
+	return err
 }
 
 func getProducer(ctx context.Context, broker string, topic string, logger *slog.Logger) (writer *kafka.Writer) {

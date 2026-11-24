@@ -449,3 +449,17 @@ func (this *Mongo) SetDeviceConnectionStates(ctx context.Context, states map[str
 func (this *Mongo) DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error) {
 	return this.desyncUnknown(ctx, this.deviceCollection(), DeviceBson.Id, knownDevices)
 }
+
+// RemoveDevices is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveDevices(ctx context.Context, ids []string, syncDeleteHandler func([]model.DeviceWithConnectionState) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveDevices", this.deviceCollection(), DeviceBson.Id, ids,
+		func(elements []model.DeviceWithConnectionState, _ []string) error {
+			owners := make([]string, 0, len(elements))
+			for _, e := range elements {
+				owners = append(owners, e.OwnerId)
+			}
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceCollection, owners)
+			return nil
+		},
+		syncDeleteHandler)
+}

@@ -62,6 +62,10 @@ func (c *Client) DeleteDeviceType(ctx context.Context, token string, id string) 
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteDeviceTypes(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/device-types", ids)
+}
+
 func (c *Client) ReadDeviceType(ctx context.Context, id string, token string) (result models.DeviceType, err error, errCode int) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/device-types/"+id, nil)
 	if err != nil {

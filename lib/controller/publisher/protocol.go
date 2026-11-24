@@ -65,3 +65,12 @@ func (this *Publisher) PublishProtocolCommand(cmd ProtocolCommand) error {
 	}
 	return err
 }
+
+// PublishProtocolDeletes publishes the same messages as PublishProtocolDelete would for each element, but with a single write.
+func (this *Publisher) PublishProtocolDeletes(ids []string) error {
+	cmds := make([]ProtocolCommand, 0, len(ids))
+	for _, id := range ids {
+		cmds = append(cmds, ProtocolCommand{Command: "DELETE", Id: id})
+	}
+	return writeCommands(this.config.GetLogger(), this.protocols, "protocol", cmds, func(cmd ProtocolCommand) string { return cmd.Id })
+}

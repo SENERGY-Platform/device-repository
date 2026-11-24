@@ -308,3 +308,13 @@ func (this *Mongo) CharacteristicIsUsedWithConceptInDeviceType(ctx context.Conte
 	}
 	return false, nil, nil
 }
+
+// RemoveCharacteristics is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveCharacteristics(ctx context.Context, ids []string, syncDeleteHandler func([]models.Characteristic) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveCharacteristics", this.characteristicCollection(), CharacteristicBson.Id, ids,
+		func([]models.Characteristic, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoCharacteristicCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

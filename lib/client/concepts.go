@@ -56,6 +56,10 @@ func (c *Client) DeleteConcept(ctx context.Context, token string, id string) (er
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteConcepts(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/concepts", ids)
+}
+
 func (c *Client) ListConcepts(ctx context.Context, options model.ConceptListOptions) (result []models.Concept, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}

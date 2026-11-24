@@ -580,3 +580,13 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, de
 	}
 	return
 }
+
+// RemoveDeviceTypes is the batch variant of RemoveDeviceType, see removeMany.
+func (this *Mongo) RemoveDeviceTypes(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceType) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveDeviceTypes", this.deviceTypeCollection(), DeviceTypeBson.Id, ids,
+		func(_ []models.DeviceType, foundIds []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceTypeCollection, []string{""})
+			return this.removeDeviceTypeCriteriaByDeviceTypes(ctx, foundIds)
+		},
+		syncDeleteHandler)
+}

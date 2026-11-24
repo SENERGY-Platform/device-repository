@@ -632,3 +632,47 @@ func (this *Controller) SetHubConnectionStates(ctx context.Context, token string
 	}
 	return nil, http.StatusOK
 }
+
+// DeleteHubs is the batch variant of DeleteHub: the rights of all existing ids are checked before the first one is deleted.
+// Unknown ids are ignored.
+func (this *Controller) DeleteHubs(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	list, _, err := this.db.ListHubs(ctx, model.HubListOptions{Ids: ids, Limit: int64(len(ids))}, false)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	existing := existingIds(list, ids, func(e model.HubWithConnectionState) string { return e.Id })
+	if len(existing) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.checkAdministrateForBatchDelete(ctx, token, this.config.HubTopic, existing)
+	if err != nil {
+		return err, code
+	}
+	err = this.db.RemoveHubs(ctx, existing, withContext(ctx, this.deleteHubsSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteHubsSyncHandler(ctx context.Context, olds []model.HubWithConnectionState) (err error) {
+	ids := make([]string, 0, len(olds))
+	for _, old := range olds {
+		ids = append(ids, old.Id)
+	}
+	err = this.RemoveRightsOfMany(ctx, this.config.HubTopic, ids)
+	if err != nil {
+		return err
+	}
+	hubs := make([]models.Hub, 0, len(olds))
+	for _, old := range olds {
+		hubs = append(hubs, old.Hub)
+	}
+	return this.publisher.PublishHubDeletes(hubs)
+}

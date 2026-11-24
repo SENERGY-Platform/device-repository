@@ -298,3 +298,13 @@ func (this *Mongo) listAspectsWithFunctionType(ctx context.Context, controlling 
 	err = cursor.Err()
 	return
 }
+
+// RemoveAspects is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveAspects(ctx context.Context, ids []string, syncDeleteHandler func([]models.Aspect) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveAspects", this.aspectCollection(), AspectBson.Id, ids,
+		func([]models.Aspect, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoAspectCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

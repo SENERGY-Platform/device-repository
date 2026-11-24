@@ -123,6 +123,15 @@ func (this *Mongo) removeDeviceTypeCriteriaByDeviceType(ctx context.Context, dev
 	return err
 }
 
+func (this *Mongo) removeDeviceTypeCriteriaByDeviceTypes(ctx context.Context, deviceTypeIds []string) error {
+	_, err := this.deviceTypeCriteriaCollection().DeleteMany(ctx, bson.M{DeviceTypeCriteriaBson.PureDeviceTypeId: bson.M{"$in": deviceTypeIds}})
+	if err != nil {
+		return err
+	}
+	this.setLastUpdateTimestampForOwners(ctx, getDeviceTypeCriteriaCollectionName(this.config), []string{""})
+	return nil
+}
+
 func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt models.DeviceType) error {
 	err := this.removeDeviceTypeCriteriaByDeviceType(ctx, dt.Id)
 	if err != nil {

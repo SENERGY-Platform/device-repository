@@ -56,6 +56,10 @@ func (c *Client) DeleteLocation(ctx context.Context, token string, id string) (e
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteLocations(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/locations", ids)
+}
+
 func (c *Client) GetLocation(ctx context.Context, id string, token string) (location models.Location, err error, errCode int) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/locations/"+id, nil)
 	if err != nil {

@@ -65,3 +65,7 @@ func (db *DB) ListConcepts(ctx context.Context, options model.ConceptListOptions
 	}
 	return result[offset:min(len(result), int(offset+limit))], int64(len(result)), nil
 }
+
+func (db *DB) RemoveConcepts(_ context.Context, ids []string, syncDeleteHandler func([]models.Concept) error) error {
+	return delMany(ids, db.concepts, syncDeleteHandler)
+}

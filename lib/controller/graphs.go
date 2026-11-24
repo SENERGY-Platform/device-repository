@@ -311,3 +311,43 @@ func (this *Controller) deleteGraph(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+// DeleteGraphs is the batch variant of DeleteGraph: the rights of all existing ids are checked before the first one is deleted.
+// Unknown ids are ignored.
+func (this *Controller) DeleteGraphs(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	list, _, err := this.db.ListGraphs(ctx, model.GraphListOptions{Ids: ids, Limit: int64(len(ids))})
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	existing := existingIds(list, ids, func(e models.Graph) string { return e.Id })
+	if len(existing) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.checkAdministrateForBatchDelete(ctx, token, this.config.GraphTopic, existing)
+	if err != nil {
+		return err, code
+	}
+	err = this.db.RemoveGraphs(ctx, existing, withContext(ctx, this.deleteGraphsSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteGraphsSyncHandler(ctx context.Context, olds []models.Graph) (err error) {
+	ids := make([]string, 0, len(olds))
+	for _, old := range olds {
+		ids = append(ids, old.Id)
+	}
+	err = this.RemoveRightsOfMany(ctx, this.config.GraphTopic, ids)
+	if err != nil {
+		return err
+	}
+	return this.publisher.PublishGraphDeletes(ids)
+}

@@ -364,3 +364,28 @@ func (this *Mongo) deviceGroupCriteriaMatch(ctx context.Context, criteria model.
 	}
 	return result, nil
 }
+
+// RemoveDeviceGroups is the batch variant of RemoveDeviceGroup, see removeMany.
+// The last update timestamp is set for the sync users of the groups, like in the single variant.
+func (this *Mongo) RemoveDeviceGroups(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceGroup) error) error {
+	collection := this.deviceGroupCollection()
+	return removeMany(ctx, this.config.GetLogger(), "RemoveDeviceGroups", collection, DeviceGroupBson.Id, ids,
+		func(_ []models.DeviceGroup, foundIds []string) error {
+			cursor, err := collection.Find(ctx, bson.M{DeviceGroupBson.Id: bson.M{"$in": foundIds}})
+			if err != nil {
+				return err
+			}
+			var groups []DeviceGroupWithSyncInfo
+			err = cursor.All(ctx, &groups)
+			if err != nil {
+				return err
+			}
+			users := make([]string, 0, len(groups))
+			for _, group := range groups {
+				users = append(users, group.SyncUser)
+			}
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceGroupCollection, users)
+			return nil
+		},
+		syncDeleteHandler)
+}

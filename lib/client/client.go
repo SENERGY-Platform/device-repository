@@ -148,6 +148,21 @@ func doVoid(c *Client, req *http.Request) (err error, code int) {
 	return
 }
 
+// deleteMany sends the ids as json list in the body of 'DELETE path'
+func (c *Client) deleteMany(ctx context.Context, token string, path string, ids []string) (err error, code int) {
+	b, err := json.Marshal(ids)
+	if err != nil {
+		return err, http.StatusBadRequest
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseUrl+path, bytes.NewBuffer(b))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	req.Header.Set("Content-Type", "application/json")
+	return doVoid(c, req)
+}
+
 func doWithTotalInResult[T any](c *Client, req *http.Request) (result T, total int64, err error, code int) {
 	if c.optionalAuthTokenForApiGatewayRequest != nil && req.Header.Get("Authorization") == "" {
 		token, err := c.optionalAuthTokenForApiGatewayRequest()

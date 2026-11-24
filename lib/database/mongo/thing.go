@@ -244,3 +244,17 @@ func (this *Mongo) RetryThingSync(lockduration time.Duration, syncDeleteHandler 
 func (this *Mongo) DesyncUnknownThings(ctx context.Context, knownThings []string) (err error) {
 	return this.desyncUnknown(ctx, this.thingCollection(), ThingBson.Id, knownThings)
 }
+
+// RemoveThings is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveThings(ctx context.Context, ids []string, syncDeleteHandler func([]models.Thing) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveThings", this.thingCollection(), ThingBson.Id, ids,
+		func(elements []models.Thing, _ []string) error {
+			owners := make([]string, 0, len(elements))
+			for _, e := range elements {
+				owners = append(owners, e.OwnerId)
+			}
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoThingCollection, owners)
+			return nil
+		},
+		syncDeleteHandler)
+}

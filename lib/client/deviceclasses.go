@@ -56,6 +56,10 @@ func (c *Client) DeleteDeviceClass(ctx context.Context, token string, id string)
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteDeviceClasses(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/device-classes", ids)
+}
+
 func (c *Client) ListDeviceClasses(ctx context.Context, options model.DeviceClassListOptions) (result []models.DeviceClass, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}

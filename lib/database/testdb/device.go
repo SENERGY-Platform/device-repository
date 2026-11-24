@@ -141,3 +141,7 @@ func (db *DB) SetDeviceConnectionStates(ctx context.Context, states map[string]s
 func (db *DB) DesyncUnknownDevices(ctx context.Context, knownDevices []string) (err error) {
 	return nil
 }
+
+func (db *DB) RemoveDevices(_ context.Context, ids []string, syncDeleteHandler func([]model.DeviceWithConnectionState) error) error {
+	return delMany(ids, db.devices, syncDeleteHandler)
+}

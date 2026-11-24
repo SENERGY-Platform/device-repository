@@ -96,6 +96,10 @@ func (c *Client) DeleteDevice(ctx context.Context, token string, id string) (err
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteDevices(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/devices", ids)
+}
+
 func (c *Client) ListDevices(ctx context.Context, token string, options DeviceListOptions) (result []models.Device, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}

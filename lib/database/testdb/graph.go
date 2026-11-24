@@ -50,3 +50,7 @@ func (db *DB) RetryGraphSync(lockduration time.Duration, syncDeleteHandler func(
 func (db *DB) DesyncUnknownGraphs(ctx context.Context, knownGraphs []string) (err error) {
 	return nil
 }
+
+func (db *DB) RemoveGraphs(_ context.Context, ids []string, syncDeleteHandler func([]models.Graph) error) error {
+	return delMany(ids, db.graphs, syncDeleteHandler)
+}

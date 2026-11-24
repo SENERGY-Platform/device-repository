@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -67,6 +68,95 @@ func (this *Mongo) setDeleted(ctx context.Context, collection *mongo.Collection,
 		},
 	})
 	return err
+}
+
+// removeMany is the batch counterpart of the Remove<Resource> methods: it marks all existing, not yet deleted elements
+// with the given ids as deleted, calls the sync handler once with all of them and deletes them afterwards.
+// Like in the single variants, a failing sync handler or delete is logged and not returned:
+// the marked elements are picked up by the Retry<Resource>Sync loop.
+//
+// afterMark runs once after the elements are marked (last update timestamps, dependent collections);
+// it receives the loaded elements and their ids in the same order. An error from afterMark is logged and ends the removal
+// before the sync handler is called, which matches the single variants of the resources that need it. afterMark may be nil.
+// Unknown ids and elements that are already marked as deleted are ignored.
+func removeMany[T any](ctx context.Context, logger *slog.Logger, name string, collection *mongo.Collection, idField string, ids []string, afterMark func(elements []T, ids []string) error, syncDeleteHandler func([]T) error) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	cursor, err := collection.Find(ctx, bson.M{idField: bson.M{"$in": ids}, NotDeletedFilterKey: NotDeletedFilterValue})
+	if err != nil {
+		return err
+	}
+	var raws []bson.Raw
+	err = cursor.All(ctx, &raws)
+	if err != nil {
+		return err
+	}
+	if len(raws) == 0 {
+		return nil
+	}
+	elements := make([]T, 0, len(raws))
+	foundIds := make([]string, 0, len(raws))
+	for _, raw := range raws {
+		var element T
+		err = bson.Unmarshal(raw, &element)
+		if err != nil {
+			return err
+		}
+		id, ok := raw.Lookup(idField).StringValueOK()
+		if !ok {
+			return fmt.Errorf("%v: element without string field %v", name, idField)
+		}
+		elements = append(elements, element)
+		foundIds = append(foundIds, id)
+	}
+
+	_, err = collection.UpdateMany(ctx, bson.M{idField: bson.M{"$in": foundIds}}, bson.M{
+		"$set": bson.M{
+			SyncTodoBson:          true,
+			SyncDeleteBson:        true,
+			SyncUnixTimestampBson: time.Now().Unix(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	if afterMark != nil {
+		err = afterMark(elements, foundIds)
+		if err != nil {
+			logger.Warn(fmt.Sprintf("error in %v::afterMark %v, will be retried later\n", name, err))
+			return nil
+		}
+	}
+
+	err = syncDeleteHandler(elements)
+	if err != nil {
+		logger.Warn(fmt.Sprintf("error in %v::syncDeleteHandler %v, will be retried later\n", name, err))
+		return nil
+	}
+	// fresh context: the sync handler may have used up the deadline of ctx, and the marked documents are only removed here
+	deleteCtx, cancel := getTimeoutContext()
+	defer cancel()
+	_, err = collection.DeleteMany(deleteCtx, bson.M{idField: bson.M{"$in": foundIds}})
+	if err != nil {
+		logger.Warn(fmt.Sprintf("error in %v::DeleteMany %v, will be retried later\n", name, err))
+		return nil
+	}
+	return nil
+}
+
+// setLastUpdateTimestampForOwners calls SetLastUpdateTimestamp once for every distinct owner.
+// Errors are logged by SetLastUpdateTimestamp and ignored, like in the single remove methods.
+func (this *Mongo) setLastUpdateTimestampForOwners(ctx context.Context, collection string, owners []string) {
+	seen := map[string]bool{}
+	for _, owner := range owners {
+		if seen[owner] {
+			continue
+		}
+		seen[owner] = true
+		_ = this.SetLastUpdateTimestamp(ctx, collection, owner)
+	}
 }
 
 func (this *Mongo) desyncUnknown(ctx context.Context, collection *mongo.Collection, idField string, knownIds []string) error {

@@ -341,3 +341,39 @@ func (this *Controller) ValidateAspectDelete(ctx context.Context, id string) (er
 	}
 	return nil, http.StatusOK
 }
+
+// DeleteAspects is the batch variant of DeleteAspect: all ids are checked before the first one is deleted.
+func (this *Controller) DeleteAspects(ctx context.Context, token string, ids []string) (err error, code int) {
+	ids = removeDuplicates(ids)
+	if len(ids) == 0 {
+		return nil, http.StatusOK
+	}
+	err, code = this.requireAdminForBatchDelete(token)
+	if err != nil {
+		return err, code
+	}
+	err, code = validateEachForBatchDelete(ctx, ids, this.ValidateAspectDelete)
+	if err != nil {
+		return err, code
+	}
+	ctx, cancel := getBatchTimeoutContext(ctx)
+	defer cancel()
+	err = this.db.RemoveAspects(ctx, ids, withContext(ctx, this.deleteAspectsSyncHandler))
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusOK
+}
+
+func (this *Controller) deleteAspectsSyncHandler(ctx context.Context, aspects []models.Aspect) (err error) {
+	ids := make([]string, 0, len(aspects))
+	for _, aspect := range aspects {
+		ctx, _ := getTimeoutContext(ctx)
+		err = this.db.RemoveAspectNodesByRootId(ctx, aspect.Id)
+		if err != nil {
+			return err
+		}
+		ids = append(ids, aspect.Id)
+	}
+	return this.publisher.PublishAspectDeletes(ids)
+}

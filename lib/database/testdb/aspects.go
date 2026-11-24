@@ -72,3 +72,7 @@ func (db *DB) AspectIsUsed(ctx context.Context, id string) (result bool, where [
 
 	panic("implement me")
 }
+
+func (db *DB) RemoveAspects(_ context.Context, ids []string, syncDeleteHandler func([]models.Aspect) error) error {
+	return delMany(ids, db.aspects, syncDeleteHandler)
+}

@@ -426,3 +426,21 @@ func (this *FunctionsEndpoints) Set(config configuration.Config, router *http.Se
 		return
 	})
 }
+
+// DeleteMany godoc
+// @Summary      delete multiple functions
+// @Description  delete multiple functions; rights and preconditions of all ids are checked before the first one is deleted, unknown ids are ignored; at most 10000 ids
+// @Tags         functions
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        message body []string true "ids to be deleted"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      500
+// @Router       /functions [DELETE]
+func (this *FunctionsEndpoints) DeleteMany(config configuration.Config, router *http.ServeMux, control Controller) {
+	handleDeleteMany(config, router, "/functions", control, Controller.DeleteFunctions)
+}

@@ -17,12 +17,47 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
 	"github.com/SENERGY-Platform/models/go/models"
 	"net/http"
 	"strings"
 )
+
+// MaxDeleteManyIds is the maximum number of ids in the body of the DELETE /<resource> endpoints
+const MaxDeleteManyIds = 10000
+
+// deleteManyMaxBodyBytes bounds the body that is read before the number of ids can be checked
+const deleteManyMaxBodyBytes = 8 << 20
+
+// handleDeleteMany registers 'DELETE <path>' with a json list of ids as body.
+// the controller method checks rights and preconditions of all ids before it deletes the first one.
+func handleDeleteMany(config configuration.Config, router *http.ServeMux, path string, control Controller, deleteMany func(control Controller, ctx context.Context, token string, ids []string) (error, int)) {
+	router.HandleFunc("DELETE "+path, func(writer http.ResponseWriter, request *http.Request) {
+		ids := []string{}
+		err := json.NewDecoder(http.MaxBytesReader(writer, request.Body, deleteManyMaxBodyBytes)).Decode(&ids)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if len(ids) > MaxDeleteManyIds {
+			http.Error(writer, "too many ids: at most 10000 ids may be deleted with one request", http.StatusBadRequest)
+			return
+		}
+		err, errCode := deleteMany(control, request.Context(), util.GetAuthToken(request), ids)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json; charset=utf-8")
+		err = json.NewEncoder(writer).Encode(true)
+		if err != nil {
+			config.GetLogger().Info("unable to encode response", "error", err.Error())
+		}
+	})
+}
 
 func init() {
 	endpoints = append(endpoints, &HelperEndpoints{})

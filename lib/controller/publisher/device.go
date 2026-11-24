@@ -65,3 +65,12 @@ func (this *Publisher) PublishDeviceCommand(cmd DeviceCommand) error {
 	}
 	return err
 }
+
+// PublishDeviceDeletes publishes the same messages as PublishDeviceDelete would for each element, but with a single write.
+func (this *Publisher) PublishDeviceDeletes(devices []models.Device) error {
+	cmds := make([]DeviceCommand, 0, len(devices))
+	for _, e := range devices {
+		cmds = append(cmds, DeviceCommand{Command: "DELETE", Id: e.Id, Device: e})
+	}
+	return writeCommands(this.config.GetLogger(), this.devices, "device", cmds, func(cmd DeviceCommand) string { return cmd.Id })
+}

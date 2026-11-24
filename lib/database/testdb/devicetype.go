@@ -186,3 +186,7 @@ func (db *DB) GetDeviceTypesByServiceId(_ context.Context, serviceId string) (re
 	}
 	return
 }
+
+func (db *DB) RemoveDeviceTypes(_ context.Context, ids []string, syncDeleteHandler func([]models.DeviceType) error) error {
+	return delMany(ids, db.deviceTypes, syncDeleteHandler)
+}

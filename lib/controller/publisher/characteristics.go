@@ -65,3 +65,12 @@ func (this *Publisher) PublishCharacteristicCommand(cmd CharacteristicCommand) e
 	}
 	return err
 }
+
+// PublishCharacteristicDeletes publishes the same messages as PublishCharacteristicDelete would for each element, but with a single write.
+func (this *Publisher) PublishCharacteristicDeletes(ids []string) error {
+	cmds := make([]CharacteristicCommand, 0, len(ids))
+	for _, id := range ids {
+		cmds = append(cmds, CharacteristicCommand{Command: "DELETE", Id: id})
+	}
+	return writeCommands(this.config.GetLogger(), this.characteristics, "characteristic", cmds, func(cmd CharacteristicCommand) string { return cmd.Id })
+}

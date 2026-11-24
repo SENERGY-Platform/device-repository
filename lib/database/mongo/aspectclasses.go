@@ -212,3 +212,13 @@ func (this *Mongo) RetryAspectClassSync(lockduration time.Duration, syncDeleteHa
 	}
 	return nil
 }
+
+// RemoveAspectClasses is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveAspectClasses(ctx context.Context, ids []string, syncDeleteHandler func([]models.AspectClass) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveAspectClasses", this.aspectClassCollection(), AspectClassBson.Id, ids,
+		func([]models.AspectClass, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoAspectClassCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

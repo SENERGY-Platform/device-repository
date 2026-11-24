@@ -56,6 +56,10 @@ func (c *Client) DeleteCharacteristic(ctx context.Context, token string, id stri
 	return doVoid(c, req)
 }
 
+func (c *Client) DeleteCharacteristics(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/characteristics", ids)
+}
+
 func (c *Client) ListCharacteristics(ctx context.Context, options model.CharacteristicListOptions) (result []models.Characteristic, total int64, err error, errCode int) {
 	queryString := ""
 	query := url.Values{}

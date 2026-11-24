@@ -223,3 +223,13 @@ func (this *Mongo) ListLocations(ctx context.Context, listOptions model.Location
 func (this *Mongo) DesyncUnknownLocations(ctx context.Context, knownLocations []string) (err error) {
 	return this.desyncUnknown(ctx, this.locationCollection(), LocationBson.Id, knownLocations)
 }
+
+// RemoveLocations is the batch variant of the single remove method, see removeMany.
+func (this *Mongo) RemoveLocations(ctx context.Context, ids []string, syncDeleteHandler func([]models.Location) error) error {
+	return removeMany(ctx, this.config.GetLogger(), "RemoveLocations", this.locationCollection(), LocationBson.Id, ids,
+		func([]models.Location, []string) error {
+			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoLocationCollection, []string{""})
+			return nil
+		},
+		syncDeleteHandler)
+}

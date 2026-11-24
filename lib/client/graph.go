@@ -138,3 +138,7 @@ func (c *Client) DeleteGraph(ctx context.Context, token string, id string) (erro
 	req.Header.Set("Authorization", token)
 	return doVoid(c, req)
 }
+
+func (c *Client) DeleteGraphs(ctx context.Context, token string, ids []string) (err error, code int) {
+	return c.deleteMany(ctx, token, "/graphs", ids)
+}
