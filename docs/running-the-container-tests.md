@@ -83,3 +83,17 @@ nsenter -U --preserve-credentials -t $(cat $XDG_RUNTIME_DIR/dockerd-rootless/chi
 
 The whole suite took 7 to 8 minutes this way with `-p 2` on 2026-11-12. CI took
 19 minutes for a green run before the change.
+
+## The permissions-v2 container is the dev image
+
+`lib/tests/docker/permv2.go` starts `ghcr.io/senergy-platform/permissions-v2:dev`,
+pulled fresh on every run. That image is built only by a push to the `dev` branch
+of permissions-v2, not by a push to `main`. A change here that needs a new
+permissions-v2 endpoint fails its container tests with a missing route until
+`dev` carries it: push the permissions-v2 commit to `dev` as well
+(`git push origin main:dev` when `dev` has no commits of its own) and wait for
+its "DEV Docker Image" run. Seen once, on 2026-11-24, for the bulk deletes; at
+that point `dev` stood nine commits behind `main`.
+
+**Not this if** the tests fail with `connection refused` or `no route to host`
+to a container ip: that is the network namespace, see the section above.
