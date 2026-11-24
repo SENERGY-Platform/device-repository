@@ -489,11 +489,9 @@ func (this *Controller) deleteThingsSyncHandler(ctx context.Context, olds []mode
 	for _, old := range olds {
 		ids = append(ids, old.Id)
 	}
-	for _, old := range olds {
-		err = this.removeResourceFromGraphs(ctx, models.GraphResourceTypeThing, old.Id)
-		if err != nil {
-			return err
-		}
+	err = this.removeResourcesFromGraphs(ctx, models.GraphResourceTypeThing, ids)
+	if err != nil {
+		return err
 	}
 	err = this.RemoveRightsOfMany(ctx, this.config.ThingTopic, ids)
 	if err != nil {

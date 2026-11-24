@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 	"slices"
@@ -622,5 +623,55 @@ func TestThingListEmptyIsNotNull(t *testing.T) {
 	}
 	if string(encoded) != "[]" {
 		t.Errorf("expected [], got %v", string(encoded))
+	}
+}
+
+// TestDeleteThingsWritesEachGraphOnce pins how often a bulk delete writes the graphs that contain the deleted things.
+// Every write is a mongo update, an EnsureInitialRights call to permissions-v2 and a kafka message,
+// so a graph with many of the deleted things must be written once, not once per thing.
+func TestDeleteThingsWritesEachGraphOnce(t *testing.T) {
+	ctrl, _, p := newThingTestController(t)
+	ctx := context.Background()
+
+	const count = 50
+	ids := []string{}
+	for i := 0; i < count; i++ {
+		ids = append(ids, thingTestCreate(t, ctrl, fmt.Sprintf("thing-%v", i)).Id)
+	}
+	notInGraph := thingTestCreate(t, ctrl, "not-in-graph")
+
+	graphWith := func(thingIds []string) models.Graph {
+		graph := models.Graph{Attributes: []models.Attribute{{Key: "name", Value: "g"}}, Nodes: []models.Node{{Id: "end"}}}
+		for i, id := range thingIds {
+			nodeId := fmt.Sprintf("t%v", i)
+			graph.Nodes = append(graph.Nodes, models.Node{Id: nodeId, ResourceType: models.GraphResourceTypeThing, ResourceId: id})
+			graph.Edges = append(graph.Edges, models.Edge{Id: nodeId + "->end", FromNodeId: nodeId, ToNodeId: "end", Weight: 100})
+		}
+		return graph
+	}
+	all, err, code := ctrl.SetGraph(ctx, graphTestUserJwt, graphWith(ids))
+	expectCode(t, err, code, http.StatusOK)
+	some, err, code := ctrl.SetGraph(ctx, graphTestUserJwt, graphWith(ids[:10]))
+	expectCode(t, err, code, http.StatusOK)
+	untouched, err, code := ctrl.SetGraph(ctx, graphTestUserJwt, models.Graph{Nodes: []models.Node{{Id: "1"}}})
+	expectCode(t, err, code, http.StatusOK)
+	published := len(p.graphs)
+
+	err, code = ctrl.DeleteThings(ctx, graphTestUserJwt, append(slices.Clone(ids), notInGraph.Id))
+	expectCode(t, err, code, http.StatusOK)
+
+	for _, graph := range []models.Graph{all, some} {
+		read, err, code := ctrl.ReadGraph(ctx, graphTestUserJwt, graph.Id)
+		expectCode(t, err, code, http.StatusOK)
+		if len(read.Nodes) != 1 || read.Nodes[0].Id != "end" || len(read.Edges) != 0 {
+			t.Errorf("graph %v still holds thing nodes: %v nodes, %v edges", graph.Id, len(read.Nodes), len(read.Edges))
+		}
+	}
+	writes := map[string]int{}
+	for _, graph := range p.graphs[published:] {
+		writes[graph.Id]++
+	}
+	if writes[all.Id] != 1 || writes[some.Id] != 1 || writes[untouched.Id] != 0 || len(writes) != 2 {
+		t.Errorf("expected one write for each of the two graphs with deleted things, got %v writes: %v", len(p.graphs)-published, writes)
 	}
 }

@@ -774,6 +774,12 @@ func (this *Controller) deleteDeviceReferences(ctx context.Context, old model.De
 	if err != nil {
 		return err
 	}
+	return this.deleteDeviceReferencesExceptGraphs(ctx, old)
+}
+
+// deleteDeviceReferencesExceptGraphs is deleteDeviceReferences without the graphs,
+// which a bulk delete removes for all devices at once.
+func (this *Controller) deleteDeviceReferencesExceptGraphs(ctx context.Context, old model.DeviceWithConnectionState) (err error) {
 	err = this.endOpenThingLinksOfDevice(ctx, old.Id)
 	if err != nil {
 		return err
@@ -984,8 +990,12 @@ func (this *Controller) deleteDevicesSyncHandler(ctx context.Context, olds []mod
 	for _, old := range olds {
 		ids = append(ids, old.Id)
 	}
+	err = this.removeResourcesFromGraphs(ctx, models.GraphResourceTypeDevice, ids)
+	if err != nil {
+		return err
+	}
 	for _, old := range olds {
-		err = this.deleteDeviceReferences(ctx, old)
+		err = this.deleteDeviceReferencesExceptGraphs(ctx, old)
 		if err != nil {
 			return err
 		}

@@ -94,27 +94,41 @@ func (this *Controller) ReadGraph(ctx context.Context, token string, id string) 
 }
 
 // removeResourceFromGraphs deletes every node of the given resource from all graphs containing it.
+func (this *Controller) removeResourceFromGraphs(ctx context.Context, resourceType models.GraphResourceType, resourceId string) error {
+	return this.removeResourcesFromGraphs(ctx, resourceType, []string{resourceId})
+}
+
+// removeResourcesFromGraphs deletes every node of the given resources from all graphs containing any of them.
+// Each affected graph is read once and written once, however many of the resources it contains:
+// a write is a mongo update, a rights call and a kafka message, so a bulk delete must not repeat it per resource.
 // It is internal and neither checks permissions nor the thing/device rule of SetGraph.
 // ListGraphs is called with Limit 0: mongo returns all matches, testdb ignores the options and returns all graphs.
-func (this *Controller) removeResourceFromGraphs(ctx context.Context, resourceType models.GraphResourceType, resourceId string) error {
+func (this *Controller) removeResourcesFromGraphs(ctx context.Context, resourceType models.GraphResourceType, resourceIds []string) error {
+	if len(resourceIds) == 0 {
+		return nil
+	}
 	options := model.GraphListOptions{}
 	switch resourceType {
 	case models.GraphResourceTypeDevice:
-		options.DeviceIds = []string{resourceId}
+		options.DeviceIds = resourceIds
 	case models.GraphResourceTypeThing:
-		options.ThingIds = []string{resourceId}
+		options.ThingIds = resourceIds
 	default:
 		return fmt.Errorf("unsupported graph resource type %q", resourceType)
 	}
-	ctx, _ = getTimeoutContext(ctx)
-	graphs, _, err := this.db.ListGraphs(ctx, options)
+	removedIds := make(map[string]bool, len(resourceIds))
+	for _, id := range resourceIds {
+		removedIds[id] = true
+	}
+	listCtx, _ := getTimeoutContext(ctx)
+	graphs, _, err := this.db.ListGraphs(listCtx, options)
 	if err != nil {
 		return err
 	}
 	for _, graph := range graphs {
 		removed := false
 		for _, node := range slices.Clone(graph.Nodes) {
-			if node.ResourceType == resourceType && node.ResourceId == resourceId {
+			if node.ResourceType == resourceType && removedIds[node.ResourceId] {
 				graph.DeleteNode(node.Id)
 				removed = true
 			}
@@ -124,12 +138,13 @@ func (this *Controller) removeResourceFromGraphs(ctx context.Context, resourceTy
 		}
 		err = graph.Valid()
 		if err != nil {
-			this.config.GetLogger().Error("graph.DeleteNode created invalid graph", "graphId", graph.Id, "resourceType", resourceType, "resourceId", resourceId, "error", err)
+			this.config.GetLogger().Error("graph.DeleteNode created invalid graph", "graphId", graph.Id, "resourceType", resourceType, "resources", len(resourceIds), "error", err)
 			return err
 		}
-		err = this.setGraph(ctx, graph)
+		setCtx, _ := getTimeoutContext(ctx)
+		err = this.setGraph(setCtx, graph)
 		if err != nil {
-			this.config.GetLogger().Error("unable to update graph to remove resource", "graphId", graph.Id, "resourceType", resourceType, "resourceId", resourceId, "error", err)
+			this.config.GetLogger().Error("unable to update graph to remove resources", "graphId", graph.Id, "resourceType", resourceType, "resources", len(resourceIds), "error", err)
 			return err
 		}
 	}

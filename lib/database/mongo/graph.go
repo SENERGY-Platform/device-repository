@@ -94,32 +94,20 @@ func (this *Mongo) ListGraphs(ctx context.Context, listOptions model.GraphListOp
 			andFilter = append(andFilter, bson.M{"attributes": bson.M{"$elemMatch": attrFilter}})
 		}
 	}
-	if listOptions.DeviceIds != nil {
-		orFilter := []interface{}{}
-		for _, deviceId := range listOptions.DeviceIds {
-			nodeFilter := bson.M{
-				GraphNodeBson.ResourceType: models.GraphResourceTypeDevice,
-				GraphNodeBson.ResourceId:   deviceId,
-			}
-			orFilter = append(orFilter, bson.M{"nodes": bson.M{"$elemMatch": nodeFilter}})
-		}
-		if len(orFilter) > 0 {
-			andFilter = append(andFilter, bson.M{"$or": orFilter})
-		}
+	if len(listOptions.DeviceIds) > 0 {
+		//one $elemMatch with $in instead of one per id: a bulk delete asks for up to 10000 ids at once
+		andFilter = append(andFilter, bson.M{"nodes": bson.M{"$elemMatch": bson.M{
+			GraphNodeBson.ResourceType: models.GraphResourceTypeDevice,
+			GraphNodeBson.ResourceId:   bson.M{"$in": listOptions.DeviceIds},
+		}}})
 	}
 
-	if listOptions.ThingIds != nil {
-		orFilter := []interface{}{}
-		for _, thingId := range listOptions.ThingIds {
-			nodeFilter := bson.M{
-				GraphNodeBson.ResourceType: models.GraphResourceTypeThing,
-				GraphNodeBson.ResourceId:   thingId,
-			}
-			orFilter = append(orFilter, bson.M{"nodes": bson.M{"$elemMatch": nodeFilter}})
-		}
-		if len(orFilter) > 0 {
-			andFilter = append(andFilter, bson.M{"$or": orFilter})
-		}
+	if len(listOptions.ThingIds) > 0 {
+		//one $elemMatch with $in instead of one per id: a bulk delete asks for up to 10000 ids at once
+		andFilter = append(andFilter, bson.M{"nodes": bson.M{"$elemMatch": bson.M{
+			GraphNodeBson.ResourceType: models.GraphResourceTypeThing,
+			GraphNodeBson.ResourceId:   bson.M{"$in": listOptions.ThingIds},
+		}}})
 	}
 
 	search := strings.TrimSpace(listOptions.Search)
