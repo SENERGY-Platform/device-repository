@@ -18,6 +18,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -174,7 +175,13 @@ type Controller interface {
 
 	ListGraphs(ctx context.Context, token string, options model.GraphListOptions) (result []models.Graph, total int64, err error, errCode int)
 	ReadGraph(ctx context.Context, token string, id string) (result models.Graph, err error, errCode int)
+	ReadGraphAt(ctx context.Context, token string, id string, at time.Time) (result models.Graph, err error, errCode int)
+	ReadGraphVersions(ctx context.Context, token string, id string) (result models.Graph, err error, errCode int)
+	ReadGraphSegments(ctx context.Context, token string, id string, start *time.Time, end *time.Time) (result []models.GraphSegment, err error, errCode int)
 	SetGraph(ctx context.Context, token string, graph models.Graph) (result models.Graph, err error, code int)
+	EditGraph(ctx context.Context, token string, graph models.Graph, options model.GraphEditOptions) (result models.Graph, err error, code int)
+	MoveGraphNode(ctx context.Context, token string, graphId string, nodeId string, move model.GraphNodeMove) (result models.Graph, err error, code int)
+	EndGraphNode(ctx context.Context, token string, graphId string, nodeId string, end model.GraphNodeEnd) (result models.Graph, err error, code int)
 	DeleteGraph(ctx context.Context, token string, id string) (error, int)
 	DeleteGraphs(ctx context.Context, token string, ids []string) (err error, code int)
 
@@ -185,6 +192,7 @@ type Controller interface {
 	DeleteThings(ctx context.Context, token string, ids []string) (err error, code int)
 	AddThingDeviceLink(ctx context.Context, token string, thingId string, link model.ThingDeviceLinkCreate) (result models.Thing, err error, code int)
 	EndThingDeviceLink(ctx context.Context, token string, thingId string, linkId string, end model.ThingDeviceLinkEnd) (result models.Thing, err error, code int)
+	SwapThingDeviceLink(ctx context.Context, token string, thingId string, linkId string, swap model.ThingDeviceLinkSwap) (result models.Thing, err error, code int)
 
 	GetLastUpdateTimestamps(ctx context.Context, token string, userId string) (result []model.LastUpdateTimestamp, err error, code int)
 

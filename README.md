@@ -68,9 +68,14 @@ instance:
   from the server (a self-invented id fails as 403, not 404), and edge weights
   are validated: 0 is refused, outgoing weights sum to 0 or 100; the rules for
   thing nodes
+- [Graph validity](docs/graph-validity.md) — every node, edge and attribute has a
+  validity, `GET` answers the graph at one instant, `PUT` takes the edited graph
+  at an instant as a change or a correction, and a write never drops a version
+  that is not valid at that instant; moving and ending a node are single calls
 - [Things and device links](docs/things-and-device-links.md) — why links have
   their own endpoints, how periods are cut, and why a graph may not hold a thing
-  together with a device ever linked to it
+  together with a device linked to it at the same time; a link is swapped
+  (ended and restarted) in one write
 - [asyncapi.json is only half generated](docs/asyncapi-is-half-generated.md) —
   the generator lives in its own module, emits an older spec version, and the
   committed file is a hand-made conversion

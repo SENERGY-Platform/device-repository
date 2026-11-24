@@ -200,6 +200,23 @@ definitions:
         description: default name.asc
         type: string
     type: object
+  model.GraphNodeEnd:
+    properties:
+      at:
+        description: nil = now
+        type: string
+    type: object
+  model.GraphNodeMove:
+    properties:
+      at:
+        description: nil = now
+        type: string
+      to_node_id:
+        type: string
+      until:
+        description: nil = open; must be after At
+        type: string
+    type: object
   model.ImportFromOptions:
     properties:
       filter_ids:
@@ -299,9 +316,17 @@ definitions:
     properties:
       device_id:
         type: string
+      factor:
+        description: only for meters; transformer ratio, nil = 1
+        type: number
       from:
         description: nil = now
         type: string
+      readings:
+        description: only for meters; until_value only together with until
+        items:
+          $ref: '#/definitions/models.ThingDeviceLinkReading'
+        type: array
       until:
         description: nil = open
         type: string
@@ -311,6 +336,43 @@ definitions:
       until:
         description: nil = now
         type: string
+      until_values:
+        description: readings at removal, each must name an existing reading of the
+          link
+        items:
+          $ref: '#/definitions/model.ThingDeviceLinkEndReading'
+        type: array
+    type: object
+  model.ThingDeviceLinkEndReading:
+    properties:
+      column:
+        type: string
+      service_id:
+        type: string
+      until_value:
+        type: number
+    type: object
+  model.ThingDeviceLinkSwap:
+    properties:
+      at:
+        description: nil = now
+        type: string
+      device_id:
+        type: string
+      factor:
+        description: only for meters; nil = 1
+        type: number
+      readings:
+        description: readings at installation, only for meters; until_value is not
+          allowed
+        items:
+          $ref: '#/definitions/models.ThingDeviceLinkReading'
+        type: array
+      until_values:
+        description: readings at removal of the ended link
+        items:
+          $ref: '#/definitions/model.ThingDeviceLinkEndReading'
+        type: array
     type: object
   model.UsedInDeviceTypeQuery:
     properties:
@@ -391,6 +453,14 @@ definitions:
       key:
         type: string
       origin:
+        type: string
+      valid_from:
+        description: |-
+          ValidFrom and ValidUntil are only interpreted on the attributes of a graph, its nodes and its edges.
+          They bound the attribute to [ValidFrom, ValidUntil), nil means unbounded on that side.
+          Every other owner of attributes (devices, device types, things, ...) ignores them and does not write them.
+        type: string
+      valid_until:
         type: string
       value:
         type: string
@@ -634,6 +704,10 @@ definitions:
         type: string
       to_node_id:
         type: string
+      valid_from:
+        type: string
+      valid_until:
+        type: string
       weight:
         type: integer
     type: object
@@ -769,6 +843,15 @@ definitions:
     x-enum-varnames:
     - GraphResourceTypeDevice
     - GraphResourceTypeThing
+  models.GraphSegment:
+    properties:
+      from:
+        type: string
+      graph:
+        $ref: '#/definitions/models.Graph'
+      until:
+        type: string
+    type: object
   models.Hub:
     properties:
       attributes:
@@ -833,6 +916,10 @@ definitions:
         type: string
       resource_type:
         $ref: '#/definitions/models.GraphResourceType'
+      valid_from:
+        type: string
+      valid_until:
+        type: string
     type: object
   models.Permissions:
     properties:
@@ -966,6 +1053,9 @@ definitions:
         type: array
       id:
         type: string
+      kind:
+        description: empty means ThingKindConsumer
+        type: string
       name:
         type: string
       owner_id:
@@ -975,12 +1065,30 @@ definitions:
     properties:
       device_id:
         type: string
+      factor:
+        description: transformer ratio, nil means 1
+        type: number
       from:
         type: string
       id:
         type: string
+      readings:
+        items:
+          $ref: '#/definitions/models.ThingDeviceLinkReading'
+        type: array
       until:
         type: string
+    type: object
+  models.ThingDeviceLinkReading:
+    properties:
+      column:
+        type: string
+      from_value:
+        type: number
+      service_id:
+        type: string
+      until_value:
+        type: number
     type: object
   models.Type:
     enum:
@@ -4113,7 +4221,7 @@ paths:
       tags:
       - graphs
     get:
-      description: list graph
+      description: list graph; every graph is answered as it is now, see GET /graphs/{id}
       parameters:
       - description: default 100, will be ignored if 'ids' is set
         in: query
@@ -4246,12 +4354,26 @@ paths:
       tags:
       - graphs
     get:
-      description: get graph
+      description: 'get graph; elements of a graph have a validity [valid_from, valid_until)
+        and the graph is answered as it is at one instant: now, or the instant given
+        by ''at''; an instant at which no node is valid is answered with the graph
+        without nodes and edges; with versions=all the stored document is answered,
+        with all versions of nodes, edges and attributes'
       parameters:
       - description: Graph Id
         in: path
         name: id
         required: true
+        type: string
+      - description: RFC3339 instant; default now; the graph as it is valid at this
+          instant; may not be combined with versions
+        in: query
+        name: at
+        type: string
+      - description: '''all'' answers the stored document with all versions; may not
+          be combined with at'
+        in: query
+        name: versions
         type: string
       produces:
       - application/json
@@ -4276,12 +4398,45 @@ paths:
       tags:
       - graphs
     put:
-      description: set graph
+      description: 'set graph; the body is the edited graph as it is valid at the
+        instant ''at'' (default now), the server compares it with the stored graph
+        at that instant by identity (a node by its id, an edge by from_node_id and
+        to_node_id, an attribute by its key within its owner) and sets the validities;
+        versions that are not valid at ''at'' are never touched or dropped; valid_from
+        and valid_until of the body are ignored for elements that exist and refused
+        for elements that are added; the resource of a node may not change; the stored
+        graph is validated for every segment between its validity bounds before it
+        is written, a 400 names the first invalid instant; mode ''correction'' (default)
+        modifies the versions valid at ''at'' in place over their whole span, adds
+        elements without bounds (except that they end where a later version of the
+        same identity starts) and deletes removed ones; mode ''change'' splits a changed
+        version at ''at'' (the old one ends, the new one runs to the old one''s end),
+        adds elements valid from ''at'' until the next version of their identity and
+        ends removed ones at ''at''; with ''until'', only for mode ''change'', the
+        edit holds exactly for [at, until) for every identity the edit touches: versions
+        of it that go on beyond ''until'' are resumed there with their old content,
+        whatever lies inside the span is replaced, and a node that is valid beyond
+        ''until'' can not be removed; the write is compare-and-set against concurrent
+        writes of the same graph and is applied again a few times before the answer
+        is 409; the answer is the stored graph as it is now'
       parameters:
       - description: Graph Id
         in: path
         name: id
         required: true
+        type: string
+      - description: RFC3339 instant the body is the graph at; default now
+        in: query
+        name: at
+        type: string
+      - description: RFC3339 instant, must be after at, only with mode=change; the
+          edit holds for [at, until)
+        in: query
+        name: until
+        type: string
+      - description: '''correction'' (default) or ''change'''
+        in: query
+        name: mode
         type: string
       - description: element
         in: body
@@ -4304,11 +4459,164 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+        "409":
+          description: Conflict
         "500":
           description: Internal Server Error
       security:
       - Bearer: []
       summary: set graph
+      tags:
+      - graphs
+  /graphs/{id}/nodes/{node_id}/end:
+    post:
+      consumes:
+      - application/json
+      description: 'takes a node out of the graph from the instant ''at'' (default
+        now): the node and its edges end there and the edges that led to it are rerouted
+        to where it led, as when a device is deleted; everything before ''at'' stays;
+        a thing or device the node stands for is not touched, in particular the open
+        device link of a meter thing is NOT ended, ending or swapping it is a separate
+        call (POST /things/{id}/device-links/{link_id}/end or /swap) the caller decides
+        on; the answer is the graph as it is now; 400 names the instant at which the
+        result is invalid; 409 if the graph was changed concurrently and stays so
+        after a few attempts; needs write on the graph'
+      parameters:
+      - description: Graph Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Node Id
+        in: path
+        name: node_id
+        required: true
+        type: string
+      - description: end
+        in: body
+        name: message
+        schema:
+          $ref: '#/definitions/model.GraphNodeEnd'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Graph'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "409":
+          description: Conflict
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: end graph node
+      tags:
+      - graphs
+  /graphs/{id}/nodes/{node_id}/move:
+    post:
+      consumes:
+      - application/json
+      description: 'moves a node below another node from the instant ''at'' (default
+        now): the outgoing edges of the node valid at ''at'' end there and one edge
+        to to_node_id with weight 100 starts there; with ''until'' the move holds
+        for [at, until) only and the old edges are resumed (a month booked to the
+        wrong parent is one request); the end node can not be moved; history before
+        ''at'' is not touched; the answer is the graph as it is now; 400 names the
+        instant at which the result is invalid; 409 if the graph was changed concurrently
+        and stays so after a few attempts; needs write on the graph'
+      parameters:
+      - description: Graph Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Node Id
+        in: path
+        name: node_id
+        required: true
+        type: string
+      - description: move
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.GraphNodeMove'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Graph'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "409":
+          description: Conflict
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: move graph node
+      tags:
+      - graphs
+  /graphs/{id}/segments:
+    get:
+      description: get the graph cut at every validity bound (valid_from or valid_until
+        of a node, an edge or an attribute) inside the range [start, end); each piece
+        [from, until) comes with the graph as it is valid in that piece; pieces are
+        not merged; without start the first piece has from null, without end the last
+        has until null, without both the answer is the whole history
+      parameters:
+      - description: Graph Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: RFC3339 instant, inclusive; default unbounded
+        in: query
+        name: start
+        type: string
+      - description: RFC3339 instant, exclusive, must be after start; default unbounded
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.GraphSegment'
+            type: array
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: get graph segments
       tags:
       - graphs
   /helper/id:
@@ -7563,7 +7871,11 @@ paths:
       - application/json
       description: link a device to a thing for the half-open period [from, until);
         from defaults to now, until to open; periods of one device may not overlap,
-        not even across things
+        not even across things; readings (counter reading per service_id and column
+        at installation, in the unit the column is delivered in after the characteristic
+        conversion, i.e. kWh for energy and m³ for volume, not the raw device unit)
+        and factor (transformer ratio, nil means 1) are only allowed for things of
+        kind meter
       parameters:
       - description: Thing Id
         in: path
@@ -7603,7 +7915,8 @@ paths:
       consumes:
       - application/json
       description: sets until of the device link; an empty body or a missing until
-        ends the link now
+        ends the link now; until_values sets the reading at removal (same unit as
+        from_value) of readings of the link, an unknown service_id and column is rejected
       parameters:
       - description: Thing Id
         in: path
@@ -7640,6 +7953,60 @@ paths:
       security:
       - Bearer: []
       summary: end device link of thing
+      tags:
+      - things
+  /things/{id}/device-links/{link_id}/swap:
+    post:
+      consumes:
+      - application/json
+      description: 'ends the open device link at the instant ''at'' and starts a link
+        to device_id from there, in one write: either both happen or nothing; device_id
+        may be the device of the ended link (counter reset, change of the factor)
+        or another one; at defaults to now, may lie in the past, and must be after
+        the start of the ended link; until_values sets the readings at removal of
+        the ended link, readings and factor are those of the new link (only for things
+        of kind meter, same units as at link creation); the new link follows the rules
+        of link creation (periods of one device may not overlap, not even across things,
+        and the thing and the device may not be in one graph at the same time); needs
+        write on the thing and read on the device; the graph is not touched, see POST
+        /graphs/{id}/nodes/{node_id}/move and /end'
+      parameters:
+      - description: Thing Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Device Link Id
+        in: path
+        name: link_id
+        required: true
+        type: string
+      - description: swap
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/model.ThingDeviceLinkSwap'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Thing'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: swap device link of thing
       tags:
       - things
   /user-device-types:

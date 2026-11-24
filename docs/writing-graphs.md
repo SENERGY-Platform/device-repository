@@ -45,9 +45,23 @@ rules apply, all answered with 400:
   just as a device may not. A thing as a leaf below a room or a meter is fine.
 - **The thing must exist.** `SetGraph` loads every thing of the graph; device
   nodes, in contrast, are still not checked for existence.
-- **A device that was ever linked to a thing may not be in the same graph as
-  that thing**, ended links included. The rule is checked on `PUT /graphs` and
-  again when a link is created, so neither order of writing gets around it.
+- **A device that is or was linked to a thing may not be in the same graph as
+  that thing at the same time**: the validity of the thing node, of the device
+  node and the period of the link must not overlap, ended links included. For a
+  graph without validities that means: never both. The rule is checked on
+  `PUT /graphs` and again when a link is created, so neither order of writing
+  gets around it.
+
+## Elements have a validity
+
+Nodes, edges and their attributes may carry `valid_from` and `valid_until`, so a
+graph has a history; `PUT /graphs/{id}` without `at` still means what it always
+meant for a writer that sends the graph as it is now, and keeps the history it
+does not know about. How that works, and what to send when a change should hold
+from a date on, is in [graph-validity.md](graph-validity.md). A writer that
+changes edge weights on a graph that has history sends `mode=change` with `at`;
+a plain `PUT` is a correction and is refused (400, naming the instant) where the
+new weights do not add up for an old version.
 
 Deleting a thing removes its node from every graph, the same way deleting a
 device does. Why the rules are cut this way is in

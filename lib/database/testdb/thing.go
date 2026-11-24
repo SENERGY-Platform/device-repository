@@ -27,9 +27,22 @@ import (
 )
 
 func (db *DB) SetThing(ctx context.Context, thing models.Thing, syncHandler func(models.Thing) error) error {
+	db.thingRevisions[thing.Id]++
 	return set(thing.Id, db.things, thing, func(thing models.Thing) error {
 		return syncHandler(thing)
 	})
+}
+
+func (db *DB) SetThingIfRevision(ctx context.Context, thing models.Thing, revision int64, syncHandler func(models.Thing) error) (swapped bool, err error) {
+	if db.thingRevisions[thing.Id] != revision {
+		return false, nil
+	}
+	return true, db.SetThing(ctx, thing, syncHandler)
+}
+
+func (db *DB) GetThingWithRevision(ctx context.Context, id string) (thing models.Thing, revision int64, exists bool, err error) {
+	thing, exists, err = get(id, db.things)
+	return thing, db.thingRevisions[id], exists, err
 }
 
 func (db *DB) RemoveThing(ctx context.Context, id string, syncDeleteHandler func(models.Thing) error) error {

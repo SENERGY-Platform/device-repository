@@ -16,7 +16,11 @@
 
 package model
 
-import "github.com/SENERGY-Platform/models/go/models"
+import (
+	"time"
+
+	"github.com/SENERGY-Platform/models/go/models"
+)
 
 type DeviceListOptions struct {
 	Ids                      []string                //filter; ignores limit/offset if Ids != nil; ignored if Ids == nil; Ids == []string{} will return an empty list;
@@ -193,6 +197,14 @@ type GraphListOptions struct {
 	SortBy     string                //default name.asc
 	Permission models.PermissionFlag //defaults to read
 	Attributes []models.Attribute
+}
+
+// GraphEditOptions says which state of a graph a written graph is: the edited projection at At.
+// The zero value is a correction at the current time.
+type GraphEditOptions struct {
+	At    *time.Time //nil = now
+	Until *time.Time //nil = open; only allowed for the mode change, must be after At
+	Mode  string     //models.GraphEditModeChange or models.GraphEditModeCorrection; empty = correction
 }
 
 type ThingListOptions struct {

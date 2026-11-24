@@ -675,3 +675,131 @@ func TestDeleteThingsWritesEachGraphOnce(t *testing.T) {
 		t.Errorf("expected one write for each of the two graphs with deleted things, got %v writes: %v", len(p.graphs)-published, writes)
 	}
 }
+
+func thingTestMeter(t *testing.T, ctrl *Controller, name string) models.Thing {
+	t.Helper()
+	thing, err, code := ctrl.SetThing(context.Background(), graphTestUserJwt, models.Thing{Name: name, Kind: models.ThingKindMeter})
+	expectCode(t, err, code, http.StatusOK)
+	return thing
+}
+
+func TestThingMeterLinkReadings(t *testing.T) {
+	ctrl, permClient, _ := newThingTestController(t)
+	ctx := context.Background()
+	thingTestDevice(t, ctrl, permClient, "d1", "")
+	thingTestDevice(t, ctrl, permClient, "d2", "")
+	factor := 40.0
+	readings := []models.ThingDeviceLinkReading{
+		{ServiceId: "s1", Column: "metrics.energy", FromValue: 100},
+		{ServiceId: "s1", Column: "metrics.energy_t2", FromValue: 5},
+	}
+
+	t.Run("kind is stored and answered", func(t *testing.T) {
+		meter := thingTestMeter(t, ctrl, "meter")
+		read, err, code := ctrl.ReadThing(ctx, graphTestUserJwt, meter.Id)
+		expectCode(t, err, code, http.StatusOK)
+		if read.Kind != models.ThingKindMeter {
+			t.Errorf("unexpected kind %q", read.Kind)
+		}
+		_, err, code = ctrl.SetThing(ctx, graphTestUserJwt, models.Thing{Name: "x", Kind: "meters"})
+		expectCode(t, err, code, http.StatusBadRequest)
+	})
+
+	t.Run("create and end with values", func(t *testing.T) {
+		meter := thingTestMeter(t, ctrl, "meter create")
+		meter, err, code := ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, meter.Id, model.ThingDeviceLinkCreate{DeviceId: "d1", From: thingTestTime(1), Readings: readings, Factor: &factor})
+		expectCode(t, err, code, http.StatusOK)
+		link := meter.DeviceLinks[0]
+		if len(link.Readings) != 2 || link.Readings[0].FromValue != 100 || link.Readings[0].UntilValue != nil || link.Factor == nil || *link.Factor != 40 {
+			t.Fatalf("unexpected link %#v", link)
+		}
+		read, err, code := ctrl.ReadThing(ctx, graphTestUserJwt, meter.Id)
+		expectCode(t, err, code, http.StatusOK)
+		if len(read.DeviceLinks[0].Readings) != 2 || read.DeviceLinks[0].Factor == nil {
+			t.Errorf("readings not stored: %#v", read.DeviceLinks[0])
+		}
+
+		unknown := []model.ThingDeviceLinkEndReading{{ServiceId: "s1", Column: "metrics.other", UntilValue: 1}}
+		_, err, code = ctrl.EndThingDeviceLink(ctx, graphTestUserJwt, meter.Id, link.Id, model.ThingDeviceLinkEnd{Until: thingTestTime(5), UntilValues: unknown})
+		expectCode(t, err, code, http.StatusBadRequest)
+		duplicate := []model.ThingDeviceLinkEndReading{{ServiceId: "s1", Column: "metrics.energy", UntilValue: 1}, {ServiceId: "s1", Column: "metrics.energy", UntilValue: 2}}
+		_, err, code = ctrl.EndThingDeviceLink(ctx, graphTestUserJwt, meter.Id, link.Id, model.ThingDeviceLinkEnd{Until: thingTestTime(5), UntilValues: duplicate})
+		expectCode(t, err, code, http.StatusBadRequest)
+		read, _, _ = ctrl.ReadThing(ctx, graphTestUserJwt, meter.Id)
+		if read.DeviceLinks[0].Until != nil || read.DeviceLinks[0].Readings[0].UntilValue != nil {
+			t.Fatalf("a rejected end changed the link: %#v", read.DeviceLinks[0])
+		}
+
+		values := []model.ThingDeviceLinkEndReading{{ServiceId: "s1", Column: "metrics.energy", UntilValue: 250}}
+		result, err, code := ctrl.EndThingDeviceLink(ctx, graphTestUserJwt, meter.Id, link.Id, model.ThingDeviceLinkEnd{Until: thingTestTime(5), UntilValues: values})
+		expectCode(t, err, code, http.StatusOK)
+		ended := result.DeviceLinks[0]
+		if ended.Until == nil || ended.Readings[0].UntilValue == nil || *ended.Readings[0].UntilValue != 250 || ended.Readings[1].UntilValue != nil {
+			t.Errorf("unexpected ended link %#v", ended)
+		}
+		if *ended.Readings[0].UntilValue != 250 || ended.Readings[0].FromValue != 100 {
+			t.Errorf("from_value changed: %#v", ended.Readings)
+		}
+	})
+
+	t.Run("create with until and until_value", func(t *testing.T) {
+		meter := thingTestMeter(t, ctrl, "meter history")
+		withUntil := []models.ThingDeviceLinkReading{{ServiceId: "s1", Column: "c", FromValue: 1, UntilValue: &factor}}
+		_, err, code := ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, meter.Id, model.ThingDeviceLinkCreate{DeviceId: "d1", From: thingTestTime(10), Readings: withUntil})
+		expectCode(t, err, code, http.StatusBadRequest)
+		_, err, code = ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, meter.Id, model.ThingDeviceLinkCreate{DeviceId: "d1", From: thingTestTime(10), Until: thingTestTime(11), Readings: withUntil})
+		expectCode(t, err, code, http.StatusOK)
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		meter := thingTestMeter(t, ctrl, "meter invalid")
+		for name, create := range map[string]model.ThingDeviceLinkCreate{
+			"factor zero":      {DeviceId: "d1", Factor: new(float64)},
+			"missing service":  {DeviceId: "d1", Readings: []models.ThingDeviceLinkReading{{Column: "c"}}},
+			"missing column":   {DeviceId: "d1", Readings: []models.ThingDeviceLinkReading{{ServiceId: "s"}}},
+			"duplicate column": {DeviceId: "d1", Readings: []models.ThingDeviceLinkReading{{ServiceId: "s", Column: "c"}, {ServiceId: "s", Column: "c"}}},
+		} {
+			_, err, code := ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, meter.Id, create)
+			if code != http.StatusBadRequest {
+				t.Errorf("%v: expected 400, got %v (%v)", name, code, err)
+			}
+		}
+		read, _, _ := ctrl.ReadThing(ctx, graphTestUserJwt, meter.Id)
+		if len(read.DeviceLinks) != 0 {
+			t.Errorf("an invalid link was stored: %#v", read.DeviceLinks)
+		}
+	})
+
+	t.Run("consumer rejects readings and factor", func(t *testing.T) {
+		consumer := thingTestCreate(t, ctrl, "consumer")
+		_, err, code := ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, consumer.Id, model.ThingDeviceLinkCreate{DeviceId: "d1", Readings: readings})
+		expectCode(t, err, code, http.StatusBadRequest)
+		_, err, code = ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, consumer.Id, model.ThingDeviceLinkCreate{DeviceId: "d1", Factor: &factor})
+		expectCode(t, err, code, http.StatusBadRequest)
+		_, err, code = ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, consumer.Id, model.ThingDeviceLinkCreate{DeviceId: "d1"})
+		expectCode(t, err, code, http.StatusOK)
+	})
+
+	t.Run("kind change", func(t *testing.T) {
+		meter := thingTestMeter(t, ctrl, "meter kind")
+		plain, err, code := ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, meter.Id, model.ThingDeviceLinkCreate{DeviceId: "d2", From: thingTestTime(1), Until: thingTestTime(2)})
+		expectCode(t, err, code, http.StatusOK)
+		//no readings or factor: consumer and back is fine
+		meter.Kind = models.ThingKindConsumer
+		_, err, code = ctrl.SetThing(ctx, graphTestUserJwt, meter)
+		expectCode(t, err, code, http.StatusOK)
+		meter.Kind = models.ThingKindMeter
+		_, err, code = ctrl.SetThing(ctx, graphTestUserJwt, meter)
+		expectCode(t, err, code, http.StatusOK)
+
+		_, err, code = ctrl.AddThingDeviceLink(ctx, graphTestUserJwt, plain.Id, model.ThingDeviceLinkCreate{DeviceId: "d2", From: thingTestTime(3), Readings: readings})
+		expectCode(t, err, code, http.StatusOK)
+		meter.Kind = models.ThingKindConsumer
+		_, err, code = ctrl.SetThing(ctx, graphTestUserJwt, meter)
+		expectCode(t, err, code, http.StatusBadRequest)
+		read, _, _ := ctrl.ReadThing(ctx, graphTestUserJwt, meter.Id)
+		if read.Kind != models.ThingKindMeter {
+			t.Errorf("kind changed despite the rejection: %q", read.Kind)
+		}
+	})
+}

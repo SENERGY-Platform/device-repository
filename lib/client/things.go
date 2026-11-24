@@ -35,6 +35,7 @@ type ThingDeviceLink = models.ThingDeviceLink
 type ThingListOptions = model.ThingListOptions
 type ThingDeviceLinkCreate = model.ThingDeviceLinkCreate
 type ThingDeviceLinkEnd = model.ThingDeviceLinkEnd
+type ThingDeviceLinkEndReading = model.ThingDeviceLinkEndReading
 
 func (c *Client) ListThings(ctx context.Context, token string, options model.ThingListOptions) (result []models.Thing, total int64, err error, errCode int) {
 	queryString := ""
@@ -133,6 +134,23 @@ func (c *Client) EndThingDeviceLink(ctx context.Context, token string, thingId s
 		return result, err, http.StatusBadRequest
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/things/"+url.PathEscape(thingId)+"/device-links/"+url.PathEscape(linkId)+"/end", bytes.NewBuffer(b))
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Thing](c, req)
+}
+
+type ThingDeviceLinkSwap = model.ThingDeviceLinkSwap
+
+// SwapThingDeviceLink ends the open link at swap.At and starts a link to swap.DeviceId from there, in one write,
+// see POST /things/{id}/device-links/{link_id}/swap.
+func (c *Client) SwapThingDeviceLink(ctx context.Context, token string, thingId string, linkId string, swap model.ThingDeviceLinkSwap) (result models.Thing, err error, code int) {
+	b, err := json.Marshal(swap)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/things/"+url.PathEscape(thingId)+"/device-links/"+url.PathEscape(linkId)+"/swap", bytes.NewBuffer(b))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

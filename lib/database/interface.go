@@ -181,6 +181,9 @@ type Database interface {
 	GetLastUpdateTimestampsForUser(ctx context.Context, userId string) (result []model.LastUpdateTimestamp, err error)
 
 	SetGraph(ctx context.Context, graph models.Graph, syncHandler func(models.Graph) error) error
+	//SetGraphIfRevision writes the graph only if it still has the revision that GetGraphWithRevision answered (0 if it did not exist)
+	SetGraphIfRevision(ctx context.Context, graph models.Graph, revision int64, syncHandler func(models.Graph) error) (swapped bool, err error)
+	GetGraphWithRevision(ctx context.Context, id string) (graph models.Graph, revision int64, exists bool, err error)
 	RemoveGraph(ctx context.Context, id string, syncDeleteHandler func(models.Graph) error) error
 	RemoveGraphs(ctx context.Context, ids []string, syncDeleteHandler func([]models.Graph) error) error
 	GetGraph(ctx context.Context, id string) (graph models.Graph, exists bool, err error)
@@ -188,6 +191,9 @@ type Database interface {
 	RetryGraphSync(lockduration time.Duration, syncDeleteHandler func(models.Graph) error, syncHandler func(models.Graph) error) error
 
 	SetThing(ctx context.Context, thing models.Thing, syncHandler func(models.Thing) error) error
+	//SetThingIfRevision writes the thing only if it still has the revision that GetThingWithRevision answered (0 if it did not exist)
+	SetThingIfRevision(ctx context.Context, thing models.Thing, revision int64, syncHandler func(models.Thing) error) (swapped bool, err error)
+	GetThingWithRevision(ctx context.Context, id string) (thing models.Thing, revision int64, exists bool, err error)
 	RemoveThing(ctx context.Context, id string, syncDeleteHandler func(models.Thing) error) error
 	RemoveThings(ctx context.Context, ids []string, syncDeleteHandler func([]models.Thing) error) error
 	GetThing(ctx context.Context, id string) (thing models.Thing, exists bool, err error)

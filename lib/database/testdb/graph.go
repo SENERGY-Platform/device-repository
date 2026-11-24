@@ -26,9 +26,22 @@ import (
 )
 
 func (db *DB) SetGraph(ctx context.Context, graph models.Graph, syncHandler func(models.Graph) error) error {
+	db.graphRevisions[graph.Id]++
 	return set(graph.Id, db.graphs, graph, func(graph models.Graph) error {
 		return syncHandler(graph)
 	})
+}
+
+func (db *DB) SetGraphIfRevision(ctx context.Context, graph models.Graph, revision int64, syncHandler func(models.Graph) error) (swapped bool, err error) {
+	if db.graphRevisions[graph.Id] != revision {
+		return false, nil
+	}
+	return true, db.SetGraph(ctx, graph, syncHandler)
+}
+
+func (db *DB) GetGraphWithRevision(ctx context.Context, id string) (graph models.Graph, revision int64, exists bool, err error) {
+	graph, exists, err = get(id, db.graphs)
+	return graph, db.graphRevisions[id], exists, err
 }
 
 func (db *DB) RemoveGraph(ctx context.Context, id string, syncDeleteHandler func(models.Graph) error) error {

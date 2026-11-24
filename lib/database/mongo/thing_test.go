@@ -28,6 +28,7 @@ import (
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/tests/docker"
 	"github.com/SENERGY-Platform/models/go/models"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TestMongoThings(t *testing.T) {
@@ -250,6 +251,59 @@ func TestMongoThings(t *testing.T) {
 		//removing an unknown thing is not an error
 		if err = m.RemoveThing(timeout(), "unknown", func(models.Thing) error { return nil }); err != nil {
 			t.Error(err)
+		}
+	})
+
+	t.Run("a write that carries a stale revision is not applied", func(t *testing.T) {
+		cas := models.Thing{Id: "cas", Name: "first", OwnerId: "u1"}
+		swapped, err := m.SetThingIfRevision(timeout(), cas, 0, noSync)
+		if err != nil || !swapped {
+			t.Fatal(swapped, err)
+		}
+		_, r1, exists, err := m.GetThingWithRevision(timeout(), "cas")
+		if err != nil || !exists || r1 == 0 {
+			t.Fatal(r1, exists, err)
+		}
+		cas.Name = "second"
+		swapped, err = m.SetThingIfRevision(timeout(), cas, r1, noSync)
+		if err != nil || !swapped {
+			t.Fatal(swapped, err)
+		}
+		cas.Name = "stale"
+		swapped, err = m.SetThingIfRevision(timeout(), cas, r1, noSync)
+		if err != nil || swapped {
+			t.Fatal("the stale write was applied", swapped, err)
+		}
+		//creating what exists is a lost race, not an error
+		swapped, err = m.SetThingIfRevision(timeout(), cas, 0, noSync)
+		if err != nil || swapped {
+			t.Fatal("the second creation was applied", swapped, err)
+		}
+		stored, r2, _, _ := m.GetThingWithRevision(timeout(), "cas")
+		if stored.Name != "second" || r2 <= r1 {
+			t.Errorf("%v %v %v", stored.Name, r1, r2)
+		}
+		//a plain SetThing changes the revision, too
+		if err = m.SetThing(timeout(), stored, noSync); err != nil {
+			t.Fatal(err)
+		}
+		if _, r3, _, _ := m.GetThingWithRevision(timeout(), "cas"); r3 <= r2 {
+			t.Errorf("%v %v", r2, r3)
+		}
+	})
+
+	t.Run("a thing written before revisions existed has revision 0 and can be written", func(t *testing.T) {
+		_, err := m.thingCollection().InsertOne(timeout(), bson.M{"id": "norev", "name": "n", "owner_id": "u1", "attributes": bson.A{}, "content_variables": bson.A{}, "device_links": bson.A{}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		thing, r, exists, err := m.GetThingWithRevision(timeout(), "norev")
+		if err != nil || !exists || r != 0 {
+			t.Fatal(r, exists, err)
+		}
+		swapped, err := m.SetThingIfRevision(timeout(), thing, r, noSync)
+		if err != nil || !swapped {
+			t.Fatal(swapped, err)
 		}
 	})
 }

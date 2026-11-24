@@ -12,7 +12,7 @@ require (
 	github.com/SENERGY-Platform/gin-middleware v0.14.4
 	github.com/SENERGY-Platform/go-service-base/struct-logger v0.8.2
 	github.com/SENERGY-Platform/mgw-cloud-proxy/cert-manager/lib v0.0.4
-	github.com/SENERGY-Platform/models/go v0.0.0-20261112064513-acf42bcc059b
+	github.com/SENERGY-Platform/models/go v0.0.0-20261124133222-4fa8ec1f8523
 	github.com/SENERGY-Platform/permissions-v2 v1.2.0
 	github.com/SENERGY-Platform/service-commons v0.0.0-20261112092203-c8689838acc5
 	github.com/golang-jwt/jwt v3.2.2+incompatible

@@ -142,21 +142,69 @@ func (this *Mongo) GetThing(ctx context.Context, id string) (thing models.Thing,
 type ThingWithSyncInfo struct {
 	models.Thing `bson:",inline"`
 	SyncInfo     `bson:",inline"`
+	Revision     int64 `bson:"revision"` //changes with every write, see SetThingIfRevision; missing in documents written before it existed
+}
+
+// GetThingWithRevision is GetThing, and the revision to hand to SetThingIfRevision. It is 0 for a thing that does not exist.
+func (this *Mongo) GetThingWithRevision(ctx context.Context, id string) (thing models.Thing, revision int64, exists bool, err error) {
+	result := this.thingCollection().FindOne(ctx, bson.M{ThingBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
+	err = result.Err()
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return thing, 0, false, nil
+	}
+	if err != nil {
+		return
+	}
+	doc := ThingWithSyncInfo{}
+	err = result.Decode(&doc)
+	if err != nil {
+		return thing, 0, false, err
+	}
+	return doc.Thing, doc.Revision, true, nil
 }
 
 func (this *Mongo) SetThing(ctx context.Context, thing models.Thing, syncHandler func(models.Thing) error) error {
-	timestamp := time.Now().Unix()
+	_, err := this.replaceThing(ctx, bson.M{ThingBson.Id: thing.Id}, 0, thing, syncHandler)
+	return err
+}
+
+// SetThingIfRevision writes the thing only if the stored thing still has the revision that GetThingWithRevision answered
+// (0 if it did not exist). Otherwise nothing is written and swapped is false, like SetGraphIfRevision.
+func (this *Mongo) SetThingIfRevision(ctx context.Context, thing models.Thing, revision int64, syncHandler func(models.Thing) error) (swapped bool, err error) {
+	filter := bson.M{ThingBson.Id: thing.Id, "revision": revision}
+	if revision == 0 {
+		//no thing, a thing written before revisions existed, or one that is deleted and waits for its cleanup
+		filter = bson.M{ThingBson.Id: thing.Id, "$or": []interface{}{
+			bson.M{"revision": bson.M{"$in": []interface{}{int64(0), nil}}},
+			bson.M{SyncDeleteBson: true},
+		}}
+	}
+	return this.replaceThing(ctx, filter, revision, thing, syncHandler)
+}
+
+func (this *Mongo) replaceThing(ctx context.Context, filter bson.M, oldRevision int64, thing models.Thing, syncHandler func(models.Thing) error) (swapped bool, err error) {
+	now := time.Now()
+	timestamp := now.Unix()
+	revision := now.UnixNano()
+	if revision <= oldRevision {
+		revision = oldRevision + 1
+	}
 	collection := this.thingCollection()
-	_, err := collection.ReplaceOne(ctx, bson.M{ThingBson.Id: thing.Id}, ThingWithSyncInfo{
+	_, err = collection.ReplaceOne(ctx, filter, ThingWithSyncInfo{
 		Thing: thing,
 		SyncInfo: SyncInfo{
 			SyncTodo:          true,
 			SyncDelete:        false,
 			SyncUnixTimestamp: timestamp,
 		},
+		Revision: revision,
 	}, options.Replace().SetUpsert(true))
+	if mongo.IsDuplicateKeyError(err) {
+		//the filter did not match an existing thing, so the upsert ran into it
+		return false, nil
+	}
 	if err != nil {
-		return err
+		return false, err
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoThingCollection, thing.OwnerId)
 	if err != nil {
@@ -165,14 +213,14 @@ func (this *Mongo) SetThing(ctx context.Context, thing models.Thing, syncHandler
 	err = syncHandler(thing)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetThing::syncHandler %v, will be retried later\n", err))
-		return nil
+		return true, nil
 	}
 	err = this.setSynced(ctx, collection, ThingBson.Id, thing.Id, timestamp)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetThing::setSynced %v, will be retried later\n", err))
-		return nil
+		return true, nil
 	}
-	return nil
+	return true, nil
 }
 
 func (this *Mongo) RemoveThing(ctx context.Context, id string, syncDeleteHandler func(models.Thing) error) error {

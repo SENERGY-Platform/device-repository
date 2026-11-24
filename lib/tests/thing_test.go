@@ -256,6 +256,46 @@ func TestThings(t *testing.T) {
 		})
 	})
 
+	t.Run("meter with readings", func(t *testing.T) {
+		meter, err, _ := c.SetThing(bg, userjwt, models.Thing{Name: "meter", Kind: models.ThingKindMeter})
+		if err != nil {
+			t.Fatal(err)
+		}
+		from, until, factor := day(12), day(15), 40.0
+		readings := []models.ThingDeviceLinkReading{{ServiceId: "s1", Column: "metrics.energy", FromValue: 100}}
+		result, err, _ := c.AddThingDeviceLink(bg, userjwt, meter.Id, client.ThingDeviceLinkCreate{DeviceId: deviceIds[1], From: &from, Readings: readings, Factor: &factor})
+		if err != nil {
+			t.Fatal(err)
+		}
+		linkId := result.DeviceLinks[0].Id
+		values := []client.ThingDeviceLinkEndReading{{ServiceId: "s1", Column: "metrics.energy", UntilValue: 250}}
+		_, err, code := c.EndThingDeviceLink(bg, userjwt, meter.Id, linkId, client.ThingDeviceLinkEnd{Until: &until, UntilValues: []client.ThingDeviceLinkEndReading{{ServiceId: "s1", Column: "unknown", UntilValue: 1}}})
+		expectCode(t, err, code, http.StatusBadRequest)
+		_, err, _ = c.EndThingDeviceLink(bg, userjwt, meter.Id, linkId, client.ThingDeviceLinkEnd{Until: &until, UntilValues: values})
+		if err != nil {
+			t.Fatal(err)
+		}
+		read, err, _ := c.ReadThing(bg, userjwt, meter.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		l := read.DeviceLinks[0]
+		if read.Kind != models.ThingKindMeter || l.Factor == nil || *l.Factor != 40 || len(l.Readings) != 1 || l.Readings[0].FromValue != 100 || l.Readings[0].UntilValue == nil || *l.Readings[0].UntilValue != 250 {
+			t.Fatalf("unexpected meter: %#v", read)
+		}
+		//a consumer may not carry readings
+		_, err, code = c.AddThingDeviceLink(bg, userjwt, thing.Id, client.ThingDeviceLinkCreate{DeviceId: deviceIds[1], From: &until, Factor: &factor})
+		expectCode(t, err, code, http.StatusBadRequest)
+		//and a meter with readings may not become one
+		read.Kind = models.ThingKindConsumer
+		_, err, code = c.SetThing(bg, userjwt, read)
+		expectCode(t, err, code, http.StatusBadRequest)
+		err, _ = c.DeleteThing(bg, userjwt, meter.Id)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
 	t.Run("list things by device ids", func(t *testing.T) {
 		list, total, err, _ := c.ListThings(bg, userjwt, client.ThingListOptions{DeviceIds: []string{deviceIds[0]}})
 		if err != nil {

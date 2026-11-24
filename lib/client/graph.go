@@ -25,6 +25,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/models/go/models"
@@ -33,6 +34,10 @@ import (
 type Graph = models.Graph
 type Node = models.Node
 type Edge = models.Edge
+type GraphSegment = models.GraphSegment
+
+const GraphEditModeChange = models.GraphEditModeChange
+const GraphEditModeCorrection = models.GraphEditModeCorrection
 
 const GraphResourceTypeDevice = models.GraphResourceTypeDevice
 const GraphEdgeAttrSystemChanged = models.GraphEdgeAttrSystemChanged
@@ -111,18 +116,110 @@ func (c *Client) ReadGraph(ctx context.Context, token string, id string) (result
 	return doCached[models.Graph](c, req)
 }
 
+// ReadGraphAt reads the graph as it is valid at the given instant.
+func (c *Client) ReadGraphAt(ctx context.Context, token string, id string, at time.Time) (result models.Graph, err error, errCode int) {
+	query := url.Values{}
+	query.Set("at", at.UTC().Format(time.RFC3339Nano))
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/graphs/"+url.PathEscape(id)+"?"+query.Encode(), nil)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doCached[models.Graph](c, req)
+}
+
+// ReadGraphVersions reads the stored document with all versions of its elements.
+func (c *Client) ReadGraphVersions(ctx context.Context, token string, id string) (result models.Graph, err error, errCode int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseUrl+"/graphs/"+url.PathEscape(id)+"?versions=all", nil)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doCached[models.Graph](c, req)
+}
+
+// ReadGraphSegments reads the graph cut at every validity bound inside [start, end); nil leaves a side open.
+func (c *Client) ReadGraphSegments(ctx context.Context, token string, id string, start *time.Time, end *time.Time) (result []models.GraphSegment, err error, errCode int) {
+	query := url.Values{}
+	if start != nil {
+		query.Set("start", start.UTC().Format(time.RFC3339Nano))
+	}
+	if end != nil {
+		query.Set("end", end.UTC().Format(time.RFC3339Nano))
+	}
+	endpoint := c.baseUrl + "/graphs/" + url.PathEscape(id) + "/segments"
+	if len(query) > 0 {
+		endpoint += "?" + query.Encode()
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return doCached[[]models.GraphSegment](c, req)
+}
+
+// SetGraph creates a graph, or corrects an existing one at the current time: the given graph is the graph as it is now.
+// Versions of elements that are not valid now are kept.
 func (c *Client) SetGraph(ctx context.Context, token string, graph models.Graph) (result models.Graph, err error, code int) {
+	return c.EditGraph(ctx, token, graph, model.GraphEditOptions{})
+}
+
+// EditGraph writes an existing graph (a graph without id is created): the given graph is the edited graph as it is
+// valid at options.At, see PUT /graphs/{id}. The result is the stored graph as it is now.
+func (c *Client) EditGraph(ctx context.Context, token string, graph models.Graph, options model.GraphEditOptions) (result models.Graph, err error, code int) {
 	method := http.MethodPost
 	endpoint := c.baseUrl + "/graphs"
 	if graph.Id != "" {
 		method = http.MethodPut
 		endpoint = c.baseUrl + "/graphs/" + url.PathEscape(graph.Id)
+		query := url.Values{}
+		if options.At != nil {
+			query.Set("at", options.At.UTC().Format(time.RFC3339Nano))
+		}
+		if options.Until != nil {
+			query.Set("until", options.Until.UTC().Format(time.RFC3339Nano))
+		}
+		if options.Mode != "" {
+			query.Set("mode", options.Mode)
+		}
+		if len(query) > 0 {
+			endpoint += "?" + query.Encode()
+		}
 	}
 	b, err := json.Marshal(graph)
 	if err != nil {
 		return result, err, http.StatusBadRequest
 	}
 	req, err := http.NewRequestWithContext(ctx, method, endpoint, bytes.NewBuffer(b))
+	if err != nil {
+		return result, err, http.StatusInternalServerError
+	}
+	req.Header.Set("Authorization", token)
+	return do[models.Graph](c, req)
+}
+
+type GraphNodeMove = model.GraphNodeMove
+type GraphNodeEnd = model.GraphNodeEnd
+
+// MoveGraphNode moves a node below another node from move.At on, see POST /graphs/{id}/nodes/{node_id}/move.
+// The result is the graph as it is now.
+func (c *Client) MoveGraphNode(ctx context.Context, token string, graphId string, nodeId string, move model.GraphNodeMove) (result models.Graph, err error, code int) {
+	return c.postGraphNodeAction(ctx, token, graphId, nodeId, "move", move)
+}
+
+// EndGraphNode takes a node out of the graph from end.At on, see POST /graphs/{id}/nodes/{node_id}/end.
+// An open device link of the node's thing is not ended. The result is the graph as it is now.
+func (c *Client) EndGraphNode(ctx context.Context, token string, graphId string, nodeId string, end model.GraphNodeEnd) (result models.Graph, err error, code int) {
+	return c.postGraphNodeAction(ctx, token, graphId, nodeId, "end", end)
+}
+
+func (c *Client) postGraphNodeAction(ctx context.Context, token string, graphId string, nodeId string, action string, body any) (result models.Graph, err error, code int) {
+	b, err := json.Marshal(body)
+	if err != nil {
+		return result, err, http.StatusBadRequest
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseUrl+"/graphs/"+url.PathEscape(graphId)+"/nodes/"+url.PathEscape(nodeId)+"/"+action, bytes.NewBuffer(b))
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}

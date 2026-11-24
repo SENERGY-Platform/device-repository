@@ -155,21 +155,70 @@ func (this *Mongo) GetGraph(ctx context.Context, id string) (graph models.Graph,
 type GraphWithSyncInfo struct {
 	models.Graph `bson:",inline"`
 	SyncInfo     `bson:",inline"`
+	Revision     int64 `bson:"revision"` //changes with every write, see SetGraphIfRevision; missing in documents written before it existed
+}
+
+// GetGraphWithRevision is GetGraph, and the revision to hand to SetGraphIfRevision. It is 0 for a graph that does not exist.
+func (this *Mongo) GetGraphWithRevision(ctx context.Context, id string) (graph models.Graph, revision int64, exists bool, err error) {
+	result := this.graphCollection().FindOne(ctx, bson.M{GraphBson.Id: id, NotDeletedFilterKey: NotDeletedFilterValue})
+	err = result.Err()
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return graph, 0, false, nil
+	}
+	if err != nil {
+		return
+	}
+	doc := GraphWithSyncInfo{}
+	err = result.Decode(&doc)
+	if err != nil {
+		return graph, 0, false, err
+	}
+	return doc.Graph, doc.Revision, true, nil
 }
 
 func (this *Mongo) SetGraph(ctx context.Context, graph models.Graph, syncHandler func(models.Graph) error) error {
-	timestamp := time.Now().Unix()
+	_, err := this.replaceGraph(ctx, bson.M{GraphBson.Id: graph.Id}, 0, graph, syncHandler)
+	return err
+}
+
+// SetGraphIfRevision writes the graph only if the stored graph still has the revision that GetGraphWithRevision answered
+// (0 if it did not exist). Otherwise nothing is written and swapped is false.
+// The revision is the time of the write in nanoseconds, so a graph that was written in between never has the old one again.
+func (this *Mongo) SetGraphIfRevision(ctx context.Context, graph models.Graph, revision int64, syncHandler func(models.Graph) error) (swapped bool, err error) {
+	filter := bson.M{GraphBson.Id: graph.Id, "revision": revision}
+	if revision == 0 {
+		//no graph, a graph written before revisions existed, or one that is deleted and waits for its cleanup
+		filter = bson.M{GraphBson.Id: graph.Id, "$or": []interface{}{
+			bson.M{"revision": bson.M{"$in": []interface{}{int64(0), nil}}},
+			bson.M{SyncDeleteBson: true},
+		}}
+	}
+	return this.replaceGraph(ctx, filter, revision, graph, syncHandler)
+}
+
+func (this *Mongo) replaceGraph(ctx context.Context, filter bson.M, oldRevision int64, graph models.Graph, syncHandler func(models.Graph) error) (swapped bool, err error) {
+	now := time.Now()
+	timestamp := now.Unix()
+	revision := now.UnixNano()
+	if revision <= oldRevision {
+		revision = oldRevision + 1
+	}
 	collection := this.graphCollection()
-	_, err := collection.ReplaceOne(ctx, bson.M{GraphBson.Id: graph.Id}, GraphWithSyncInfo{
+	_, err = collection.ReplaceOne(ctx, filter, GraphWithSyncInfo{
 		Graph: graph,
 		SyncInfo: SyncInfo{
 			SyncTodo:          true,
 			SyncDelete:        false,
 			SyncUnixTimestamp: timestamp,
 		},
+		Revision: revision,
 	}, options.Replace().SetUpsert(true))
+	if mongo.IsDuplicateKeyError(err) {
+		//the filter did not match an existing graph, so the upsert ran into it
+		return false, nil
+	}
 	if err != nil {
-		return err
+		return false, err
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoGraphCollection, graph.Owner)
 	if err != nil {
@@ -178,14 +227,14 @@ func (this *Mongo) SetGraph(ctx context.Context, graph models.Graph, syncHandler
 	err = syncHandler(graph)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetGraph::syncHandler %v, will be retried later\n", err))
-		return nil
+		return true, nil
 	}
 	err = this.setSynced(ctx, collection, GraphBson.Id, graph.Id, timestamp)
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetGraph::setSynced %v, will be retried later\n", err))
-		return nil
+		return true, nil
 	}
-	return nil
+	return true, nil
 }
 
 func (this *Mongo) RemoveGraph(ctx context.Context, id string, syncDeleteHandler func(models.Graph) error) error {

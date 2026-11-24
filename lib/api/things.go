@@ -260,7 +260,7 @@ func (this *ThingEndpoints) Delete(config configuration.Config, router *http.Ser
 
 // AddDeviceLink godoc
 // @Summary      link device to thing
-// @Description  link a device to a thing for the half-open period [from, until); from defaults to now, until to open; periods of one device may not overlap, not even across things
+// @Description  link a device to a thing for the half-open period [from, until); from defaults to now, until to open; periods of one device may not overlap, not even across things; readings (counter reading per service_id and column at installation, in the unit the column is delivered in after the characteristic conversion, i.e. kWh for energy and m³ for volume, not the raw device unit) and factor (transformer ratio, nil means 1) are only allowed for things of kind meter
 // @Tags         things
 // @Accept       json
 // @Produce      json
@@ -294,7 +294,7 @@ func (this *ThingEndpoints) AddDeviceLink(config configuration.Config, router *h
 
 // EndDeviceLink godoc
 // @Summary      end device link of thing
-// @Description  sets until of the device link; an empty body or a missing until ends the link now
+// @Description  sets until of the device link; an empty body or a missing until ends the link now; until_values sets the reading at removal (same unit as from_value) of readings of the link, an unknown service_id and column is rejected
 // @Tags         things
 // @Accept       json
 // @Produce      json
@@ -320,6 +320,42 @@ func (this *ThingEndpoints) EndDeviceLink(config configuration.Config, router *h
 			return
 		}
 		result, err, errCode := control.EndThingDeviceLink(request.Context(), util.GetAuthToken(request), id, linkId, end)
+		if err != nil {
+			http.Error(writer, err.Error(), errCode)
+			return
+		}
+		writeThingJson(config, writer, result)
+	})
+}
+
+// SwapDeviceLink godoc
+// @Summary      swap device link of thing
+// @Description  ends the open device link at the instant 'at' and starts a link to device_id from there, in one write: either both happen or nothing; device_id may be the device of the ended link (counter reset, change of the factor) or another one; at defaults to now, may lie in the past, and must be after the start of the ended link; until_values sets the readings at removal of the ended link, readings and factor are those of the new link (only for things of kind meter, same units as at link creation); the new link follows the rules of link creation (periods of one device may not overlap, not even across things, and the thing and the device may not be in one graph at the same time); needs write on the thing and read on the device; the graph is not touched, see POST /graphs/{id}/nodes/{node_id}/move and /end
+// @Tags         things
+// @Accept       json
+// @Produce      json
+// @Security Bearer
+// @Param        id path string true "Thing Id"
+// @Param        link_id path string true "Device Link Id"
+// @Param        message body model.ThingDeviceLinkSwap true "swap"
+// @Success      200 {object}  models.Thing
+// @Failure      400
+// @Failure      401
+// @Failure      403
+// @Failure      404
+// @Failure      500
+// @Router       /things/{id}/device-links/{link_id}/swap [POST]
+func (this *ThingEndpoints) SwapDeviceLink(config configuration.Config, router *http.ServeMux, control Controller) {
+	router.HandleFunc("POST /things/{id}/device-links/{link_id}/swap", func(writer http.ResponseWriter, request *http.Request) {
+		id := request.PathValue("id")
+		linkId := request.PathValue("link_id")
+		swap := model.ThingDeviceLinkSwap{}
+		err := json.NewDecoder(request.Body).Decode(&swap)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		result, err, errCode := control.SwapThingDeviceLink(request.Context(), util.GetAuthToken(request), id, linkId, swap)
 		if err != nil {
 			http.Error(writer, err.Error(), errCode)
 			return
