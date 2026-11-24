@@ -67,6 +67,10 @@ func (this *Controller) ListExtendedDevices(ctx context.Context, token string, o
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
+			if ids == nil {
+				//nil would mean "no id filter" for the database: a caller who may read nothing gets nothing
+				ids = []string{}
+			}
 		}
 	} else {
 		options.Limit = 0
@@ -217,6 +221,10 @@ func (this *Controller) ListDevices(ctx context.Context, token string, options m
 			ids, err, _ = this.permissionsV2Client.ListAccessibleResourceIdsContext(ctx, token, this.config.DeviceTopic, client.ListOptions{}, client.Permission(permissionFlag))
 			if err != nil {
 				return result, err, http.StatusInternalServerError
+			}
+			if ids == nil {
+				//nil would mean "no id filter" for the database: a caller who may read nothing gets nothing
+				ids = []string{}
 			}
 		}
 	} else {

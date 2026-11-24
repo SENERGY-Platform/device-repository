@@ -49,6 +49,10 @@ func (this *Controller) ListGraphs(ctx context.Context, token string, options mo
 			if err != nil {
 				return result, total, err, http.StatusInternalServerError
 			}
+			if ids == nil {
+				//nil would mean "no id filter" for the database: a caller who may read nothing gets nothing
+				ids = []string{}
+			}
 		}
 	} else {
 		options.Limit = 0
