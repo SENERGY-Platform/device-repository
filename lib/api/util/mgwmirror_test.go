@@ -349,3 +349,26 @@ func TestMissBackoff(t *testing.T) {
 		}
 	})
 }
+
+func TestMirrorMiddlewareAnswersClearCacheLocally(t *testing.T) {
+	config := configuration.Config{
+		MgwMirrorUserId:    "user",
+		MgwMirrorSourceUrl: "http://127.0.0.1:1",
+	}
+	handled := false
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handled = true
+		w.Header().Set("Clear-Site-Data", `"cache"`)
+		w.WriteHeader(http.StatusNoContent)
+	})
+	pull := &recordingPull{}
+	m := NewMirrorMiddleware(handler, config, pull)
+	recorder := httptest.NewRecorder()
+	m.ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, "/clear-cache", nil))
+	if !handled || recorder.Code != http.StatusNoContent || recorder.Header().Get("Clear-Site-Data") != `"cache"` {
+		t.Errorf("handled=%v code=%v header=%v", handled, recorder.Code, recorder.Header())
+	}
+	if len(pull.calls) != 0 {
+		t.Errorf("unexpected pull %#v", pull.calls)
+	}
+}

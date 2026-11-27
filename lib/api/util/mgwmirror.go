@@ -17,7 +17,6 @@
 package util
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -81,6 +80,12 @@ type MirrorMiddleware struct {
 }
 
 func (this *MirrorMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	//POST /clear-cache only sets a header for the browser that calls it: nothing to forward to the source,
+	//and no mirror token is needed
+	if r.Method == http.MethodPost && r.URL.Path == "/clear-cache" {
+		this.handler.ServeHTTP(w, r)
+		return
+	}
 	if !strings.Contains(r.URL.String(), "query") && (r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete) {
 		//forward request to source
 		this.config.GetLogger().Info("forward update request to mirror source", "method", r.Method, "url", r.URL.String())
@@ -306,38 +311,6 @@ func (this *missBackoff) sweep(now time.Time) {
 			delete(this.entries, key)
 		}
 	}
-}
-
-type bufferedResponse struct {
-	header http.Header
-	status int
-	body   bytes.Buffer
-}
-
-func newBufferedResponse() *bufferedResponse {
-	return &bufferedResponse{header: http.Header{}, status: http.StatusOK}
-}
-
-func (this *bufferedResponse) Header() http.Header {
-	return this.header
-}
-
-func (this *bufferedResponse) WriteHeader(status int) {
-	this.status = status
-}
-
-func (this *bufferedResponse) Write(b []byte) (int, error) {
-	return this.body.Write(b)
-}
-
-func (this *bufferedResponse) writeTo(w http.ResponseWriter) {
-	for k, vv := range this.header {
-		for _, v := range vv {
-			w.Header().Add(k, v)
-		}
-	}
-	w.WriteHeader(this.status)
-	_, _ = w.Write(this.body.Bytes())
 }
 
 func (this *MirrorMiddleware) GetToken() (result string, err error) {

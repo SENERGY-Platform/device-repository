@@ -21,6 +21,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/SENERGY-Platform/device-repository/v3/lib/database/mongo"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/service-commons/pkg/jwt"
 )
@@ -42,4 +43,40 @@ func (this *Controller) GetLastUpdateTimestamps(ctx context.Context, token strin
 		return result, err, http.StatusInternalServerError
 	}
 	return result, nil, http.StatusOK
+}
+
+// GetCacheTimestamps returns the last-update timestamps of the fixed set of collections that the endpoints
+// without owner read (aspects, aspect nodes, aspect classes, concepts, characteristics, functions, device classes,
+// device types, device type criteria, protocols), for the user id "". A collection without timestamp is listed with 0.
+// The set is the same for every caller; locations also write under the user id "" and are not part of it.
+// There is no token, no cache and no per-user data: the result is the cache validator of the endpoints of these resources.
+func (this *Controller) GetCacheTimestamps(ctx context.Context) (result []model.LastUpdateTimestamp, err error) {
+	collections := []string{
+		this.config.MongoAspectCollection,
+		mongo.GetAspectNodeCollectionName(this.config),
+		this.config.MongoAspectClassCollection,
+		this.config.MongoConceptCollection,
+		this.config.MongoCharacteristicCollection,
+		this.config.MongoFunctionCollection,
+		this.config.MongoDeviceClassCollection,
+		this.config.MongoDeviceTypeCollection,
+		mongo.GetDeviceTypeCriteriaCollectionName(this.config),
+		this.config.MongoProtocolCollection,
+	}
+	ctx, cancel := getTimeoutContext(ctx)
+	defer cancel()
+	all, err := this.db.GetLastUpdateTimestampsForUser(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+	for _, collection := range collections {
+		element := model.LastUpdateTimestamp{Collection: collection}
+		for _, candidate := range all {
+			if candidate.Collection == collection && candidate.UserId == "" && candidate.UnixTimestamp > element.UnixTimestamp {
+				element = candidate
+			}
+		}
+		result = append(result, element)
+	}
+	return result, nil
 }

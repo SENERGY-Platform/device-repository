@@ -29,6 +29,7 @@ import (
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/api/util"
 	"github.com/SENERGY-Platform/device-repository/v3/lib/configuration"
+	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
 	"github.com/SENERGY-Platform/gin-middleware/otelx"
 	"github.com/SENERGY-Platform/permissions-v2/pkg/client"
 	"github.com/SENERGY-Platform/service-commons/pkg/accesslog"
@@ -97,7 +98,12 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 		return true
 	})
 	config.GetLogger().Info("add cors")
-	corsHandler := util.NewCors(permForward)
+	// the cache middleware is inside cors, so that a 304 carries Access-Control-Allow-Origin
+	var timestamps util.CacheTimestamps
+	if reporter, ok := control.(CacheTimestampReporter); ok {
+		timestamps = reporter.GetCacheTimestamps
+	}
+	corsHandler := util.NewCors(util.NewCache(permForward, timestamps))
 	config.GetLogger().Info("add logging")
 	var result http.Handler = accesslog.New(corsHandler)
 	if config.AsMgwMirror {
@@ -110,6 +116,14 @@ func GetRouter(config configuration.Config, control Controller) http.Handler {
 // interface is also the client interface.
 type MirrorHealthReporter interface {
 	MirrorHealth() (healthy bool, report string)
+}
+
+// CacheTimestampReporter is implemented by the controller; it is not part of Controller because that
+// interface is also the client interface. A controller that does not implement it gets no cache headers
+// on the endpoints whose ETag is derived from the last-update timestamps; the other endpoints are not affected.
+type CacheTimestampReporter interface {
+	// GetCacheTimestamps needs no token: it returns only the fixed set of collections without owner
+	GetCacheTimestamps(ctx context.Context) ([]model.LastUpdateTimestamp, error)
 }
 
 // withHealth answers GET /health before access log, permissions and mirror middleware:

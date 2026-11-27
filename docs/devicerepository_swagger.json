@@ -1439,6 +1439,17 @@
                 ]
             }
         },
+        "/clear-cache": {
+            "post": {
+                "description": "answers 204 with the header 'Clear-Site-Data: \"cache\"', which makes a browser discard its HTTP cache for the origin of this response. That is the origin of the platform API, so responses of all services behind it are affected. Needs no token: at logout it may have expired, and the response only affects the browser that receives it. To be called by a frontend before it redirects to the identity provider.",
+                "summary": "clear the browser cache",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/concepts": {
             "put": {
                 "description": "validate concept",
