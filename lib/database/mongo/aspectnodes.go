@@ -154,7 +154,7 @@ func (this *Mongo) SetAspectNode(ctx context.Context, aspectNode models.AspectNo
 	}
 	err = this.SetLastUpdateTimestamp(ctx, GetAspectNodeCollectionName(this.config), "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	return err
 }
@@ -166,7 +166,7 @@ func (this *Mongo) RemoveAspectNodesByRootId(ctx context.Context, id string) err
 	}
 	err = this.SetLastUpdateTimestamp(ctx, GetAspectNodeCollectionName(this.config), "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	return err
 }

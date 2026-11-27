@@ -301,7 +301,7 @@ func (this *Mongo) RemoveThings(ctx context.Context, ids []string, syncDeleteHan
 			for _, e := range elements {
 				owners = append(owners, e.OwnerId)
 			}
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoThingCollection, owners)
+			_ = this.setLastUpdateTimestampForOwners(ctx, this.config.MongoThingCollection, owners)
 			return nil
 		},
 		syncDeleteHandler)

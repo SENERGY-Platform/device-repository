@@ -76,8 +76,9 @@ func (this *Mongo) setDeleted(ctx context.Context, collection *mongo.Collection,
 // the marked elements are picked up by the Retry<Resource>Sync loop.
 //
 // afterMark runs once after the elements are marked (last update timestamps, dependent collections);
-// it receives the loaded elements and their ids in the same order. An error from afterMark is logged and ends the removal
+// it receives the loaded elements and their ids in the same order. An error from afterMark ends the removal
 // before the sync handler is called, which matches the single variants of the resources that need it. afterMark may be nil.
+// An error wrapping ErrLastUpdateTimestamp is returned to the caller, any other error is logged and not returned.
 // Unknown ids and elements that are already marked as deleted are ignored.
 func removeMany[T any](ctx context.Context, logger *slog.Logger, name string, collection *mongo.Collection, idField string, ids []string, afterMark func(elements []T, ids []string) error, syncDeleteHandler func([]T) error) error {
 	if len(ids) == 0 {
@@ -124,6 +125,9 @@ func removeMany[T any](ctx context.Context, logger *slog.Logger, name string, co
 
 	if afterMark != nil {
 		err = afterMark(elements, foundIds)
+		if errors.Is(err, ErrLastUpdateTimestamp) {
+			return err
+		}
 		if err != nil {
 			logger.Warn(fmt.Sprintf("error in %v::afterMark %v, will be retried later\n", name, err))
 			return nil
@@ -147,16 +151,20 @@ func removeMany[T any](ctx context.Context, logger *slog.Logger, name string, co
 }
 
 // setLastUpdateTimestampForOwners calls SetLastUpdateTimestamp once for every distinct owner.
-// Errors are logged by SetLastUpdateTimestamp and ignored, like in the single remove methods.
-func (this *Mongo) setLastUpdateTimestampForOwners(ctx context.Context, collection string, owners []string) {
+// Errors are logged by SetLastUpdateTimestamp. Every owner is tried, the first error is returned;
+// callers for collections that do not back a 304 answer ignore it, like the single remove methods do.
+func (this *Mongo) setLastUpdateTimestampForOwners(ctx context.Context, collection string, owners []string) (err error) {
 	seen := map[string]bool{}
 	for _, owner := range owners {
 		if seen[owner] {
 			continue
 		}
 		seen[owner] = true
-		_ = this.SetLastUpdateTimestamp(ctx, collection, owner)
+		if ownerErr := this.SetLastUpdateTimestamp(ctx, collection, owner); ownerErr != nil && err == nil {
+			err = ownerErr
+		}
 	}
+	return err
 }
 
 func (this *Mongo) desyncUnknown(ctx context.Context, collection *mongo.Collection, idField string, knownIds []string) error {

@@ -152,7 +152,7 @@ func (this *Mongo) SetDeviceClass(ctx context.Context, deviceClass models.Device
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceClassCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncHandler(deviceClass)
 	if err != nil {
@@ -182,7 +182,7 @@ func (this *Mongo) RemoveDeviceClass(ctx context.Context, id string, syncDeleteH
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceClassCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
@@ -215,6 +215,13 @@ func (this *Mongo) RetryDeviceClassSync(lockduration time.Duration, syncDeleteHa
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoDeviceClassCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{DeviceClassBson.Id: job.Id})
 			if err != nil {
@@ -225,6 +232,13 @@ func (this *Mongo) RetryDeviceClassSync(lockduration time.Duration, syncDeleteHa
 			err = syncHandler(job.DeviceClass)
 			if err != nil {
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::syncHandler %v, will be retried later\n", err))
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoDeviceClassCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceClassSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
@@ -285,8 +299,7 @@ func (this *Mongo) ListAllDeviceClassesUsedWithControllingFunctions(ctx context.
 func (this *Mongo) RemoveDeviceClasses(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceClass) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveDeviceClasses", this.deviceClassCollection(), DeviceClassBson.Id, ids,
 		func([]models.DeviceClass, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceClassCollection, []string{""})
-			return nil
+			return this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceClassCollection, []string{""})
 		},
 		syncDeleteHandler)
 }

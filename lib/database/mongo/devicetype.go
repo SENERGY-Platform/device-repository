@@ -352,9 +352,12 @@ func (this *Mongo) SetDeviceType(ctx context.Context, deviceType models.DeviceTy
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceTypeCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = this.setDeviceTypeCriteria(ctx, deviceType)
+	if errors.Is(err, ErrLastUpdateTimestamp) {
+		return err
+	}
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in SetDeviceType::setDeviceTypeCriteria %v, will be retried later\n", err))
 		return nil
@@ -387,9 +390,12 @@ func (this *Mongo) RemoveDeviceType(ctx context.Context, id string, syncDeleteHa
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoDeviceTypeCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = this.removeDeviceTypeCriteriaByDeviceType(ctx, id)
+	if errors.Is(err, ErrLastUpdateTimestamp) {
+		return err
+	}
 	if err != nil {
 		this.config.GetLogger().Warn(fmt.Sprintf("error in RemoveDeviceType::removeDeviceTypeCriteriaByDeviceType %v, will be retried later\n", err))
 		return nil
@@ -426,6 +432,13 @@ func (this *Mongo) RetryDeviceTypeSync(lockduration time.Duration, syncDeleteHan
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoDeviceTypeCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ = getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{DeviceTypeBson.Id: job.Id})
 			if err != nil {
@@ -442,6 +455,13 @@ func (this *Mongo) RetryDeviceTypeSync(lockduration time.Duration, syncDeleteHan
 			err = syncHandler(job.DeviceType)
 			if err != nil {
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::syncHandler %v, will be retried later\n", err))
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoDeviceTypeCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryDeviceTypeSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ = getTimeoutContext()
@@ -585,7 +605,10 @@ func (this *Mongo) filterDeviceTypeIdsByFilterCriteriaV2(ctx context.Context, de
 func (this *Mongo) RemoveDeviceTypes(ctx context.Context, ids []string, syncDeleteHandler func([]models.DeviceType) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveDeviceTypes", this.deviceTypeCollection(), DeviceTypeBson.Id, ids,
 		func(_ []models.DeviceType, foundIds []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceTypeCollection, []string{""})
+			err := this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceTypeCollection, []string{""})
+			if err != nil {
+				return err
+			}
 			return this.removeDeviceTypeCriteriaByDeviceTypes(ctx, foundIds)
 		},
 		syncDeleteHandler)

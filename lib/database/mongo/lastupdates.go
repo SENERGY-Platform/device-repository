@@ -18,6 +18,8 @@ package mongo
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/SENERGY-Platform/device-repository/v3/lib/model"
@@ -25,6 +27,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// ErrLastUpdateTimestamp is wrapped by every error SetLastUpdateTimestamp returns.
+// The write methods of the resources behind a 304 answer return it to the caller instead of logging it,
+// see removeMany and setDeviceTypeCriteria callers.
+var ErrLastUpdateTimestamp = errors.New("unable to update last update timestamp")
 
 var LastUpdateTimestampsBson = getBsonFieldObject[model.LastUpdateTimestamp]()
 
@@ -67,7 +74,7 @@ func (this *Mongo) SetLastUpdateTimestamp(ctx context.Context, collection string
 	}, options.Replace().SetUpsert(true))
 	if err != nil {
 		this.config.GetLogger().Error("unable to update last update timestamp", "collection", collection, "userid", userId, "error", err)
-		return err
+		return fmt.Errorf("%w: %w", ErrLastUpdateTimestamp, err)
 	}
-	return err
+	return nil
 }

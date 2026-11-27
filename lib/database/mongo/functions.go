@@ -149,7 +149,7 @@ func (this *Mongo) SetFunction(ctx context.Context, function models.Function, sy
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoFunctionCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncHandler(function)
 	if err != nil {
@@ -179,7 +179,7 @@ func (this *Mongo) RemoveFunction(ctx context.Context, id string, syncDeleteHand
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoFunctionCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
@@ -207,6 +207,13 @@ func (this *Mongo) RetryFunctionSync(lockduration time.Duration, syncDeleteHandl
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoFunctionCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{FunctionBson.Id: job.Id})
 			if err != nil {
@@ -217,6 +224,13 @@ func (this *Mongo) RetryFunctionSync(lockduration time.Duration, syncDeleteHandl
 			err = syncHandler(job.Function)
 			if err != nil {
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::syncHandler %v, will be retried later\n", err))
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoFunctionCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryFunctionSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
@@ -379,8 +393,7 @@ func (this *Mongo) ConceptIsUsed(ctx context.Context, id string) (result bool, w
 func (this *Mongo) RemoveFunctions(ctx context.Context, ids []string, syncDeleteHandler func([]models.Function) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveFunctions", this.functionCollection(), FunctionBson.Id, ids,
 		func([]models.Function, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoFunctionCollection, []string{""})
-			return nil
+			return this.setLastUpdateTimestampForOwners(ctx, this.config.MongoFunctionCollection, []string{""})
 		},
 		syncDeleteHandler)
 }

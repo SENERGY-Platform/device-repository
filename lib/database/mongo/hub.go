@@ -319,7 +319,7 @@ func (this *Mongo) RemoveHubs(ctx context.Context, ids []string, syncDeleteHandl
 			for _, e := range elements {
 				owners = append(owners, e.OwnerId)
 			}
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoHubCollection, owners)
+			_ = this.setLastUpdateTimestampForOwners(ctx, this.config.MongoHubCollection, owners)
 			return nil
 		},
 		syncDeleteHandler)

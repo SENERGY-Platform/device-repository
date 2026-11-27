@@ -315,7 +315,7 @@ func (this *Mongo) RemoveGraphs(ctx context.Context, ids []string, syncDeleteHan
 			for _, e := range elements {
 				owners = append(owners, e.Owner)
 			}
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoGraphCollection, owners)
+			_ = this.setLastUpdateTimestampForOwners(ctx, this.config.MongoGraphCollection, owners)
 			return nil
 		},
 		syncDeleteHandler)

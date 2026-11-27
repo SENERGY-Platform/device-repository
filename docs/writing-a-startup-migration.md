@@ -134,6 +134,16 @@ alternative is to move those helpers into a small package both sides may import,
 the way `lib/idmodifier` is cut. Adding a fifth method is the moment to do it
 rather than the moment to add a fifth method.
 
+## A migration moves the last-update timestamp itself
+
+A migration writes past `Set*`, so no last-update timestamp moves. If it writes
+a collection that the cached metadata endpoints depend on (aspects, aspect
+nodes, aspect classes, concepts, characteristics, functions, device classes,
+device types, device-type criteria, protocols), it calls
+`SetLastUpdateTimestamp` for that collection and the empty user itself.
+Otherwise clients keep getting 304 with the state before the migration; see
+`cache-headers-and-when-a-304-is-correct.md`.
+
 ## Startup cost is a real budget
 
 Every migration runs on every start of every replica, marked or not — at minimum

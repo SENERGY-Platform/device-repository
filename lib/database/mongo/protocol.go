@@ -126,7 +126,7 @@ func (this *Mongo) SetProtocol(ctx context.Context, protocol models.Protocol, sy
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoProtocolCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncHandler(protocol)
 	if err != nil {
@@ -156,7 +156,7 @@ func (this *Mongo) RemoveProtocol(ctx context.Context, id string, syncDeleteHand
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoProtocolCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
@@ -184,6 +184,13 @@ func (this *Mongo) RetryProtocolSync(lockduration time.Duration, syncDeleteHandl
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoProtocolCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{ProtocolBson.Id: job.Id})
 			if err != nil {
@@ -194,6 +201,13 @@ func (this *Mongo) RetryProtocolSync(lockduration time.Duration, syncDeleteHandl
 			err = syncHandler(job.Protocol)
 			if err != nil {
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::syncHandler %v, will be retried later\n", err))
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoProtocolCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryProtocolSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
@@ -211,8 +225,7 @@ func (this *Mongo) RetryProtocolSync(lockduration time.Duration, syncDeleteHandl
 func (this *Mongo) RemoveProtocols(ctx context.Context, ids []string, syncDeleteHandler func([]models.Protocol) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveProtocols", this.protocolCollection(), ProtocolBson.Id, ids,
 		func([]models.Protocol, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoProtocolCollection, []string{""})
-			return nil
+			return this.setLastUpdateTimestampForOwners(ctx, this.config.MongoProtocolCollection, []string{""})
 		},
 		syncDeleteHandler)
 }

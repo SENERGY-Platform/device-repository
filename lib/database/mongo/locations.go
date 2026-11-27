@@ -228,7 +228,7 @@ func (this *Mongo) DesyncUnknownLocations(ctx context.Context, knownLocations []
 func (this *Mongo) RemoveLocations(ctx context.Context, ids []string, syncDeleteHandler func([]models.Location) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveLocations", this.locationCollection(), LocationBson.Id, ids,
 		func([]models.Location, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoLocationCollection, []string{""})
+			_ = this.setLastUpdateTimestampForOwners(ctx, this.config.MongoLocationCollection, []string{""})
 			return nil
 		},
 		syncDeleteHandler)

@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -127,7 +128,7 @@ func (this *Mongo) SetCharacteristic(ctx context.Context, characteristic models.
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoCharacteristicCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncHandler(characteristic)
 	if err != nil {
@@ -157,7 +158,7 @@ func (this *Mongo) RemoveCharacteristic(ctx context.Context, id string, syncDele
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoCharacteristicCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
@@ -190,6 +191,13 @@ func (this *Mongo) RetryCharacteristicSync(lockduration time.Duration, syncDelet
 				log.Printf("WARNING: error in RetryCharacteristicSync::syncDeleteHandler %v, will be retried later\n", err)
 				continue
 			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoCharacteristicCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryCharacteristicSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{CharacteristicBson.Id: job.Id})
 			if err != nil {
@@ -200,6 +208,13 @@ func (this *Mongo) RetryCharacteristicSync(lockduration time.Duration, syncDelet
 			err = syncHandler(job.Characteristic)
 			if err != nil {
 				log.Printf("WARNING: error in RetryCharacteristicSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoCharacteristicCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryCharacteristicSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
@@ -313,8 +328,7 @@ func (this *Mongo) CharacteristicIsUsedWithConceptInDeviceType(ctx context.Conte
 func (this *Mongo) RemoveCharacteristics(ctx context.Context, ids []string, syncDeleteHandler func([]models.Characteristic) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveCharacteristics", this.characteristicCollection(), CharacteristicBson.Id, ids,
 		func([]models.Characteristic, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoCharacteristicCollection, []string{""})
-			return nil
+			return this.setLastUpdateTimestampForOwners(ctx, this.config.MongoCharacteristicCollection, []string{""})
 		},
 		syncDeleteHandler)
 }

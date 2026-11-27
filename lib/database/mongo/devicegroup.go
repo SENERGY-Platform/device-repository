@@ -384,7 +384,7 @@ func (this *Mongo) RemoveDeviceGroups(ctx context.Context, ids []string, syncDel
 			for _, group := range groups {
 				users = append(users, group.SyncUser)
 			}
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceGroupCollection, users)
+			_ = this.setLastUpdateTimestampForOwners(ctx, this.config.MongoDeviceGroupCollection, users)
 			return nil
 		},
 		syncDeleteHandler)

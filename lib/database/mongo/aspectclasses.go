@@ -127,7 +127,7 @@ func (this *Mongo) SetAspectClass(ctx context.Context, aspectClass models.Aspect
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoAspectClassCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncHandler(aspectClass)
 	if err != nil {
@@ -157,7 +157,7 @@ func (this *Mongo) RemoveAspectClass(ctx context.Context, id string, syncDeleteH
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoAspectClassCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
@@ -190,6 +190,13 @@ func (this *Mongo) RetryAspectClassSync(lockduration time.Duration, syncDeleteHa
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryAspectClassSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoAspectClassCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryAspectClassSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{AspectClassBson.Id: job.Id})
 			if err != nil {
@@ -200,6 +207,13 @@ func (this *Mongo) RetryAspectClassSync(lockduration time.Duration, syncDeleteHa
 			err = syncHandler(job.AspectClass)
 			if err != nil {
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryAspectClassSync::syncHandler %v, will be retried later\n", err))
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoAspectClassCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryAspectClassSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
@@ -217,8 +231,7 @@ func (this *Mongo) RetryAspectClassSync(lockduration time.Duration, syncDeleteHa
 func (this *Mongo) RemoveAspectClasses(ctx context.Context, ids []string, syncDeleteHandler func([]models.AspectClass) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveAspectClasses", this.aspectClassCollection(), AspectClassBson.Id, ids,
 		func([]models.AspectClass, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoAspectClassCollection, []string{""})
-			return nil
+			return this.setLastUpdateTimestampForOwners(ctx, this.config.MongoAspectClassCollection, []string{""})
 		},
 		syncDeleteHandler)
 }

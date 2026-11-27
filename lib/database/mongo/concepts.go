@@ -70,7 +70,7 @@ func (this *Mongo) SetConcept(ctx context.Context, concept models.Concept, syncH
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoConceptCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncHandler(concept)
 	if err != nil {
@@ -100,7 +100,7 @@ func (this *Mongo) RemoveConcept(ctx context.Context, id string, syncDeleteHandl
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoConceptCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
@@ -133,6 +133,13 @@ func (this *Mongo) RetryConceptSync(lockduration time.Duration, syncDeleteHandle
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::syncDeleteHandler %v, will be retried later\n", err))
 				continue
 			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoConceptCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{ConceptBson.Id: job.Id})
 			if err != nil {
@@ -143,6 +150,13 @@ func (this *Mongo) RetryConceptSync(lockduration time.Duration, syncDeleteHandle
 			err = syncHandler(job.Concept)
 			if err != nil {
 				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::syncHandler %v, will be retried later\n", err))
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoConceptCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryConceptSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
@@ -276,8 +290,7 @@ func (this *Mongo) GetConceptWithoutCharacteristics(ctx context.Context, id stri
 func (this *Mongo) RemoveConcepts(ctx context.Context, ids []string, syncDeleteHandler func([]models.Concept) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveConcepts", this.conceptCollection(), ConceptBson.Id, ids,
 		func([]models.Concept, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoConceptCollection, []string{""})
-			return nil
+			return this.setLastUpdateTimestampForOwners(ctx, this.config.MongoConceptCollection, []string{""})
 		},
 		syncDeleteHandler)
 }

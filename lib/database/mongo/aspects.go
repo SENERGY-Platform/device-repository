@@ -19,6 +19,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -139,7 +140,7 @@ func (this *Mongo) SetAspect(ctx context.Context, aspect models.Aspect, syncHand
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoAspectCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncHandler(aspect)
 	if err != nil {
@@ -169,7 +170,7 @@ func (this *Mongo) RemoveAspect(ctx context.Context, id string, syncDeleteHandle
 	}
 	err = this.SetLastUpdateTimestamp(ctx, this.config.MongoAspectCollection, "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	err = syncDeleteHandler(old)
 	if err != nil {
@@ -197,6 +198,16 @@ func (this *Mongo) RetryAspectSync(lockduration time.Duration, syncDeleteHandler
 				log.Printf("WARNING: error in RetryAspectSync::syncDeleteHandler %v, will be retried later\n", err)
 				continue
 			}
+			// A Set or Remove whose last update timestamp could not be written returns an error but leaves the element marked.
+			// A repeated Remove does not find an element marked as deleted, so the timestamp is written here,
+			// before the element is deleted or marked as synced; a failure keeps the job for the next run.
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoAspectCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryAspectSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
+				continue
+			}
 			ctx, _ := getTimeoutContext()
 			_, err = collection.DeleteOne(ctx, bson.M{AspectBson.Id: job.Id})
 			if err != nil {
@@ -207,6 +218,13 @@ func (this *Mongo) RetryAspectSync(lockduration time.Duration, syncDeleteHandler
 			err = syncHandler(job.Aspect)
 			if err != nil {
 				log.Printf("WARNING: error in RetryAspectSync::syncHandler %v, will be retried later\n", err)
+				continue
+			}
+			timestampCtx, cancelTimestamp := getTimeoutContext()
+			err = this.SetLastUpdateTimestamp(timestampCtx, this.config.MongoAspectCollection, "")
+			cancelTimestamp()
+			if err != nil {
+				this.config.GetLogger().Warn(fmt.Sprintf("error in RetryAspectSync::SetLastUpdateTimestamp %v, will be retried later\n", err))
 				continue
 			}
 			ctx, _ := getTimeoutContext()
@@ -303,8 +321,7 @@ func (this *Mongo) listAspectsWithFunctionType(ctx context.Context, controlling 
 func (this *Mongo) RemoveAspects(ctx context.Context, ids []string, syncDeleteHandler func([]models.Aspect) error) error {
 	return removeMany(ctx, this.config.GetLogger(), "RemoveAspects", this.aspectCollection(), AspectBson.Id, ids,
 		func([]models.Aspect, []string) error {
-			this.setLastUpdateTimestampForOwners(ctx, this.config.MongoAspectCollection, []string{""})
-			return nil
+			return this.setLastUpdateTimestampForOwners(ctx, this.config.MongoAspectCollection, []string{""})
 		},
 		syncDeleteHandler)
 }

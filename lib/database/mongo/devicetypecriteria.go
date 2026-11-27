@@ -37,7 +37,7 @@ var deviceTypeCriteriaIsVoidFieldName, deviceTypeCriteriaIsVoidKey = "IsVoid", "
 var deviceTypeCriteriaIsInputFieldName, deviceTypeCriteriaIsInputKey = "IsInput", ""
 var deviceTypeCriteriaIsIdModifiedFieldName, deviceTypeCriteriaIsIdModifiedKey = "IsIdModified", ""
 
-func getDeviceTypeCriteriaCollectionName(config configuration.Config) string {
+func GetDeviceTypeCriteriaCollectionName(config configuration.Config) string {
 	return config.MongoDeviceTypeCollection + "_criteria"
 }
 
@@ -65,7 +65,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		collection := db.client.Database(db.config.MongoDatabase).Collection(getDeviceTypeCriteriaCollectionName(db.config))
+		collection := db.client.Database(db.config.MongoDatabase).Collection(GetDeviceTypeCriteriaCollectionName(db.config))
 
 		err = db.ensureIndex(collection, "deviceTypeCriteriaDeviceTypeIdIndex", DeviceTypeCriteriaBson.DeviceTypeId, true, false)
 		if err != nil {
@@ -96,7 +96,7 @@ func init() {
 }
 
 func (this *Mongo) deviceTypeCriteriaCollection() *mongo.Collection {
-	return this.client.Database(this.config.MongoDatabase).Collection(getDeviceTypeCriteriaCollectionName(this.config))
+	return this.client.Database(this.config.MongoDatabase).Collection(GetDeviceTypeCriteriaCollectionName(this.config))
 }
 
 func (this *Mongo) addDeviceTypeCriteria(ctx context.Context, deviceTypeCriteria []model.DeviceTypeCriteria) error {
@@ -116,9 +116,9 @@ func (this *Mongo) removeDeviceTypeCriteriaByDeviceType(ctx context.Context, dev
 	if err != nil {
 		return err
 	}
-	err = this.SetLastUpdateTimestamp(ctx, getDeviceTypeCriteriaCollectionName(this.config), "")
+	err = this.SetLastUpdateTimestamp(ctx, GetDeviceTypeCriteriaCollectionName(this.config), "")
 	if err != nil {
-		err = nil
+		return err
 	}
 	return err
 }
@@ -128,8 +128,7 @@ func (this *Mongo) removeDeviceTypeCriteriaByDeviceTypes(ctx context.Context, de
 	if err != nil {
 		return err
 	}
-	this.setLastUpdateTimestampForOwners(ctx, getDeviceTypeCriteriaCollectionName(this.config), []string{""})
-	return nil
+	return this.setLastUpdateTimestampForOwners(ctx, GetDeviceTypeCriteriaCollectionName(this.config), []string{""})
 }
 
 func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt models.DeviceType) error {
@@ -137,7 +136,13 @@ func (this *Mongo) setDeviceTypeCriteria(ctx context.Context, dt models.DeviceTy
 	if err != nil {
 		return err
 	}
-	return this.addDeviceTypeCriteria(ctx, createCriteriaListFromDeviceType(dt))
+	err = this.addDeviceTypeCriteria(ctx, createCriteriaListFromDeviceType(dt))
+	if err != nil {
+		return err
+	}
+	//the timestamp written by the removal precedes the insert; a read between both would see the new timestamp
+	//without the new criteria, and the cached metadata endpoints would answer 304 on that incomplete state
+	return this.SetLastUpdateTimestamp(ctx, GetDeviceTypeCriteriaCollectionName(this.config), "")
 }
 
 func createCriteriaListFromDeviceType(dt models.DeviceType) (result []model.DeviceTypeCriteria) {
