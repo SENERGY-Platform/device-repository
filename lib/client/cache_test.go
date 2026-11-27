@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -323,5 +324,179 @@ func TestWithCacheCoversReadMethods(t *testing.T) {
 		if requests() != before+1 {
 			t.Errorf("%v without WithCache reads the cache", method.Name)
 		}
+	}
+}
+
+// etagRepo answers with a fixed etag and body and records the If-None-Match header of every request.
+// A request carrying the current etag is answered with 304 and without body and total.
+type etagRepo struct {
+	mux     sync.Mutex
+	etag    string
+	ifMatch []string
+}
+
+func (this *etagRepo) seen() []string {
+	this.mux.Lock()
+	defer this.mux.Unlock()
+	return slices.Clone(this.ifMatch)
+}
+
+func (this *etagRepo) setEtag(etag string) {
+	this.mux.Lock()
+	defer this.mux.Unlock()
+	this.etag = etag
+}
+
+func (this *etagRepo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	this.mux.Lock()
+	etag := this.etag
+	inm := r.Header.Get("If-None-Match")
+	this.ifMatch = append(this.ifMatch, inm)
+	this.mux.Unlock()
+	if etag != "" {
+		w.Header().Set("ETag", etag)
+	}
+	if etag != "" && inm == etag {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+	w.Header().Set("X-Total-Count", "2")
+	json.NewEncoder(w).Encode([]map[string]string{{"id": "a", "name": "x"}, {"id": "b", "name": "y"}})
+}
+
+func newEtagTestClient(t *testing.T, handler http.Handler) (Interface, *testClock) {
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+	c := NewClient(server.URL, Options{})
+	clock := &testClock{now: time.Now()}
+	c.(*Client).cache.now = clock.Now
+	return c, clock
+}
+
+// readList reads a listing with total through the cache and checks that body and total are the server's
+func readList(t *testing.T, c Interface, path string, ttl time.Duration) {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodGet, c.(*Client).baseUrl+path, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	view := *c.(*Client)
+	view.cacheTtl = ttl
+	result, total, err, _ := doCachedWithTotal[[]map[string]string](&view, req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if total != 2 || len(result) != 2 || result[0]["id"] != "a" {
+		t.Fatalf("unexpected result %v %v", total, result)
+	}
+}
+
+func TestWithCacheRevalidatesWithEtag(t *testing.T) {
+	repo := &etagRepo{etag: `"v1"`}
+	c, clock := newEtagTestClient(t, repo)
+	readList(t, c, "/query/functions", time.Minute)
+	readList(t, c, "/query/functions", time.Minute)
+	if got := repo.seen(); len(got) != 1 {
+		t.Fatalf("a fresh entry must not reach the server, got %q", got)
+	}
+
+	clock.now = clock.now.Add(2 * time.Minute)
+	readList(t, c, "/query/functions", time.Minute) //304: body and total are kept
+	if got := repo.seen(); len(got) != 2 || got[1] != `"v1"` {
+		t.Fatalf("an expired entry must be revalidated, got %q", got)
+	}
+
+	readList(t, c, "/query/functions", time.Minute)
+	if got := repo.seen(); len(got) != 2 {
+		t.Fatalf("a 304 must renew the entry, got %q", got)
+	}
+}
+
+func TestWithCacheRevalidationReplacesChangedResponse(t *testing.T) {
+	repo := &etagRepo{etag: `"v1"`}
+	c, clock := newEtagTestClient(t, repo)
+	readList(t, c, "/query/functions", time.Minute)
+	repo.setEtag(`"v2"`)
+	clock.now = clock.now.Add(2 * time.Minute)
+	readList(t, c, "/query/functions", time.Minute) //200 with the new etag
+	clock.now = clock.now.Add(2 * time.Minute)
+	readList(t, c, "/query/functions", time.Minute)
+	if got := repo.seen(); len(got) != 3 || got[1] != `"v1"` || got[2] != `"v2"` {
+		t.Fatalf("unexpected If-None-Match headers %q", got)
+	}
+}
+
+func TestWithCacheNoEtagRevalidatesUnconditionally(t *testing.T) {
+	repo := &etagRepo{}
+	c, clock := newEtagTestClient(t, repo)
+	readList(t, c, "/query/functions", time.Minute)
+	clock.now = clock.now.Add(2 * time.Minute)
+	readList(t, c, "/query/functions", time.Minute)
+	if got := repo.seen(); len(got) != 2 || got[1] != "" {
+		t.Fatalf("an entry without etag must be refreshed unconditionally, got %q", got)
+	}
+}
+
+func TestWithCacheDropsEtagAfterRetention(t *testing.T) {
+	repo := &etagRepo{etag: `"v1"`}
+	c, clock := newEtagTestClient(t, repo)
+	readList(t, c, "/query/functions", time.Minute)
+
+	clock.now = clock.now.Add(time.Minute + cacheRevalidationRetention - time.Second)
+	readList(t, c, "/query/other", time.Minute) //the cleanup in set keeps the entry, it is still within the retention
+	readList(t, c, "/query/functions", time.Minute)
+	if got := repo.seen(); len(got) != 3 || got[2] != `"v1"` {
+		t.Fatalf("an entry within the retention must be revalidated, got %q", got)
+	}
+
+	clock.now = clock.now.Add(time.Minute + cacheRevalidationRetention + 2*cacheCleanupInterval)
+	readList(t, c, "/query/third", time.Minute) //a new entry runs the cleanup, which removes the held one
+	readList(t, c, "/query/functions", time.Minute)
+	got := repo.seen()
+	if got[len(got)-1] != "" {
+		t.Fatalf("an entry held longer than the retention must not be revalidated, got %q", got)
+	}
+}
+
+func TestWithCacheInvalidationRemovesRevalidatableEntry(t *testing.T) {
+	repo := &etagRepo{etag: `"v1"`}
+	c, clock := newEtagTestClient(t, repo)
+	readList(t, c, "/query/functions", time.Minute)
+	clock.now = clock.now.Add(2 * time.Minute)
+	ResetCache(c)
+	readList(t, c, "/query/functions", time.Minute)
+	if got := repo.seen(); len(got) != 2 || got[1] != "" {
+		t.Fatalf("an invalidated entry must not be revalidated, got %q", got)
+	}
+}
+
+// invalidatingRepo invalidates the cache while it is answering a conditional request
+type invalidatingRepo struct {
+	etagRepo
+	onConditional func()
+}
+
+func (this *invalidatingRepo) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("If-None-Match") != "" {
+		this.onConditional()
+	}
+	this.etagRepo.ServeHTTP(w, r)
+}
+
+func TestWithCacheNotModifiedAfterInvalidationIsRefetched(t *testing.T) {
+	repo := &invalidatingRepo{etagRepo: etagRepo{etag: `"v1"`}}
+	c, clock := newEtagTestClient(t, repo)
+	repo.onConditional = func() { ResetCache(c) }
+
+	readList(t, c, "/query/functions", time.Minute)
+	clock.now = clock.now.Add(2 * time.Minute)
+	readList(t, c, "/query/functions", time.Minute) //the 304 arrives after the invalidation, so the client asks again without validator
+	got := repo.seen()
+	if len(got) != 3 || got[1] != `"v1"` || got[2] != "" {
+		t.Fatalf("a 304 after an invalidation must lead to an unconditional request, got %q", got)
+	}
+	readList(t, c, "/query/functions", time.Minute)
+	if len(repo.seen()) != 3 {
+		t.Fatalf("the unconditional response must be cached")
 	}
 }

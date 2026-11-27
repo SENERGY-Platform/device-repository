@@ -36,7 +36,8 @@ import (
 //
 // A cached response is used while it is younger than the ttl it was stored with and younger than the
 // ttl of the reading copy, so a caller that needs fresher data than another caller stored gets it.
-// Errors are not cached.
+// Errors are not cached. An expired response that came with an ETag is revalidated with If-None-Match
+// and renewed if the server answers 304.
 //
 // Responses are cached per request and per user id and roles of its token. The token is parsed
 // without validation: a refreshed token of the same user reuses the cached responses, and an
@@ -86,6 +87,9 @@ func doCachedWithTotal[T any](c *Client, req *http.Request) (result T, total int
 type cachedResponse struct {
 	body  []byte
 	total string
+	etag  string
+	//notModified is set by fetch if the server answered a conditional request with 304, the other fields are empty then
+	notModified bool
 }
 
 func (c *Client) fetchCached(req *http.Request) (resp cachedResponse, err error, code int) {
@@ -103,11 +107,29 @@ func (c *Client) fetchCached(req *http.Request) (resp cachedResponse, err error,
 	if !ok {
 		return c.fetch(req)
 	}
-	if resp, hit := c.cache.get(key, c.cacheTtl); hit {
-		return resp, nil, 0
+	stale, hit, generation := c.cache.lookup(key, c.cacheTtl)
+	if hit {
+		return stale, nil, 0
 	}
-	generation := c.cache.currentGeneration()
-	resp, err, code = c.fetch(req)
+	if stale.etag != "" {
+		//the entry is expired but still held for revalidation
+		req.Header.Set("If-None-Match", stale.etag)
+		resp, err, code = c.fetch(req)
+		if err != nil {
+			return resp, err, code
+		}
+		if resp.notModified {
+			if c.cache.extend(key, stale.etag, c.cacheTtl, generation) {
+				return stale, nil, 0
+			}
+			//the entry was invalidated or replaced while the request was running and the 304 carries no body
+			req.Header.Del("If-None-Match")
+			generation = c.cache.currentGeneration()
+			resp, err, code = c.fetch(req)
+		}
+	} else {
+		resp, err, code = c.fetch(req)
+	}
 	if err == nil {
 		c.cache.set(key, newCacheTarget(c.basePath, req.URL), resp, c.cacheTtl, generation)
 	}
@@ -120,6 +142,9 @@ func (c *Client) fetch(req *http.Request) (result cachedResponse, err error, cod
 		return result, err, http.StatusInternalServerError
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotModified && req.Header.Get("If-None-Match") != "" {
+		return cachedResponse{notModified: true}, nil, 0
+	}
 	body, err := io.ReadAll(resp.Body)
 	if resp.StatusCode > 299 {
 		return result, fmt.Errorf("unexpected statuscode %v: %v", resp.StatusCode, string(body)), resp.StatusCode
@@ -127,7 +152,7 @@ func (c *Client) fetch(req *http.Request) (result cachedResponse, err error, cod
 	if err != nil {
 		return result, err, http.StatusInternalServerError
 	}
-	return cachedResponse{body: body, total: resp.Header.Get("X-Total-Count")}, nil, 0
+	return cachedResponse{body: body, total: resp.Header.Get("X-Total-Count"), etag: resp.Header.Get("ETag")}, nil, 0
 }
 
 // requestCacheKey returns false if the token can not be parsed or the body can not be read twice
@@ -162,6 +187,10 @@ func requestCacheKey(req *http.Request) (key string, ok bool) {
 
 const cacheCleanupInterval = time.Minute
 
+// cacheRevalidationRetention is how long an expired entry is kept after its expiry, so that its etag
+// can be sent with the next request. The entry is not used for answers in this time.
+const cacheRevalidationRetention = 10 * time.Minute
+
 type cacheStore struct {
 	mux         sync.Mutex
 	entries     map[string]cacheEntry
@@ -182,18 +211,41 @@ func newCacheStore() *cacheStore {
 	return &cacheStore{entries: map[string]cacheEntry{}, lastCleanup: time.Now(), now: time.Now}
 }
 
-func (this *cacheStore) get(key string, ttl time.Duration) (response cachedResponse, ok bool) {
+// lookup returns the entry as response and hit=true while it is fresh for ttl. Otherwise hit is false and
+// response holds the expired entry, if one is still held, so that its etag can be used for a conditional request.
+// The generation is read in the same step, so it is never newer than the entry.
+func (this *cacheStore) lookup(key string, ttl time.Duration) (response cachedResponse, hit bool, generation uint64) {
 	this.mux.Lock()
 	defer this.mux.Unlock()
+	generation = this.generation
 	entry, ok := this.entries[key]
 	if !ok {
-		return response, false
+		return response, false, generation
 	}
 	now := this.now()
 	if !now.Before(entry.expires) || now.Sub(entry.stored) >= ttl {
-		return response, false
+		return entry.response, false, generation
 	}
-	return entry.response, true
+	return entry.response, true, generation
+}
+
+// extend renews the entry after the server confirmed its etag with 304. It does nothing and returns false if
+// the cache was invalidated since generation was read, or if the entry is gone or no longer has that etag.
+func (this *cacheStore) extend(key string, etag string, ttl time.Duration, generation uint64) bool {
+	this.mux.Lock()
+	defer this.mux.Unlock()
+	if generation != this.generation {
+		return false
+	}
+	entry, ok := this.entries[key]
+	if !ok || entry.response.etag != etag {
+		return false
+	}
+	now := this.now()
+	entry.stored = now
+	entry.expires = now.Add(ttl)
+	this.entries[key] = entry
+	return true
 }
 
 func (this *cacheStore) currentGeneration() uint64 {
@@ -214,7 +266,7 @@ func (this *cacheStore) set(key string, target cacheTarget, response cachedRespo
 	if now.Sub(this.lastCleanup) >= cacheCleanupInterval {
 		this.lastCleanup = now
 		for k, entry := range this.entries {
-			if !now.Before(entry.expires) {
+			if !now.Before(entry.expires.Add(cacheRevalidationRetention)) {
 				delete(this.entries, k)
 			}
 		}
